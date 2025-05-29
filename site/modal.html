@@ -130,8 +130,6 @@ the first address, but differently named registers can still match on the same p
 <> (ife #t ?t ?f) ?t
 <> (ife #f ?t ?f) ?f
 <> (print ?:) ()
-
-(ife #t (print True) (print False))
 </pre>
 <pre style='margin-top:-29px'>
 (ife #t (print True) (print False))
@@ -183,12 +181,14 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 <p>When giving a quoted symbol, like (0), to the <kbd>?:</kbd> register, the value printed will be the depth of nesting.</p>
 
 <pre>
+<> (Get the result of: 3 + 2)
+
 <> (add (?a) ?b) (add ?a (?b))
 <> (add 0 ?b) (sum ?b)
 <> (print (sum ?:)) ()
 </pre>
 <pre style='margin-top:-29px'>
-3 + 2. (print (add (((0))) ((0))))
+(print (add (((0))) ((0))))
 </pre>
 <pre style='margin-top:-29px'>
 <b>5</b><span style='float:right'>?:</span>
@@ -238,9 +238,6 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 
 <> (?head ((unfound ?target) ?next ?tail))
    ((unfound ?target) ?head (?next ?tail))
-
-((find e)
- a (b (c (d (e (f (g (h ()))))))))
 </pre>
 <pre style='margin-top:-29px'>
 ((find e) a (b (c (d (e (f (g (h ()))))))))
@@ -253,6 +250,38 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 (a (b ((found e) c (d (f (g (h ())))))))
 (a ((found e) b (c (d (f (g (h ())))))))
 ((found e) a (b (c (d (f (g (h ())))))))
+</pre>
+
+<h3 id='numbers'>Numbers</h3>
+
+<p>Lastly, Modal has no built-in numbers or arithmetic, but luckily arithmetic can be re-created with rewrite rules, and numbers, by using nesting to count the value of a number in <a href='https://en.wikipedia.org/wiki/Unary_numeral_system' target='_blank'>unary</a>, for example:</p>
+
+<ul>
+	<li><code>0</code>, for 0 </li>
+	<li><code>(0)</code>, for 1 </li>
+	<li><code>((0))</code>, for 2 </li>
+	<li><code>(((0)))</code>, for 3 </li>
+	<li><code>((((0)))</code>, for 4 </li>
+</ul>
+
+<p>Here's a little program that calculates the difference of two numbers, by gradually removing the wrapping parentheses on both operands:</p>
+
+<pre>
+<> (Get the result of: 5 - 2)
+
+<> ((?a) - (?b)) (?a - ?b)
+<> (?a - 0) (difference ?a)
+<> (print (difference ?:)) (done.)
+</pre>
+<pre style='margin-top:-29px'>
+(print ((((((0))))) - ((0))))
+(print (((((0)))) - (0)))
+(print ((((0))) - 0))
+(print (difference (((0)))))
+(done.)
+</pre>
+<pre style='margin-top:-29px'>
+<b>3</b><span style='float:right'>?:</span>
 </pre>
 
 <p>That's it! I hope you enjoy exploring this strange programming language.</p>
