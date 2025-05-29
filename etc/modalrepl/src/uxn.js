@@ -113,7 +113,7 @@ function Uxn (emu)
 	}
 
 	this.eval = (at) => {
-		let steps = 0x80000
+		let steps = 0x8000000
 		pc = at;
 		while(steps-- && this.step());
 	}
