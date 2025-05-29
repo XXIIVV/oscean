@@ -1191,7 +1191,7 @@ _*::=*_Y
 <img src='../media/refs/soulages.png' style='float:right;width:200px' title='Pierre Soulages | Lithographie n°30 (1972)'/>
 
 <p>Modal programs are represented as a series of substitution rules, applied to a given tree which gets
-continually modified until no rules match any given part of the tree. The two principal elements of modal are:</p>
+continually modified until no rules match any given part of the tree. The two principal elements of Modal are:</p>
 
 <ul>
 	<li><a href='#rules'>Rules</a>: &lt;&gt; left right</li>
@@ -1202,7 +1202,7 @@ continually modified until no rules match any given part of the tree. The two pr
 by the rewriting steps in the following format:</p>
 
 <pre>
-<> (Let's learn modal!) <i>This is a comment</i>
+<> (Let's learn Modal!) <i>This is a comment</i>
 <> (hello) (good bye)   <i>This is a rule</i>
 </pre>
 <pre style='margin-top:-29px'>
@@ -1283,7 +1283,7 @@ the first address, but differently named registers can still match on the same p
 (different) (same)
 </pre>
 
-<h3>Logic</h3>
+<h3 id='logic'>Logic</h3>
 
 <p>Equality in logic can be implemented by defining the truth table the comparison as shown above, for binary logic we can expand on the idea:</p>
 
@@ -1335,7 +1335,7 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 <b>Eva</b><span style='float:right'>?:</span>
 </pre>
 
-<h3>IO</h3>
+<h3 id='io'>IO</h3>
 
 <p>Events are handled by special registers with IO capabilities, for example, the <kbd>?:</kbd> that emits a symbol to the console. Here is a little program that prints letters in a list.</p>
 
@@ -1371,7 +1371,7 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 
 <h3 id='lists'>Lists</h3>
 
-<p>In Modal, lists are best stored as nested trees, this makes them easier to manipulate, here's how to reverse a list:</p>
+<p>In Modal, the ideal data structure is a list, like <code>(foo(bar (baz ())))</code>, this gives more flexibility so that rewrite rules can be applied to on items of an unknown length, in comparison with a tuple, like <code>(foo bar baz)</code>, in which the exact number of items must be known beforehand.</p>
 
 <pre>
 <> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
@@ -1396,6 +1396,38 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 </pre>
 <pre style='margin-top:-29px'>
 <b>ladom</b><span style='float:right'>?:</span>
+</pre>
+
+<p>Here's something a bit more interesting, to find an item in a list, we move a <i>cursor</i> in and out of it. The program trace shows that the rule matches a symbol that goes deeper into the list, modifies itself and returns with the result symbol. This sort of mechanical transformation of programs is typical in Modal.</p>
+
+<pre>
+<> ((find ?target) ?target (?next ?tail))
+   (?head (found ?target) ?next ?tail)
+<> ((find ?target) ?head (?next ?tail))
+   (?head ((find ?target) ?next ?tail))
+<> ((find ?target) ?head ())
+   ((unfound ?target) ?head ())
+
+<> (?head ((found ?target) ?next ?tail))
+   ((found ?target) ?head (?next ?tail))
+
+<> (?head ((unfound ?target) ?next ?tail))
+   ((unfound ?target) ?head (?next ?tail))
+
+((find e)
+ a (b (c (d (e (f (g (h ()))))))))
+</pre>
+<pre style='margin-top:-29px'>
+((find e) a (b (c (d (e (f (g (h ()))))))))
+(a ((find e) b (c (d (e (f (g (h ()))))))))
+(a (b ((find e) c (d (e (f (g (h ()))))))))
+(a (b (c ((find e) d (e (f (g (h ()))))))))
+(a (b (c (d ((find e) e (f (g (h ()))))))))
+(a (b (c (d ((found e) f (g (h ())))))))
+(a (b (c ((found e) d (f (g (h ())))))))
+(a (b ((found e) c (d (f (g (h ())))))))
+(a ((found e) b (c (d (f (g (h ())))))))
+((found e) a (b (c (d (f (g (h ())))))))
 </pre>
 
 <p>That's it! I hope you enjoy exploring this strange programming language.</p>

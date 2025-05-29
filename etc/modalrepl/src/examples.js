@@ -97,5 +97,30 @@ let examples = {
 (( 
 	((0)) * 
 	(((((0)))))
-) (wait))` 
+) (wait))` ,
+
+/*
+@|Find */
+
+"find": `<> (Find a value in a list.)
+
+<> ((find ?target) ?target (?next ?tail))
+   (?head (found ?target) ?next ?tail)
+<> ((find ?target) ?head (?next ?tail))
+   (?head ((find ?target) ?next ?tail))
+<> ((find ?target) ?head ())
+   ((unfound ?target) ?head ())
+
+<> (Found)
+<> (?head ((found ?target) ?next ?tail))
+   ((found ?target) ?head (?next ?tail))
+
+<> (Unfound)
+<> (?head ((unfound ?target) ?next ?tail))
+   ((unfound ?target) ?head (?next ?tail))
+
+(
+	(find e)
+	a (b (c (d (e (f (g (h ())))))))
+)` 
 }
