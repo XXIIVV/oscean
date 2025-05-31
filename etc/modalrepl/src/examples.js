@@ -122,5 +122,16 @@ let examples = {
 (
 	(find e)
 	a (b (c (d (e (f (g (h ())))))))
-)` 
+)`,
+
+/*
+@|Stack-machine */
+
+"stack": 
+`<> ((Stack (?tail ?a)) dup)         (Stack ((?tail ?a) ?a))
+<> ((Stack (?tail ?a)) pop)         (Stack ?tail)
+<> ((Stack ((?tail ?b) ?a)) swap)   (Stack ((?tail ?a) ?b))
+<> ((Stack ((?tail ?c) ?b) ?a) rot) (Stack (((?tail ?a) ?b) ?c))
+
+(((((Stack (((D) C) B) A) rot) pop) swap) dup)`
 }

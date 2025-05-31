@@ -2,7 +2,6 @@
 
 @on-reset ( -> )
 	;token/on-console .Console/vector DEO2
-	;prefabs/c dict/<push-str>
 	BRK
 
 %NEXT ( addr* -- next* ) {
@@ -35,7 +34,7 @@
 	&>l
 		LDA2k ;CellType/a NEQ2 ?{
 			DUP2 rules/find [ INC2k ORA ?/<write-match> POP2 ] }
-		LDA2k ;dict/buf EQU2 ?/<write-rule>
+		LDA2k ;CellType/rule EQU2 ?/<write-rule>
 		LDA2k body/<push-cell>
 		NEXT GTH2k ?&>l
 	( >> )
@@ -89,13 +88,19 @@
 	DUP [ LIT ") ] NEQ ?{ /<store>
 		;CellType/b !body/<push-cell> }
 	DUP #21 LTH ?/<store>
+	( | push )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
+	.&buf LDZ2 [ LIT2 "<> ] NEQ2 ?{ /<clean>
+		;CellType/rule !body/<push-cell> }
 	JMP2r
 
 @token/<store> ( c -- )
 	POP [ LIT2 -&buf _&ptr ] LDR NEQ ?{ JMP2r }
 	;&buf dict/find-alloc body/<push-cell>
+	( >> )
+
+@token/<clean> ( -- )
 	[ LIT2 00 -&buf ] DUP ,&ptr STR
 	STZ
 	JMP2r
@@ -142,7 +147,7 @@
 @rules/<push> ( addr* -- addr* )
 	DUP2 walk
 	( | test rhs is not a rule )
-	LDA2k ;dict/buf NEQ2 ?{ NIP2 JMP2r }
+	LDA2k ;CellType/rule NEQ2 ?{ NIP2 JMP2r }
 	walk SWP2
 	&>l
 		LDA2k [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
@@ -172,7 +177,7 @@
 	[ LIT2 "( _&last ] STR
 	[ LIT2 &origin $2 ]
 	&>lp
-		LDA2k ;dict/buf NEQ2 ?{ POP2 JMP2r }
+		LDA2k ;CellType/rule NEQ2 ?{ POP2 JMP2r }
 		LDA2k ORAk ?{
 			POP2 POP2 [ LIT2 0a -Console/error ] DEO
 			JMP2r }
@@ -299,7 +304,7 @@
 
 @<eval>/err "Cycles 20 "exhausted. 0a00
 
-@prefabs/c "<> $1
+@prefabs/rule "<> $1
 	&a "( $1
 	&b ") $1
 
@@ -312,6 +317,7 @@
 @body/a $6000 &b $6000
 |prefabs/a @CellType/a
 |prefabs/b @CellType/b
+|prefabs/rule @CellType/rule
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
 |00 @token/buf
 
