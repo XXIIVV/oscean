@@ -32,21 +32,19 @@
 	STZ
 	JMP2r
 
-@dict/find-alloc ( src* -- src* cell* )
-	STH2k ,&ptr LDR2 ;&buf
+@dict/find-alloc ( src* -- src* ptr* )
+	STH2k ,&ptr LDR2 ;&buf-prefabs
 	&>lf
 		DUP2 STH2kr str/compare ?{
 			INC2 GTH2k ?&>lf
-		POP2 POP2 STH2r !/alloc }
+		POP2 STH2r !/alloc }
 	NIP2 POP2r JMP2r
 
-@dict/alloc ( str* -- cell* )
-	,&ptr LDR2 SWP2
-	&>la
-		LDAk DUP [ LIT2 &ptr =&post-prefabs ] INC2k ,&ptr STR2
-		STA
-		?{ POP2 JMP2r }
-		INC2 !&>la
+@dict/alloc ( ptr* str* -- ptr* )
+	LDAk DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	?{ POP2 JMP2r }
+	INC2 !&alloc
 
 (
 @|Runtime )
@@ -54,24 +52,14 @@
 %NEXT ( addr* -- next* ) {
 	INC2 INC2 }
 
-@walk ( addr* -- next* )
-	[ LITr 00 ]
-	&>w
-		LDA2k ORA ?{ POPr JMP2r }
-		LDA2k ;dict/sym-a NEQ2 ?{ INCr }
-		LDA2k ;dict/sym-b NEQ2 ?{
-			[ LITr 01 ] SUBr STHkr ?{ POPr NEXT JMP2r } }
-		NEXT STHkr ?&>w
-	POPr JMP2r
-
 @<eval> ( -- count* )
 	#0000
 	&>w
 		<step>
 		body/<print>
+		wildcards/<emit>
 		?{ #800f DEO
 			JMP2r }
-		wildcards/<emit>
 		INC2 ORAk ?&>w
 	#010f DEO
 	;&err !err/<print>
@@ -81,31 +69,27 @@
 	&>l
 		LDA2k ;dict/sym-a NEQ2 ?{
 			DUP2 rules/find [ INC2k ORA ?/<write-match> POP2 ] }
-		LDA2k ;dict/sym-c EQU2 ?/<write-rule>
-		LDA2k body/<push-cell>
+		LDA2k ;dict/sym-rule EQU2 ?/<write-rule>
+		body/<push-cell-at>
 		NEXT GTH2k ?&>l
 	( >> )
 	&<write-tail> ( to* from* . rew -- rew )
 	NEQ2k ?{
 		POP2 #0000 SWP2 STA2
 		STHr JMP2r }
-	LDA2k body/<push-cell>
+	body/<push-cell-at>
 	NEXT !/<write-tail>
 
 	&<write-match> ( to* from* . rew -- rew )
 	INCr
-	( rewrite ) walk <write-rhs>
-	( advance ) walk !/<write-tail>
+	( rewrite ) tuple/walk <write-rhs>
+	( advance ) tuple/walk !/<write-tail>
 
 	&<write-rule> ( to* from* . rew -- rew )
 	INCr NEXT rules/<push> !/<write-tail>
 
 @<write-rhs> ( tail* rhs* -- )
-	DUP2 walk SWP2
-	&>l
-		<write-cell>
-		NEXT GTH2k ?&>l
-	POP2 POP2 JMP2r
+	;<write-cell> !tuple/<foreach>
 
 @<write-cell> ( addr* -- addr* )
 	LDA2k LDA [ LIT "? ] EQU ?&<write-wildcard>
@@ -113,11 +97,7 @@
 
 	&<write-wildcard> ( addr* -- addr* )
 	LDA2k wildcards/find INC2k ORA ?{ POP2 JMP2r }
-	NEXT LDA2 DUP2 walk SWP2
-	&>l
-		LDA2k body/<push-cell>
-		NEXT GTH2k ?&>l
-	POP2 POP2 JMP2r
+	NEXT LDA2 ;body/<push-cell-at> !tuple/<foreach>
 
 (
 @|Rules )
@@ -133,15 +113,15 @@
 	( | find wildcard )
 	LDA2k wildcards/find INC2k ORA ?{
 		POP2 STH2kr OVR2 LDA2 wildcards/<push>
-		NEXT #01 STH2r !walk }
+		NEXT #01 STH2r !tuple/walk }
 	( | compare wildcard )
 	STH2kr wildcards/compare STH
-	NEXT STHr STH2r !walk
+	NEXT STHr STH2r !tuple/walk
 
 @rules/match ( rule* cells* -- bool )
 	wildcards/<reset>
 	STH2
-	DUP2 walk SWP2
+	tuple/get-bounds
 	&>lmn
 		STH2r /compare STH2
 		?{
@@ -154,15 +134,15 @@
 	,&ptr LDR2 ;&buf
 	&>lm
 		DUP2 STH2kr /match ?{
-			walk walk GTH2k ?&>lm
+			tuple/walk tuple/walk GTH2k ?&>lm
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @rules/<push> ( addr* -- addr* )
-	DUP2 walk
+	DUP2 tuple/walk
 	( | test rhs is not a rule )
-	LDA2k ;dict/sym-c NEQ2 ?{ NIP2 JMP2r }
-	walk SWP2
+	LDA2k ;dict/sym-rule NEQ2 ?{ NIP2 JMP2r }
+	tuple/walk SWP2
 	&>l
 		LDA2k [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 		STA2
@@ -171,6 +151,9 @@
 
 (
 @|Body )
+
+@body/<push-cell-at> ( addr* -- addr* )
+	LDA2k
 
 @body/<push-cell> ( cell* -- )
 	[ LIT2 &ptr =&a ] INC2k INC2 ,&ptr STR2
@@ -188,36 +171,20 @@
 	JMP2r
 
 @body/<print> ( -- )
-	[ LIT2 "( _&last ] STR
-	[ LIT2 &origin $2 ]
-	&>lp
-		LDA2k ;dict/sym-c NEQ2 ?{ POP2 JMP2r }
-		LDA2k ORAk ?{
-			POP2 POP2 [ LIT2 0a -Console/error ] DEO
-			JMP2r }
-		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{
-			[ LIT2 20 -Console/error ] DEO }
-		LDAk ,&last STR
-		err/<print>
-		NEXT !&>lp
+	[ LIT2 &origin $2 ] LDA2k ;dict/sym-rule NEQ2 ?{ POP2 JMP2r }
+	!tuple/<pretty-print>
 
 (
 @|Wildcards )
 
 @wildcards/compare ( wildcard* cells* -- f )
-	SWP2 NEXT LDA2 STH2
-	DUP2 walk SWP2
-	&>lc
-		LDA2k STH2kr LDA2 EQU2 ?{
-			POP2 POP2 #00 POP2r JMP2r }
-		NEXT INC2r INC2r GTH2k ?&>lc
-	POP2 POP2 #01 POP2r JMP2r
+	SWP2 NEXT LDA2 !tuple/compare
 
 @wildcards/find ( name* -- wildcard* )
 	STH2
 	,&ptr LDR2 ;&buf
 	&>lf
-		LDA2k STH2kr str/compare ?{
+		LDA2k STH2kr EQU2 ?{
 			#0004 ADD2 GTH2k ?&>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -234,21 +201,60 @@
 	JMP2r
 
 @wildcards/<emit> ( -- )
-	;&key /find INC2k ORA ?{ POP2 JMP2r }
-	NEXT LDA2k LDA2 ;dict/sym-a EQU2 ?/<emit-list>
-	LDA2 LDA2 !str/<print>
-
-	&key "?: $1
-
-@wildcards/<emit-list> ( cell* -- )
-	[ LIT2r 0000 ] LDA2 DUP2 walk SWP2
-	&>le
-		LDA2k ;dict/sym-a NEQ2 ?{ INC2r }
-		NEXT GTH2k ?&>le
-	POP2 POP2 STH2r !dec/<print>
+	;dict/sym-print /find INC2k ORA ?{ POP2 JMP2r }
+	NEXT LDA2k LDA2 ;dict/sym-a EQU2 ?{ LDA2 LDA2 !str/<print> }
+	tuple/count-depth !dec/<print>
 
 (
 @|Utilities )
+
+@tuple/walk ( tuple* -- end* )
+	[ LITr 00 ]
+	&>w
+		LDA2k ORA ?{ POPr JMP2r }
+		LDA2k ;dict/sym-a NEQ2 ?{ INCr }
+		LDA2k ;dict/sym-b NEQ2 ?{
+			[ LITr 01 ] SUBr STHkr ?{ POPr NEXT JMP2r } }
+		NEXT STHkr ?&>w
+	POPr JMP2r
+
+@tuple/compare ( a* b* -- bool )
+	STH2
+	/get-bounds
+	&>lc
+		LDA2k STH2kr LDA2 EQU2 ?{
+			POP2 POP2 #00 POP2r JMP2r }
+		NEXT INC2r INC2r GTH2k ?&>lc
+	POP2 POP2 #01 POP2r JMP2r
+
+@tuple/<foreach> ( fn* -- )
+	STH2
+	/get-bounds
+	&>l
+		STH2kr JSR2 NEXT GTH2k ?&>l
+	POP2 POP2 POP2r JMP2r
+
+@tuple/get-bounds ( tuple* -- to* from* )
+	DUP2 /walk SWP2 JMP2r
+
+@tuple/count-depth ( tuple* -- depth* )
+	[ LIT2r 0000 ] LDA2 /get-bounds
+	&>le
+		LDA2k ;dict/sym-a NEQ2 ?{ INC2r }
+		NEXT GTH2k ?&>le
+	POP2 POP2 STH2r JMP2r
+
+@tuple/<pretty-print> ( tuple* -- )
+	[ LIT2 "( _&last ] STR
+	&>lp
+		LDA2k ORAk ?{
+			POP2 POP2 [ LIT2 0a -Console/error ] DEO
+			JMP2r }
+		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{
+			[ LIT2 20 -Console/error ] DEO }
+		LDAk ,&last STR
+		err/<print>
+		NEXT !&>lp
 
 @str/compare ( a* b* -- bool )
 	STH2
@@ -291,8 +297,9 @@
 
 @dict
 	&sym-a "( $1
-	&sym-b ") $1 &buf
-	&sym-c "<> $1 &post-prefabs $1000
+	&sym-b ") $1 &buf-prefabs
+	&sym-rule "<> $1
+	&sym-print "?: $1 &buf $1000
 
 @wildcards/buf $100
 
