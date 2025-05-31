@@ -25,19 +25,19 @@
 	JMP2r
 
 @token/<store> ( c -- )
-	POP .&buf LDZ ?{ JMP2r }
-	;&buf dict/find-alloc body/<push-cell>
-	[ LIT2 00 -&buf ] DUP ,&ptr STR
+	POP ;&buf
+	( ) LDZk ?{ POP2 JMP2r }
+	( ) dict/find-alloc body/<push-cell>
+	( ) DUP ,&ptr STR
 	STZ
 	JMP2r
 
-@dict/find-alloc ( str* -- cell* )
-	STH2
-	,&ptr LDR2 ;&buf
+@dict/find-alloc ( src* -- src* cell* )
+	STH2k ,&ptr LDR2 ;&buf
 	&>lf
 		DUP2 STH2kr str/compare ?{
 			INC2 GTH2k ?&>lf
-		POP2 POP2 POP2r !/alloc }
+		POP2 POP2 STH2r !/alloc }
 	NIP2 POP2r JMP2r
 
 @dict/alloc ( str* -- cell* )
