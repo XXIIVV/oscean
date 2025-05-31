@@ -70,15 +70,13 @@
 		LDA2k ;dict/sym-a NEQ2 ?{
 			DUP2 rules/find [ INC2k ORA ?/<write-match> POP2 ] }
 		LDA2k ;dict/sym-rule EQU2 ?/<write-rule>
-		body/<push-cell-at>
-		NEXT GTH2k ?&>l
+		body/push-cell-at NEXT GTH2k ?&>l
 	( >> )
 	&<write-tail> ( to* from* . rew -- rew )
 	NEQ2k ?{
 		POP2 #0000 SWP2 STA2
 		STHr JMP2r }
-	body/<push-cell-at>
-	NEXT !/<write-tail>
+	body/push-cell-at NEXT !/<write-tail>
 
 	&<write-match> ( to* from* . rew -- rew )
 	INCr
@@ -89,15 +87,15 @@
 	INCr NEXT rules/<push> !/<write-tail>
 
 @<write-rhs> ( tail* rhs* -- )
-	;<write-cell> !tuple/<foreach>
+	;write-cell !tuple/<foreach>
 
-@<write-cell> ( addr* -- addr* )
+@write-cell ( addr* -- addr* )
 	LDA2k LDA [ LIT "? ] EQU ?&<write-wildcard>
 	LDA2k !body/<push-cell>
 
 	&<write-wildcard> ( addr* -- addr* )
 	LDA2k wildcards/find INC2k ORA ?{ POP2 JMP2r }
-	NEXT LDA2 ;body/<push-cell-at> !tuple/<foreach>
+	NEXT LDA2 ;body/push-cell-at !tuple/<foreach>
 
 (
 @|Rules )
@@ -115,7 +113,7 @@
 		POP2 STH2kr OVR2 LDA2 wildcards/<push>
 		NEXT #01 STH2r !tuple/walk }
 	( | compare wildcard )
-	STH2kr wildcards/compare STH
+	STH2kr SWP2 NEXT LDA2 tuple/compare STH
 	NEXT STHr STH2r !tuple/walk
 
 @rules/match ( rule* cells* -- bool )
@@ -152,7 +150,7 @@
 (
 @|Body )
 
-@body/<push-cell-at> ( addr* -- addr* )
+@body/push-cell-at ( addr* -- addr* )
 	LDA2k
 
 @body/<push-cell> ( cell* -- )
@@ -176,9 +174,6 @@
 
 (
 @|Wildcards )
-
-@wildcards/compare ( wildcard* cells* -- f )
-	SWP2 NEXT LDA2 !tuple/compare
 
 @wildcards/find ( name* -- wildcard* )
 	STH2
