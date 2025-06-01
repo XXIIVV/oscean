@@ -141,9 +141,9 @@ the first address, but differently named registers can still match on the same p
 
 <h3 id='types'>Types</h3>
 
-<p>Understanding how to use <i>types</i> to orchestrate a specific evaluation order is
+<p>Understanding how to use <i>types</i>, which are just symbols like any other, to orchestrate a specific evaluation order is
 important to become proficient with Modal. Creating a type system is merely a
-matter of creating stricter rules expecting a specific grammar. Notice in the example below, print rule expects a specific type of data before firing despite being above:</p>
+matter of using stricter rules expecting a specific symbol. Notice in the example below, how the print rule expects a specific type of data before firing despite being declared first:</p>
 
 <pre>
 <> (print (Name ?:)) (done.)
@@ -160,7 +160,7 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 
 <h3 id='io'>IO</h3>
 
-<p>Events are handled by special registers with IO capabilities, for example, the <kbd>?:</kbd> that emits a symbol to the console. Here is a little program that prints letters in a list.</p>
+<p>Events are handled by special registers with IO capabilities, for example, the <kbd>?:</kbd> emits a symbol to the console. Here is a little program that prints letters in a list.</p>
 
 <pre>
 <> (putrec (?: ?x)) (putrec ?x)
@@ -183,8 +183,8 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 <pre>
 <> (Get the result of: 3 + 2)
 
-<> (add (?a) ?b) (add ?a (?b))
-<> (add 0 ?b) (sum ?b)
+<> ((?a) + ?b) (?a + (?b))
+<> (0 + ?b) (sum ?b)
 <> (print (sum ?:)) ()
 </pre>
 <pre style='margin-top:-29px'>
@@ -194,9 +194,73 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 <b>5</b><span style='float:right'>?:</span>
 </pre>
 
+<h3 id='numbers'>Numbers</h3>
+
+<ul style='float:right'>
+	<li><code>0</code>, for 0 </li>
+	<li><code>(0)</code>, for 1 </li>
+	<li><code>((0))</code>, for 2 </li>
+	<li><code>(((0)))</code>, for 3 </li>
+	<li><code>((((0)))</code>, for 4 </li>
+</ul>
+
+<p>Internally, Modal has no built-in arithmetic and represents numbers as the symbol <code>0</code> wrapped in a number of parentheses equal to its <a href='https://en.wikipedia.org/wiki/Unary_numeral_system' target='_blank'>value</a>. Luckily arithmetic operations can be re-created with rewrite rules, for example, here's a little program that calculates the difference of two numbers, by gradually removing the wrapping parentheses on both operands:</p>
+
+<pre>
+<> (Get the result of: 5 - 2)
+
+<> ((?a) - (?b)) (?a - ?b)
+<> (?a - 0) (difference ?a)
+<> (print (difference ?:)) (done.)
+</pre>
+<pre style='margin-top:-29px'>
+(print (5 - 2))
+(print (((((0)))) - (0)))
+(print ((((0))) - 0))
+(print (difference (((0)))))
+(done.)
+</pre>
+<pre style='margin-top:-29px'>
+<b>3</b><span style='float:right'>?:</span>
+</pre>
+
+<p>Notice how Modal has neither a prefix, infix or postfix <a href='notation.html'>notation</a>, it is merely defined within the rules. The Modal number encoding allows to do comparison between numbers and with it we can implement FizzBuzz:</p>
+
+<pre>
+<> ((print-word ?:) ?i ?f ?b) ((print-line \n) ?i ?f ?b)
+<> ((print-line ?:) ?i ?f ?b) (?i ?f ?b)
+
+<> (100 ?f ?b) (done.)
+<> (?i 3 5)    ((print-word FizzBuzz) (?i) 0 0)
+<> (?i 3 ?b)   ((print-word Fizz) (?i) 0 (?b))
+<> (?i ?f 5)   ((print-word Buzz) (?i) (?f) 0)
+<> (?i ?f ?b)  ((print-word ?i) (?i) (?f) (?b))
+</pre>
+<pre style='margin-top:-29px'>
+(0 0 0)
+</pre>
+<pre style='margin-top:-29px'>
+<b>0
+1
+2
+Fizz
+4
+Buzz
+6
+Fizz
+8
+9
+10
+FizzBuzz
+12
+13
+14
+Fizz..</b><span style='float:right'>?:</span>
+</pre>
+
 <h3 id='lists'>Lists</h3>
 
-<p>In Modal, the ideal data structure is a list, like <code>(foo(bar (baz ())))</code>, this gives more flexibility so that rewrite rules can be applied to on items of an unknown length, in comparison with a tuple, like <code>(foo bar baz)</code>, in which the exact number of items must be known beforehand.</p>
+<p>Lastly, the ideal data structure in Modal is a list, like <code>(foo(bar (baz ())))</code>, this gives more flexibility so that rewrite rules can be applied to on items of an unknown length, in comparison with a tuple, like <code>(foo bar baz)</code>, in which the exact number of items must be known beforehand.</p>
 
 <pre>
 <> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
@@ -250,38 +314,6 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 (a (b ((found e) c (d (f (g (h ())))))))
 (a ((found e) b (c (d (f (g (h ())))))))
 ((found e) a (b (c (d (f (g (h ())))))))
-</pre>
-
-<h3 id='numbers'>Numbers</h3>
-
-<p>Lastly, Modal has no built-in numbers or arithmetic, but luckily arithmetic can be re-created with rewrite rules, and numbers, by using nesting to count the value of a number in <a href='https://en.wikipedia.org/wiki/Unary_numeral_system' target='_blank'>unary</a>, for example:</p>
-
-<ul>
-	<li><code>0</code>, for 0 </li>
-	<li><code>(0)</code>, for 1 </li>
-	<li><code>((0))</code>, for 2 </li>
-	<li><code>(((0)))</code>, for 3 </li>
-	<li><code>((((0)))</code>, for 4 </li>
-</ul>
-
-<p>Here's a little program that calculates the difference of two numbers, by gradually removing the wrapping parentheses on both operands:</p>
-
-<pre>
-<> (Get the result of: 5 - 2)
-
-<> ((?a) - (?b)) (?a - ?b)
-<> (?a - 0) (difference ?a)
-<> (print (difference ?:)) (done.)
-</pre>
-<pre style='margin-top:-29px'>
-(print ((((((0))))) - ((0))))
-(print (((((0)))) - (0)))
-(print ((((0))) - 0))
-(print (difference (((0)))))
-(done.)
-</pre>
-<pre style='margin-top:-29px'>
-<b>3</b><span style='float:right'>?:</span>
 </pre>
 
 <p>That's it! I hope you enjoy exploring this strange programming language.</p>

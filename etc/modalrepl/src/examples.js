@@ -133,5 +133,28 @@ let examples = {
 <> ((Stack ((?tail ?b) ?a)) swap)   (Stack ((?tail ?a) ?b))
 <> ((Stack ((?tail ?c) ?b) ?a) rot) (Stack (((?tail ?a) ?b) ?c))
 
-(((((Stack (((D) C) B) A) rot) pop) swap) dup)`
+(((((Stack (((D) C) B) A) rot) pop) swap) dup)`,
+
+
+/*
+@|FizzBuzz */
+
+"fizzbuzz": 
+`<> (For a hundred numbers:
+      - When divisible by 15, print FizzBuzz
+      - When divisible by 3, print Fizz
+      - When divisible by 5, print Buzz
+      - Otherwise, print the number. )
+
+<> ((print-line ?:) ?i ?f ?b) ((print \\n) ?i ?f ?b)
+<> ((print ?:) ?i ?f ?b) (?i ?f ?b)
+
+<> (100 ?f ?b) (done.)
+<> (?i 3 5)    ((print-line FizzBuzz) (?i) 0 0)
+<> (?i 3 ?b)   ((print-line Fizz) (?i) 0 (?b))
+<> (?i ?f 5)   ((print-line Buzz) (?i) (?f) 0)
+<> (?i ?f ?b)  ((print-line ?i) (?i) (?f) (?b))
+
+(0 0 0)`
+
 }
