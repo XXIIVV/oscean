@@ -52,71 +52,67 @@
 %NEXT ( addr* -- next* ) {
 	INC2 INC2 }
 
+%is-wildcard ( addr* -- bool ) {
+	LDA2k LDA [ LIT "? ] EQU }
+
 @<eval> ( -- count* )
 	#0000
 	&>w
-		<step>
+		rewrite/<step>
 		body/<print>
-		wildcards/<emit>
+		wildcards/<print>
 		?{ #800f DEO
 			JMP2r }
 		INC2 ORAk ?&>w
 	#010f DEO
 	;&err !err/<print>
 
-@<step> ( -- rew )
-	[ LITr 00 ] body/<swap>
+@rewrite/<step> ( -- rew )
+	[ LITr 00 ] body/get-bounds
 	&>l
 		LDA2k ;dict/sym-a NEQ2 ?{
-			DUP2 rules/find [ INC2k ORA ?/<write-match> POP2 ] }
-		LDA2k ;dict/sym-rule EQU2 ?/<write-rule>
+			DUP2 rules/find [ INC2k ORA ?/<match> POP2 ] }
+		LDA2k ;dict/sym-rule EQU2 ?/<rule>
 		body/push-cell-at NEXT GTH2k ?&>l
 	( >> )
-	&<write-tail> ( to* from* . rew -- rew )
+
+@rewrite/<tail> ( to* from* . rew -- rew )
 	NEQ2k ?{
 		POP2 #0000 SWP2 STA2
 		STHr JMP2r }
-	body/push-cell-at NEXT !/<write-tail>
+	body/push-cell-at NEXT !/<tail>
 
-	&<write-match> ( to* from* . rew -- rew )
+@rewrite/<match> ( to* from* . rew -- rew )
 	INCr
-	( rewrite ) tuple/walk <write-rhs>
-	( advance ) tuple/walk !/<write-tail>
+	( rewrite ) tuple/walk ;&do-cell tuple/<foreach>
+	( advance ) tuple/walk !/<tail>
 
-	&<write-rule> ( to* from* . rew -- rew )
-	INCr NEXT rules/<push> !/<write-tail>
+@rewrite/<rule> ( to* from* . rew -- rew )
+	INCr NEXT rules/<push> !/<tail>
 
-@<write-rhs> ( tail* rhs* -- )
-	;write-cell !tuple/<foreach>
-
-@write-cell ( addr* -- addr* )
-	LDA2k LDA [ LIT "? ] EQU ?&<write-wildcard>
-	LDA2k !body/<push-cell>
-
-	&<write-wildcard> ( addr* -- addr* )
+@rewrite/do-cell ( cell* -- cell* )
+	is-wildcard ?{ LDA2k !body/<push-cell> }
 	LDA2k wildcards/find INC2k ORA ?{ POP2 JMP2r }
 	NEXT LDA2 ;body/push-cell-at !tuple/<foreach>
 
 (
 @|Rules )
 
-@rules/compare ( rule* cells* -- a* bool cells* )
+@rules/compare ( rule* cell* -- a* bool cell* )
 	STH2
-	LDA2k LDA [ LIT "? ] EQU ?&wildcard
-	LDA2k STH2kr LDA2 EQU2 STH
-	NEXT STHr STH2r NEXT JMP2r
-
-	&wildcard ( rule* cells* -- a* bool cells* )
+	is-wildcard ?{
+		( compare ) LDA2k STH2kr LDA2 EQU2 STH
+		( advance ) NEXT STHr STH2r NEXT JMP2r }
+	( | check wildcard )
 	STH2kr LDA2 ;dict/sym-b NEQ2 ?{ #00 STH2r JMP2r }
 	( | find wildcard )
 	LDA2k wildcards/find INC2k ORA ?{
-		POP2 STH2kr OVR2 LDA2 wildcards/<push>
-		NEXT #01 STH2r !tuple/walk }
-	( | compare wildcard )
-	STH2kr SWP2 NEXT LDA2 tuple/compare STH
-	NEXT STHr STH2r !tuple/walk
+		( makenew ) POP2 STH2kr OVR2 LDA2 wildcards/<push>
+		( advance ) NEXT #01 STH2r !tuple/walk }
+	( compare ) NEXT LDA2 STH2kr tuple/compare STH
+	( advance ) NEXT STHr STH2r !tuple/walk
 
-@rules/match ( rule* cells* -- bool )
+@rules/match ( rule* tuple* -- bool )
 	wildcards/<reset>
 	STH2
 	tuple/get-bounds
@@ -125,9 +121,9 @@
 		?{
 			POP2 POP2 #00 POP2r JMP2r }
 		GTH2k ?&>lmn
-	POP2 POP2 #01 POP2r JMP2r
+	EQU2 POP2r JMP2r
 
-@rules/find ( cells* -- rule* )
+@rules/find ( tuple* -- rule* )
 	STH2
 	,&ptr LDR2 ;&buf
 	&>lm
@@ -138,7 +134,7 @@
 
 @rules/<push> ( addr* -- addr* )
 	DUP2 tuple/walk
-	( | test rhs is not a rule )
+	( | no rhs )
 	LDA2k ;dict/sym-rule NEQ2 ?{ NIP2 JMP2r }
 	tuple/walk SWP2
 	&>l
@@ -152,20 +148,20 @@
 
 @body/push-cell-at ( addr* -- addr* )
 	LDA2k
+	( >> )
 
 @body/<push-cell> ( cell* -- )
 	[ LIT2 &ptr =&a ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
 
-@body/<swap> ( -- to* from* )
+@body/get-bounds ( -- to* from* )
+	;&ptr LDA2 ;&b ;&a
+	( | flip )
 	[ LIT2 01 &bank $1 ] INCk ,&bank STR
-	AND ?{
-		;&ptr LDA2 ;&a DUP2 ,&origin STR2
-		;&b ;&ptr STA2
-		JMP2r }
-	;&ptr LDA2 ;&b DUP2 ,&origin STR2
-	;&a ;&ptr STA2
+	AND ?{ SWP2 }
+	;&ptr STA2
+	DUP2 ,&origin STR2
 	JMP2r
 
 @body/<print> ( -- )
@@ -195,7 +191,7 @@
 	#0000 ;&buf STA2
 	JMP2r
 
-@wildcards/<emit> ( -- )
+@wildcards/<print> ( -- )
 	;dict/sym-print /find INC2k ORA ?{ POP2 JMP2r }
 	NEXT LDA2k LDA2 ;dict/sym-a EQU2 ?{ LDA2 LDA2 !str/<print> }
 	tuple/count-depth !dec/<print>
@@ -220,7 +216,7 @@
 		LDA2k STH2kr LDA2 EQU2 ?{
 			POP2 POP2 #00 POP2r JMP2r }
 		NEXT INC2r INC2r GTH2k ?&>lc
-	POP2 POP2 #01 POP2r JMP2r
+	EQU2 POP2r JMP2r
 
 @tuple/<foreach> ( fn* -- )
 	STH2
