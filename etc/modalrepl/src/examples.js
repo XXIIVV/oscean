@@ -24,6 +24,17 @@ let examples = {
 (print-bool (equal baz baz))`,
 
 /*
+@|Add */
+
+"add": `<> (Add 2 + 3 and print the result)
+
+<> (add (?a) ?b) (add ?a (?b))
+<> (add 0 ?b) (sum ?b)
+<> (print (sum ?:)) ()
+
+(print (add 3 2))`,
+
+/*
 @|1 */
 
 "1_mod": `<> (Reverse a List)
@@ -34,17 +45,6 @@ let examples = {
 <> (print List ()) (done.)
 
 (reverse List (m (o (d (a (l ()))))) ())`,
-
-/*
-@|2 */
-
-"2_add": `<> (Add 2 + 3 and print the result)
-
-<> (add (?a) ?b) (add ?a (?b))
-<> (add 0 ?b) (sum ?b)
-<> (print (sum ?:)) ()
-
-(print (add (((0))) ((0))))`,
 
 /*
 @|Tic-tac-toe */
@@ -94,10 +94,7 @@ let examples = {
 <> (wait) (print)
 <> ((?:) (print)) ()
 
-(( 
-	((0)) * 
-	(((((0)))))
-) (wait))` ,
+((2 * 5) (wait))` ,
 
 /*
 @|Find */
