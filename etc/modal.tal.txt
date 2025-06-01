@@ -27,7 +27,14 @@
 @token/<store> ( c -- )
 	POP ;&buf
 	( ) LDZk ?{ POP2 JMP2r }
+	( ) DUP2 dec/valid ?/<store-number>
 	( ) dict/find-alloc body/<push-cell>
+	( ) DUP ,&ptr STR
+	STZ
+	JMP2r
+
+@token/<store-number> ( str* -- )
+	DUP2 str/to-dec body/<push-number>
 	( ) DUP ,&ptr STR
 	STZ
 	JMP2r
@@ -135,6 +142,7 @@
 @rules/<push> ( addr* -- addr* )
 	DUP2 tuple/walk
 	( | no rhs )
+	LDA2k ORA ?{ NIP2 JMP2r }
 	LDA2k ;dict/sym-rule NEQ2 ?{ NIP2 JMP2r }
 	tuple/walk SWP2
 	&>l
@@ -154,6 +162,21 @@
 	[ LIT2 &ptr =&a ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
+
+@body/<push-number> ( num* -- )
+	DUP2
+	( a ) ;dict/sym-a body/<push-times>
+	( 0 ) ;dict/sym-zero body/<push-cell>
+	( b ) ;dict/sym-b
+	( >> )
+
+@body/<push-times> ( times* sym* -- )
+	STH2
+	#0000 SWP2 SUB2
+	&>w
+		ORAk ?{ POP2 POP2r JMP2r }
+		STH2kr /<push-cell>
+		INC2 !&>w
 
 @body/get-bounds ( -- to* from* )
 	;&ptr LDA2 ;&b ;&a
@@ -261,6 +284,15 @@
 		.Console/write DEO
 		INC2 !&>wp
 
+@str/to-dec ( str* -- val* )
+	[ LIT2r 0000 ]
+	&>w
+		( -- ) ( acc ) [ LIT2r 000a ] MUL2r
+		( add ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
+		ADD2r
+		( next ) INC2 LDAk ?&>w
+	POP2 STH2r JMP2r
+
 @err/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	.Console/error DEO
@@ -276,6 +308,12 @@
 		STHr INCk ?{ POP JMP2r }
 		[ LIT "0 ] ADD .Console/write DEO !&>put
 
+@dec/valid ( str* -- f )
+	&>wv
+		LDAk LIT "0 SUB #0a LTH ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&>wv
+	POP2 #01 JMP2r
+
 @chr/escape ( byte -- byte )
 	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
 	[ LIT "n ] NEQ ?{ #0a JMP2r }
@@ -290,7 +328,8 @@
 	&sym-a "( $1
 	&sym-b ") $1 &buf-prefabs
 	&sym-rule "<> $1
-	&sym-print "?: $1 &buf $1000
+	&sym-print "?: $1
+	&sym-zero "0 $1 &buf $1000
 
 @wildcards/buf $100
 
