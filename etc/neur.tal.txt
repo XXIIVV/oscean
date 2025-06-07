@@ -198,6 +198,16 @@
 	POP2 POP2 JMP2r
 
 @live/<push-neuron> ( n* -- )
+	STH2
+	( | find neuron )
+	,&ptr LDR2 ;&buf
+	&>lf
+		EQU2k ?{
+			LDA2k STH2kr NEQ2 ?{
+				( already in list ) POP2 POP2 POP2r JMP2r }
+			INC2 INC2 !&>lf }
+	POP2 POP2 STH2r
+	( | push neuron )
 	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
@@ -205,7 +215,7 @@
 @live/<eval> ( -- )
 	[ LIT2 00 _&step ] STR
 	&>w
-		,&ptr LDR2 ;/buf EQU2 ?{
+		,&ptr LDR2 ;&buf EQU2 ?{
 			[ LIT2 80 &step $1 ] INCk ,&step STR
 			/<step>
 			NEQ ?&>w }
