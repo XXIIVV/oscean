@@ -72,13 +72,15 @@ function assemble(query, program) {
 	let emu_asm = new Emu()
 	let rom_length = 0
 	emu_asm.console.write = (char) => { program[rom_length++] = char }
-	emu_asm.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
 	emu_asm.uxn.load(assembler).eval(0x0100)
 	term_el.innerHTML = ""
 	for (let i = 0; i < query.length; i++)
 		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
 	emu_asm.console.input(0x0a, 2)
 	emu_asm.console.input(0x00, 4)
+	wst_el.innerHTML = `> ${emu_asm.console.stdout_body}`
+	term_el.innerHTML = emu_asm.console.stderr_body
+	term_el.scrollTop = term_el.scrollHeight;
 	return rom_length
 }
 
@@ -112,8 +114,6 @@ function setup() {
 	let program = new Uint8Array(0x10000)
 	let res = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
 	emulator = new Emu()
-	emulator.console.write_el = term_el
-	emulator.console.error_el = term_el
 	emulator.uxn.load(program).init()
 	return res
 }
@@ -126,6 +126,9 @@ function run() {
 		return
 	}
 	emulator.uxn.eval(0x100)
+	term_el.innerHTML += emulator.console.stdout_body
+	if(emulator.console.stdout_body)
+		term_el.scrollTop = term_el.scrollHeight;
 	wst_el.innerHTML = emulator.uxn.wst.print()
 	status(1, "Restart", "Step")
 }
@@ -141,6 +144,9 @@ function step() {
 		ended = 0;
 	}
 	let opc = emulator.uxn.step()
+	if(emulator.console.stdout_body)
+		term_el.innerHTML = emulator.console.stdout_body
+	term_el.scrollTop = term_el.scrollHeight;
 	if(!opc) {
 		status(1, "Restart", "Done")
 		return;

@@ -31,19 +31,19 @@ function System(emu)
 function Console(emu)
 {
 	this.vector = 0
-	this.write_el = null
-	this.error_el = null
+	this.stdout_body = ""
+	this.stderr_body = ""
 
 	this.write = (char) => {
-		this.write_el.innerHTML += String.fromCharCode(char)
+		this.stdout_body += String.fromCharCode(char)
 	}
 
 	this.write_string = (s) => {
-		this.write_el.innerHTML += s
+		this.stdout_body += s
 	}
 
 	this.error = (char) => {
-		this.error_el.innerHTML += String.fromCharCode(char)
+		this.stderr_body += String.fromCharCode(char)
 	}
 
 	this.input = (char, type) => {
