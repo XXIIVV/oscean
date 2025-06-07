@@ -35,14 +35,20 @@ in turn, animate 3 anonymous neurons.
 @|Loop */
 
 "loop": `A loop in Neur is created by tying neurons into a loop.
-We'll create a loop that spins a signal between three neurons.
+We'll create an organism that lives for 3 years before going back to sleep.
 
-We'll begin by connecting wake*:
-	to the first* neuron:
-	and go through second*:
-	then the third*:
-	before going back to first*.
+wake*: spring*: summer*: autumn*: winter*:
+    spring* Year1* Year2/2* Year3/2*.
 
-Time to wake* up.`,
+These memory neurons will remain active through the seasons.
+
+Year1*: Year1* Year2*.
+Year2*: Year2* Year3*.
+
+These last connections will turn off the years and break the loop.
+
+Year3*; summer* Year1* Year2* Year3*.
+
+Hey, it's time to wake* up.`,
 
 }
