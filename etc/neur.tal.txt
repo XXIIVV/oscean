@@ -56,18 +56,6 @@
 (
 @|Compiler )
 
-%+Neuron/state ( neuron* -- /state* ) {
-	;Neuron/state ADD2 }
-
-%+Neuron/size ( neuron* -- /size* ) {
-	;Neuron/size ADD2 }
-
-%+Neuron/threshold ( neuron* -- /threshold* ) {
-	;Neuron/threshold ADD2 }
-
-%+Neuron/saturation ( neuron* -- /saturation* ) {
-	;Neuron/saturation ADD2 }
-
 @rule/<init> ( -- )
 	[ LIT2 00 -rule/depth ] STZ
 	[ LIT2 00 -rule/inhibitor ] STZ
@@ -106,9 +94,9 @@
 	&>lb
 		EQU2k ?{
 			( | set alive & threshold )
-			LDA2k +Neuron/state LDAk .State/alive AND ?{
-				[ LIT2 -State/alive &threshold $1 ] OVR2 STA2 }
-			POP2
+			LDA2k neuron/get-state .State/alive AND ?{
+				LDA2k [ LIT2 -State/alive &threshold $1 ]
+				( ) SWP2 neuron/<set-state-threshold> }
 			( | bind )
 			LDA2k STH2kr /<push-connection>
 			INC2 INC2 !&>lb }
@@ -221,42 +209,71 @@
 @neuron/<print-name> ( neuron* -- )
 	LDA2k str/<print>
 	[ LIT2 "/ 19 ] DEO
-	+Neuron/threshold LDA #0f AND [ LIT "0 ] ADD #19 DEO
+	/get-threshold #0f AND [ LIT "0 ] ADD #19 DEO
 	#2019 DEO
 	JMP2r
 
 @neuron/do-clean ( n* -- n* )
-	LDA2k DUP2 +Neuron/state .State/alive ROT ROT STA
-	+Neuron/saturation #00 ROT ROT STA
-	JMP2r
+	LDA2k STH2
+	.State/alive STH2kr /<set-state>
+	#00 STH2r !/<set-saturation>
 
 @neuron/do-preserve ( n* -- n* )
-	LDA2k +Neuron/state LDA .State/inhibited AND ?{
+	LDA2k /get-state .State/inhibited AND ?{
 		( live ) LDA2k !live/<push-neuron> }
 	JMP2r
 
 @neuron/do-wake ( n* -- n* )
-	LDA2k +Neuron/state [ LIT2 -State/alive-fire 01 ] SWP2 STA2
-	JMP2r
+	LDA2k [ LIT2 -State/alive-fire 01 ] SWP2 !neuron/<set-state-threshold>
 
 @neuron/do-step ( n* -- n* )
 	LDA2k DUP2 /<print-name>
 	( | no threshold are always excited )
-	DUP2 +Neuron/threshold LDA ?{ DUP2 excited/<push-neuron> }
+	DUP2 /get-threshold ?{ DUP2 excited/<push-neuron> }
 	( | send to connections )
 	DUP2 ;Neuron/inhi /get-bounds ;&do-send-inhi arr2/<foreach>
 	;Neuron/exci /get-bounds ;&do-send-exci !arr2/<foreach>
 
 @neuron/do-send-exci ( n* -- n* )
 	LDA2k dirty/<push-neuron>
-	DUP2 +Neuron/saturation LDAk INC ROT ROT STA
-	DUP2 +Neuron/threshold LDA2 GTH ?{ DUP2 excited/<push-neuron> }
+	DUP2 neuron/<inc-saturation>
+	?{ DUP2 excited/<push-neuron> }
 	POP2 JMP2r
 
 @neuron/do-send-inhi ( n* -- n* )
 	LDA2k dirty/<push-neuron>
-	+Neuron/state .State/alive-inhibited ROT ROT STA
+	.State/alive-inhibited ROT ROT
+	( >> )
+
+@neuron/<set-state> ( state n* -- )
+	;Neuron/state ADD2 STA
 	JMP2r
+
+@neuron/get-state ( n* -- state )
+	;Neuron/state ADD2 LDA JMP2r
+
+@neuron/<inc-saturation> ( n* -- saturated )
+	;Neuron/threshold ADD2 LDA2k INC OVR2 STA2
+	LDA2 GTH JMP2r
+
+@neuron/<set-saturation> ( sat n* -- )
+	;Neuron/saturation ADD2 STA
+	JMP2r
+
+@neuron/<set-manual-threshold> ( /0* n* -- )
+	STH2
+	SWP [ LIT "/ ] EQU ?{
+		POP #01 STH2r ;Neuron/threshold ADD2 STA
+		JMP2r }
+	[ LIT "0 ] SUB .State/alive SWP STH2r
+	( >> )
+
+@neuron/<set-state-threshold> ( state threshold n* -- )
+	;Neuron/state ADD2 STA2
+	JMP2r
+
+@neuron/get-threshold ( n* -- threshold )
+	;Neuron/threshold ADD2 LDA JMP2r
 
 (
 @|Storage )
@@ -269,34 +286,27 @@
 	&>lf
 		EQU2k ?{
 			LDA2k STH2kr SWP2 str/compare ?{ POP2r NIP2 JMP2r }
-			+Neuron/size !&>lf }
+			;Neuron/size ADD2 !&>lf }
 	POP2 POP2
 	( | allocate neuron )
 	STH2r dict/push-word
 	( | set threshold )
-	LDA2 /<set-threshold>
+	LDA2 ,&ptr LDR2 neuron/<set-manual-threshold>
 	( >> )
 
 @neurons/<push-name> ( name* -- neuron* )
-	[ LIT2 &ptr =&buf ] DUP2 +Neuron/size ,&ptr STR2
+	[ LIT2 &ptr =&buf ] DUP2 ;Neuron/size ADD2 ,&ptr STR2
 	STA2k NIP2 JMP2r
-
-@neurons/<set-threshold> ( /0* -- )
-	SWP [ LIT "/ ] EQU ?{
-		POP [ LIT2 01 _&ptr ] LDR2 +Neuron/threshold STA
-		JMP2r }
-	[ LIT "0 ] SUB .State/alive SWP ,&ptr LDR2 +Neuron/state STA2
-	JMP2r
 
 @neurons/<fire> ( -- )
 	,&ptr LDR2 ;&buf
 	&>lk
 		EQU2k ?{
-			DUP2 +Neuron/state LDA2
+			DUP2 ;Neuron/state ADD2 LDA2
 			( not zero ) #00 NEQ SWP
 			( not fire ) .State/alive-fire NEQ AND ?{
 				( push ) DUP2 live/<push-neuron> }
-			+Neuron/size !&>lk }
+			;Neuron/size ADD2 !&>lk }
 	POP2 POP2 JMP2r
 
 @dict/push-word ( str* -- ptr* cap* )
