@@ -71,9 +71,7 @@
 @rule/<init> ( -- )
 	[ LIT2 00 -rule/depth ] STZ
 	[ LIT2 00 -rule/inhibitor ] STZ
-	lhs/<init>
-	rhs/<init>
-	JMP2r
+	lhs/<init> !rhs/<init>
 
 @rule/is-odd ( -- even/odd )
 	[ LIT2 01 -&depth ] LDZ AND JMP2r
@@ -95,7 +93,8 @@
 @rule/<bind> ( -- )
 	/get-from-range
 	( | infer threshold )
-	[ SUB2k #01 SFT2 ,&threshold STR POP ]
+	SUB2k #01 SFT2 EQUk ?{ DUP ,&threshold STR }
+	POP2
 	( | connect each )
 	;&do-connect arr2/<foreach>
 	/is-odd ?lhs/<init>
@@ -275,15 +274,19 @@
 	( | allocate neuron )
 	STH2r dict/push-word
 	( | set threshold )
-	LDAk [ LIT "/ ] NEQ ?{
-		( get value ) INC2k LDA [ LIT "0 ] SUB .State/alive SWP
-		( set value ) ,&ptr LDR2 +Neuron/state STA2 }
-	POP2
+	LDA2 /<set-threshold>
 	( >> )
 
 @neurons/<push-name> ( name* -- neuron* )
 	[ LIT2 &ptr =&buf ] DUP2 +Neuron/size ,&ptr STR2
 	STA2k NIP2 JMP2r
+
+@neurons/<set-threshold> ( /0* -- )
+	SWP [ LIT "/ ] EQU ?{
+		POP [ LIT2 01 _&ptr ] LDR2 +Neuron/threshold STA
+		JMP2r }
+	[ LIT "0 ] SUB .State/alive SWP ,&ptr LDR2 +Neuron/state STA2
+	JMP2r
 
 @neurons/<fire> ( -- )
 	,&ptr LDR2 ;&buf
