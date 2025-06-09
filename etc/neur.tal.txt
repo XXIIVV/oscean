@@ -39,10 +39,10 @@
 	;&buf mind/find-alloc rule/<push-neuron> !/<clear>
 
 @token/exci ( c -> )
-	#00 rule/<bind-type> !/<clear>
+	;Neuron/exci-list rule/<bind-type> !/<clear>
 
 @token/inhi ( c -> )
-	#01 rule/<bind-type> !/<clear>
+	;Neuron/inhi-list rule/<bind-type> !/<clear>
 
 @token/done ( c -> )
 	rule/<bind-auto>
@@ -55,21 +55,43 @@
 	POP BRK
 
 (
+@|list )
+
+%list/new ( -- cell* ) {
+	#ffff }
+
+%list/cdr ( cell* -- cell* ) {
+	INC2 INC2 LDA2 }
+
+%list/car ( cell* -- value* ) {
+	LDA2 }
+
+@list/<each> ( cell* func* -- )
+	STH2
+	INC2k ORA ?{ POP2 POP2r JMP2r }
+	( * ) STH2kr JSR2 list/cdr STH2r !/<each>
+
+@list/<cons> ( value* list* -- head* )
+	( cdr* ) [ LIT2 &ptr =&buf ] STH2k STA2
+	( car* ) INC2kr INC2r STH2kr STA2
+	( ptr* ) INC2r INC2r [ LITr _&ptr ] STR2r
+	STH2r JMP2r
+
+(
 @|Compiler )
 
 @rule/<init> ( -- )
 	[ LIT2 00 _&depth ] STR
-	[ LIT2 00 -&inhibitor ] STR
+	[ LIT2 00 _&dst ] STR
 	lhs/<init> !rhs/<init>
 
 @rule/<push-connection> ( b* a* -- )
-	( array ) ;Neuron/inhi ;Neuron/exci [ LIT &inhibitor $1 ] [ JMP SWP2 POP2 ] ADD2
-	( put neuron ) STH2k LDA2k DUP2 ADD2 INC2 INC2 ADD2 STA2
-	( inc length ) STH2r LDA2k INC2 SWP2 STA2
+	[ LIT2 &dst =Neuron/exci-list ] ADD2 STH2k LDA2 SWP2 list/<cons>
+	STH2r STA2
 	JMP2r
 
-@rule/<bind-type> ( inhi -- )
-	,&inhibitor STR
+@rule/<bind-type> ( dst* -- )
+	,&dst STR2
 	/<bind>
 	,&depth LDR INC ,&depth STR
 	JMP2r
@@ -213,9 +235,6 @@
 (
 @|Neuron )
 
-@neuron/get-bounds ( neuron* array* -- to* from* )
-	ADD2 LDA2k DUP2 ADD2 SWP2 INC2 INC2 STH2k ADD2 STH2r JMP2r
-
 @neuron/<print-name> ( neuron* -- )
 	LDA2k str/<print>
 	[ LIT2 "/ 19 ] DEO
@@ -228,11 +247,10 @@
 
 @neuron/do-step ( n* -- n* )
 	LDA2k DUP2 /<print-name>
-	( | no threshold are always excited )
-	DUP2 /get-threshold ?{ DUP2 excited/<push-neuron> }
-	( | send to connections )
-	DUP2 ;Neuron/inhi /get-bounds ;/do-send-inhi arr2/<foreach>
-	;Neuron/exci /get-bounds ;/do-send-exci !arr2/<foreach>
+	DUP2 /get-threshold ?{
+		( /0 always excited ) DUP2 excited/<push-neuron> }
+	DUP2 ;Neuron/inhi-list ADD2 LDA2 ;/do-send-inhi list/<each>
+	;Neuron/exci-list ADD2 LDA2 ;/do-send-exci !list/<each>
 
 @neuron/do-send-exci ( n* -- n* )
 	LDA2k dirty/<push-neuron>
@@ -295,6 +313,9 @@
 	( >> )
 
 @mind/<push-name> ( name* -- neuron* )
+	( | set empty lists )
+	list/new ,&ptr LDR2 ;Neuron/exci-list ADD2 STA2
+	list/new ,&ptr LDR2 ;Neuron/inhi-list ADD2 STA2
 	[ LIT2 &ptr =&buf ] DUP2 ;Neuron/size ADD2 ,&ptr STR2
 	STA2k NIP2 JMP2r
 
@@ -368,6 +389,9 @@
 
 @dict/buf $4000
 
+@list/buf ( [car* cdr*] )
+	$400
+
 @mind/buf $4000
 
 (
@@ -375,8 +399,7 @@
 	| State Bits: 0 . 0 . 0 . 0 . 0 . fire . inhibited . alive )
 
 |00 @Neuron/name $2 &state $1 &threshold $1 &saturation $1
-	( len, [n*,n*..] ) &inhi &inhi/len $2 &inhi/buf $1e
-	( len, [n*,n*..] ) &exci &exci/len $2 &exci/buf $1e &size
+	( lists ) &exci-list $2 &inhi-list $2 &size
 |01 @State/alive
 |02 @State/inhibited
 |03 @State/alive-inhibited
