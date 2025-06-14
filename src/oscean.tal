@@ -381,7 +381,9 @@
 	;dict/meta-tag <write-str>
 	;dict/property-attr <write-attr>
 	;dict/content-attr <write-attr>
-	[ LIT2 "/> ] !<char2>
+	;ascii/slash .File2/write DEO2
+	;ascii/gt .File2/write DEO2
+	JMP2r
 
 @<write-open-class> ( tag* class* -- )
 	;ascii/lt .File2/write DEO2
@@ -402,22 +404,11 @@
 	( >> )
 
 @<write-close> ( tag* -- )
-	[ LIT2 "</ ] <char2>
+	;ascii/lt .File2/write DEO2
+	;ascii/slash .File2/write DEO2
 	<write-str>
 	;ascii/gt .File2/write DEO2
 	JMP2r
-
-@<char> ( char -- )
-	;&b STAk .File2/write DEO2
-	POP JMP2r
-	&b $1
-
-@<char2> ( c1 c2 -- )
-	,&b STR2
-	;&b1 .File2/write DEO2
-	;&b2 .File2/write DEO2
-	JMP2r
-	&b &b1 $1 &b2 $1
 
 @<write-len> ( src* length* -- )
 	OVR2 ADD2 SWP2
@@ -425,6 +416,11 @@
 		LDAk <char>
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
+
+@<char> ( char -- )
+	;&b STAk .File2/write DEO2
+	POP JMP2r
+	&b $1
 
 @<write-str> ( addr* -- )
 	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
@@ -573,11 +569,12 @@
 	&incoming-txt "incoming $1
 	&right-txt "right $1
 
-@ascii &space 20 $1 &line 0a $1
-	&lt "< $1
-	&gt "> $1
+@ascii &space 20 &line 0a
+	&lt "<
+	&gt ">
 	&equal "=
 	&quote ""
+	&slash "/
 
 @err
 	&source "-- 20 "Source: 20 $1
