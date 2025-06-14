@@ -1,7 +1,7 @@
 ( Oh time thy pyramids )
 
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |100
 
@@ -26,8 +26,8 @@
 	<parse-diary-pages>
 	;dict/p-tag </w>
 	( | print next available id )
-	;dict/available-txt <print-str>
-	find-available <print-dec>
+	;dict/available-txt str/<print>
+	find-available dec/<print>
 	#0a18 DEO
 	( | halt. )
 	#800f DEO
@@ -36,17 +36,21 @@
 (
 @|lexicon )
 
+%<lb> { ;dict/0a .File2/write DEO2 }
+
+%<ws> { ;dict/20 .File2/write DEO2 }
+
 @<load-file> ( addr* length* path* -- )
 	.File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
-	( check for size ) .File/success DEI2 NEQ2 ?{ .File/name DEI2 !<print-line> }
+	( check for size ) .File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
 
 @<parse-lexicon> ( -- )
 	;lexicon
 	( load ) DUP2 #2000 ;dict/lexicon-path <load-file>
-	( swap ) DUP2 #0a00 <cswp>
+	( swap ) DUP2 #0a00 str/<swap-char>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>l
 		INC2 INC2
@@ -66,7 +70,7 @@
 	;dict/li-tag <w>
 	INC2 INC2 DUP2 <link>
 	;dict/li-tag </w>
-	#0a <char>
+	<lb>
 	scap/ INC2
 	( | children )
 	LDAk STHkr INC NEQ ?{
@@ -79,7 +83,7 @@
 
 @<parse-links> ( src* -- )
 	DUP2 ;&term <scpy-line>
-	;&term [ LIT2 20 "_ ] <cswp>
+	;&term [ LIT2 20 "_ ] str/<swap-char>
 	;dict/htm-ext ;&term scap/ <scpy-line>
 	( res ) get-workarea-length ;&htm-path <load-file>
 	,&src STR2
@@ -98,18 +102,18 @@
 	( rel ) LDAk [ LIT ". ] EQU ?&end
 	( | find broken links )
 	DUP2 ;&buf <scpy-line>
-	;&buf [ LIT2 "_ 20 ] <cswp>
+	;&buf [ LIT2 "_ 20 ] str/<swap-char>
 	;&buf find-term INC2 ORA ?{
-		;dict/redlink <print-str>
-		;&buf <print-str>
-		;dict/in <print-str>
-		OVR2 <print-line>
+		;dict/redlink str/<print>
+		;&buf str/<print>
+		;dict/in str/<print>
+		OVR2 str/<print-ln>
 		#010f DEO }
 	DUP2 ;&term <scpy-line>
-	;&term [ LIT2 20 "_ ] <cswp>
+	;&term [ LIT2 20 "_ ] str/<swap-char>
 	( res ) ;&map-path .File2/name DEO2
 	OVR2 <str>
-	#0a <char>
+	<lb>
 	&end ( src* link* -- )
 	POP2 POP2 JMP2r
 	&buf $30
@@ -139,7 +143,7 @@
 	POP2 POP2 JMP2r
 
 @<parse-diary-page> ( to* from* -- )
-	DUP2 #0a00 <cswp>
+	DUP2 #0a00 str/<swap-char>
 	&>l
 		<parse-diary-line>
 		INC2 GTH2k ?&>l
@@ -149,14 +153,14 @@
 	DUP2k #000a ADD2 ;&term <scpy-line>
 	( | does it exists? )
 	;&term find-term INC2 ORA ?{
-		;dict/warn-unknown <print-str>
-		DUP2 <print-str>
+		;dict/warn-unknown str/<print>
+		DUP2 str/<print>
 		#0a18 DEO }
-	;&term [ LIT2 20 "_ ] <cswp>
+	;&term [ LIT2 20 "_ ] str/<swap-char>
 	( res ) ;&log-path .File2/name DEO2
 	<str>
-	#0a <char>
-	( split ) DUP2 #0900 <cswp>
+	<lb>
+	( split ) DUP2 #0900 str/<swap-char>
 	DUP2 set-diary
 	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
 	( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
@@ -175,7 +179,7 @@
 	;dict/code-tag <w>
 	DUP2 #0005 <len>
 	;dict/code-tag </w>
-	#20 <char>
+	<ws>
 	scap/ INC2
 	( | term )
 	DUP2 <link>
@@ -184,7 +188,8 @@
 	( | name )
 	<str>
 	;dict/br-tag <w>
-	#0a !<char>
+	<lb>
+	JMP2r
 
 	&last "17 $1
 
@@ -205,7 +210,8 @@
 	;dict/figcaption-tag </w>
 	;dict/figure-tag </w>
 	,&len LDR2 INC2 ,&len STR2
-	#0a !<char>
+	<lb>
+	JMP2r
 
 @get-workarea-length ( -- buf* length* )
 	;workarea #0000 ;workarea SUB2 JMP2r
@@ -215,13 +221,13 @@
 
 @set-diary ( log* -- )
 	( | validate photo id )
-	#0006 ADD2 sdec ORAk ?{ POP2 JMP2r }
+	#0006 ADD2 str/to-dec ORAk ?{ POP2 JMP2r }
 	DUP2 get-diary ?{
 		( bit ) #01 OVR #07 AND #40 SFT SFT STH
 		( res ) #03 SFT2 ;diaries ADD2 LDAk STHr ORA ROT ROT STA
 		JMP2r }
-	;dict/warn-duplicate <print-str>
-	<print-dec>
+	;dict/warn-duplicate str/<print>
+	dec/<print>
 	#0a18 DEO
 	JMP2r
 
@@ -239,15 +245,24 @@
 @|framework )
 
 @<w> ( name* -- )
-	[ LIT "< ] <char>
+	;&a .File2/write DEO2
 	<str>
-	[ LIT "> ] !<char>
+	;&b .File2/write DEO2
+	JMP2r
+
+	&a "<
+	&b ">
 
 @</w> ( name* -- )
-	[ LIT "< ] <char>
-	[ LIT "/ ] <char>
+	;&a .File2/write DEO2
+	;&b .File2/write DEO2
 	<str>
-	[ LIT "> ] !<char>
+	;&c .File2/write DEO2
+	JMP2r
+
+	&a "<
+	&b "/
+	&c ">
 
 @<img> ( src* alt* -- )
 	;&a <str>
@@ -272,10 +287,11 @@
 	&c "</a> $1
 
 @<path> ( str* -- )
-	LDAk [ LIT "_ ] OVR #20 NEQ ?{ SWP }
-	POP <char>
+	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
+	;&a .File2/write DEO2
 	INC2 LDAk ?<path>
 	POP2 JMP2r
+	&a $1
 
 @<str> ( str* -- )
 	DUP2 scap/ OVR2 SUB2
@@ -287,30 +303,8 @@
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
 
-@<char> ( chr -- )
-	;&b STA
-	;&b .File2/write DEO2
-	JMP2r
-	&b $1
-
 (
 @|stdlib )
-
-@<cswp> ( str* a b -- )
-	,&b STR
-	,&a STR
-	&>w
-		LDAk [ LIT &a $1 ] NEQ ?{
-			STH2k [ LIT &b $1 ] STH2r STA }
-		INC2 LDAk ?&>w
-	POP2 JMP2r
-
-@sdec ( str* -- val* )
-	[ LIT2r 0000 ]
-	&>w
-		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
-		ADD2r INC2 LDAk ?&>w
-	POP2 STH2r JMP2r
 
 @sseg ( a* b* -- f )
 	STH2
@@ -338,25 +332,41 @@
 	INC2 & LDAk ?scap
 	JMP2r
 
-@<print-hex> ( hex* -- )
-	SWP <print-hex>/b
+@short/<print> ( hex* -- )
+	SWP /b
 	&b ( b -- )
-	DUP #04 SFT <print-hex>/c
+	DUP #04 SFT /c
 	&c ( c -- )
 	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 	JMP2r
 
-@<print-str> ( str* -- )
+@str/<swap-char> ( str* a b -- )
+	,&b STR
+	,&a STR
+	&>wsc
+		LDAk [ LIT &a $1 ] NEQ ?{
+			STH2k [ LIT &b $1 ] STH2r STA }
+		INC2 LDAk ?&>wsc
+	POP2 JMP2r
+
+@str/to-dec ( str* -- val* )
+	[ LIT2r 0000 ]
+	&>w
+		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
+		ADD2r INC2 LDAk ?&>w
+	POP2 STH2r JMP2r
+
+@str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#18 DEO
-	INC2 !<print-str>
+	INC2 !/<print>
 
-@<print-line> ( str* -- )
-	<print-str>
+@str/<print-ln> ( str* -- )
+	/<print>
 	#0a18 DEO
 	JMP2r
 
-@<print-dec> ( short* -- )
+@dec/<print> ( dec* -- )
 	#000a SWP2 [ LITr ff ]
 	&>get
 		SWP2k DIV2k MUL2 SUB2 STH
@@ -388,7 +398,7 @@
 	&redlink "!! 20 "Redlink: 20 $1
 	&available-txt ".. 20 "Available 20 "diary: 20 $1
 	&warn-duplicate "-- 20 "Duplicate 20 "diary: 20 $1
-	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1 &in 20 "in 20 $1
+	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1 &in 20 "in 20 $1 &0a 0a &20 20
 
 @diary-paths
 	&3 "src/tables/diary/15-19.tsv $1
@@ -396,7 +406,9 @@
 	&1 "src/tables/diary/05-09.tsv $1
 	&0 "src/tables/diary/00-04.tsv $1
 
-@diary-path-pages =diary-paths/3 =diary-paths/2 =diary-paths/1 =diary-paths/0 &end
+@diary-path-pages [
+	=diary-paths/3 =diary-paths/2
+	=diary-paths/1 =diary-paths/0 ] &end
 
 @header-txt [
 	3c68 323e 5468 6520 4361 6c65 6e64 6172
