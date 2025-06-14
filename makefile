@@ -10,9 +10,9 @@ clean:
 	@ rm -f bin/* && rm -f tmp/* && rm -f site/*
 
 bal:
-	@ ${BAL} src/oscean.tal
 	@ ${BAL} src/maeve.tal
-	
+	@ ${BAL} src/oscean.tal
+
 lint:
 	@ ${LIN} src/oscean.tal
 	@ ${LIN} src/maeve.tal
@@ -22,7 +22,7 @@ lint:
 run: all
 	@ mkdir -p tmp && rm -f tmp/* && ${EMU} bin/maeve.rom
 	@ mkdir -p site && rm -f site/* && ${EMU} bin/oscean.rom
-	@ ${EMU} bin/directory.rom docs/ 
+	@ ${EMU} bin/directory.rom docs/
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
 
