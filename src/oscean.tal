@@ -86,9 +86,9 @@
 	( | head/title )
 	;dict/title-tag <write-open>
 	;dict/title-txt <write-str>
-	;dict/20 .File2/write DEO2
+	;ascii/space .File2/write DEO2
 	;dict/mdash-entity-txt <write-str>
-	;dict/20 .File2/write DEO2
+	;ascii/space .File2/write DEO2
 	DUP2 <write-str>
 	;dict/title-tag <write-close>
 	;dict/head-tag <write-close>
@@ -111,7 +111,8 @@
 		POP2 }
 	POPr <build-children>
 	;dict/nav-tag <write-close>
-	#0a !<char>
+	;ascii/line .File2/write DEO2
+	JMP2r
 
 @<build-children> ( name* -- name* )
 	;dict/ul-tag <write-open>
@@ -168,11 +169,11 @@
 	;dict/incoming-txt ;dict/p-tag <write-open-class>
 	;dict/incoming-txt ;dict/b-tag <write-auto>
 	[ LIT2 00 _&last ] STR
-	;dict/20 .File2/write DEO2
+	;ascii/space .File2/write DEO2
 	&>w
 		DUP2 [ LIT2 &last $2 ] scmp ?{
 			DUP2 <write-link>
-			;dict/20 .File2/write DEO2
+			;ascii/space .File2/write DEO2
 			DUP2 ,&last STR2 }
 		scap/ INC2 LDAk ?&>w
 	POP2 ;dict/p-tag !<write-close>
@@ -228,9 +229,9 @@
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;dict/code-tag <write-auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
-	( event spacer ) ;dict/20 .File2/write DEO2
+	( event spacer ) ;ascii/space .File2/write DEO2
 	;dict/mdash-entity-txt <write-str>
-	;dict/20 .File2/write DEO2
+	;ascii/space .File2/write DEO2
 	( event name ) DUP2 #000a ADD2 walk-seg !<write-str>
 
 @<build-module-photo> ( diary* -- )
@@ -245,16 +246,17 @@
 	;dict/figcaption-tag <write-open>
 	;term/name OVR2 #000a ADD2 sseg ?{
 		DUP2 extract-term <write-link>
-		;dict/20 .File2/write DEO2
+		;ascii/space .File2/write DEO2
 		;dict/mdash-entity-txt <write-str>
-		;dict/20 .File2/write DEO2 }
+		;ascii/space .File2/write DEO2 }
 	( + title ) STH2r <write-str>
 	;dict/right-txt ;dict/span-tag <write-open-class>
 	( + date ) #0005 <write-len>
 	;dict/span-tag <write-close>
 	;dict/figcaption-tag <write-close>
 	;dict/figure-tag <write-close>
-	#0a !<char>
+	;ascii/line .File2/write DEO2
+	JMP2r
 
 	&diary-path "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
 
@@ -343,11 +345,12 @@
 	JMP2r
 
 @<write-img> ( src* alt* -- )
-	[ LIT "< ] <char>
+	;ascii/lt .File2/write DEO2
 	;dict/img-tag <write-str>
 	;dict/alt-attr <write-attr>
 	;dict/src-attr <write-attr>
-	[ LIT "> ] !<char>
+	;ascii/gt .File2/write DEO2
+	JMP2r
 
 @<write-link> ( name* -- )
 	;&a <write-str>
@@ -355,39 +358,43 @@
 	DUP2 <write-str>
 	DUP2 [ LIT2 "_ 20 ] <cswp>
 	;dict/html-ext <write-str>
-	[ LIT "" ] <char>
+	;ascii/quote .File2/write DEO2
 	DUP2 ;term/name scmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr <write-attr> }
 	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr <write-attr> }
-	[ LIT "> ] <char>
+	;ascii/gt .File2/write DEO2
 	<write-str>
 	;dict/a-tag !<write-close>
 
 	&a "<a 20 "href=" $1
 
 @<write-attr> ( body* attr* -- )
-	;dict/20 .File2/write DEO2
+	;ascii/space .File2/write DEO2
 	<write-str>
-	[ LIT2 "=" ] <char2>
+	;ascii/equal .File2/write DEO2
+	;ascii/quote .File2/write DEO2
 	<write-str>
-	[ LIT "" ] !<char>
+	;ascii/quote .File2/write DEO2
+	JMP2r
 
 @<write-meta-og> ( content* property* -- )
-	[ LIT "< ] <char>
+	;ascii/lt .File2/write DEO2
 	;dict/meta-tag <write-str>
 	;dict/property-attr <write-attr>
 	;dict/content-attr <write-attr>
 	[ LIT2 "/> ] !<char2>
 
 @<write-open-class> ( tag* class* -- )
-	[ LIT "< ] <char>
+	;ascii/lt .File2/write DEO2
 	<write-str>
 	;dict/class-attr <write-attr>
-	[ LIT "> ] !<char>
+	;ascii/gt .File2/write DEO2
+	JMP2r
 
 @<write-open> ( tag* -- )
-	[ LIT "< ] <char>
+	;ascii/lt .File2/write DEO2
 	<write-str>
-	[ LIT "> ] !<char>
+	;ascii/gt .File2/write DEO2
+	JMP2r
 
 @<write-auto> ( str* tag* -- )
 	DUP2 <write-open>
@@ -397,8 +404,8 @@
 @<write-close> ( tag* -- )
 	[ LIT2 "</ ] <char2>
 	<write-str>
-	[ LIT "> ]
-	( >> )
+	;ascii/gt .File2/write DEO2
+	JMP2r
 
 @<char> ( char -- )
 	;&b STAk .File2/write DEO2
@@ -564,7 +571,13 @@
 	&content-attr "content $1
 	&no-picture "000 $1
 	&incoming-txt "incoming $1
-	&right-txt "right $1 &20 20
+	&right-txt "right $1
+
+@ascii &space 20 $1 &line 0a $1
+	&lt "< $1
+	&gt "> $1
+	&equal "=
+	&quote ""
 
 @err
 	&source "-- 20 "Source: 20 $1
