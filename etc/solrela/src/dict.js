@@ -3079,348 +3079,94 @@ sifa	few, scarcely
 sisol	sorry
 sila	affectionate title
 
-dododo	note "Do" itself
-dodore	zero, globe, earth
-dodomi	season
-dodofa	winter
-dodosol	spring
-dodola	summer
-dodosi	autumn
-doredo	time, entropy, distribution
-dorere	january
-doremi	to be, to become
-dorefa	fact, proof
-doresol	explicit
-dorela	numeric, numerical, numbers
-doresi	warm, hot, heat
-domido	universe, creation
-domire	infinity, unlimited, endless, undefined, immensity, unbounded, immeasurable
-domimi	february
-domifa	solution, solver, answer
+;;	Modern
+
+Dosoldo	Be hungry
+Dosolre	Eat
+Dosolmi	Bread
+Dosolfa	Be thirsty
+Dosolla	Drink
+Dosolsi	Water
+Redore	to think
+Redore	Think
+Redosol	Know (a person), be acquainted with
+Refado	Look at
+Refare	Pass, cross over
+Refasol	Encounter, meet
+Refala	Ask
+Refasi	Answer, respond, reply, retort
+Resoldo	Listen
+Resolmi	Leave, come out of, go out of
+Resolfa	Return, later
+Resolla	Pay
+Relado	Sleepy
+Midosol	Admire
+Misoldo	Come
+Misolre	Enter
+Famire	Serve
+Fasolre To leave
+Falado	Necessary
+Fasire	Information
+Solfala	Leave
+Ladosi	Book
+Lasolfa	Defeat
+Lasolre	Entertein, amuse
+Lasido	Something
+
+;;	Symmetric
+
+dore	I, me
+domi	you(sing.)
+dofa	they(sing.)
+dosol	we
+dola	you(plur.)
+dosi	they(plur.)
+
+redo	my, mine
+remi	who?
+refa	when?
+resol	more
+rela	known
+resi	even, fair
+
+mido	your(sing.)
+mire	what?
+mifa	how?
+misol	well(adv.)
+mila	near, here
+misi	late, evening, night
+
+fado	their(sing.)
+fare	where?
+fami	which?
+fasol	every
+fala	positive
+fasi	much, very
+
+soldo	our
+solre	less
+solmi	ill(adv.)
+solfa	none
+solla	always
+solsi	thanks
+ 	 	 	 	 	 	
+lado	your(plur.)
+lare	unknown
+lami	far, there
+lafa	negative
+lasol	never
+lasi	affectionate, with, inside
+
+sido	their(plur.)
+sire	uneven, unfair
+simi	early, morning, day
+sifa	few, scarcely
+sisol	sorry
+sila	formal, without, outside
+
+domifa	bound, obligation, duty
 domisol	health
-domila	eternize, perpetuate, eternal, eternity
-domisi	immortalize, immortal, indestructible, imperishable
-dofado	number, count
-dofare	look at, stare, focus
-dofami	disagreement
-dofafa	march
-dofasol	marvel, wonder
-dofala	left(side)
-dofasi	adore, worship
-dosoldo	nature, abundance
-dosolre	belief, faith, hope
-dosolmi	true, truth
-dosolfa	awake
-dosolsol	april
-dosolla	??
-dosolsi	collaboration, partnership
-dolado	length, distance
-dolare	philanthropy, philanthropist
-dolami	despise, contempt
-dolafa	west, clockwise
-dolasol	inexcusable, unforgivable
-dolala	may
-dolasi	incomparable, invaluable, unparalleled, without equal
-dosido	mass
-dosire	support, base
-dosimi	shameful, dishonorable, ignominious
-dosifa	accomplish, fulfill
-dosisol	duty, obligation
-dosila	to go, to travel
-dosisi	june
-redodo	one, unit
-redore	philosophy
-redomi	loathe, repugnance, repulsive
-redofa	moral, morally, moralize
-redosol	be aquainted
-redola	student, pupil, disciple
-redosi	to do, to act, to change
-reredo	july
-rerere	note "Re" itself
-reremi	august
-rerefa	september
-reresol	october
-rerela	november
-reresi	december
-remido	limit, confine, border, circumscribe
-remire	value
-remimi	two, secondly
-remifa	to send, to give
-remisol	food, sustenance
-remila	give, gift, present
-remisi	inexplicable, indefinable, incomprehensible, inconceiveable, enigmatic
-refado	look away, evade, distraction
-refare	frequency
-refami	displease, unpleasant
-refafa	third, thirdly
-refasol	to keep, to preserve
-refala	ask, privilege, prerogative
-refasi	answer, reply, respond
-resoldo	doubt, skepticism, skeptical
-resolre	current, power, amplitude
-resolmi	leave, come out of
-resolfa	to leave
-resolsol	fourth
-resolla	pay, materialism, materialistic, materialize
-resolsi	discourage, discouragement, tedious
-relado	misanthropy, misanthrope
-relare	hierarchy
-relami	distrust, suspect, beware, skittish
-relafa	unable, impossible, impracticable, impossibility
-relasol	intolerance, severity, rigorism, inflexible, rigid
-relala	fifth
-relasi	solid, hard
-resido	mistreat, bully, maltreatment, brutality, rudeness
-resire	??
-resimi	temporal, fragile
-resifa	become
-resisol	to be sad, sadness, gloom, melancholy, sad
-resila	restless, boredom
-resisi	sixth
-midodo	thirteen
-midore	sympathy, inclination
-midomi	attraction
-midofa	prefer, like the most
-midosol	admire
-midola	reciprocity, mutuality, respective
-midosi	fond of, attached, be attached to, friend, friendly, take to
-miredo	to have, to host
-mirere	fourteen
-miremi	appearance
-mirefa	tenderness
-miresol	acknowledge, gratitude, recognition, be grateful
-mirela	devote, focus, devote oneself, dedication
-miresi	link, bond, chain, fasten
-mimido	seven
-mimire	eight
-mimimi	note "Mi" itself
-mimifa	nine
-mimisol	ten
-mimila	eleven
-mimisi	twelve
-mifado	agreement
-mifare	please, like, pleasant, seductive
-mifami	smell
-mifafa	fifteen
-mifasol	to hold, to take
-mifala	desire, wish, want, desirous
-mifasi	error, incorrigible
-misoldo	false, lie
-misolre	enter
-misolmi	taste
-misolfa	benevolence, affability, goodwill, amiability, kind
-misolsol	sixteen
-misolla	equal, equality, equally
-misolsi	candidate, volunteer, available
-milado	appraise, estimate, consider
-milare	confide, confidence
-milami	force
-milafa	idolize, dote on, idolatry
-milasol	blame
-milala	seventeen
-milasi	love, cherish, lover, enamored
-misido	fidelity, merit, dignity, pride
-misire	to last, durable, stability, permanent, duration
-misimi	pressure, resistance
-misifa	??
-misisol	to be lucky, luck, fortune, fortunate, lucky, fortunately, luckily
-misila	enjoy, enjoyment, pleasure, delirium, intoxicated, drunk
-misisi	eighteen
-fadodo	eighty
-fadore	immoral, immorality, without principles
-fadomi	letter (mail), missive, epistle
-fadofa	date, era
-fadosol	to sign, signature
-fadola	stamp, seal
-fadosi	end, complete, finish, final, finally, termination, achieve
-faredo	opinion, fiction
-farere	hundred
-faremi	harsh, aggressive
-farefa	velocity
-faresol	lengthen, extend, extension, elongation
-farela	mail, post, post office
-faresi	inexactitude, inaccuracy, inexact
-famido	problem, puzzle, mission, quest
-famire	to receive
-famimi	thousand
-famifa	orientation
-famisol	to own
-famila	wet, humid, thick, rainy
-famisi	confuse, trick
-fafado	nineteen
-fafare	twenty
-fafami	thirty
-fafafa	note "Fa" itself
-fafasol	fourthy
-fafala	fifthy
-fafasi	sixty
-fasoldo	asleep
-fasolre	to come
-fasolmi	malice, unkindness, ill will, disparaging, malignancy
-fasolfa	behavior
-fasolsol	million
-fasolla	to combine, to unify
-fasolsi	prepare, make ready, preparation
-falado	east, counter-clockwise
-falare	able, can, may, possible, practicability
-falami	means, resources, by means of
-falafa	area, size, space, volume
-falasol	disfavor, disrepute, disgrace
-falala	billion
-falasi	trend, tendency, inclination to, disposition
-fasido	walk, step
-fasire	information, inquire, investigate
-fasimi	??
-fasifa	family
-fasisol	cry, weep, sob, tears
-fasila	decide, determine, resolve, decision, resolution
-fasisi	trillion
-soldodo	July
-soldore	copy, transcribe, transcription
-soldomi	imitate, forge, mimic, emulate, counterfeit
-soldofa	example, model, type
-soldosol	translation
-soldola	comment, commentary, commentator
-soldosi	tradition, traditionally, traditional
-solredo	imply, implied
-solrere	week
-solremi	ingratitude, disregarding, ungrateful
-solrefa	shorten, abbreviate, concise, terse, succinct, brief
-solresol	language, philology
-solrela	dictionary, vocabulary, glossary
-solresi	irregularity, anomaly, irregular
 solmido	sickness
-solmire	poison
-solmimi	month
-solmifa	to want, to crave
-solmisol	complexity
-solmila	remember, recollection, commemorate, memorial, souvenir
-solmisi	complicate, complication, make difficult
-solfado	neutral, neutrality
-solfare	to loose, to remove
-solfami	to move, to give
-solfafa	year
-solfasol	manner
-solfala	allow, enable, let, help
-solfasi	impatient, irritable, impatience, chafe
-solsoldo	monday
-solsolre	tuesday
-solsolmi	wednesday
-solsolfa	thursday
-solsolsol	note "Sol" itself
-solsolla	friday
-solsolsi	saturday
-sollado	excuse, exonerate, pardon
-sollare	tolerate, bear, indulge, indulgence, tolerance
-sollami	forgive, pardon, amnesty, mercy, forgiveness
-sollafa	favor, favorite, favorable, prefer
-sollasol	experience, skill
-sollala	hour
-sollasi	to climb, ascend, to go north
-solsido	run, gallop, race, runner
-solsire	to be happy, joy, playfulness, elation, merrily, cheerfully
-solsimi	to be unlucky, misfortune, disaster, unfortunate
-solsifa	laugh, hilarity, laughing, smile
-solsisol	mood, temper, climate
-solsila	skip, hop, jump, pounce, frolic
-solsisi	minute
-ladodo	second
-ladore	teacher, professor, headmaster
-ladomi	greed, egoist
-ladofa	read, reading, reader, readable, legibly
-ladosol	book, volume, tome
-ladola	capacity, charge, momentum
-ladosi	book, word, term
-laredo	alphabet, alphabetical(ly)
-larere	??
-laremi	spell, spelling
-larefa	syllable, syllabic, monosyllable, monosyllabic
-laresol	lesson, instruction
-larela	sentence, phrase
-laresi	distraction, inattention, inadvertently, inattentive, carelessness, disapplied
-lamido	temporary, fleeting
-lamire	write, writing, writer
-lamimi	??
-lamifa	dry, barren, thin
-lamisol	forget, overlook, neglect, forgetful, omit
-lamila	acceleration
-lamisi	difficulty, trouble
-lafado	right(side)
-lafare	page, leaf, flip/thumb through
-lafami	notebook, portfolio
-lafafa	??
-lafasol	block, halt, stop, deny
-lafala	intensity
-lafasi	subject, topic, thesis, theme
-lasoldo	??
-lasolre	??
-lasolmi	inequality, unequal, uneven
-lasolfa	to compare, to split
-lasolsol	degree(temperature)
-lasolla	alignment
-lasolsi	draw, trace, drawing, shape
-lalado	degree(angle)
-lalare	degree(longitude)
-lalami	degree(latitude)
-lalafa	millimeter
-lalasol	centimeter
-lalala	note "La" itself
-lalasi	meter
-lasido	to stay, to wait
-lasire	have fun, enjoy, be delighted, entertainment, amuse
-lasimi	penalty, displeasure, tribulation, pain, punishment
-lasifa	hesitate, go with uncertainty, irresolution, indecisive
-lasisol	punctuate, punctuation
-lasila	material
-lasisi	galaxy
-sidodo	star
-sidore	to know, to think
-sidomi	enmity, hostility, enemy, opponent, antagonist, hostile
-sidofa	start, begin, commence
-sidosol	study
-sidola	progress, progressive
-sidosi	education
-siredo	cold, frost
-sirere	planet
-siremi	distance, disconnect
-sirefa	accuracy, exactitude, punctuality, assiduity
-siresol	regular, symmetric, symmetry, correct
-sirela	attention, take care, contemplation, be careful
-siresi	angle
-simido	distinguish, differentiate, discern, difference, nuance,
-simire	definition, explanation
-simimi	moon, lunar
-simifa	meaning, significance, signal, advice
-simisol	simplify, make easy, simple, elementary
-simila	facilitate, make easy, aid, easy
-simisi	brightness, clarity
-sifado	dictate, dictation, read out
-sifare	fault, defect, failure, defective, failed
-sifami	correct, reform, correction, reformation
-sifafa	sun, solar
-sifasol	wait, patience, patient
-sifala	repeat, recapitulate
-sifasi	age
-sisoldo	compete, contest
-sisolre	encourage, embolden, stimulate
-sisolmi	inspect, review, inspector, inspection
-sisolfa	review, scrutinize, investigate
-sisolsol	??
-sisolla	erase, clear, clean
-sisolsi	dimension
-silado	compare, comparison, similarity, similitude, comparable
-silare	liquid, soft
-silami	hate, detest, abhor, hatred, animosity, aversion
-silafa	unable, unfit, incapable, inept
-silasol	to go down, descent, to go south
-silala	sky, firmament
-silasi	direction
-sisido	??
-sisire	wind, windy, breeze
-sisimi	cloudy, clouds, unclear
-sisifa	lightning, flash, second
-sisisol	storm
-sisila	??
-sisisi	note "Si" itself
+dofami	disagreement
 
 `
