@@ -326,7 +326,7 @@ Doremido	Forehead, temple, front
 Doremire	Eyes, eyelid, eye
 Doremifa	Nose, nostril, nasal
 Doremisol	Mouth, lips, tongue, palate
-Doremila	Teeth, dental, dentition
+Doremila	Teeth, dental, dentition, tooth
 Doremisi	Chin
 Dorefado	Lavish, wasteful, prodigality
 Dorefare	Neck, throat, larynx
@@ -363,7 +363,7 @@ Domiremi	See, vision, visual
 Domirefa	Touch, feel, handle
 Domiresol	Taste
 Domirela	Smell
-Domiresi	Hear, hearing, auditory, audible
+Domiresi	Hear, hearing, auditory, audible, ear
 Domifado	Humanity, mankind, man, woman, male, female
 Domifare	Live, exist, be, life, existence
 Domifami	Breathe, breath, breathing
@@ -627,7 +627,7 @@ Refasolre	Burn, kindle, consume (as in fire), burning
 Refasolmi	Twinkle, sparkle, scintillate, blaze, flame, flamboyant, blazing
 Refasolfa	Pacify, calme, peace, amity, peacemaker, peaceful, peacefully
 Refasolla	Chauffeur, driver
-Refasolsi	Hearth, fireplace, firebox
+Refasolsi	Hearth, fireplace, firebox, ashes, ash
 Refalado	Rag, dishtowel, apron, pillowcase, sheet
 Refalare	Tear (v), snag, torn, ragged, sparce, in pieces, tattered
 Refalami	Mend, patch, mending, mender
@@ -1171,7 +1171,7 @@ Fasifasi	To be scared, shudder, terror, fright, fear, dread, trembling, terrifie
 Fasisoldo	Train, "following cars", wagon
 Fasisolre	To run through, route
 Fasisolmi	Direct, express, directly, in a straight line
-Fasisolfa	Road, trail, way
+Fasisolfa	Road, trail, way, path
 Fasisolla	Stop, to park, station, respite, truce, stationary
 Fasisolsi	Bifurcate (divide into two branches/forks), branch, bifurcation
 Fasilado	South, southern, meridian
@@ -3228,7 +3228,7 @@ doremi	to be, to become
 dorefa	fact, proof
 doresol	explicit
 dorela	numeric, numerical, numbers
-doresi	warm, hot, heat
+doresi	century
 domido	universe, creation
 domire	infinity, unlimited, endless, undefined, immensity, unbounded, immeasurable
 domimi	february
@@ -3508,7 +3508,7 @@ lasimi	penalty, displeasure, tribulation, pain, punishment
 lasifa	hesitate, go with uncertainty, irresolution, indecisive
 lasisol	punctuate, punctuation*
 lasila	material
-lasisi	galaxy
+lasisi	cold, chilly, frigid
 sidodo	star
 sidore	to know, to think
 sidomi	enmity, hostility, enemy, opponent, antagonist, hostile
@@ -3516,7 +3516,7 @@ sidofa	start, begin, commence
 sidosol	study*
 sidola	progress, progressive*
 sidosi	education
-siredo	cold, frost
+siredo	grammar, syntax, grammatically
 sirere	planet
 siremi	distance, disconnect
 sirefa	accuracy, exactitude, punctuality, assiduity
@@ -3556,7 +3556,7 @@ sisire	wind, windy, breeze
 sisimi	cloudy, clouds, unclear
 sisifa	lightning, flash, second
 sisisol	storm
-sisila	??
+sisila	heat, warmth, warm, caloric, with heat, warmly
 sisisi	note "Si" itself
 
 `
