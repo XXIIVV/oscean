@@ -78,7 +78,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "16 20 "Jun 20 "2025 00 01
+	( date ) "19 20 "Jun 20 "2025 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -241,7 +241,15 @@
 	POP2 BRK
 
 @on-mouse/down ( mouse* -> )
-	POP2 get-pos select/<from>
+	POP2
+	( | check for menubar )
+	.Mouse/y DEI2 .grid/y2 LDZ2 #0008 ADD2 SUB2 #04 SFT2 ORA ?{
+		.Mouse/x DEI2 .grid/x1 LDZ2 SUB2 #03 SFT2 #0006 DIV2
+		( | handlers )
+		DUP #00 NEQ ?{ insert/<toggle> }
+		DUP #01 NEQ ?{ timer/<toggle> }
+		POP2 BRK }
+	get-pos select/<from>
 	BRK
 
 @on-mouse/drag ( mouse* -> )
@@ -414,7 +422,11 @@
 			( space ) ;Screen/sprite DEO
 			( text ) INC2 #01 font/<draw-str> }
 		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
+	POP2 POP2
+	( | toggle message )
+	( x ) .grid/x1 LDZ2 #0030 ADD2 .Screen/x DEO2
+	( y ) .grid/y1 LDZ2 #0130 ADD2 .Screen/y DEO2
+	;dict/guide #02 !font/<draw-str>
 
 @get-bang ( -- bang )
 	.head/addr LDZ2 ;grid/buf ADD2 STH2k
@@ -430,7 +442,7 @@
 
 @voices/find ( chn pitch -- <voice> )
 	,&t STR2
-	.&cap .&buf
+	[ LIT2 -&cap -&buf ]
 	&>lf
 		LDZk #00 EQU ?{
 			INCk INC LDZ2 [ LIT2 &t $2 ] NEQ2 ?{ NIP JMP2r } }
@@ -438,13 +450,13 @@
 	POP2 #ff JMP2r
 
 @voices/next ( -- voice )
-	.&cap .&buf
+	[ LIT2 -&cap -&buf ]
 	&>ln
 		LDZk #00 EQU ?&end
 		#04 ADD GTHk ?&>ln &end NIP JMP2r
 
 @voices/count ( -- count )
-	LITr 00 .&cap .&buf
+	LITr 00 [ LIT2 -&cap -&buf ]
 	&>lc
 		LDZk #00 NEQ STH
 		ADDr #04 ADD GTHk ?&>lc
@@ -712,7 +724,7 @@
 
 @timer/<set> ( speed -- )
 	#1f AND #04 GTHk [ JMP SWP POP ] .&speed STZ
-	;&beat STZ !draw-speed
+	[ LIT2 00 -&beat ] STZ !draw-speed
 
 @timer/widget/<draw> ( -- )
 	[ LIT2 &widget/x $2 ] .Screen/x DEO2
@@ -793,7 +805,7 @@
 	DUP2 .&to LDZ2 NEQ2 ?{ POP2 POP2 JMP2r }
 	.&to STZ2
 	.&from STZ2
-	;help STZ
+	[ LIT2 00 -help ] STZ
 	grid/<reqdraw> !select/widget/<draw>
 
 @select/<fill> ( char -- )
@@ -918,6 +930,7 @@
 	&edit "Edit $1
 	&play "Play $1
 	&select "Select $1
+	&guide "Ctrl+h 20 "to 20 "toggle 20 "guide. $1
 
 
 
