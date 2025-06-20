@@ -51,10 +51,10 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	( | cache positions )
 	.grid/x1 LDZ2
-	( ) DUP2 #0068 ADD2 ;src/x STA2
+	( ) DUP2 #0078 ADD2 ;src/x STA2
 	( ) DUP2 ;select/widget/x STA2
 	( ) DUP2 #0030 ADD2 ;timer/widget/x STA2
-	( ) #0048 ADD2 ;draw-speed/x STA2
+	( ) #0060 ADD2 ;draw-speed/x STA2
 	.grid/x2 LDZ2
 	( ) #0040 SUB2 ;voices/x STA2
 	.grid/y2 LDZ2 #0008 ADD2
@@ -227,7 +227,7 @@
 	POP DUP DUP #0f AND ,&mod STR
 	#04 SFT #00 OVR #03 AND ;&vec ADD2 LDA ,&y STR
 	#02 SFT #00 SWP #03 AND ;&vec ADD2 LDA ,&x STR
-	[ LIT &x $1 ] [ LIT &y $1 ] [ LIT &mod $1 ] select/<mod>
+	[ LIT2 &x $1 &y $1 ] [ LIT &mod $1 ] select/<mod>
 	#0f AND .Controller/button DEO
 	BRK
 	&vec 00 ff 01 00
@@ -731,15 +731,14 @@
 	[ LIT2 &widget/y $2 ] .Screen/y DEO2
 	( | icon )
 	;beat-icn .Screen/addr DEO2
-	[ LIT2 01 -&frame-lb ] LDZ AND DUP ADD .Screen/sprite DEO
+	[ LIT2 01 -&frame-lb ] LDZ AND DUP ADD INC .Screen/sprite DEO
 	( | text )
-	#02 ;font/color STA
-	.&frame-lb LDZ !font/<draw-byte>
+	.Screen/vector DEI2 ;&on-play NEQ2 #02 ADD ;font/color STA
+	.&frame LDZ2 !font/<draw-short>
 
 @draw-speed ( -- )
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
-	[ LIT2 "/ 02 ] font/<draw-char-color>
 	.timer/speed LDZ !font/<draw-byte>
 
 (
@@ -825,30 +824,37 @@
 	[ LIT2 &widget/x $2 ] .Screen/x DEO2
 	[ LIT2 &widget/y $2 ] .Screen/y DEO2
 	( | icon )
-	;select/icns #00 .Controller/vector DEI2 ;insert/on-button EQU2 #40 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 02 -Screen/sprite ] DEO
+	#00 .Controller/vector DEI2 ;insert/on-button EQU2 STHk
+	( get addr ) #40 SFT2 ;select/icns ADD2 .Screen/addr DEO2
+	( draw ) INCr INCr DUPr [ LITr -Screen/sprite ] DEOr
+	( set color ) [ LIT2r =font/color ] STAr
 	( | draw size )
 	.select/from LDZ2 .select/to LDZ2 EQU2k ?{ SWP2 SUB2 DUP2 }
 	( | value )
-	POP2 #02 ;font/color STA !font/<draw-short>
+	POP2 !font/<draw-short>
+
+@insert/<toggle> ( -- )
+	.select/to LDZ2 INC ,&anchor STR2
+	;on-button ;&on-button .Controller/vector DEI2 ;&on-button EQU2 [ JMP SWP2 POP2 ] .Controller/vector DEO2 !select/widget/<draw>
 
 @insert/on-button ( -> )
 	.Controller/key DEI [ #00 ] EQUk NIP ?&end
 	[ #1b ] NEQk NIP ?{ /<toggle>
 		POP BRK }
+	[ #0d ] NEQk NIP ?{
+		[ LIT2 &anchor $2 ] INC2k ,&anchor STR2
+		select/<from>
+		POP BRK }
 	[ #20 ] NEQk NIP ?{
-		#01 #0000 select/<mod>
+		#0100 #00 select/<mod>
 		POP BRK }
 	[ #08 ] NEQk NIP ?{
-		#ff #0000 select/<mod>
+		#ff00 #00 select/<mod>
 		LIT ". select/<fill>
 		POP BRK }
 	DUP #7e GTH ?{
 		DUP select/<fill>
-		#01 #0000 select/<mod> } &end POP BRK
-
-@insert/<toggle> ( -- )
-	;on-button ;&on-button .Controller/vector DEI2 ;&on-button EQU2 [ JMP SWP2 POP2 ] .Controller/vector DEO2 !select/widget/<draw>
+		#0100 #00 select/<mod> } &end POP BRK
 
 (
 @|Cursor )
