@@ -45,65 +45,47 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "28 20 "May 20 "2025 $2
+	( date ) "21 20 "Jun 20 "2025 $2
 
 
 
 ( Core )
 
 @assembly/<resolve> ( -- )
-	;token/mode LDA2 ;asm-comment NEQ2 ?{
-		( ! ) ;dict/open ;dict/trail ;dict/Comment !err/<generic> }
-	;token/mode LDA2 ;asm-macro NEQ2 ?{
-		( ! ) ;dict/open ;dict/trail ;dict/Macro !err/<generic> }
+	,&mode LDR2 ;asm-comment NEQ2 ?{
+		( ! ) ;dict/open ;dict/trail ;dict/Comment err/<generic> }
+	,&mode LDR2 ;asm-macro NEQ2 ?{
+		( ! ) ;dict/open ;dict/trail ;dict/Macro err/<generic> }
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
 			[ LIT2 80 -System/state ] DEO !syms/<emit> } }
 	JMP2r
 
-@token/<new> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
-	[ LIT2 00 -&buf ] STZ
+@assembly/apply ( t* -- )
+	LDZk ?{ POP2 JMP2r }
+	[ LIT2 &mode =asm-default ] JMP2
+
+@assembly/<set-default> ( -- )
+	;asm-default ,&mode STR2
 	JMP2r
 
-@token/<push-byte> ( c -- )
-	DUP #20 GTH ?{
-		POP ;&buf LDZk ?{ POP2 JMP2r }
-		[ LIT2 &mode =asm-default ] JSR2 !/<new> }
-	( | append )
-	[ LIT2 00 &ptr -&buf ] INCk
-	( |check overflow )
-	DUP .&cap LTH ?{
-		( ! ) ;dict/exceeded ;dict/Name err/<token> }
-	,&ptr STR
-	STZ2
-	JMP2r
-
-@token/<set-default> ( -- )
-	;asm-default ;token/mode STA2
-	JMP2r
-
-@runes/coment ( token* -- )
-	POP2
-	( >> )
-
-@token/<set-comment> ( -- )
-	;asm-comment ;token/mode STA2
+@assembly/<set-comment> ( -- )
+	;asm-comment ,&mode STR2
 	[ LIT2 01 _asm-comment/depth ] STR
 	JMP2r
 
-@token/<set-macro> ( -- )
-	;asm-macro ;token/mode STA2
+@assembly/<set-macro> ( -- )
+	;asm-macro ,&mode STR2
 	[ LIT2 00 _asm-macro/depth ] STR
 	JMP2r
 
-@asm-default ( t* :: )
+@asm-default ( t* -- )
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/is-opcode ?rom/<write-opcode>
+		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
+		( opc ) opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
@@ -113,7 +95,7 @@
 	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
 	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
 	STHkr [ LITr _&depth ] STRr
-	?{ !token/<set-default> }
+	?{ !assembly/<set-default> }
 	JMP2r
 
 @asm-macro ( t* -- )
@@ -122,11 +104,29 @@
 	[ LIT2 "} 00 ] NEQ2 ?{
 		[ LITr 01 ] SUBr STHkr ?{
 			#00 macros/<push-byte>
-			POP2 POPr !token/<set-default> } }
+			POP2 POPr !assembly/<set-default> } }
 	STHkr #00 EQU ?{ ;token/buf macros/<push-word>
 		#20 macros/<push-byte> }
 	LDA2 [ LIT2 "{ 00 ] NEQ2 ?{ INCr }
 	[ LITr _&depth ] STRr
+	JMP2r
+
+(
+@|Token )
+
+@token/<new> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
+	JMP2r
+
+@token/<push-byte> ( c -- )
+	DUP #20 GTH ?{ POP ;&buf assembly/apply !/<new> }
+	[ LIT2 00 &ptr -&buf ] INCk
+	( | check overflow )
+	DUP .&cap LTH ?{
+		( ! ) ;dict/exceeded ;dict/Name err/<token> }
+	,&ptr STR
+	STZ2
 	JMP2r
 
 (
@@ -151,7 +151,7 @@
 	JMP2r
 
 @scope/make-name ( name* -- scope/label* )
-	[ LIT2 &anchor $1 _&ptr ] STR
+	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl
 		LDAk /<push-byte>
@@ -164,28 +164,59 @@
 @runes/find ( char -- <addr>* )
 	STH
 	;&lut
-	&>l
+	&>w
 		LDAk STHkr EQU ?{
-			#0003 ADD2 LDAk ?&>l
+			#0003 ADD2 LDAk ?&>w
 		POP2 #ffff }
 	POPr JMP2r
 
 @runes/ignore ( t* -- )
 	POP2 JMP2r
-	&padabs /req-name refs/get-any !rom/<set-head>
-	&padrel /req-name refs/get-any !rom/<set-head-rel>
-	&toplab /req-name DUP2 scope/<set> !syms/<new>
-	&sublab INC2 scope/make-name !syms/<new>
-	&litrel #80 rom/<write-byte> &rawrel /req-name refs/get-rb !rom/<write-byte>
-	&litzep #80 rom/<write-byte> &rawzep /req-name refs/get-ab !rom/<write-byte>
-	&litabs #a0 rom/<write-byte> &rawabs /req-name refs/get-as !rom/<write-short>
-	&litjci /req-name #20 !rom/<write-call>
-	&litjmi /req-name #40 !rom/<write-call>
-	&litjsi #60 !rom/<write-call>
-	&lithex /req-name !rom/<write-lithex>
-	&rawstr /req-name !rom/<write-str>
-	&lambda POP2 !lambda/pop
-	&macros /req-name !macros/<new>
+
+	&lambda ( t* -- )
+	POP2 !lambda/pop
+
+	&coment ( t* -- )
+	POP2 !assembly/<set-comment>
+
+	&padabs ( t* -- )
+	/req-name refs/get-any !rom/<set-head>
+
+	&padrel ( t* -- )
+	/req-name refs/get-any !rom/<set-head-rel>
+
+	&toplab ( t* -- )
+	/req-name DUP2 scope/<set> !syms/<new>
+
+	&sublab ( t* -- )
+	scope/make-name !syms/<new>
+
+	&litrel ( t* -- )
+	#80 rom/<write-byte> &rawrel /req-name refs/get-rb !rom/<write-byte>
+
+	&litzep ( t* -- )
+	#80 rom/<write-byte> &rawzep /req-name refs/get-ab !rom/<write-byte>
+
+	&litabs ( t* -- )
+	#a0 rom/<write-byte> &rawabs /req-name refs/get-as !rom/<write-short>
+
+	&litjci ( t* -- )
+	/req-name #20 !rom/<write-call>
+
+	&litjmi ( t* -- )
+	/req-name #40 !rom/<write-call>
+
+	&litjsi ( t* -- )
+	#60 !rom/<write-call>
+
+	&lithex ( t* -- )
+	/req-name !rom/<write-lithex>
+
+	&rawstr ( t* -- )
+	/req-name !rom/<write-str>
+
+	&macros ( t* -- )
+	/req-name !macros/<new>
 
 @runes/req-name ( str* -- str1* )
 	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Name !err/<token> }
@@ -211,24 +242,23 @@
 	DUP2 ;&brk scmp STHr ORA JMP2r
 
 @opcodes/parse ( str* -- byte )
-	[ LITr 00 ] ;&lut
-	&>l
+	[ LIT2r 1f00 ] ;&lut
+	&>w1
 		SWP2k scmp3 ?{
-			INCr #0003 ADD2 LDAk ?&>l
-		POP2 !&fail }
+			INCr #0003 ADD2 LDAk ?&>w1
+		POP2 POP2 POP2r #00 JMP2r }
 	POP2
-	( mask ) [ LITr 1f ] ANDr
+	( mask ) ANDr
 	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
 	( move ) #0003 ADD2
-	&>w
+	&>w2
 		LDAk #21 LTH ?{
 			( | parse modes )
-			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-			&fail ( str* . a -- byte )
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 !&r }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 !&r }
 			POP2 POPr #00 JMP2r
-			&r INC2 !&>w }
+			&r ORAr INC2 !&>w2 }
 	POP2 STHr JMP2r
 
 @opcodes/lut [
@@ -277,7 +307,7 @@
 	DUP2 /find-name INC2 ORA ?&err-duplicate
 	DUP2 syms/find-name INC2 ORA ?&err-duplicate
 	macros/<push-word>
-	#00 /<push-byte> !token/<set-macro>
+	#00 /<push-byte> !assembly/<set-macro>
 
 @macros/find-name ( name* -- <addr>* )
 	STH2
@@ -289,9 +319,9 @@
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	&>lp
+	&>wp
 		LDAk /<push-byte>
-		INC2 LDAk ?&>lp
+		INC2 LDAk ?&>wp
 	POP2 JMP2r
 
 @macros/<push-byte> ( byte -- )
@@ -302,6 +332,14 @@
 	,&ptr STR2
 	STA
 	JMP2r
+
+@macros/<write> ( t* macro* -- )
+	token/<new>
+	scap/
+	&>wm
+		LDAk token/<push-byte>
+		INC2 LDAk ?&>wm
+	POP2 POP2 JMP2r
 
 @macros/err-duplicate ( name* -- )
 	POP2
@@ -397,8 +435,8 @@
 
 @refs/get-ref ( token* -- addr* )
 	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/make-name }
-	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/make-name }
-	LDAk [ LIT "& ] NEQ ?{ INC2 scope/make-name }
+	LDAk [ LIT "/ ] NEQ ?{ scope/make-name }
+	LDAk [ LIT "& ] NEQ ?{ scope/make-name }
 	( | find symbol or create it )
 	syms/find-alloc
 	( | check if declared )
@@ -424,6 +462,26 @@
 	STA
 	JMP2r
 
+@refs/get-ab ( label* -- addr )
+	.RefType/ab /get-type NIP JMP2r
+
+@refs/get-as ( label* -- addr* )
+	.RefType/as !/get-type
+
+@refs/get-rb ( label* -- distance )
+	.RefType/rb /get-type INC2k ORA ?{
+		( undefined ) POP2 #00 JMP2r }
+	rom/get-head /get-distance
+	( | check distance )
+	DUP2 /byte-distance NIP JMP2r
+
+@refs/get-rs ( label* -- distance* )
+	.RefType/rs /get-type rom/get-head
+	( >> )
+
+@refs/get-distance ( a* b* -- distance* )
+	INC2 INC2 SUB2 JMP2r
+
 @refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l
@@ -434,32 +492,14 @@
 @refs/<resolve> ( addr* -- addr* )
 	DUP2 ;&err STA2
 	( | handlers )
-	DUP2k #0004 ADD2 LDA DUP .RefType/ab EQU ?/<set-ab>
-	DUP .RefType/as EQU ?/<set-as>
-	DUP .RefType/rb EQU ?/<set-rb>
-	DUP .RefType/rs EQU ?/<set-rs>
+	DUP2k #0004 ADD2 LDA
+	( | handlers )
+	DUP .RefType/ab EQU ?/resolve-ab
+	DUP .RefType/as EQU ?/resolve-as
+	DUP .RefType/rb EQU ?/resolve-rb
+	DUP .RefType/rs EQU ?/resolve-rs
 	( | TODO: Handle unknown type )
 	POP POP2 JMP2r
-
-@refs/<set-ab> ( ref* type -- )
-	POP /resolve-abs STA
-	POP JMP2r
-
-@refs/<set-as> ( ref* type -- )
-	POP /resolve-abs STA2
-	JMP2r
-
-@refs/<set-rs> ( ref* type -- )
-	POP /resolve-rel STA2
-	JMP2r
-
-@refs/<set-rb> ( ref* type -- )
-	POP /resolve-rel
-	( | validate distance )
-	OVR2 #0080 ADD2 POP #00 EQU ?{
-		( ! ) ;dict/too-far /<error> }
-	STA
-	POP JMP2r
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
@@ -478,27 +518,26 @@
 @refs/resolve ( addr* ref* -- value* addr* )
 	SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
-@refs/get-ab ( label* -- addr )
-	.RefType/ab /get-type NIP JMP2r
+@refs/resolve-ab ( ref* type -- )
+	POP /resolve-abs STA
+	POP JMP2r
 
-@refs/get-as ( label* -- addr* )
-	.RefType/as !/get-type
+@refs/resolve-as ( ref* type -- )
+	POP /resolve-abs STA2
+	JMP2r
 
-@refs/get-rb ( label* -- distance )
-	.RefType/rb /get-type INC2k ORA ?{
-		( undefined ) POP2 #00 JMP2r }
-	rom/get-head /get-distance
-	( | check distance )
-	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	NIP
-	( ! ) ;dict/too-far ;dict/Reference !err/<token>
+@refs/resolve-rs ( ref* type -- )
+	POP /resolve-rel STA2
+	JMP2r
 
-@refs/get-rs ( label* -- distance* )
-	.RefType/rs /get-type rom/get-head
+@refs/resolve-rb ( ref* type -- )
+	POP /resolve-rel OVR2 /byte-distance STA
+	POP JMP2r
+
+@refs/byte-distance ( addr* -- )
+	#0080 ADD2 POP ?{ JMP2r }
+	( ! ) ;dict/too-far
 	( >> )
-
-@refs/get-distance ( a* b* -- distance* )
-	INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
@@ -517,14 +556,6 @@
 @rom/<set-head> ( addr* -- )
 	,&head STR2
 	JMP2r
-
-@rom/<write-macro> ( t* macro* -- )
-	NIP2 token/<new>
-	scap/
-	&>lm
-		LDAk STHk token/<push-byte>
-		INC2 STHr ?&>lm
-	POP2 JMP2r
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
@@ -635,10 +666,10 @@
 	POP2 POP2 POP2 JMP2r
 
 @err/<pstr> ( str* -- )
-	&>l
+	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<pchr>
-		INC2 !&>l
+		INC2 !&>w
 
 @err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
@@ -693,6 +724,6 @@
 @|Enums )
 
 
-|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
-|00 @SymType $40 &used $40 &declared
+|00 @RefType/ab $1 &as $1 &rb $1 &rs $1
+|00 @SymType/empty $1 &used $1 &declared
 
