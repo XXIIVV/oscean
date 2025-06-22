@@ -121,6 +121,6 @@ function Uxn (emu)
 	}
 
 	function sig(val) {
-		return val > 0x80 ? val - 256 : val
+		return val >= 0x80 ? val - 256 : val
 	}
 }
