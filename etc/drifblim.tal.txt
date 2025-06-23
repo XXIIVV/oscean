@@ -489,8 +489,8 @@
 @syms/next ( sym* -- next* )
 	#0003 ADD2 !str/cap
 
-@syms/byte-distance ( addr* -- )
-	#0080 ADD2 POP ?{ JMP2r }
+@syms/byte-distance ( addr* -- addr* )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
 	( ! ) ;dict/too-far ;dict/Symbol !err/<token>
 
 (
@@ -542,7 +542,7 @@
 @refs/get-rel ( label* -- distance )
 	;&handle-rel /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	head/get /get-distance DUP2 syms/byte-distance NIP JMP2r
+	head/get /get-distance syms/byte-distance NIP JMP2r
 
 @refs/get-rel2 ( label* -- distance* )
 	;&handle-rel2 /get-type head/get
@@ -559,40 +559,28 @@
 		( ) #0006 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@refs/resolve-sym ( ref* -- ref* addr* )
+@refs/resolve-sym ( ref* -- ref* sym/addr* )
+	LDA2k head/<set>
 	( ref* sym* ) INC2k INC2 LDA2
-	( ref* sym/addr* ) LDA2k INC2k ORA ?{
+	( ref* sym/addr* ) LDA2
+	( ref* sym/addr* ) INC2k ORA ?{
 		( ! ) ;dict/invalid /<error> }
-	( ref* sym* addr* ) NIP2 JMP2r
-
-@refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym !/resolve
-
-@refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 /get-distance
-	( >> )
-
-@refs/resolve ( addr* ref* -- value* addr* )
-	SWP2 LDA2 ;rom/mem ADD2 JMP2r
+	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
-	/resolve-abs STA
-	POP JMP2r
+	/resolve-sym NIP2 NIP !rom/<write-byte>
 
 @refs/handle-abs2 ( ref* -- )
-	/resolve-abs STA2
-	JMP2r
+	/resolve-sym NIP2 !rom/<write-short>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-rel OVR2 /byte-distance STA
-	POP JMP2r
+	/resolve-sym SWP2 LDA2 /get-distance /byte-distance NIP !rom/<write-byte>
 
 @refs/handle-rel2 ( ref* -- )
-	/resolve-rel STA2
-	JMP2r
+	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short>
 
-@refs/byte-distance ( addr* -- )
-	#0080 ADD2 POP ?{ JMP2r }
+@refs/byte-distance ( addr* -- addr* )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
 	( ! ) ;dict/too-far
 	( >> )
 
@@ -631,17 +619,20 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	DUP head/get
-	( inc ) INC2k head/<set>
-	( set ) ;&mem ADD2 STA
+	DUP head/get-inc ;&mem ADD2 STA
 	( not zero ) ?{ JMP2r }
-	head/get OVR ?{
+	( test zep ) head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
+	DUP2 ;&length LDA2 GTH2 ?{ POP2 JMP2r }
 	;&length STA2
 	JMP2r
 
+@head/get-inc ( -- addr* )
+	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
+	JMP2r
+
 @head/get ( -- addr* )
-	[ LIT2 &addr 0100 ] JMP2r
+	,&addr LDR2 JMP2r
 
 @head/<set-rel> ( addr* -- )
 	/get ADD2
