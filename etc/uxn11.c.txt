@@ -407,7 +407,7 @@ console_input(int c, unsigned int type)
 #define MAR2(x) (x + 0x10)
 
 typedef struct UxnScreen {
-	int width, height, zoom, x1, y1, x2, y2;
+	int width, height, zoom, resized, x1, y1, x2, y2;
 	unsigned int palette[16], *pixels;
 	Uint8 *fg, *bg;
 } UxnScreen;
@@ -471,9 +471,8 @@ screen_apply(int width, int height)
 	uxn_screen.bg = realloc(uxn_screen.bg, length), uxn_screen.fg = realloc(uxn_screen.fg, length);
 	memset(uxn_screen.bg, 0, length);
 	memset(uxn_screen.fg, 0, length);
-	uxn_screen.width = width, uxn_screen.height = height;
+	uxn_screen.width = width, uxn_screen.height = height, uxn_screen.resized = 1;
 	screen_change(0, 0, width, height);
-	emu_resize();
 }
 
 static void
@@ -1049,7 +1048,7 @@ static void
 emu_rescale(void)
 {
 	uxn_screen.zoom = uxn_screen.zoom >= 3 ? 1 : uxn_screen.zoom + 1;
-	emu_resize();
+	uxn_screen.resized = 1;
 }
 
 static Uint8
@@ -1148,8 +1147,10 @@ display_floating(Display *dpy, Window win)
 static unsigned int
 display_init(void)
 {
+	Screen *screen;
 	Visual *visual;
 	XClassHint class = {"uxn11", "Uxn"};
+	int screen_width, screen_height;
 	/* start display */
 	display = XOpenDisplay(NULL);
 	if(!display)
@@ -1158,15 +1159,16 @@ display_init(void)
 	visual = DefaultVisual(display, 0);
 	if(visual->class != TrueColor)
 		return !fprintf(stderr, "Display: True-color visual failed\n");
-	window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0, WIDTH, HEIGHT, 1, 0, 0);
+	/* center */
+	screen = ScreenOfDisplay(display, 0);
+	screen_width = screen->width, screen_height = screen->height;
+	window = XCreateSimpleWindow(display, RootWindow(display, 0), screen_width / 2 - uxn_screen.width / 2, screen_height / 2 - uxn_screen.height / 2, WIDTH, HEIGHT, 1, 0, 0);
 	display_hidecursor();
 	display_floating(display, window);
 	XSelectInput(display, window, ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ExposureMask | KeyPressMask | KeyReleaseMask | LeaveWindowMask);
 	XStoreName(display, window, "uxn11");
 	XSetClassHint(display, window, &class);
 	XMapWindow(display, window);
-	uxn_screen.zoom = 1;
-	screen_apply(WIDTH, HEIGHT);
 	return 1;
 }
 
@@ -1193,6 +1195,8 @@ emu_run(void)
 			read(fds[1].fd, expirations, 8);
 			if(screen_vector)
 				uxn_eval(screen_vector);
+			if(uxn_screen.resized)
+				emu_resize(), uxn_screen.resized = 0;
 			if(uxn_screen.x2 && uxn_screen.y2 && screen_changed())
 				emu_repaint();
 		}
@@ -1214,13 +1218,13 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 17 May 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 24 Jun 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
-	else if(!display_init())
-		return !fprintf(stdout, "Could not open display.\n");
 	else if(!system_boot(argv[i++], argc > 2))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
+	uxn_screen.zoom = 1;
+	screen_apply(WIDTH, HEIGHT);
 	if(uxn_eval(0x100) && console_vector) {
 		for(; i < argc; i++) {
 			char *p = argv[i];
@@ -1229,6 +1233,8 @@ main(int argc, char **argv)
 			console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
 		}
 	}
+	if(!display_init())
+		return !fprintf(stdout, "Could not open display.\n");
 	emu_run();
 	console_close();
 	XDestroyImage(ximage), XDestroyWindow(display, window), XCloseDisplay(display);
