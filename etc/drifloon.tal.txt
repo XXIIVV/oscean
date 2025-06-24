@@ -45,7 +45,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Jun 20 "2025 $2
+	( date ) "24 20 "Jun 20 "2025 $2
 
 
 
@@ -154,9 +154,9 @@
 	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl
-		LDAk /<push-byte>
-		INC2 LDAk ?&>wl
-	POP2 ;&buf JMP2r
+		LDAk DUP ?{ POP POP2 ;&buf JMP2r }
+		/<push-byte>
+		INC2 !&>wl
 
 (
 @|Runes )
@@ -314,16 +314,17 @@
 	STH2
 	,&ptr LDR2 ;&mem
 	&>lf
+		EQU2k ?&fail
 		DUP2 STH2kr str/cmp ?{
-			str/cap str/cap GTH2k ?&>lf
-		POP2 #ffff }
+			str/cap str/cap !&>lf
+		&fail POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
 	&>wp
-		LDAk /<push-byte>
-		INC2 LDAk ?&>wp
-	POP2 JMP2r
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push-byte>
+		INC2 !&>wp
 
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
@@ -338,9 +339,9 @@
 	token/<new>
 	str/cap
 	&>wm
-		LDAk token/<push-byte>
-		INC2 LDAk ?&>wm
-	POP2 POP2 JMP2r
+		LDAk DUP ?{ POP POP2 POP2 JMP2r }
+		token/<push-byte>
+		INC2 !&>wm
 
 @macros/err-duplicate ( name* -- )
 	POP2
@@ -368,9 +369,10 @@
 	STH2
 	;&ptr LDA2 ;&mem
 	&>lfn
+		EQU2k ?&fail
 		DUP2 #0003 ADD2 STH2kr str/cmp ?{
-			/next GTH2k ?&>lfn
-		POP2 #ffff }
+			/next !&>lfn
+		&fail POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @syms/find-addr ( addr* -- sym* )
@@ -410,8 +412,9 @@
 	JMP2r
 
 @syms/<emit> ( -- )
-	;&ptr LDA2 ;&mem EQU2k ?{
-		&>ls
+	;&ptr LDA2 ;&mem
+	&>ls
+		EQU2k ?{
 			INC2k INC2 LDA .SymType/used AND ?{
 				LDA2k #0100 EQU2 ?{
 					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
@@ -419,7 +422,7 @@
 						DUP2 err/<pstr>
 						#0a err/<pchr> }
 					POP2 } }
-			/next GTH2k ?&>ls }
+			/next !&>ls }
 	POP2 POP2 !rom/<emit>
 
 @syms/next ( sym* -- next* )
@@ -490,10 +493,11 @@
 @refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l
-		NEQ2k ?{ POP2 POP2 JMP2r }
-		DUP2 ;&err STA2
-		DUP2k #0004 ADD2 LDA2 JSR2
-		( ) #0006 ADD2 !&>l
+		EQU2k ?{
+			DUP2 ;&err STA2
+			DUP2k #0004 ADD2 LDA2 JSR2
+			( ) #0006 ADD2 !&>l }
+	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
 	LDA2k head/<set>
@@ -620,7 +624,8 @@
 	STH2
 	OVR2 ADD2 SWP2
 	&>l
-		LDAk LDAkr STHr NEQ ?{ INC2 INC2r GTH2k ?&>l }
+		EQU2k ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	POP2r EQU2 JMP2r
 
 (
