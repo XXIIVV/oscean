@@ -5,7 +5,7 @@
 	@Zeropage &byte $1 &short $2
 	@id $1
 
-|0100
+|100
 
 @on-reset ( -> )
 
@@ -58,6 +58,12 @@
 
 	{ "Ok $1 } STH2r ;pstr-jcn JSR2
 	[ LIT2 "6 18 ] DEO #0a18 DEO
+
+	( part 7
+		> Relative distance bytes )
+
+	rel-distance/entry SWP #18 DEO #18 DEO
+	[ LIT2 "7 18 ] DEO #0a18 DEO
 
 	( part xx
 		> GTH2k: Non-destructive greater-than short
@@ -129,7 +135,7 @@ BRK
 	( name ) "Opctest 0a
 	( details ) "A 20 "Testing 20 "Program 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "15 20 "Dec 20 "2024 $2
+	( date ) "24 20 "Jun 20 "2025 $2
 
 @test-part ( f name* -- )
 	pstr ?{
@@ -469,4 +475,18 @@ JMP2r
 	&jmi "JMI $1 &jci "JCI $1 &jsi "JSI $1
 ]
 
-|7000 @op-jsi-far-routine-d op-jsi/routine-d JMP2r
+(
+@|Relative Distance Bytes )
+
+@rel-distance
+&back "O $7c
+&entry
+	,&back LDR
+	,&forw LDR
+	JMP2r
+$7e
+&forw "k
+
+@op-jsi-far-routine-d
+	op-jsi/routine-d JMP2r
+
