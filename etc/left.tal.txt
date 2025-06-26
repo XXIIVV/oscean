@@ -16,15 +16,14 @@
 	@menu/sub $1 &anchor $2 &cat $2
 	@wrap/left $2 &right $2
 	@flen/buf $5
-	@scope/addr $2
 	@search/buf $2f &bufend $1
 	@scroll/y $2 &addr $2
 	@scrollbar/height $2 &ratio $2
 	@highlight/comment $1 &label $1 &raw $1
 	@autocomplete/addr $2
-	@textarea/length $2
 	@nav/buf $60 &bufend $1 &scroll $1 &visible $1 &cat $1 &symbol $1
 	@sel/a $2 &b $2 &to $2 &from $2
+	@textarea/eof $2
 
 |100
 
@@ -64,7 +63,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "24 20 "Jun 20 "2025 $1 02
+	( date ) "25 20 "Jun 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -88,14 +87,16 @@
 	( - ) 01 "/ =path/pop-folder =dict/directory
 	( - ) 01 0d =path/push-selection =dict/selection }
 	={ =dict/format
-	( - ) 01 "t =format-strip =dict/strip
-	( - ) 01 "i =sel/trim =dict/trim
-	( - ) 01 "y =sel/clip =dict/clip
-	( - ) 01 "j =sel/join =dict/join
-	( - ) 00 09 =tab =dict/tab
-	( - ) 04 09 =untab =dict/untab }
+	( - ) 01 "t =format/strip =dict/strip
+	( - ) 01 "i =format/trim =dict/trim
+	( - ) 01 "y =format/clip =dict/clip
+	( - ) 01 "j =format/join =dict/join
+	( - ) 00 00 =format/lc =dict/lowercase
+	( - ) 00 00 =format/uc =dict/uppercase
+	( - ) 00 09 =sel/<tab> =dict/tab
+	( - ) 04 09 =sel/<untab> =dict/untab }
 	={ =dict/select
-	( - ) 01 "a =sel/set-all =dict/all
+	( - ) 01 "a =sel/<select-all> =dict/all
 	( - ) 01 "g =sel/<select-symbol> =dict/symbol
 	( - ) 01 09 =sel/<select-word> =dict/word
 	( - ) 00 1b =reset-each =dict/reset }
@@ -125,8 +126,17 @@
 %get-scroll-addr ( -- addr* ) {
 	;textarea/buf .scroll/addr LDZ2 ADD2 }
 
-%get-eof ( -- addr* ) {
-	;textarea/buf .textarea/length LDZ2 ADD2 }
+%SWP2? ( jmp a* b* -- b* a* ) {
+	[ JMP SWP2 ] }
+
+%INC2r? ( jmp value* -- value* ) {
+	[ JMP INC2r ] }
+
+%SWP? ( jmp value -- value ) {
+	[ JMP SWP ] }
+
+%DEOkr? ( jmp . value* -- . value* ) {
+	[ JMP DEOkr ] }
 
 (
 @|vectors )
@@ -144,7 +154,7 @@
 		DUP2 ;nav/width GTH2 ?{ POP2 ;null/on-mouse !/<set-focus> } }
 	POP2 ;textarea/on-mouse !/<set-focus>
 
-@Mouse/<set-focus> ( vector * -- )
+@Mouse/<set-focus> ( vector* -- )
 	[ LIT2 &last $2 ] OVR2 NEQ2 ?{ POP2 JMP2r }
 	DUP2 ,&last STR2
 	.&vector DEO2
@@ -269,14 +279,18 @@
 @sel/<select-word-at> ( addr* -- )
 	DUP2 find-prev-spacer SWP2 find-next-spacer/ !sel/<set>
 
-@sel/has-length ( -- bool )
+@sel/has-length ( -- t )
 	.&a LDZ2 .&b LDZ2 NEQ2 JMP2r
 
-@sel/has-empty ( -- bool )
+@sel/has-empty ( -- t )
 	.&a LDZ2 .&b LDZ2 EQU2 JMP2r
 
-@sel/set-all ( -- )
-	;textarea/buf DUP2 .textarea/length LDZ2 ADD2 #0001 SUB2 !/<set>
+@sel/<expand> ( -- )
+	( a ) sel/get-from find-line-start
+	( b ) sel/get-to find-line-end !/<set>
+
+@sel/<select-all> ( -- )
+	textarea/get-range !/<set>
 
 @sel/<set-any> ( addr* -- )
 	[ LIT2 04 -Controller/button ] DEI EQU ?sel/<set-b>
@@ -307,58 +321,23 @@
 	( >> )
 
 @sel/<commit> ( -- )
-	.&a LDZ2 .&b LDZ2 LTH2k [ JMP SWP2 ] .&to STZ2
+	.&a LDZ2 .&b LDZ2 LTH2k SWP2? .&to STZ2
 	.&from STZ2
 	autocomplete/<reset>
-	textarea/follow wrap/update scope/update !reqdraw-both
+	textarea/follow wrap/update !reqdraw-both
 
 @sel/erase ( -- )
 	sel/get-from sel/get-to-from SUB2 STH2k <msfl>
-	#0000 STH2r SUB2 !<mod-length>
-
-@sel/trim ( -- )
-	[ LIT2r 0000 ] sel/get-to-from
-	&>ltr
-		join-spaces STH2
-		ADD2r INC2 GTH2k ?&>ltr
-	POP2 STH2r SUB2 !/<set-b>
-
-@sel/clip ( -- )
-	[ LITr 00 ] sel/get-to-from
-	&>lc
-		LDAk #20 NEQ ?{
-			INC2k wlen NIP STHkr ADD #50 LTH ?{
-				STH2k #0a STH2r STA
-				POPr LITr 00 } }
-		INC2 INC2r GTH2k ?&>lc
-	POP2 POP2 POPr !reqdraw-both
-
-@sel/join ( -- )
-	sel/get-to-from
-	&>lj
-		LDAk #20 GTH ?{ STH2k #20 STH2r STA }
-		INC2 GTH2k ?&>lj
-	POP2 POP2 !reqdraw-both
+	#0000 STH2r SUB2 !textarea/<mod-length>
 
 @sel/<tab> ( -- )
-	( a ) sel/get-from find-line-start
-	( b ) sel/get-to find-line-end OVR2 #0001 SUB2
-	&>lt
-		LDAk #0a NEQ ?{
-			INC2 STH2k #09 STH2r <insert-char-at>
-			SWP2 INC2 SWP2 }
-		INC2 GTH2k ?&>lt
-	POP2 #0001 SUB2 !sel/<set>
+	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<insert>
+	sel/has-length ?{ #09 !<insert-char> }
+	!format/tab
 
 @sel/<untab> ( -- )
-	( a ) sel/get-from find-line-start
-	( b ) sel/get-to find-line-end OVR2 #0001 SUB2
-	&>lu
-		LDA2k #0a09 NEQ2 ?{
-			INC2k <cut-char-at>
-			SWP2 #0001 SUB2 SWP2 }
-		INC2 GTH2k ?&>lu
-	POP2 #0001 SUB2 !sel/<set>
+	sel/has-length ?{ #09 !<insert-char> }
+	!format/untab
 
 @sel/<draw-widget> ( -- )
 	caret/is-invisible ?{
@@ -405,9 +384,7 @@
 	JMP2r
 
 @search/get-length ( -- length* )
-	.nav/symbol LDZ ?{
-		[ LIT2 00 _&ptr ] LDR .&buf SUB JMP2r }
-	#0000 JMP2r
+	[ LIT2 00 _&ptr ] LDR .&buf SUB JMP2r
 
 @search/inject ( -- )
 	;&buf !file/<inject>
@@ -438,11 +415,11 @@
 	STH2
 	LDAk #20 GTH ?{
 		STH2kr OVR2 SWP2 SUB2 #0003 LTH2 ?{
-			get-eof ;textarea/buf
+			textarea/get-range
 			&>l
 				LDAk #21 LTH ?{
 					DUP2 STH2kr EQU2 ?{
-						DUP2 STH2kr [ LIT2 &len $2 ] mcmp #00 EQU ?{
+						DUP2 [ LIT2 &len $2 ] STH2kr mem/cmp #00 EQU ?{
 							DUP2 ,&len LDR2 ADD2 LDA #21 LTH ?{
 								,&len LDR2 ADD2 .&addr STZ2 !&end } } } }
 				wcap walk-ws GTH2k ?&>l
@@ -464,47 +441,21 @@
 	#0000 .&left STZ2k INC INC STZ2
 	.sel/b LDZ2
 	( | left )
-	[ LITr 01 ] .scroll/addr LDZ2 ;textarea/buf ADD2 #0001 SUB2 OVR2 #0001 SUB2 EQU2k ?{
-		&l ( -- )
-		LDAk /balance STH
-		ADDr STHkr ?{ .&left STZ2 !&end-l }
-		utf8/prev LTH2k ?&l }
-	POP2 &end-l POP2 POPr
-	( | right )
-	[ LITr 01 ] get-eof SWP2 EQU2k ?{
-		&r ( -- )
-		LDAk /balance STH
-		SUBr STHkr ?{ .&right STZ2 !&end-r }
-		utf8/next GTH2k ?&r }
-	POP2 &end-r POP2 POPr JMP2r
-
-@scope/update ( -- )
-	;textarea/buf .sel/b LDZ2
+	[ LITr 01 ] get-scroll-addr #0001 SUB2 OVR2 #0001 SUB2
 	&>l
 		EQU2k ?{
-			LDA2k [ LIT2 0a "@ ] EQU2 ?{ #0001 SUB2 !&>l } }
-	/<set>
-	POP2 POP2 JMP2r
-
-@scope/<set> ( addr* -- addr* )
-	DUP2 .&addr LDZ2 NEQ2 ?{ JMP2r }
-	DUP2 .&addr STZ2
-	( >> )
-
-@scope/<draw> ( -- )
-	[ LIT2 &anchor $2 ] ORAk ?{ POP2 JMP2r }
-	.Screen/x DEO2
-	#001c .Screen/y DEO2
-	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
-	#0004 .Screen/y DEO2
-	;textarea/buf .&addr LDZ2 EQU2k ?{
-		[ LIT2 25 -Screen/auto ] DEO
-		#03 ;ank/color-utf8 STA
-		INC2
-		&>w
-			LDAk [ LIT "/ ] EQU ?{
-				ank/draw-utf8 utf8/next LDAk #20 GTH ?&>w } }
-	POP2 POP2 .Screen/x DEI2 #0008 ADD2 ;scroll/anchor STA2 !scroll/<draw>
+			LDAk /balance STH
+			ADDr STHkr ?{ .&left STZ2 !&end-l }
+			utf8/prev !&>l }
+	POP2 &end-l POP2 POPr
+	( | right )
+	[ LITr 01 ] .textarea/eof LDZ2 SWP2
+	&>r
+		EQU2k ?{
+			LDAk /balance STH
+			SUBr STHkr ?{ .&right STZ2 !&end-r }
+			utf8/next !&>r }
+	POP2 &end-r POP2 POPr JMP2r
 
 (
 @|find )
@@ -516,7 +467,7 @@
 	DUP2 find-line-next SWP2
 	( >> )
 
-@find-line-place ( place* addr* -- )
+@find-line-place ( place* addr* -- addr* )
 	DUP2 find-line-start SUB2 ADD2k NIP2 EQU2k ?{
 		SWP2
 		&>l
@@ -532,16 +483,16 @@
 	( >> )
 
 @find-line-start ( addr* -- addr* )
-	;textarea/buf #0001 SUB2 SWP2
+	;textarea/buf SWP2 #0001 SUB2
 	&>l
-		utf8/prev LDAk #0a EQU ?{ LTH2k ?&>l }
+		LDAk #0a EQU ?{ utf8/prev !&>l }
 	NIP2 INC2 JMP2r
 
 @find-line-end ( addr* -- addr* )
-	get-eof SWP2
+	.textarea/eof LDZ2 SWP2
 	&>w
 		EQU2k ?{
-			utf8/next LDAk #0a NEQ ?&>w }
+			LDAk #0a EQU ?{ utf8/next !&>w } }
 	NIP2 JMP2r
 
 @find-prev-spacer ( addr* -- addr* )
@@ -619,7 +570,7 @@
 	( | count lines )
 	[ LITr -scroll/y ] LDZ2r get-scroll-addr
 	&>w
-		LDAk #0a NEQ [ JMP INC2r ] INC2 LDAk ?&>w
+		LDAk #0a NEQ INC2r? INC2 LDAk ?&>w
 	POP2 STH2r
 	( ) DUP2 ,&lines STR2
 	( set ratio ) .&height LDZ2 DIV2 NIP #40 SFT SFT2 .&ratio STZ2
@@ -636,8 +587,8 @@
 	[ LIT2r 0000 ] ;textarea/buf
 	&>wsy
 		EQU2kr STHr ?{
-			LDAk #0a NEQ [ JMP INC2r ] INC2 LDAk ?&>wsy }
-	POP2r POP2r DUP2 get-eof #0002 SUB2 GTH2 ?{
+			LDAk #0a NEQ INC2r? INC2 LDAk ?&>wsy }
+	POP2r POP2r DUP2 .textarea/eof LDZ2 #0002 SUB2 GTH2 ?{
 		;textarea/buf SUB2 .scroll/addr STZ2
 		.scroll/y STZ2
 		#00 nav/<set-y>
@@ -696,12 +647,34 @@
 	touch-to-addr sel/<set-b>
 	BRK
 
-@textarea/clamp-addr ( addr* -- addr* )
-	( min ) ;&buf GTH2k [ JMP SWP2 ] POP2
-	( max ) get-eof #0001 SUB2 LTH2k [ JMP SWP2 ] POP2 JMP2r
+@textarea/get-range ( -- eof* buf* )
+	.&eof LDZ2 ;&buf JMP2r
 
-@textarea/<erase> ( -- )
-	;&buf .&length LDZ2 !<mclr>
+@textarea/clamp-addr ( addr* -- addr* )
+	( min ) ;&buf GTH2k SWP2? POP2
+	( max ) .&eof LDZ2 #0001 SUB2 LTH2k SWP2? POP2 JMP2r
+
+@textarea/<erase-all> ( -- )
+	;&buf /get-length <mclr>
+	#0001 !/<set-length>
+
+@textarea/<load> ( path* -- )
+	.File/name DEO2
+	#fff0 ;&buf SUB2 .File/length DEO2
+	;&buf .File/read DEO2
+	.File/success DEI2 INC2 !/<set-length>
+
+@textarea/get-length ( -- length* )
+	,&length LDR2 #0001 SUB2 JMP2r
+
+@textarea/<mod-length> ( change* -- )
+	[ LIT2 &length $2 ] ADD2
+	( >> )
+
+@textarea/<set-length> ( length* -- )
+	DUP2 ;&buf ADD2 .&eof STZ2
+	,&length STR2
+	reqdraw-both #0a !path/<set-state>
 
 @textarea/get-anchor ( -- x* )
 	.nav/visible LDZ ?{ #0014 JMP2r }
@@ -718,7 +691,7 @@
 	highlight/<reset>
 	caret/<reset>
 	( | draw )
-	get-eof get-scroll-addr
+	.&eof LDZ2 get-scroll-addr
 	&>l
 		caret/scan highlight/<draw-runic>
 		( | linebreak )
@@ -817,7 +790,7 @@
 
 @nav/id-to-addr ( id -- addr* )
 	;&ptr LDA #01 SUB .&buf SUB #01 SFT
-	( max ) LTHk [ JMP SWP ] POP
+	( max ) LTHk SWP? POP
 	( addr* ) DUP ADD .&buf ADD LDZ2 JMP2r
 
 @nav/addr-to-id ( addr* -- id )
@@ -847,7 +820,7 @@
 	[ LIT2 -&buf _&ptr ] STR
 	.nav/symbol LDZ ?&<update-symbol>
 	.search/buf LDZ ?&<update-search>
-	get-eof get-scroll-addr find-first-marker
+	.textarea/eof LDZ2 get-scroll-addr find-first-marker
 	&>lu
 		LDA2k [ LIT2 0a "@ ] NEQ2 ?{ INC2k /<push> }
 		LDA2k [ LIT2 0a "% ] NEQ2 ?{ INC2k /<push> }
@@ -855,22 +828,21 @@
 	POP2 POP2 JMP2r
 
 @nav/<update-search> ( -- )
-	get-eof ;textarea/buf
+	textarea/get-range
 	&>lsea
 		LDAk #0a NEQ ?{
 			INC2k LDA2 [ LIT2 "@| ] NEQ2 ?{ INC2k /<push> } }
-		;search/buf OVR2 sseg #00 EQU ?{ DUP2 /<push> }
+		DUP2 /match-search #00 EQU ?{ DUP2 /<push> }
 		;&ptr LDA .&bufend GTH ?{ INC2 GTH2k ?&>lsea }
 	POP2 POP2 JMP2r
 
 @nav/<update-symbol> ( -- )
-	[ LITr 00 ] get-eof ;textarea/buf
+	[ LITr 00 ] textarea/get-range
 	&>lsym
 		[ LIT2 20 &last $1 ] LTH ?{
 			LDAk [ LIT "@ ] NEQ ?{
-				INC2k ;search/buf SWP2 sseg POPr STHk #00 EQU ?{
-					INC2k #00 ;search/ptr LDA ;search/buf SUB2 ADD2
-					( ) LDAk LIT "/ NEQ ?{ INC2k /<push> }
+				INC2k /match-search POPr STHk #00 EQU ?{
+					INC2k search/get-length ADD2 LDAk LIT "/ NEQ ?{ INC2k /<push> }
 					POP2 } }
 			LDAk [ LIT "& ] NEQ ?{
 				INC2k LDA [ LIT "> ] EQU ?{
@@ -878,6 +850,9 @@
 		LDAk ,&last STR
 		INC2 GTH2k ?&>lsym
 	POP2 POP2 POPr JMP2r
+
+@nav/match-search ( str* -- f )
+	search/get-length ;search/buf !mem/cmp
 
 @nav/<redraw> ( -- )
 	.&visible LDZ ?{ !scrollbar/<draw> }
@@ -1091,6 +1066,7 @@
 
 @path/<draw> ( -- )
 	#03
+	( >> )
 
 @path/<draw-color> ( color -- )
 	[ LIT2 &anchor $2 ] ORAk ?{ POP POP2 JMP2r }
@@ -1099,17 +1075,17 @@
 	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
 	#0004 .Screen/y DEO2
 	;&buf ROT ank/<draw-left-color>
-	.Screen/x DEI2 ;scope/anchor STA2 !scope/<draw>
+	.Screen/x DEI2 #0008 ADD2 ;scroll/anchor STA2
+	JMP2r
 
-@path/is-tal ( -- bool )
+@path/is-tal ( -- mask )
 	;&ptr LDA
 	( ) DUP #02 SUB LDZ2 LIT2 "al EQU2
 	( ) SWP #04 SUB LDZ2 LIT2 ".t EQU2 AND JMP2r
 
 @file/<new> ( -- )
 	( | clear )
-	textarea/<erase>
-	#0001 .textarea/length STZ2
+	textarea/<erase-all>
 	path/<reset>
 	( | reset position )
 	#05 path/<set-state>
@@ -1125,11 +1101,8 @@
 	( >> )
 
 @file/<reopen> ( -- )
-	textarea/<erase>
-	;path/buf .File/name DEO2
-	#fff0 ;textarea/buf SUB2 .File/length DEO2
-	;textarea/buf .File/read DEO2
-	.File/success DEI2 INC2 .textarea/length STZ2
+	textarea/<erase-all>
+	;path/buf textarea/<load>
 	path/is-tal #00 EQU ;highlight/mute STA
 	( | draw )
 	scrollbar/<update>
@@ -1139,15 +1112,15 @@
 
 @file/<save> ( -- )
 	;path/buf .File/name DEO2
-	.textarea/length LDZ2 #0001 SUB2 .File/length DEO2
+	textarea/get-length .File/length DEO2
 	;textarea/buf .File/write DEO2
 	#05 !path/<set-state>
 
 @file/<send> ( -- )
-	sel/get-to-from SUB2k #0002 GTH2 ?{ POP2 POP2 get-eof ;textarea/buf }
+	sel/get-to-from SUB2k #0002 GTH2 ?{ POP2 POP2 textarea/get-range }
 	&>l
 		( | merge whitespaces )
-		LDAk #20 GTHk [ JMP SWP ] POP DUP #20 EQU OVR [ LIT &last 20 ] EQU AND ?{ DUP #18 DEO }
+		LDAk #20 GTHk SWP? POP DUP #20 EQU OVR [ LIT &last 20 ] EQU AND ?{ DUP #18 DEO }
 		,&last STR
 		INC2 GTH2k ?&>l
 	POP2 POP2
@@ -1166,7 +1139,7 @@
 	SWP2 .File/name DEO2
 	( stash length ) STH2k .File/length DEO2
 	( push right ) sel/get-from STH2kr <msfr>
-	STH2kr <mod-length>
+	STH2kr textarea/<mod-length>
 	sel/get-from .File/read DEO2
 	sel/get-from STH2r ADD2 !sel/<set-a>
 
@@ -1177,7 +1150,7 @@
 	SWP2 .File/name DEO2
 	( stash length ) DUP2 ADD2 DUP2 #02 SFT2 ADD2 STH2
 	( push right ) sel/get-from STH2kr <msfr>
-	STH2kr <mod-length>
+	STH2kr textarea/<mod-length>
 	sel/get-from <inject-binary>
 	POP2 sel/get-from STH2r ADD2 !sel/<set-a>
 
@@ -1185,13 +1158,14 @@
 	#0001 .File/length DEO2
 	STH2
 	#0000
-	&s ( -- )
-	;&b feof ?{
-		[ LIT &b $1 ] STH2kr INC2r INC2r ROT DUP #04 SFT hexc SWP hexc SWP2 STA2
-		INC2
-		( | format )
-		DUP #01 AND ?&s
-		DUP #0f AND #00 NEQ #16 MUL #0a ADD STH2kr INC2r STA !&s }
+	&>s
+		;&b feof ?{
+			[ LIT &b $1 ] STH2kr INC2r INC2r ROT DUP #04 SFT hexc SWP hexc SWP2 STA2
+			INC2
+			( | format )
+			DUP #01 AND ?{
+				DUP #0f AND #00 NEQ #16 MUL #0a ADD STH2kr INC2r STA }
+			!&>s }
 	POP2 STH2r JMP2r
 
 @file/exit ( -- )
@@ -1251,8 +1225,7 @@
 	[ LITr -Screen/x ] DEI2r ank/get-width STH2
 	( glyph* ) /get-addr .Screen/addr DEO2
 	( draw2 ) [ LIT2r &color-utf8 01 -Screen/sprite ] DEOkr
-	( tab width ) LDAk #09 NEQ [ JMP DEOkr ] DEOr
-	ADD2r [ LITr -Screen/x ] DEO2r
+	( tab width ) LDAk #09 NEQ [ DEOkr? DEOr ] ADD2r [ LITr -Screen/x ] DEO2r
 	JMP2r
 
 @ank/draw-utf8ul ( addr* color -- addr* )
@@ -1260,7 +1233,7 @@
 	[ LITr -Screen/x ] DEI2r ank/get-width STH2
 	( glyph* ) /get-addr .Screen/addr DEO2
 	( draw2 ) [ LIT2r &color-ul 01 -Screen/sprite ] DEOkr
-	( tab width ) LDAk #09 NEQ [ JMP DEOkr ] DEOr
+	( tab width ) LDAk #09 NEQ [ DEOkr? DEOr ]
 	( | underline )
 	[ LIT &no-underline $1 ] ?{
 		OVR2r [ LITr -Screen/x ] DEO2r
@@ -1369,28 +1342,28 @@
 	.search/buf LDZ ?{ #09 !ank/draw-utf8ul }
 	#0d !ank/draw-utf8ul
 
-@highlight/comment-start ( -- )
+@highlight/comment-start ( addr* -- addr* )
 	.&comment LDZk INC SWP STZ !/<draw>
 
-@highlight/comment-end ( cc* -- )
+@highlight/comment-end ( addr* cc* -- addr* )
 	POP2 .&comment LDZk DUP #00 NEQ SUB SWP STZ !/<draw>
 
-@highlight/take-label ( c -- )
+@highlight/take-label ( addr* c -- addr* )
 	POP [ LIT2 01 -&label ] STZ !/<draw>
 
-@highlight/take-litruneul ( c rune -- )
+@highlight/take-litruneul ( addr* c rune -- addr* )
 	#00 ;ank/no-underline STA
 	( >> )
 
-@highlight/take-litrune ( c rune -- )
+@highlight/take-litrune ( addr* c rune -- addr* )
 	;ank/rune STA
 	POP !/<draw>
 
-@highlight/take-rawrune ( c rune -- )
+@highlight/take-rawrune ( addr* c rune -- addr* )
 	;ank/rune STA
 	( >> )
 
-@highlight/take-raw ( c -- )
+@highlight/take-raw ( addr* c -- addr* )
 	POP [ LIT2 01 -&raw ] STZ !/<draw>
 
 (
@@ -1417,13 +1390,112 @@
 @snarf/path-txt ".snarf $1
 
 (
+@|Format )
+
+@format/<apply-sub> ( -- )
+	,&fn-sub STR2
+	[ LIT2r 0000 ] sel/get-to-from
+	&>ltr
+		[ LIT2 &fn-sub $2 JSR2 ] INC2 GTH2k ?&>ltr
+	POP2 STH2r SUB2 !sel/<set-b>
+
+@format/<apply> ( fn* -- )
+	[ LIT2r 0000 ] ,&fn STR2
+	sel/get-to-from
+	&>lj
+		[ LIT2 &fn $2 JSR2 ] INC2 GTH2k ?&>lj
+	POP2 POP2 POP2r !reqdraw-both
+
+@format/strip ( -- )
+	;/do-strip !/<apply-sub>
+
+@format/do-strip ( to* from* -- to* from* )
+	LDA2k #0920 EQU2 ?/strip-next
+	LDA2k #0a20 EQU2 ?/strip-next
+	LDA2k #2020 EQU2 ?/strip-next
+	LDA2k #2009 EQU2 ?/strip-back
+	LDA2k #200a EQU2 ?/strip-back
+	LDA2k #090a EQU2 ?/strip-back
+	JMP2r
+
+	&strip-back ( to* from* -- to* from* )
+	SWP2r INC2r SWP2r DUP2 !<cut-char-at>
+
+	&strip-next ( to* from* -- to* from* )
+	SWP2r INC2r SWP2r INC2k !<cut-char-at>
+
+@format/clip ( -- )
+	;/do-clip !/<apply>
+
+@format/do-clip ( to* from* -- to* from* )
+	SWP2r LDAk #20 NEQ ?{
+		INC2k wlen STH2kr ADD2 #0050 LTH2 ?{
+			( replace ) DUP2 #0a ROT ROT STA
+			( reset ) POP2r LIT2r 0000 } }
+	INC2r SWP2r JMP2r
+
+@format/join ( -- )
+	;/do-join !/<apply>
+
+@format/do-join ( addr* -- addr* )
+	LDAk #20 GTH ?{ STH2k #20 STH2r STA }
+	JMP2r
+
+@format/tab ( -- )
+	sel/<expand>
+	;/do-tab !/<apply-sub>
+
+@format/do-tab ( to* from* -- to* from* )
+	DUP2 #0001 SUB2 LDA #0a NEQ ?{
+		SWP2 INC2 SWP2
+		( put ) DUP2 #09 ROT ROT !<insert-char-at> }
+	JMP2r
+
+@format/untab ( -- )
+	sel/<expand>
+	;/do-untab !/<apply-sub>
+
+@format/do-untab ( to* from* -- to* from* )
+	LDAk #09 NEQ ?{
+		DUP2 #0001 SUB2 LDA #0a NEQ ?{
+			( inc ) SWP2r INC2r SWP2r
+			( cut ) DUP2 !<cut-char-at> } }
+	JMP2r
+
+@format/trim ( -- )
+	;/do-trim !/<apply-sub>
+
+@format/do-trim ( -- )
+	&>w
+		LDA2k #2020 NEQ2 ?{
+			DUP2 <cut-char-at>
+			SWP2r INC2r SWP2r !&>w }
+	JMP2r
+
+@format/lc ( -- )
+	;/do-lc !/<apply>
+
+@format/do-lc ( -- )
+	LDAk LIT "A SUB #19 GTH ?{
+		DUP2 LDAk #20 ADD ROT ROT STA }
+	JMP2r
+
+@format/uc ( -- )
+	;/do-uc !/<apply>
+
+@format/do-uc ( -- )
+	LDAk LIT "a SUB #19 GTH ?{
+		DUP2 LDAk #20 SUB ROT ROT STA }
+	JMP2r
+
+(
 @|editing )
 
 @<insert-char> ( char -- )
 	DUP #09 LTH ?{
 		( convert lb ) DUP #0d EQU #03 MUL SUB
 		( ) sel/has-length ?&block
-		( ) get-eof #fff0 NEQ2 ?&single }
+		( ) .textarea/eof LDZ2 #fff0 NEQ2 ?&single }
 	POP JMP2r
 
 	&block ( c -- )
@@ -1436,11 +1508,11 @@
 @<insert-char-at> ( c addr* -- )
 	DUP2 #0001 <msfr>
 	STA
-	#0001 !<mod-length>
+	#0001 !textarea/<mod-length>
 
 @<insert-word> ( word* -- )
 	( | move memory )
-	sel/get-to OVR2 wlen DUP2 STH2k <mod-length>
+	sel/get-to OVR2 wlen DUP2 STH2k textarea/<mod-length>
 	<msfr>
 	( | add offset )
 	sel/get-to LTH2k ?{ SWP2 STH2kr ADD2 SWP2 }
@@ -1459,46 +1531,13 @@
 
 @delete ( -- )
 	sel/has-length ?{
-		sel/get-from INC2k get-eof NEQ2 ?{ POP2 JMP2r }
+		sel/get-from INC2k .textarea/eof LDZ2 NEQ2 ?{ POP2 JMP2r }
 		DUP2 <cut-char-at> !sel/<set-a> }
 	sel/erase !sel/<reset>
 
-@tab ( -- )
-	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<insert>
-	sel/has-length ?sel/<tab>
-	#09 !<insert-char>
-
-@untab ( -- )
-	sel/has-length ?sel/<untab>
-	#09 !<insert-char>
-
 @<cut-char-at> ( addr* -- )
 	#0001 <msfl>
-	#ffff
-	( >> )
-
-@<mod-length> ( change* -- )
-	.textarea/length LDZ2 ADD2 .textarea/length STZ2
-	reqdraw-both #0a !path/<set-state>
-
-@join-spaces ( addr* -- addr* )
-	[ LIT2r 0000 ]
-	&>w
-		LDA2k #2020 NEQ2 ?{ DUP2 <cut-char-at>
-			INC2r !&>w }
-	STH2r JMP2r
-
-@format-strip ( -- )
-	get-eof ;textarea/buf
-	&l ( -- )
-	LDA2k #0920 NEQ2 ?{ INC2k <cut-char-at> !&l }
-	LDA2k #0a20 NEQ2 ?{ INC2k <cut-char-at> !&l }
-	LDA2k #2020 NEQ2 ?{ INC2k <cut-char-at> !&l }
-	LDA2k #2009 NEQ2 ?{ DUP2 <cut-char-at> !&l }
-	LDA2k #200a NEQ2 ?{ DUP2 <cut-char-at> !&l }
-	LDA2k #090a NEQ2 ?{ DUP2 <cut-char-at> !&l }
-	INC2 GTH2k ?&l
-	POP2 POP2 sel/<reset> !reqdraw-both
+	#ffff !textarea/<mod-length>
 
 @<redraw-all> ( -- )
 	menu/<draw>
@@ -1506,7 +1545,7 @@
 
 @widget/<draw> ( {fn}* color -- )
 	( | left )
-	STHk .Screen/x DEI2 textarea/get-anchor #0008 ADD2 GTH2k [ JMP SWP2 ] POP2 .Screen/x DEO2
+	STHk .Screen/x DEI2 textarea/get-anchor #0008 ADD2 GTH2k SWP2? POP2 .Screen/x DEO2
 	[ LIT2 02 -Screen/auto ] DEO
 	.Screen/x DEI2k #0004 SUB2 ROT DEO2
 	.Screen/y DEI2k #0014 ADD2 ROT DEO2
@@ -1561,7 +1600,7 @@
 @addr-to-line ( addr* -- line* )
 	[ LIT2r 0000 ] ;textarea/buf EQU2k ?{
 		&>l
-			LDAk #0a NEQ [ JMP INC2r ]
+			LDAk #0a NEQ INC2r?
 			( ) INC2 GTH2k ?&>l }
 	POP2 POP2 STH2r JMP2r
 
@@ -1569,7 +1608,7 @@
 	highlight/<reset>
 	( goto y ) ( b ) .Mouse/y DEI2 #0028 SUB2 #0018 DIV2 STH
 	POP
-	( a ) [ LITr 00 ] get-eof get-scroll-addr
+	( a ) [ LITr 00 ] .textarea/eof LDZ2 get-scroll-addr
 	&>ver
 		EQUkr STHr ?{
 			LDAk #0a NEQ [ JMP INCr ] utf8/next GTH2k ?&>ver }
@@ -1584,7 +1623,7 @@
 	( clean highlight ) #0000 .highlight/comment STZ2
 	JMP2r
 
-@is-selected ( addr* -- f )
+@is-selected ( addr* -- addr* f )
 	DUP2 sel/get-from LTH2 ?{
 		INC2k sel/get-to GTH2 ?{ #01 JMP2r } }
 	#00 JMP2r
@@ -1625,6 +1664,8 @@
 	&categories "Categories $1
 	&navbar "Navbar $1
 	&expand "Expand $1
+	&lowercase "Lowercase $1
+	&uppercase "Uppercase $1
 	&reset-theme "Reset 20 "Theme $1 &bytes-free 20 "bytes 20 "free. $1
 	&empty "Empty $1
 
@@ -1670,7 +1711,7 @@
 			POP2r POP2r
 			( exit ) DUP2 .&cat LDZ2 NEQ2 ?{ POP2 #ffff ;&on-exit-cat !/<open> }
 			( open ) ;&on-open-cat /<open> !/<draw-subs> }
-		STH2kr .&anchor STZ2
+		DUP2r [ LITr -&anchor ] STZ2r
 		LDA2 LDAk ?&>wt
 	POP2r POP2r POP2 JMP2r
 
@@ -1679,7 +1720,6 @@
 	.&sub STZ !/<draw-subs>
 
 @menu/<touch-sub> ( id -- )
-	( | clamp )
 	DUP .&cat LDZ2 LDA2k SWP2 SUB2 #0004 SUB2 #0006 DIV2 NIP LTH ?{
 		( outside ) POP #ffff ;&on-exit-sub !/<open> }
 	#00 SWP #0006 MUL2 #0004 ADD2 .&cat LDZ2 ADD2 #0002 ADD2 LDA2
@@ -1879,7 +1919,7 @@
 	DUP #7f GTH ?&ok
 	POP #00 &ok JMP2r
 
-@chex ( c -: <val> )
+@chex ( c -- <val> )
 	[ LIT "0 ] SUB DUP #0a LTH ?{
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
@@ -1910,7 +1950,7 @@
 	LDAk #20 GTH ?{ JMP2r }
 	INC2 !wcap
 
-@shex ( str* -: value* )
+@shex ( str* -- value* )
 	[ LIT2r 0000 ]
 	&>w
 		( acc ) [ LITr 40 ] SFT2r
@@ -1918,20 +1958,13 @@
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
-@sseg ( a* b* -- bool )
+@mem/cmp ( a* length* b* -- t )
 	STH2
+	OVR2 ADD2 SWP2
 	&>l
-		LDAk LDAkr STHr NEQ ?&end
-		INC2k LDA #00 EQU ?&end
-		INC2 INC2r !&>l
-	&end LDA LDAr STHr EQU JMP2r
-
-@mcmp ( a* b* length* -- f )
-	SWP2 STH2
-	ADD2k NIP2 SWP2
-	&>l
-		LDAk LDAkr STHr NEQ ?{ INC2r INC2 GTH2k ?&>l }
-	EQU2 POP2r JMP2r
+		EQU2k ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
+	POP2r EQU2 JMP2r
 
 @<mclr> ( src* len* -- )
 	,&length STR2
@@ -1943,7 +1976,7 @@
 @<msfl> ( a* distance* -- )
 	OVR2 ,&dst STR2
 	ADD2k ,&src STR2
-	POP2 get-eof SWP2 SUB2 ,&length STR2
+	POP2 .textarea/eof LDZ2 SWP2 SUB2 ,&length STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
 	&mmu 01 &length 0000 0000 &src 0000 0000 &dst 0000
@@ -1951,16 +1984,16 @@
 @<msfr> ( a* distance* -- )
 	ADD2k ,&dst STR2
 	OVR2 ,&src STR2
-	POP2 get-eof SWP2 SUB2 ,&length STR2
+	POP2 .textarea/eof LDZ2 SWP2 SUB2 ,&length STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
 	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
 
 @<phex> ( short* -- )
 	SWP <phex>/b
-	&b ( -- )
+	&b ( byte -- )
 	DUP #04 SFT <phex>/c
-	&c ( -- )
+	&c ( byte -- )
 	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 	JMP2r
 

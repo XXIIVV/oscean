@@ -108,13 +108,15 @@ program's labels.</p>
 </ul>
 <h2>Metadata exposes additional information about a Varvara rom.</h2>
 
-<p>An external program can find the location of a ROM's metadata, by forming a 16-bit address from the second and third bytes of a rom file. That program can verify that this is indeed a valid address by reading the subsequent 3 bytes which should <b>always</b> be <code>80 06 37</code>.</p>
+<p>A program's metadata can be found by forming a 16-bit address from the second and third bytes of a compatible rom file. A compatible rom must begin with <code>0a</code>, a two bytes address, and the subsequent 3 bytes should <b>always</b> be <code>80 06 37</code>.</p>
 
 <table border='1'>
 	<tr><th colspan='6'>First six bytes</th></tr>
 	<tr><th>LIT2</th><th colspan='2'>address</th><th>LIT</th><th>port</th><th>DEO2</th><td>...</td></tr>
 	<tr><td class='key'>a0</td><td class='addr'>hb</td><td class='addr'>lb</td><td class='key'>80</td><td class='key'>06</td><td class='key'>37</td><td>...</td></tr>
 </table>
+
+<p>The address corresponds to the absolute location of the metadata, once loaded in memory, so it has a 0x100 bytes offset(the zero-page) which needs to be accounted for when accessing the metadata externally.</p>
 
 <p>The body of the metadata can be anything, but it is recommended that it be plain-text with <code>0a</code> as line separator, and that the first line be the name of the application. Here are some suggestions for lines to include in the body of the metadata:</p>
 
@@ -184,8 +186,8 @@ JMP2r
 </ul>
 
 <style>
-	.addr { font-family:mono;background:#eee; }
-	.key { font-family:mono;background:#72dec2 }
+	.addr { font-family:mono;background:#eee; color:black }
+	.key { font-family:mono;background:#72dec2; color:black }
 </style>
 
 <h2>Manifest exposes a rom's features.</h2>
