@@ -158,26 +158,36 @@ system_boot(char *rom_path, unsigned int has_args)
 }
 
 static void
-system_expansion(Uint16 addr)
+system_expansion(const Uint16 addr)
 {
 	Uint8 *aptr = ram + addr;
 	Uint16 length = PEEK2(aptr + 1);
 	if(ram[addr] == 0x0) {
-		unsigned int a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
+		unsigned int src_bank = PEEK2(aptr + 3);
+		unsigned int src_addr = PEEK2(aptr + 5);
+		unsigned int src_value = ram[addr + 7];
+		unsigned int a = src_bank * 0x10000 + src_addr;
 		unsigned int b = a + length;
-		unsigned int value = ram[addr + 7];
-		for(b = b < BANKS_CAP ? b : BANKS_CAP; a < b; ram[a++] = value);
+		for(b = b < BANKS_CAP ? b : BANKS_CAP; a < b; ram[a++] = src_value);
 	} else if(ram[addr] == 0x1) {
-		unsigned int a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
+		unsigned int src_bank = PEEK2(aptr + 3);
+		unsigned int src_addr = PEEK2(aptr + 5);
+		unsigned int dst_bank = PEEK2(aptr + 7);
+		unsigned int dst_addr = PEEK2(aptr + 9);
+		unsigned int a = src_bank * 0x10000 + src_addr;
 		unsigned int b = a + length;
-		unsigned int c = PEEK2(aptr + 7) * 0x10000 + PEEK2(aptr + 9);
+		unsigned int c = dst_bank * 0x10000 + dst_addr;
 		for(b = b < BANKS_CAP ? b : BANKS_CAP; a < b; ram[c++] = ram[a++]);
 	} else if(ram[addr] == 0x2) {
-		unsigned int a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
+		unsigned int src_bank = PEEK2(aptr + 3);
+		unsigned int src_addr = PEEK2(aptr + 5);
+		unsigned int dst_bank = PEEK2(aptr + 7);
+		unsigned int dst_addr = PEEK2(aptr + 9);
+		unsigned int a = src_bank * 0x10000 + src_addr;
 		unsigned int b = a + length;
-		unsigned int c = PEEK2(aptr + 7) * 0x10000 + PEEK2(aptr + 9);
+		unsigned int c = dst_bank * 0x10000 + dst_addr;
 		unsigned int d = c + length;
-		for(; b >= a; ram[--d] = ram[--b]);
+		for(; b > a; ram[--d] = ram[--b]);
 	} else
 		fprintf(stderr, "Unknown command: %s\n", &ram[addr]);
 }
