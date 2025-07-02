@@ -1,9 +1,9 @@
 ( Usage: uxnfor.rom source.tal )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
@@ -17,8 +17,8 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	.Console/type DEI ?{
-		;dict/usage <sprint>
 		;src/on-console-live .Console/vector DEO2
+		;dict/usage <sprint>
 		BRK }
 	;src/on-console-once .Console/vector DEO2
 	BRK
@@ -27,41 +27,84 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "2 20 "May 20 "2025 $2
+	( date ) "1 20 "Jul 20 "2025 $2
 
-@on-console ( -> )
-	[ LIT2 0a -Console/read ] DEI EQU ?{ BRK }
-	<format-file>
-	BRK
+(
+@|src )
 
 @src/on-console-live ( -> )
-	.Console/read DEI DUP #20 GTH ?{
-		POP <format-file>
-		;dict/bound <sprint>
-		;/buf <sprint>
-		;on-console .Console/vector DEO2
+	.Console/read DEI DUP #20 SUB #5f LTH ?{
+		POP .&buf ,&ptr LDR NEQ ?{ BRK }
+		<format-file>
+		/<clear>
 		BRK }
 	/<append>
 	BRK
 
 @src/on-console-once ( -> )
-	.Console/read DEI DUP #20 GTH ?{
-		POP <format-file>
-		/<clear>
+	.Console/read DEI DUP #20 SUB #5f LTH ?{
+		POP .&buf ,&ptr LDR NEQ ?{ #010f DEO
+			BRK }
+		<format-file>
 		#800f DEO
 		BRK }
 	/<append>
 	BRK
 
 @src/<append> ( char -- )
-	[ LIT2 00 &ptr -src/buf ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
 
 @src/<clear> ( -- )
-	[ LIT2 -src/buf _&ptr ] STR
-	#0000 .src/buf STZ2
+	[ LIT2 -&buf _&ptr ] STR
+	#0000 .&buf STZ2
 	JMP2r
+
+(
+@|scope )
+
+@scope/new ( -- )
+	;&cmd .System/expansion DEO2
+	,&ptr LDR2 ;&buf SUB2 ,&length STR2
+	;&buf ,&ptr STR2
+	JMP2r
+
+	&cmd [ 00 &length $2 0000 =&buf 00 ]
+
+@scope/put ( c -- )
+	#00 [ LIT2 &ptr =&buf ]
+	( ) DUP2 ;&cap EQU2 ?{
+		( ) INC2k ,&ptr STR2
+		STA2
+		JMP2r }
+	POP2 POP2 [ LIT2 01 -err ] STZ
+	JMP2r
+
+(
+@|result )
+
+@result/new ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@result/put ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@result/rew ( -- )
+	,&ptr LDR2 #0001 SUB2 ,&ptr STR2
+	JMP2r
+
+@result/get-last ( -- c )
+	,&ptr LDR2 #0001 SUB2 LDA JMP2r
+
+(
+@|macros )
+
+%ciuc ( c -- f ) {
+	[ LIT "A ] SUB #1a LTH }
 
 (
 @|core )
@@ -70,8 +113,8 @@
 	;src/buf .File/name DEO2
 	#0001 .File/length DEO2
 	[ LIT2 00 -err ] STZ
-	Result/new
-	&>s ( -- )
+	result/new
+	&>s
 		;&c .File/read DEO2
 		.File/succ-lb DEI ?{ eval-scope !<write-file> }
 		.err LDZ ?&fail
@@ -79,7 +122,7 @@
 
 	&fail ( -- )
 	;dict/err <sprint>
-	;mem/scope <wprint>/
+	;scope/buf <wprint>/
 	#0a19 DEO
 	JMP2r
 
@@ -98,7 +141,7 @@
 
 @eval-scope ( -- )
 	<reset-depth>
-	;mem/scope
+	;scope/buf
 	( | pad zp )
 	[ LIT2 00 -inzp ] LDZ EQU ?{ #09 <emit> }
 	( | label/macro )
@@ -157,7 +200,7 @@
 
 @handle-padrel ( addr* -- addr* )
 	<emit-word>/
-	;mem/scope INC2 LDA ciuc ?&space-after
+	;scope/buf INC2 LDA ciuc ?&space-after
 	INC2k LDA #00 EQU ?&space-after
 	DUP2 wcap/ INC2 LDA [ LIT "& ] NEQ ?&break-after
 	DUP2 wrew wrew INC2 LDA [ LIT "& ] EQU ?&space-after
@@ -238,7 +281,7 @@
 @<write-file> ( -- )
 	.err LDZ ?{
 		;src/buf .File/name DEO2
-		;mem/result ;Result/ptr LDA2 OVR2 SUB2 .File/length DEO2
+		;result/buf ;result/ptr LDA2 OVR2 SUB2 .File/length DEO2
 		.File/write DEO2 }
 	JMP2r
 
@@ -271,13 +314,13 @@
 
 @count-block ( str* -- length* )
 	[ LIT2r 0000 ]
-	&>w ( -- )
+	&>w
 		LDAk #5d EQU ?&end
 		INC2r INC2 LDAk ?&>w &end POP2 STH2r JMP2r
 
 @count-lambda ( str* -- length* )
 	LIT2r 0000
-	&>w ( -- )
+	&>w
 		LDAk [ LIT "} ] EQU ?&end
 		LDAk #20 NEQ ?{ INC2r }
 		INC2 LDAk ?&>w &end POP2 STH2r JMP2r
@@ -291,17 +334,12 @@
 	&short POP2 #07 JMP2r
 	&long POP2 #01 JMP2r
 
-@chex ( c -: <val> )
-	[ LIT "0 ] SUB DUP #0a LTH ?&end
-	#27 SUB DUP #10 LTH ?&end
-	POP #ff &end JMP2r
-
 (
 @|emitters )
 
 @<emit-block> ( str* -- str* )
 	DUP2 count-block #002a GTH2 ?<emit-long-block>
-	&>w ( -- )
+	&>w
 		LDAk <emit>
 		LDAk #5d EQU ?&end
 		INC2 LDAk ?&>w
@@ -312,7 +350,7 @@
 	( b ) wcap/ INC2 wlen STH2r GTH2k [ JMP SWP2 POP2 ]
 	( res ) get-block-width ,&lb STR
 	LIT2r 0000
-	&>w ( -- )
+	&>w
 		LDAk <emit>
 		LDAk #20 NEQ ?{
 			STHkr [ LIT &lb $1 ] AND ?&no-spacer
@@ -329,7 +367,7 @@
 		LDAk <emit>
 		#0a <emit>
 		INC2 INC2 }
-	&>w ( -- )
+	&>w
 		LDAk #00 EQU ?&end
 		LDA2k [ LIT2 "| 20 ] NEQ2 ?{
 			DUP2 #0002 SUB2 LDA2 [ LIT2 "( 20 ] EQU2 ?{ <emit-break-tab> } }
@@ -340,8 +378,8 @@
 	[ LIT &break-after $1 ] ?{ <emit-break-tab> }
 	INC2 JMP2r
 
-@<emit-break-once> ( -: )
-	;Result/ptr LDA2 #0001 SUB2 LDA #1f GTH ?<emit-break-tab>
+@<emit-break-once> ( -- )
+	;result/ptr LDA2 #0001 SUB2 LDA #1f GTH ?<emit-break-tab>
 	JMP2r
 
 @<reset-depth> ( -- )
@@ -363,12 +401,12 @@
 	( | depth )
 	[ LIT2 &depth $1 00 ] EQUk ?{
 		OVR #10 GTH ?{
-			&>l ( -- )
+			&>l
 				#09 <emit>
 				INC GTHk ?&>l } }
 	POP2 JMP2r
 
-@<emit-word> ( str* -: str* )
+@<emit-word> ( str* -- str* )
 	LDAk <emit>
 	INC2 & LDAk #20 GTH ?<emit-word>
 	JMP2r
@@ -381,15 +419,15 @@
 @<emit> ( c -- )
 	DUP ?{ POP JMP2r }
 	DUP #20 NEQ ?{
-		( ws ws ) Result/get-last #20 EQU ?&ignore
-		( tb ws ) Result/get-last #09 EQU ?&ignore }
+		( ws ws ) result/get-last #20 EQU ?&ignore
+		( tb ws ) result/get-last #09 EQU ?&ignore }
 	DUP #0a NEQ ?{
-		( ws lb <- ) Result/get-last #20 NEQ ?{ Result/rew }
-		( tb lb <- ) Result/get-last #09 NEQ ?{ Result/rew }
+		( ws lb <- ) result/get-last #20 NEQ ?{ result/rew }
+		( tb lb <- ) result/get-last #09 NEQ ?{ result/rew }
 		[ LIT &lb $1 ] INCk ,&lb STR
-		#02 LTH ?Result/put
+		#02 LTH ?result/put
 		POP JMP2r }
-	Result/put [ LIT2 00 _&lb ] STR
+	result/put [ LIT2 00 _&lb ] STR
 	JMP2r
 
 	&ignore ( c last -- )
@@ -398,21 +436,11 @@
 (
 @|stdlib )
 
-@ciuc ( c -: f )
-	[ LIT "A ] SUB #1a LTH JMP2r
-
-@slen ( str* -: len* )
+@slen ( str* -- len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
-@scap ( str* -: end* )
+@scap ( str* -- end* )
 	INC2 & LDAk ?scap
-	JMP2r
-
-@<sclr> ( str* -: )
-	#00 ROT ROT
-	&>w ( cap str* -- )
-		STAk INC2 LDAk ?&>w
-	STA
 	JMP2r
 
 @scmp3 ( a* b* -- f )
@@ -422,7 +450,7 @@
 
 @wcmp ( a* b* -- f )
 	STH2
-	&>w ( -- )
+	&>w
 		LDAk LDAkr STHr DUP2 #2020 EQU2 ?&end
 		NEQk ?&end
 		POP2 INC2 INC2r !&>w
@@ -431,66 +459,32 @@
 	NIP2 POP2r EQU JMP2r
 
 @wrew ( w* -- rew* )
-	DUP2 ;mem/scope EQU2 ?{
+	DUP2 ;scope/buf EQU2 ?{
 		#0001 SUB2 LDAk #20 GTH ?wrew }
 	JMP2r
 
-@wcap ( w* -: cap* )
+@wcap ( w* -- cap* )
 	INC2 & LDAk #20 GTH ?wcap
 	JMP2r
 
-@wlen ( w* -: len* )
+@wlen ( w* -- len* )
 	DUP2 wcap/ SWP2 SUB2 JMP2r
 
-@<sprint> ( str* -: )
+@<sprint> ( str* -- )
 	LDAk #19 DEO
 	INC2 LDAk ?<sprint>
 	POP2 JMP2r
 
-@<wprint> ( str* -: )
+@<wprint> ( str* -- )
 	LDAk #19 DEO
 	INC2 & LDAk #20 GTH ?<wprint>
 	POP2 JMP2r
 
 (
-@|memory )
+@|assets )
 
-@scope
-	&new ( -- )
-	;mem/scope DUP2 ,&ptr STR2 !<sclr>
-
-	&put ( c -- )
-	#00 [ LIT2 &ptr =mem/scope ]
-	( ) DUP2 ;mem/scope-cap EQU2 ?&overflow
-	( ) INC2k ,&ptr STR2
-	STA2
-	JMP2r
-
-	&overflow ( c* ptr* -- )
-	POP2 POP2 [ LIT2 01 -err ] STZ
-	JMP2r
-
-@Result
-	&new ( -- )
-	;mem/result ,&ptr STR2
-	JMP2r
-
-	&put ( c -- )
-	#00 [ LIT2 &ptr =mem/result ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
-
-	&rew ( -- )
-	,&ptr LDR2 #0001 SUB2 ,&ptr STR2
-	JMP2r
-
-	&get-last ( -- c )
-	,&ptr LDR2 #0001 SUB2 LDA JMP2r
-
-@dict
-	&usage "usage: 20 "uxnfor.rom 20 "source.tal 0a $1
+@dict/usage "usage: 20 "uxnfor.rom 20 "source.tal 0a $1
 	&err "!! 20 "Error: 20 "Scope 20 "too 20 "large: 20 $1
-	&bound "bound: 20 $1
 	&deo "DEO $1
 	&sta "STA $1
 	&stz "STZ $1
@@ -501,6 +495,7 @@
 	&jcn "JCN $1 20
 	&brk "BRK $1
 
-@mem ( static buffers )
-	&scope $4000 &scope-cap $2 &result
+@scope/buf $4000 &cap $2
+
+@result/buf
 
