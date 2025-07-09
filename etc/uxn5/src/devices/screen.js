@@ -110,7 +110,7 @@ function Screen(emu)
 		this.x2 = this.y2 = 0;
 	}
 
-	let rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
+	let rX = 0, rY = 0, rA = 0, rMX = 0, rMY = 0, rMA = 0, rML = 0, rDX = 0, rDY = 0;
 
 	this.dei = (addr) => {
 		switch(addr) {
