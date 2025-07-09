@@ -25,6 +25,7 @@ function Screen(emu)
 	this.init = () => {
 		this.display = document.getElementById("display");
 		this.displayctx = this.display.getContext("2d", {"willReadFrequently": true})
+		this.display.addEventListener("contextmenu", (e) => e.preventDefault())
 		this.display.addEventListener("pointermove", emu.mouse.on_move)
 		this.display.addEventListener("pointerdown", emu.mouse.on_down)
 		this.display.addEventListener("pointerup", emu.mouse.on_up)
