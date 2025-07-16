@@ -3028,57 +3028,6 @@ Dofaremisi	Selgemme
 Dofarefado	Magnésie
 Dofaresoldo	Géologie, Géologie, Géologique
 
-;;	Symmetric
-
-dore	I, me
-domi	you(sing.)
-dofa	they(sing.)
-dosol	we
-dola	you(plur.)
-dosi	they(plur.)
-
-redo	my, mine
-remi	what
-refa	without, alone
-resol	outside, outer
-rela	known
-resi	none, nothing
-
-mido	your(sing.)
-mire	that, which, who
-mifa	how
-misol	well(adv.)
-mila	near, here
-misi	late, evening, night
-
-fado	their(sing.)
-fare	with, jointly
-fami	which
-fasol	why
-fala	positive
-fasi	much, very
-
-soldo	our
-solre	within, inside, in
-solmi	ill(adv.)
-solfa	because
-solla	always
-solsi	thanks
-
-lado	your(plur.)
-lare	unknown
-lami	far, there
-lafa	negative
-lasol	never
-lasi	formal title
-
-sido	their(plur.)
-sire	each, every
-simi	early, morning, day
-sifa	few, scarcely
-sisol	sorry
-sila	affectionate title
-
 ;;	Modern
 
 Dosoldo	Be hungry
@@ -3123,30 +3072,30 @@ dola	you(plur.)
 dosi	they(plur.)
 
 redo	my, mine
-remi	who?
-refa	when?
-resol	more
+remi	what
+refa	without, alone
+resol	outside, outer
 rela	known
-resi	even, fair
+resi	none, nothing
 
 mido	your(sing.)
-mire	what?
-mifa	how?
+mire	that, which, who
+mifa	how
 misol	well(adv.)
 mila	near, here
 misi	late, evening, night
 
 fado	their(sing.)
-fare	where?
-fami	which?
-fasol	every
+fare	with, jointly
+fami	which
+fasol	why
 fala	positive
 fasi	much, very
 
 soldo	our
-solre	less
+solre	within, inside, in
 solmi	ill(adv.)
-solfa	none
+solfa	because
 solla	always
 solsi	thanks
  	 	 	 	 	 	
@@ -3155,18 +3104,19 @@ lare	unknown
 lami	far, there
 lafa	negative
 lasol	never
-lasi	affectionate, with, inside
+lasi	formal title
 
 sido	their(plur.)
-sire	uneven, unfair
+sire	each, every
 simi	early, morning, day
 sifa	few, scarcely
 sisol	sorry
-sila	formal, without, outside
+sila	affectionate title
 
 domifa	bound, obligation, duty
 domisol	health
 solmido	sickness
 dofami	disagreement
+dodore	globe, zero
 
 `

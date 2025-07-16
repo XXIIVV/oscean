@@ -34,7 +34,7 @@ function Emu (embed)
 			this.screen.init()
 			this.controller.init()
 			/* Reveal */
-			document.body.className = emulator.embed ? "embed" : "default"
+			document.body.className = this.embed ? "embed" : "default"
 			document.title = "Varvara Emulator"
 			// Enable drag/drop load
 			document.body.addEventListener("dragover", (e) => {
@@ -42,11 +42,11 @@ function Emu (embed)
 			});
 			document.body.addEventListener("drop", (e) => {
 				e.preventDefault();
-				emulator.load_file(e.dataTransfer.files[0])
+				this.load_file(e.dataTransfer.files[0])
 			});
 			// Enable button load
 			document.getElementById("browser").addEventListener("change", (e) => {
-				emulator.load_file(e.target.files[0])
+				this.load_file(e.target.files[0])
 			});
 			// Decode rom in url
 			const rom_url = window.location.hash.match(/r(om)?=([^&]+)/);
@@ -54,14 +54,14 @@ function Emu (embed)
 				let rom = b64decode(rom_url[2]);
 				if(!rom_url[1])
 					rom = decodeUlz(rom);
-				emulator.load(rom, true);
+				this.load(rom, true);
 			}
 			else if (boot_ulz) {
-				emulator.load(decodeUlz(b64decode(boot_ulz)), true);
+				this.load(decodeUlz(b64decode(boot_ulz)), true);
 			}
 			// Or, get boot rom
 			else if(boot_rom)
-				emulator.load(boot_rom, true);
+				this.load(boot_rom, true);
 			// Start screen vector
 			setInterval(() => {
 				window.requestAnimationFrame(() => {
