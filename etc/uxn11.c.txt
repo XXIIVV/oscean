@@ -1075,6 +1075,56 @@ get_button(KeySym sym)
 }
 
 static void
+display_hidecursor(void)
+{
+	XColor black = {0};
+	char empty[] = {0};
+	Pixmap bitmap = XCreateBitmapFromData(display, window, empty, 1, 1);
+	Cursor blank = XCreatePixmapCursor(display, bitmap, bitmap, &black, &black, 0, 0);
+	XDefineCursor(display, window, blank);
+	XFreeCursor(display, blank);
+	XFreePixmap(display, bitmap);
+}
+
+static void
+display_floating(Display *dpy, Window win)
+{
+	Atom wmDelete = XInternAtom(display, "WM_DELETE_WINDOW", True);
+	Atom wmType = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
+	Atom wmDialog = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+	XSetWMProtocols(display, window, &wmDelete, 1);
+	XChangeProperty(dpy, win, wmType, 4, 32, PropModeReplace, (Uint8 *)&wmDialog, 1);
+}
+
+static unsigned int
+display_init(void)
+{
+	Screen *screen;
+	Visual *visual;
+	XClassHint class = {"uxn11", "Uxn"};
+	int screen_width, screen_height;
+	/* start display */
+	display = XOpenDisplay(NULL);
+	if(!display)
+		return !fprintf(stderr, "Display: failed\n");
+	/* start window */
+	visual = DefaultVisual(display, 0);
+	if(visual->class != TrueColor)
+		return !fprintf(stderr, "Display: True-color visual failed\n");
+	/* center */
+	screen = ScreenOfDisplay(display, 0);
+	screen_width = screen->width, screen_height = screen->height;
+	window = XCreateSimpleWindow(display, RootWindow(display, 0), screen_width / 2 - uxn_screen.width / 2, screen_height / 2 - uxn_screen.height / 2, uxn_screen.width, uxn_screen.height, 1, 0, 0);
+	display_hidecursor();
+	display_floating(display, window);
+	XSelectInput(display, window, ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ExposureMask | KeyPressMask | KeyReleaseMask | LeaveWindowMask);
+	XStoreName(display, window, "uxn11");
+	XSetClassHint(display, window, &class);
+	XMapWindow(display, window);
+	return 1;
+}
+
+static void
 emu_event(void)
 {
 	char buf[7];
@@ -1129,62 +1179,12 @@ emu_event(void)
 }
 
 static void
-display_hidecursor(void)
-{
-	XColor black = {0};
-	char empty[] = {0};
-	Pixmap bitmap = XCreateBitmapFromData(display, window, empty, 1, 1);
-	Cursor blank = XCreatePixmapCursor(display, bitmap, bitmap, &black, &black, 0, 0);
-	XDefineCursor(display, window, blank);
-	XFreeCursor(display, blank);
-	XFreePixmap(display, bitmap);
-}
-
-static void
-display_floating(Display *dpy, Window win)
-{
-	Atom wmDelete = XInternAtom(display, "WM_DELETE_WINDOW", True);
-	Atom wmType = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
-	Atom wmDialog = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
-	XSetWMProtocols(display, window, &wmDelete, 1);
-	XChangeProperty(dpy, win, wmType, 4, 32, PropModeReplace, (Uint8 *)&wmDialog, 1);
-}
-
-static unsigned int
-display_init(void)
-{
-	Screen *screen;
-	Visual *visual;
-	XClassHint class = {"uxn11", "Uxn"};
-	int screen_width, screen_height;
-	/* start display */
-	display = XOpenDisplay(NULL);
-	if(!display)
-		return !fprintf(stderr, "Display: failed\n");
-	/* start window */
-	visual = DefaultVisual(display, 0);
-	if(visual->class != TrueColor)
-		return !fprintf(stderr, "Display: True-color visual failed\n");
-	/* center */
-	screen = ScreenOfDisplay(display, 0);
-	screen_width = screen->width, screen_height = screen->height;
-	window = XCreateSimpleWindow(display, RootWindow(display, 0), screen_width / 2 - uxn_screen.width / 2, screen_height / 2 - uxn_screen.height / 2, uxn_screen.width, uxn_screen.height, 1, 0, 0);
-	display_hidecursor();
-	display_floating(display, window);
-	XSelectInput(display, window, ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ExposureMask | KeyPressMask | KeyReleaseMask | LeaveWindowMask);
-	XStoreName(display, window, "uxn11");
-	XSetClassHint(display, window, &class);
-	XMapWindow(display, window);
-	return 1;
-}
-
-static unsigned int
 emu_run(void)
 {
 	int has_input, has_eof;
 	char expirations[8], coninp[CONINBUFSIZE];
-	struct pollfd fds[3];
 	static const struct itimerspec screen_tspec = {{0, 16666666}, {0, 16666666}};
+	struct pollfd fds[3];
 	/* timer */
 	fds[0].fd = XConnectionNumber(display);
 	fds[1].fd = timerfd_create(CLOCK_MONOTONIC, 0);
@@ -1216,7 +1216,10 @@ emu_run(void)
 				console_input(0, CONSOLE_STD);
 		}
 	}
-	return 1;
+	if(ximage)
+		XDestroyImage(ximage);
+	XDestroyWindow(display, window);
+	XCloseDisplay(display);
 }
 
 int
@@ -1224,7 +1227,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 30 Jun 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 19 Jul 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
@@ -1243,6 +1246,5 @@ main(int argc, char **argv)
 		return !fprintf(stdout, "Could not open display.\n");
 	emu_run();
 	console_close();
-	XDestroyImage(ximage), XDestroyWindow(display, window), XCloseDisplay(display);
 	return dev[0x0f] & 0x7f;
 }
