@@ -38,8 +38,6 @@ function Screen(emu)
 		this.y1 = clamp(this.y1, 0, this.height);
 		this.x2 = clamp(this.x2, 0, this.width);
 		this.y2 = clamp(this.y2, 0, this.height);
-		console.log(this.x1, this.y1, this.x2, this.y2, `(${this.width}x${this.height})`)
-
 		return this.x2 > this.x1 && this.y2 > this.y1;
 	}
 
