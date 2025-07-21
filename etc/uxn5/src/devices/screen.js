@@ -192,7 +192,7 @@ function Screen(emu)
 				for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
 					let xmar = MAR(x), ymar = MAR(y);
 					let xmar2 = MAR2(x), ymar2 = MAR2(y);
-					if(xmar < wmar && ymar2 < hmar2) {
+					if(xmar >= 0 && xmar < wmar && ymar2 >= 0 && ymar2 < hmar2) {
 						let by = ymar2 * wmar2;
 						for(ay = ymar * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
 							let ch1 = emu.uxn.ram[rA + qy], ch2 = emu.uxn.ram[rA + qy + 8] << 1, bx = xmar2 + ay;
@@ -208,7 +208,7 @@ function Screen(emu)
 				for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
 					let xmar = MAR(x), ymar = MAR(y);
 					let xmar2 = MAR2(x), ymar2 = MAR2(y);
-					if(xmar < wmar && ymar2 < hmar2) {
+					if(xmar >= 0 && xmar < wmar && ymar2 >= 0 && ymar2 < hmar2) {
 						let by = ymar2 * wmar2;
 						for(ay = ymar * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
 							let ch1 = emu.uxn.ram[rA + qy], bx = xmar2 + ay;
