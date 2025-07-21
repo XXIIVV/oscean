@@ -19,17 +19,21 @@ function Controller(emu)
 		let mask = 0;
 		console.log(event.keyCode)
 		switch (event.keyCode) {
-		case 90: // Z Control
-		case 49: // 1 Control
+		case 17: // Control
+		case 90: // Z
+		case 49: // 1
 			mask = 0x01; break;
-		case 88: // X Alt
-		case 50: // 2 Alt
+		case 18: // Alt
+		case 88: // X
+		case 50: // 2
 			mask = 0x02; break;
-		case 67: // C Shift
-		case 51: // 3 Shift
+		case 16: // Shift
+		case 67: // C
+		case 51: // 3
 			mask = 0x04; break;
-		case 86: // V Escape
-		case 52: // 4 Escape
+		case 27: // Escape
+		case 86: // V
+		case 52: // 4
 			mask = 0x08; break;
 		case 38: // Up
 			mask = 0x10; break;
