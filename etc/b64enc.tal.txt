@@ -1,0 +1,40 @@
+( echo "hello" | uxncli b64enc.rom )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|100
+
+@on-reset ( -> )
+	;enc/on-console .Console/vector DEO2
+	BRK
+
+@enc/on-console ( -> )
+	[ LIT2 04 -Console/type ] DEI EQU ?{
+		( | byte )
+		.Console/read DEI #07
+		&>lb
+			SFTk #01 AND /<push-bit>
+			#01 SUB INCk ?&>lb
+		POP2 BRK }
+	( | drain )
+	[ LIT2 00 _&ptr ] LDR EQUk ?{
+		#06 OVR
+		&>ld
+			#00 /<push-bit>
+			INC GTHk ?&>ld
+		POP2 }
+	POP2 #0a18 DEO
+	BRK
+
+@enc/<push-bit> ( bit -- )
+	[ LIT &acc $1 ] #10 SFT ORA ,&acc STR
+	[ LIT2 05 &ptr 00 ] INCk ,&ptr STR
+	NEQ ?{
+		[ LIT2 00 _&acc ] LDR ;&lut ADD2 LDA .Console/write DEO
+		[ LIT2 00 _&acc ] STR
+		[ LIT2 00 _&ptr ] STR }
+	JMP2r
+
+@enc/lut [
+	"ABCDEFGHIJKLMNOP "QRSTUVWXYZabcdef
+	"ghijklmnopqrstuv "wxyz0123456789+/ ]
+
