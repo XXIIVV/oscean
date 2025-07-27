@@ -1,17 +1,35 @@
 <h2>Theme files are the interface customization standard for Varvara software.</h2>
 
-<p>A <code>.theme</code> file begins with 6 bytes equal to the RGB values of 4 colors. You can see support overage <a href='roms.html'>here</a>.</p>
+<p>A <code>.theme</code> file begins with 6 bytes equal to the RGB values of 4
+colors.</p>
 
-<pre>0a6f 05cf 0caf <code>, or #000000 #aa55cc #66ccaa #ffffff</code></pre>
+<pre>0a6f 05cf 0caf</pre>
 
-<p>You can use the following <a href='uxntal.html'>Uxntal</a> routine to implement theme support to your application: </p>
+<p>The three shorts above correspond to the four colors below:</p>
+
+<table border='1' style='font-family:monospace'>
+	<tr><th></td><th>Red</th><th>Green</th><th>Blue</th><th>Hexadecimal</th></tr>
+	<tr><th>A</th><td>0</td><td>0</td><td>0</td><td>#000000</td></tr>
+	<tr><th>B</th><td>a</td><td>5</td><td>c</td><td>#aa55cc</td></tr>
+	<tr><th>C</th><td>6</td><td>c</td><td>a</td><td>#66ccaa</td></tr>
+	<tr><th>D</th><td>f</td><td>f</td><td>f</td><td>#ffffff</td></tr>
+</table>
+
+<p>Emulators for monochromatic screens do not support Varvara's colors, instead
+will display colors <code>0x00</code> and <code>0x02</code> as black,
+<code>0x01</code> and <code>0x03</code> as white.</p>
+
+<img src='../media/generic/theme.png' class='nodark'/>
+
+<p>You can use the following <a href='uxntal.html'>Uxntal</a> routine to
+implement theme support to your application: </p>
 
 <pre>
 @load-theme ( -- )
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	[ LIT2 -System/debug -System/r ]
-	&l ( -- )
+	&l
 		;&buf .File/read DEO2
 		[ LIT2 00 -File/success-lb ] DEI EQU ?{
 			[ LIT2r &buf $2 ] STHk DEO2r
@@ -20,30 +38,11 @@
 	&path ".theme $1
 </pre>
 
-<h3>Design Standard</h3>
+<q><a href='https://en.wikipedia.org/wiki/Four_color_theorem'
+target='_blank'>Four colors</a> should be more than enough for any
+interface.</q>
 
-<p>The order in which color are used are as follows: </p>
-
-<table border='1'>
-	<tr>
-		<th>Normal</th>
-		<td style='background:#f0f'>Background/alpha</td>
-		<td style='background:#a0a'>Selection</td>
-		<td style='background:#222; color:white'>Foreground</td>
-		<td style='background:#fff; color:black'>Application</td>
-	</tr>
-	<tr>
-		<th>Monochromatic</th>
-		<td style='background:#000;color:white'>Background/alpha</td>
-		<td>White</td>
-		<td style='background:#000;color:white'>Black2</td>
-		<td>White2</td>
-	</tr>
-</table>
-
-<p>Emulators for monochromatic screens do not support Varvara's colors, instead will display colors <code>0x00</code> and <code>0x02</code> as black, <code>0x01</code> and <code>0x03</code> as white.</p>
-
-<img src='../media/generic/theme.png' class='nodark'/>
-
-<q><a href='https://en.wikipedia.org/wiki/Four_color_theorem' target='_blank'>Four colors</a> should be more than enough for any interface.</q>
+<ul>
+	<li><a href='../etc/theme.tal.txt' target='_blank'>Source</a>, Uxntal.</li>
+</ul>
 

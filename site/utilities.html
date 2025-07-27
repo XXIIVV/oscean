@@ -9,7 +9,7 @@
 <meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
 <meta property="og:title" content="utilities"/><meta property="og:url" content="https://wiki.xxiivv.com/site/utilities.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/diary/862.jpg"/><title>XXIIVV &mdash; utilities</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="physical.html">physical</a></li><li><a href="photography.html">photography</a></li><li><a href="illustration.html">illustration</a></li><li><a href="software.html" class="parent">software</a></li></ul><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html" class="self">utilities</a></li><li><a href="libraries.html">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="drifblim.html">drifblim</a></li><li><a href="notepad.html">notepad</a></li><li><a href="calendar.html">calendar</a></li><li><a href="turye.html">turye</a></li><li><a href="cccc.html">cccc</a></li><li><a href="m291.html">m291</a></li><li><a href="nebu.html">nebu</a></li><li><a href="dexe.html">dexe</a></li><li><a href="catclock.html">catclock</a></li></ul></nav>
+<nav><ul><li><a href="physical.html">physical</a></li><li><a href="photography.html">photography</a></li><li><a href="illustration.html">illustration</a></li><li><a href="software.html" class="parent">software</a></li></ul><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html" class="self">utilities</a></li><li><a href="libraries.html">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="drifblim.html">drifblim</a></li><li><a href="notepad.html">notepad</a></li><li><a href="calendar.html">calendar</a></li><li><a href="turye.html">turye</a></li><li><a href="cccc.html">cccc</a></li><li><a href="m291.html">m291</a></li><li><a href="nebu.html">nebu</a></li><li><a href="dexe.html">dexe</a></li><li><a href="theme.html">theme</a></li><li><a href="catclock.html">catclock</a></li></ul></nav>
 <main><figure><img alt="faeputing" src="../media/diary/862.jpg"><figcaption>faeputing<span class="right">19D04</span></figcaption></figure>
 <h2>A collection of Varvara programs from an alternate past.</h2>
 
@@ -227,6 +227,54 @@ sprites.</p>
 </ul>
 
 <img src='../media/generic/dexe.png' style='max-width:626px' class='nodark'/>
+<h2>Theme files are the interface customization standard for Varvara software.</h2>
+
+<p>A <code>.theme</code> file begins with 6 bytes equal to the RGB values of 4
+colors.</p>
+
+<pre>0a6f 05cf 0caf</pre>
+
+<p>The three shorts above correspond to the four colors below:</p>
+
+<table border='1' style='font-family:monospace'>
+	<tr><th></td><th>Red</th><th>Green</th><th>Blue</th><th>Hexadecimal</th></tr>
+	<tr><th>A</th><td>0</td><td>0</td><td>0</td><td>#000000</td></tr>
+	<tr><th>B</th><td>a</td><td>5</td><td>c</td><td>#aa55cc</td></tr>
+	<tr><th>C</th><td>6</td><td>c</td><td>a</td><td>#66ccaa</td></tr>
+	<tr><th>D</th><td>f</td><td>f</td><td>f</td><td>#ffffff</td></tr>
+</table>
+
+<p>Emulators for monochromatic screens do not support Varvara's colors, instead
+will display colors <code>0x00</code> and <code>0x02</code> as black,
+<code>0x01</code> and <code>0x03</code> as white.</p>
+
+<img src='../media/generic/theme.png' class='nodark'/>
+
+<p>You can use the following <a href='uxntal.html'>Uxntal</a> routine to
+implement theme support to your application: </p>
+
+<pre>
+@load-theme ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	[ LIT2 -System/debug -System/r ]
+	&l
+		;&buf .File/read DEO2
+		[ LIT2 00 -File/success-lb ] DEI EQU ?{
+			[ LIT2r &buf $2 ] STHk DEO2r
+			INC INC NEQk ?&l }
+	POP2 JMP2r
+	&path ".theme $1
+</pre>
+
+<q><a href='https://en.wikipedia.org/wiki/Four_color_theorem'
+target='_blank'>Four colors</a> should be more than enough for any
+interface.</q>
+
+<ul>
+	<li><a href='../etc/theme.tal.txt' target='_blank'>Source</a>, Uxntal.</li>
+</ul>
+
 <h2>A catclock, uh.</h2>
 
 <p>This <a href='uxntal.html'>Uxntal</a> implementation of the catclock was
