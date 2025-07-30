@@ -1,5 +1,13 @@
 ( Of, or relating to structure, as opposed to substance. )
 
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+
+|000
+
+	@token/buf
+
+|100
+
 @on-reset ( -> )
 	;token/on-console .Console/vector DEO2
 	BRK
@@ -8,24 +16,35 @@
 @|Compiler )
 
 @token/on-console ( -> )
-	.Console/read DEI DUP ?{ POP <eval>
-		POP2 BRK }
+	[ LIT2 0a -Console/read ] DEI NEQk ?{
+		POP2 /<store>
+		[ LIT &depth $1 ] ?{ <eval>
+			POP2 }
+		BRK }
 	/<push>
-	BRK
+	POP BRK
 
 @token/<push> ( c -- )
-	DUP [ LIT "( ] NEQ ?{ /<store>
+	DUP [ LIT "( ] NEQ ?{
+		/<pop-store>
+		[ LIT2 01 _&depth ] LDR ADD ,&depth STR
 		;dict/sym-a !body/<push-cell> }
-	DUP [ LIT ") ] NEQ ?{ /<store>
+	DUP [ LIT ") ] NEQ ?{
+		/<pop-store>
+		[ LIT2 ff _&depth ] LDR ADD ,&depth STR
 		;dict/sym-b !body/<push-cell> }
-	DUP #21 LTH ?/<store>
+	DUP #21 LTH ?/<pop-store>
 	( | push )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
 
-@token/<store> ( c -- )
-	POP ;&buf
+@token/<pop-store> ( c -- )
+	POP
+	( >> )
+
+@token/<store> ( -- )
+	;&buf
 	( ) LDZk ?{ POP2 JMP2r }
 	( ) DUP2 dec/valid ?/<store-number>
 	( ) dict/find-alloc body/<push-cell>
@@ -68,14 +87,13 @@
 		rewrite/<step>
 		body/<print>
 		wildcards/<print>
-		?{ #800f DEO
-			JMP2r }
+		?{ JMP2r }
 		INC2 ORAk ?&>w
 	#010f DEO
 	;&err !err/<print>
 
 @rewrite/<step> ( -- rew )
-	[ LITr 00 ] body/get-bounds
+	[ LITr 00 ] body/get-bounds NEQ2k ?{ POP2 POP2 STHr JMP2r }
 	&>l
 		LDA2k ;dict/sym-a NEQ2 ?{
 			DUP2 rules/find [ INC2k ORA ?/<match> POP2 ] }
@@ -99,7 +117,8 @@
 
 @rewrite/do-cell ( cell* -- cell* )
 	is-wildcard ?{ LDA2k !body/<push-cell> }
-	LDA2k wildcards/find INC2k ORA ?{ POP2 JMP2r }
+	LDA2k wildcards/find INC2k ORA ?{
+		( unassigned ) POP2 LDA2k !body/<push-cell> }
 	NEXT LDA2 ;body/push-cell-at !tuple/<foreach>
 
 (
@@ -140,16 +159,28 @@
 	NIP2 POP2r JMP2r
 
 @rules/<push> ( addr* -- addr* )
-	DUP2 tuple/walk
-	( | no rhs )
-	LDA2k ORA ?{ NIP2 JMP2r }
-	LDA2k ;dict/sym-rule NEQ2 ?{ NIP2 JMP2r }
+	LDA2k ORA ?{
+		( no lhs ) !rules/<print> }
+	DUP2 tuple/walk LDA2k ORA ?{
+		( no rhs ) NIP2 JMP2r }
 	tuple/walk SWP2
 	&>l
+		NEQ2k ?{ POP2 JMP2r }
 		LDA2k [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 		STA2
-		NEXT GTH2k ?&>l
-	POP2 JMP2r
+		NEXT !&>l
+
+@rules/<print> ( -- )
+	,&ptr LDR2 ;&buf
+	&>lp
+		NEQ2k ?{ POP2 POP2 JMP2r }
+		;dict/sym-rule err/<print>
+		#2019 DEO
+		DUP2 tuple/<pretty-print>
+		#2019 DEO
+		tuple/walk DUP2 tuple/<pretty-print>
+		#0a19 DEO
+		tuple/walk GTH2k !&>lp
 
 (
 @|Body )
@@ -181,7 +212,7 @@
 @body/get-bounds ( -- to* from* )
 	;&ptr LDA2 ;&b ;&a
 	( | flip )
-	[ LIT2 01 &bank $1 ] INCk ,&bank STR
+	[ LIT2 01 &bank 00 ] INCk ,&bank STR
 	AND ?{ SWP2 }
 	;&ptr STA2
 	DUP2 ,&origin STR2
@@ -324,8 +355,7 @@
 
 @<eval>/err "Cycles 20 "exhausted. 0a00
 
-@dict
-	&sym-a "( $1
+@dict/sym-a "( $1
 	&sym-b ") $1 &buf-prefabs
 	&sym-rule "<> $1
 	&sym-print "?: $1
@@ -336,6 +366,4 @@
 @rules/buf $1000
 
 @body/a $6000 &b $6000
-|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
-|00 @token/buf
 
