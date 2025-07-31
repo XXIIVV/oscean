@@ -9,7 +9,7 @@
 <meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
 <meta property="og:title" content="rewriting"/><meta property="og:url" content="https://wiki.xxiivv.com/site/rewriting.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/><title>XXIIVV &mdash; rewriting</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="vera.html">vera</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="thue.html">thue</a></li><li><a href="modal.html">modal</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="thue.html">thue</a></li><li><a href="vera.html">vera</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="modal.html">modal</a></li></ul></nav>
 <main><h2>Rewriting languages are typically made of rules and an initial state.</h2>
 
 <p>These languages often have two phases; the first gives <b>a set of rules</b>, and the second provides <b>an accumulator</b> on which those rules are to be applied. For example, a program for a string rewriting system with wildcards begins with a series of rules which define strings to match, a relation(->), and the resulting transformation.</p>
@@ -900,6 +900,99 @@ lines</a>:</p>
 	.denreg { background:#f78f84; color: black; padding: 0 2px; border-radius: 3px; }
 	.denval { background:#ffd18c; color: black; padding: 0 2px; border-radius: 3px; }
 </style>
+<h2>Thue is a string-rewriting system.</h2>
+
+<p>A Thue program consists of two parts: a list of <a
+href='rewriting.html'>substitution rules</a>, which is terminated with a line
+having both sides of the operator empty, followed by a string representing the
+initial program state:</p>
+
+<pre>
+#::=<span style='color:#777'>Unused rules are comments</span>
+a::=~Hello Thue!
+::=
+[a] <span style='color:#777; float:right'>[]</span>
+</pre>
+
+<iframe src="../etc/thuerepl/index.html" frameborder="0" class='frame'></iframe>
+
+<style>
+.frame { overflow: hidden; height: 450px; margin-bottom: 15px; border-radius:5px }
+</style>
+
+<p>Execution consists of picking, from the list of rules, an arbitrary rule whose original string exists as a substring somewhere in the program state, and replacing that substring by the rule's replacement string. This process repeats until there are no rules that can be applied, at which point, the program ends. </p>
+
+<pre>
+#::=<span style='color:#777'>Increment binary number</span>
+1_::=1++
+0_::=1
+01++::=10
+11++::=1++0
+_0::=_
+_1++::=10
+::=
+_10010011_ <span style='color:#777; float:right'>_10010100</span>
+</pre>
+
+<img src='../media/refs/bthennota.png' width='100'/>
+
+<h3>I/O</h3>
+
+<p>Added to this system are two strings which are used to permit Thue to communicate with the outside world. The first of these is the <b>input</b> symbol(:::) which is actually the left-side of an implicit rule of which the user input is a component. The input symbol, therefore, is replaced by a line of text received from the "input stream."</p>
+
+<p>As a counterpart of input, the <b>output</b> symbol(~) is supplied. Like the input symbol, the output symbol triggers an implicit rule which, in this case, encompasses the "output stream."  The specific effect is that all text to the right of the output symbol in the rhs of a production is sent to the output stream.</p>
+
+<p>Note that either (or both) of these implicit rules may be overridden by providing explicit rules that perform some other task.</p>
+
+<pre>
+#::=<span style='color:#777'>Sierpinski's triangle, backticks are linebreaks</span>
+X::=~_
+Y::=~*
+Z::=~`
+_.::=._X
+_*::=*_Y
+._|::=.Z-|
+*_|::=Z
+..-::=.-.
+**-::=*-.
+*.-::=*-*
+.*-::=.-*
+@.-::=@_.
+@*-::=@_*
+::=
+@_*...............................|
+</pre>
+
+
+<img src='../media/refs/spider.jpg'/>
+
+
+<q>It is pitch black. You are likely to be eaten by a Thue.</q>
+
+<img src='../media/refs/grue.png' style='width:300px' title='Bivotar & Juranda, Zork'/>
+
+<ul>
+	<li><a href='https://esolangs.org/wiki/Thue' target='_blank'>On Esolangs</a></li>
+	<li><a href='../etc/thue.tal.txt' target='_blank'>Interpreter</a>, written in Uxntal. <a href='https://www.youtube.com/watch?v=A8f7IsQ8ENQ' target='_blank'>Video</a></li>
+	<li><a href='https://git.catseye.tc/Wanda/' target='_blank'>Wanda</a>, concatenative language meets string rewriting.</li>
+</ul>
+
+<!--
+
+For want of a nail,
+	the shoe was lost.
+For want of a shoe,
+	the horse was lost.
+For want of a horse,
+	the knight was lost.
+For want of a knight,
+	the battle was lost.
+So it was a kingdom was lost,
+	all for the want of a nail.
+
+	George Herbert, Jacula Prudentum
+
+-->
 <h2>Vera is a multiset rewriting system.</h2>
 
 <p>Vera is a multiset rewriting system designed to converse with computers,
@@ -1120,99 +1213,6 @@ sx * y = (x * y) + y               0 * y = 0
 	<li><a href='https://github.com/asperti/BOHM1.1' target='_blank'>Bologna Optimal Higher-Order Machine</a></li>
 </ul>
 
-<h2>Thue is a string-rewriting system.</h2>
-
-<p>A Thue program consists of two parts: a list of <a
-href='rewriting.html'>substitution rules</a>, which is terminated with a line
-having both sides of the operator empty, followed by a string representing the
-initial program state:</p>
-
-<pre>
-#::=<span style='color:#777'>Unused rules are comments</span>
-a::=~Hello Thue!
-::=
-[a] <span style='color:#777; float:right'>[]</span>
-</pre>
-
-<iframe src="../etc/thuerepl/index.html" frameborder="0" class='frame'></iframe>
-
-<style>
-.frame { overflow: hidden; height: 450px; margin-bottom: 15px; border-radius:5px }
-</style>
-
-<p>Execution consists of picking, from the list of rules, an arbitrary rule whose original string exists as a substring somewhere in the program state, and replacing that substring by the rule's replacement string. This process repeats until there are no rules that can be applied, at which point, the program ends. </p>
-
-<pre>
-#::=<span style='color:#777'>Increment binary number</span>
-1_::=1++
-0_::=1
-01++::=10
-11++::=1++0
-_0::=_
-_1++::=10
-::=
-_10010011_ <span style='color:#777; float:right'>_10010100</span>
-</pre>
-
-<img src='../media/refs/bthennota.png' width='100'/>
-
-<h3>I/O</h3>
-
-<p>Added to this system are two strings which are used to permit Thue to communicate with the outside world. The first of these is the <b>input</b> symbol(:::) which is actually the left-side of an implicit rule of which the user input is a component. The input symbol, therefore, is replaced by a line of text received from the "input stream."</p>
-
-<p>As a counterpart of input, the <b>output</b> symbol(~) is supplied. Like the input symbol, the output symbol triggers an implicit rule which, in this case, encompasses the "output stream."  The specific effect is that all text to the right of the output symbol in the rhs of a production is sent to the output stream.</p>
-
-<p>Note that either (or both) of these implicit rules may be overridden by providing explicit rules that perform some other task.</p>
-
-<pre>
-#::=<span style='color:#777'>Sierpinski's triangle, backticks are linebreaks</span>
-X::=~_
-Y::=~*
-Z::=~`
-_.::=._X
-_*::=*_Y
-._|::=.Z-|
-*_|::=Z
-..-::=.-.
-**-::=*-.
-*.-::=*-*
-.*-::=.-*
-@.-::=@_.
-@*-::=@_*
-::=
-@_*...............................|
-</pre>
-
-
-<img src='../media/refs/spider.jpg'/>
-
-
-<q>It is pitch black. You are likely to be eaten by a Thue.</q>
-
-<img src='../media/refs/grue.png' style='width:300px' title='Bivotar & Juranda, Zork'/>
-
-<ul>
-	<li><a href='https://esolangs.org/wiki/Thue' target='_blank'>On Esolangs</a></li>
-	<li><a href='../etc/thue.tal.txt' target='_blank'>Interpreter</a>, written in Uxntal. <a href='https://www.youtube.com/watch?v=A8f7IsQ8ENQ' target='_blank'>Video</a></li>
-	<li><a href='https://git.catseye.tc/Wanda/' target='_blank'>Wanda</a>, concatenative language meets string rewriting.</li>
-</ul>
-
-<!--
-
-For want of a nail,
-	the shoe was lost.
-For want of a shoe,
-	the horse was lost.
-For want of a horse,
-	the knight was lost.
-For want of a knight,
-	the battle was lost.
-So it was a kingdom was lost,
-	all for the want of a nail.
-
-	George Herbert, Jacula Prudentum
-
--->
 <h2>Modal is a tree rewriting system.</h2>
 
 <img src='../media/refs/soulages.png' style='float:right;width:200px' title='Pierre Soulages | Lithographie n°30 (1972)'/>
@@ -1545,7 +1545,7 @@ matter of using stricter rules expecting a specific symbol. Notice in the exampl
 	<li><a href='https://www.sheeeeeeeep.art/types-of-modal.html'>Levels of Dynamic behavior in Modal</a></li>
 	<li>This language is an original creation of <a href='https://wryl.tech/' target='_blank'>wryl</a> from 2018, who has courteously spent countless hours to help me progress with the language, much of the code above is derived from their research and merely made available here as to give this fantastic system a home on the internet.</li>
 </ul>
-<ul></ul><p class="incoming"><b>incoming</b> <a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="parade.html">parade</a> <a href="logic.html">logic</a> <a href="paper_rewriting.html">paper rewriting</a> <a href="fractran.html">fractran</a> <a href="interaction_nets.html">interaction nets</a> <a href="thue.html">thue</a> <a href="neur.html">neur</a> <a href="graphical.html">graphical</a> <a href="2025.html">2025</a> <a href="2024.html">2024</a> </p></main>
+<ul></ul><p class="incoming"><b>incoming</b> <a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="parade.html">parade</a> <a href="logic.html">logic</a> <a href="paper_rewriting.html">paper rewriting</a> <a href="fractran.html">fractran</a> <a href="thue.html">thue</a> <a href="interaction_nets.html">interaction nets</a> <a href="neur.html">neur</a> <a href="graphical.html">graphical</a> <a href="2025.html">2025</a> <a href="2024.html">2024</a> </p></main>
 <footer>
 	<a href="ethics.html"><img src="../media/icon/3arrows.svg" alt="NoNazis!"/></a>
 	<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a>
