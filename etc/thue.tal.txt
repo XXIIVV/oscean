@@ -1,6 +1,7 @@
 ( It is pitch black. )
 
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 |000
 
@@ -11,6 +12,7 @@
 
 @on-reset ( -> )
 	;line/on-console .Console/vector DEO2
+	random/<init>
 	BRK
 
 (
@@ -111,13 +113,16 @@
 (
 @|Rules )
 
+%MOD2 { DIV2k MUL2 SUB2 }
+
 @rules/find ( src* -- src* rule* )
-	STH2k ,&ptr LDR2 ;&buf
-	&>lf
-		LDA2k STH2kr /compare ?{
-			#0004 ADD2 GTH2k ?&>lf
-		POP2 #ffff }
-	NIP2 POP2r JMP2r
+	STH2k random/generate ;&ptr LDA2 ;&buf SUB2 #02 SFT2 DUP2 ,&length STR2
+	MOD2 DUP2
+	&>fr
+		INC2 [ LIT2 &length $2 ] MOD2 DUP2 #20 SFT2 ;&buf ADD2 LDA2 STH2kr /compare #00 EQU ?{
+			NIP2 #20 SFT2 ;&buf ADD2 POP2r JMP2r }
+		NEQ2k ?&>fr
+	POP2 POP2 POP2r #ffff JMP2r
 
 @rules/compare ( rule* src* -- t )
 	STH2
@@ -147,6 +152,24 @@
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA2
 	JMP2r
+
+(
+@|Random )
+
+@random/<init> ( -- )
+	( ) [ LIT2 00 -DateTime/second ] DEI
+	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/day ] DEI DUP2 ADD2 EOR2
+	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
+	JMP2r
+
+@random/generate ( -- number* )
+	( ) [ LIT2 &x $2 ] DUP2 #50 SFT2 EOR2 DUP2 #03 SFT2 EOR2
+	( ) [ LIT2 &y $2 ] DUP2 ,&x STR2
+	DUP2 #01 SFT2 EOR2 EOR2 ,&y STR2k POP JMP2r
 
 (
 @|Utils )
