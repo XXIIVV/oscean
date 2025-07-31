@@ -903,16 +903,20 @@ lines</a>:</p>
 <h2>Thue is a string-rewriting system.</h2>
 
 <p>A Thue program consists of two parts: a list of <a
-href='rewriting.html'>substitution rules</a>, which is terminated with a line
-having both sides of the operator empty, followed by a string representing the
+href='rewriting.html'>substitution rules</a>, made of left and right sides separated by the <i>Ungoliant operator</i>(<code>::=</code>), terminated by an empty rule
+with both sides empty, followed by a string representing the
 initial program state:</p>
 
 <pre>
-#::=<span style='color:#777'>Unused rules are comments</span>
-a::=~Hello Thue!
-::=
-[a] <span style='color:#777; float:right'>[]</span>
+left::=right   <i>a rule</i>
+::=            <i>an empty rule</i>
+[left]         <i>the initial state</i>
 </pre>
+<pre style="margin-top:-29px">
+[right]        <i>the result</i>
+</pre>
+
+<p>Execution consists of picking, from the list of rules, an arbitrary rule whose original string exists as a substring somewhere in the program state, and replacing that substring by the rule's replacement string. This process repeats until there are no rules that can be applied, at which point, the program ends. </p>
 
 <iframe src="../etc/thuerepl/index.html" frameborder="0" class='frame'></iframe>
 
@@ -920,18 +924,64 @@ a::=~Hello Thue!
 .frame { overflow: hidden; height: 450px; margin-bottom: 15px; border-radius:5px }
 </style>
 
-<p>Execution consists of picking, from the list of rules, an arbitrary rule whose original string exists as a substring somewhere in the program state, and replacing that substring by the rule's replacement string. This process repeats until there are no rules that can be applied, at which point, the program ends. </p>
+<h3>Logic</h3>
+
+<p>Logic in Thue is defined by creating rules for the different states of the permutation of cases.</p>
 
 <pre>
-#::=<span style='color:#777'>Increment binary number</span>
-1_::=1++
-0_::=1
-01++::=10
-11++::=1++0
-_0::=_
-_1++::=10
+(or T T)::=T
+(or T F)::=T
+(or F T)::=T
+(or F F)::=F
 ::=
-_10010011_ <span style='color:#777; float:right'>_10010100</span>
+(or (or T T) F)
+</pre>
+<pre style="margin-top:-29px">
+(or T F)
+T
+</pre>
+
+<h3>Physics</h3>
+
+<p>Most of the operation of a rewriting system is akin to creating a physics engine where you move a cursor across the world, to find pieces of the memory to operate on.</p>
+
+<pre>
+>.::=.>
+>|::=*|
+*|::=.|
+::=
+>....|
+</pre>
+<pre style="margin-top:-29px">
+.>...|
+..>..|
+...>.|
+....>|
+....*|
+.....|
+</pre>
+
+<h3>Numbers</h3>
+
+<ul style='float:right'>
+	<li><code></code>, for 0 </li>
+	<li><code>|</code>, for 1 </li>
+	<li><code>||</code>, for 2 </li>
+	<li><code>|||</code>, for 3 </li>
+	<li><code>||||</code>, for 4 </li>
+</ul>
+
+<p>There are no number systems built into Thue, but we can represent numbers as tally marks.</p>
+
+<p>To get the <b>sum</b> of tally marks, we can simply remove the operator to concatenate the two numbers:</p>
+
+<pre>
+ + ::=
+::=
+||| + |||||
+</pre>
+<pre style="margin-top:-29px">
+||||||||
 </pre>
 
 <img src='../media/refs/bthennota.png' width='100'/>
