@@ -60,22 +60,9 @@
 @|Accumulator )
 
 @acc/on-console ( -> )
-	.Console/read DEI DUP ?{
-		POP /<eval>
-		#800f DEO
+	.Console/read DEI DUP ?{ POP /<eval>
 		BRK }
 	acc/append BRK
-
-@acc/match ( src* -- src* )
-	rules/find INC2k ORA ?{ POP2 LDAk !/append }
-	( | walk src )
-	LDA2k str/len ROT2 ADD2 SWP2
-	( | replace )
-	[ LIT2 01 -rewrite ] STZ
-	INC2 INC2 LDA2
-	&>wa
-		LDAk DUP ?{ POP POP2 !/<fill> }
-		/append INC2 !&>wa
 
 @acc/append ( c -- )
 	#00 [ LIT2 &dst =&buf-1 ] INC2k ,&dst STR2
@@ -93,19 +80,33 @@
 
 @acc/<fill> ( str* -- str* )
 	&>wf
-		LDAk DUP ?{ POP JMP2r }
+		LDAk DUP ?{ POP #00 !/append }
 		/append INC2 !&>wf
 
 @acc/<eval> ( -- )
 	/<swap>
 	&>we
 		[ LIT2 00 -rewrite ] STZ
-		/get-src
-		&>ws
-			/match INC2 LDAk ?&>ws
-		POP2 /<swap>
+		/<step>
 		.rewrite LDZ ?&>we
 	JMP2r
+
+@acc/<step> ( src* -- src* )
+	/get-src
+	&>ws
+		LDAk ?{ POP2 JMP2r }
+		/match INC2 !&>ws
+
+@acc/match ( src* -- src* )
+	rules/find INC2k ORA ?{ POP2 LDAk !/append }
+	( | walk src )
+	LDA2k str/len ROT2 ADD2 SWP2
+	( | replace )
+	[ LIT2 01 -rewrite ] STZ
+	INC2 INC2 LDA2
+	&>wa
+		LDAk DUP ?{ POP POP2 /<fill> !/<swap> }
+		/append INC2 !&>wa
 
 (
 @|Rules )
@@ -143,8 +144,8 @@
 		INC !&>w
 
 @dict/<push> ( c -- )
-	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
 	JMP2r
 
 (
