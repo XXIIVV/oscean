@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<meta property='og:type' content='website'/>
+	<meta property='og:site_name' content='Varvara5'/>
+	<meta property='og:description' content="By Hundred Rabbits"/>
+	<meta property='og:logo' content="media/services/logo.jpg"/>
+	<meta property="og:title" content="Modal Interpreter"/>
+	<meta property="og:url" content="https://wiki.xxiivv.com/site/neur.html"/>
+	<meta name="viewport" content="width=device-width" />
+	<link href="media/services/icon.png" type="image/png" rel="shortcut icon">
+	<title>Modal Playground</title>
+	<script src="../uxnrepl/src/uxn.js"></script>
+	<script src="../uxnrepl/src/emu.js"></script>
+	<script src="src/thue.js"></script>
+	<script src="src/examples.js"></script>
+</head>
+<body>
+	<textarea id="editor" spellcheck="false">
+<> (Welcome to the Modal playground,
+    Click the Rewrite button to evaluate the program.
+    Select other examples with the dropdown.)
+
+<> (equal ?a ?a) (Bool True) 
+<> (equal ?a ?b) (Bool False)
+
+<> (Rules are made of a left and a right side.
+    They are tested in from first to last, from left to right.
+    When a match occurs, the lhs is replaced by the rhs.
+    Wildcards prefixed with ? will always match.
+
+    Rules without a right-hand side are comments.
+    Printing is done with the ?: wildcard.)
+
+<> (print-bool (Bool ?:)) (done.)
+
+(print-bool (equal baz baz))</textarea>
+	<div id='term'>Press <b>Rewrite</b> to evaluate.</div>
+	<div id='menu'>
+		<input type="button" id="run" value="Rewrite">
+		<span id='wst'>> </span>
+		<select name="cars" id="examples">
+			<option value="0_mod">0. Hello World</option>
+			<option value="add">1. Addition</option>
+			<option value="1_mod">2. Reverse List</option>
+			<option value="multiply">3. Multiply</option>
+			<option value="find">4. Find</option>
+			<option value="fizzbuzz">5. Fizzbuzz</option>
+		</select>
+	</div>
+	<script type="text/javascript">
+'use strict'
+
+let term_el = document.getElementById("term")
+let editor_el = document.getElementById("editor")
+let wst_el = document.getElementById("wst")
+let run_el = document.getElementById("run")
+
+document.body.className = "active"
+
+function popup(text) {
+	const popup = window.open('', 'Popup', 'width=400,height=300');
+	popup.document.body.innerHTML = `<pre>${text}</pre>`;
+}
+
+function run() {
+	let query = editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " ")+'\n'
+	let program = new Uint8Array(0x10000)
+	let emu = new Emu()
+	emu.uxn.load(thue).eval(0x0100)
+	for (let i = 0; i < query.length; i++)
+		emu.console.input(query.charAt(i).charCodeAt(0), 1)
+	emu.console.input(0x00, 4)
+	if(emu.console.stdout_body.includes('\n')) {
+		popup(emu.console.stdout_body)
+		wst_el.innerHTML = `> Result in new window`
+	} else
+		wst_el.innerHTML = `> ${emu.console.stdout_body}`
+	term_el.innerHTML = emu.console.stderr_body
+	term_el.scrollTop = term_el.scrollHeight;
+}
+
+// Editor
+
+const editor = document.getElementById("editor")
+
+editor.addEventListener("keydown", (e) => {
+	let { keyCode } = e
+	let { value, selectionStart, selectionEnd } = editor
+	if (keyCode === 9) { // TAB = 9
+		e.preventDefault()
+		editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
+		editor.setSelectionRange(selectionStart+1, selectionStart+1)
+	}
+	else if (event.ctrlKey && event.key === 'Enter') 
+		run();
+});
+
+run_el.addEventListener("click", run)
+
+document.getElementById('examples').addEventListener('change', (e) => {
+	editor_el.value = examples[e.currentTarget.value]
+	term_el.innerHTML = `Press <b>Rewrite</b> to evaluate.`
+}, true);
+
+	</script>
+	<style>
+		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
+		body ::selection { background-color:#000;color:#fff;text-decoration:none }
+		textarea { resize:none; width:calc(100vw - 20px); height:100vh; border:0; padding:10px; margin:0px; background:#efefef; tab-size: 2; }
+		textarea:focus { outline: none !important; }
+		div#term { background:#ddd; padding:10px; color:black; height:55px; overflow-x:hidden; overflow-y:scroll; white-space:pre; display:none }
+		div#menu { height:25px; background:#ccc; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
+		div#menu select { float:right }
+		body.active textarea { height:calc(100% - 140px); }
+		body.active div#term, body.active div#menu { display:block }
+		#run { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
+		#step { background: #fff; color:black}
+		#run:hover, #step:hover { background: #aaa; color:#000 }
+		dialog { background:#a4f4e0; display: none; padding: 10px; padding-bottom: 0; }
+		dialog[open] { display: block; }
+		dialog > * { margin: 0; margin-bottom: 10px; }
+		::backdrop { background: #a4f4e0; opacity: 0.6; }
+		#dialog-content > pre { background: #000; color: white; padding: 10px; }
+		#dialog > form { width: 100%; text-align: right; }
+	</style>
+</body>
+</html>
