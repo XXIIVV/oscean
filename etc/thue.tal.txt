@@ -192,6 +192,7 @@
 @str/<print> ( str* -- )
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk chr/escape }
 		.Console/write DEO
 		INC2 !&>wp
 
@@ -207,6 +208,11 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		.Console/error DEO
 		INC2 !&>wp
+
+@chr/escape ( byte -- byte )
+	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	[ LIT "n ] NEQ ?{ #0a JMP2r }
+	#20 JMP2r
 
 @dict/buf $1000
 
