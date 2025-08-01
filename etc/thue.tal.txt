@@ -62,7 +62,9 @@
 @|Accumulator )
 
 @acc/on-console ( -> )
-	.Console/read DEI DUP ?{ POP /<eval>
+	.Console/read DEI DUP ?{
+		POP /<eval>
+		#010e DEO
 		BRK }
 	acc/append BRK
 
@@ -116,19 +118,18 @@
 %MOD2 { DIV2k MUL2 SUB2 }
 
 @rules/find ( src* -- src* rule* )
-	STH2k random/generate ;&ptr LDA2 ;&buf SUB2 #02 SFT2 DUP2 ,&length STR2
-	MOD2 DUP2
-	&>fr
-		INC2 [ LIT2 &length $2 ] MOD2 DUP2 #20 SFT2 ;&buf ADD2 LDA2 STH2kr /compare #00 EQU ?{
-			NIP2 #20 SFT2 ;&buf ADD2 POP2r JMP2r }
-		NEQ2k ?&>fr
-	POP2 POP2 POP2r #ffff JMP2r
+	STH2k shuffle/<clear>
+	;&ptr LDA2 ;&buf
+	&>lf
+		LDA2k STH2kr /compare ?{ DUP2 shuffle/<push> }
+		#0004 ADD2 GTH2k ?&>lf
+	POP2 POP2 POP2r !shuffle/pull
 
 @rules/compare ( rule* src* -- t )
 	STH2
 	&>wc
 		LDAk LDAkr STHr NEQ ?{ INC2 INC2r LDAk ?&>wc }
-	POP2r LDA #00 EQU JMP2r
+	POP2r LDA #00 NEQ JMP2r
 
 @rules/<push> ( spacer -- )
 	#00 OVR STZ
@@ -137,6 +138,20 @@
 	INC2r INC2r STH2kr STA2
 	INC2r INC2r [ LITr _&ptr ] STR2r
 	JMP2r
+
+@shuffle/<clear> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@shuffle/<push> ( rule* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@shuffle/pull ( -- rule* )
+	,&ptr LDR2 ;&buf EQU2k ?{
+		SUB2 #01 SFT2 random/generate SWP2 MOD2 DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r }
+	POP2 POP2 #ffff JMP2r
 
 (
 @|Dict )
@@ -190,6 +205,8 @@
 @dict/buf $1000
 
 @rules/buf $200
+
+@shuffle/buf $100
 
 @acc/buf-1 $6000 &buf-2
 
