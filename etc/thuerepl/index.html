@@ -57,7 +57,15 @@ function run() {
 	for (let i = 0; i < query.length; i++)
 		emu.console.input(query.charAt(i).charCodeAt(0), 1)
 	emu.console.input(0x00, 4)
-	term_el.innerHTML = emu.console.stdout_body
+	term_el.innerHTML = emu.console.stderr_body
+	// Replace backticks with linebreaks
+	emu.console.stdout_body = emu.console.stdout_body.replaceAll('`', '\n')
+	if(emu.console.stdout_body.includes('\n')) {
+		popup(emu.console.stdout_body)
+		wst_el.innerHTML = `> Result in new window`
+	} 
+	else
+		wst_el.innerHTML = emu.console.stdout_body
 	term_el.scrollTop = term_el.scrollHeight;
 }
 

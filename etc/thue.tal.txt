@@ -62,11 +62,9 @@
 @|Accumulator )
 
 @acc/on-console ( -> )
-	.Console/read DEI DUP ?{
-		POP /<eval>
-		#010e DEO
+	.Console/read DEI DUP ?{ POP /<eval>
 		BRK }
-	acc/append BRK
+	/append BRK
 
 @acc/append ( c -- )
 	#00 [ LIT2 &dst =&buf-1 ] INC2k ,&dst STR2
@@ -76,16 +74,16 @@
 @acc/get-src ( -- src* )
 	[ LIT2 &src $2 ] JMP2r
 
+@acc/<fill> ( str* -- str* )
+	&>wf
+		LDAk DUP ?{ POP #00 /append !/<swap> }
+		/append INC2 !&>wf
+
 @acc/<swap> ( -- )
 	;&buf-1 ;&buf-2 [ LIT2 01 &flip $1 ] INCk ,&flip STR
 	AND [ JMP SWP2 ] ,&src STR2
 	,&dst STR2
-	/get-src !str/<print>
-
-@acc/<fill> ( str* -- str* )
-	&>wf
-		LDAk DUP ?{ POP #00 !/append }
-		/append INC2 !&>wf
+	/get-src !err/<print>
 
 @acc/<eval> ( -- )
 	/<swap>
@@ -108,14 +106,14 @@
 	( | replace )
 	[ LIT2 01 -rewrite ] STZ
 	INC2 INC2 LDA2
+	( | print )
+	LDAk [ LIT "~ ] NEQ ?{ INC2 str/<print> !/<fill> }
 	&>wa
-		LDAk DUP ?{ POP POP2 /<fill> !/<swap> }
+		LDAk DUP ?{ POP POP2 !/<fill> }
 		/append INC2 !&>wa
 
 (
 @|Rules )
-
-%MOD2 { DIV2k MUL2 SUB2 }
 
 @rules/find ( src* -- src* rule* )
 	STH2k shuffle/<clear>
@@ -150,7 +148,9 @@
 
 @shuffle/pull ( -- rule* )
 	,&ptr LDR2 ;&buf EQU2k ?{
-		SUB2 #01 SFT2 random/generate SWP2 MOD2 DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r }
+		( grab count ) SUB2 #01 SFT2
+		( find random ) random/generate SWP2 DIV2k MUL2 SUB2
+		( pull rule ) DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r }
 	POP2 POP2 #ffff JMP2r
 
 (
@@ -201,6 +201,12 @@
 @str/cap ( str* -- end* )
 	LDAk ?{ INC2 JMP2r }
 	INC2 !/cap
+
+@err/<print> ( str* -- )
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		.Console/error DEO
+		INC2 !&>wp
 
 @dict/buf $1000
 
