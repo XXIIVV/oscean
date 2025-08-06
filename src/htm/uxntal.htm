@@ -3,10 +3,8 @@
 <img src="../media/generic/uxn.beet.png" style="float:right; margin-left: 15px;" width="200">
 
 <p><a href='uxn.html'>Uxn</a> programs are written in a stack-based flavor of
-assembly designed especially for this <a href='devlog.html'>portable virtual
-machine</a>. Tal files are textual source files, Rom files are binary program
-files; applications that transform Tal files into Rom files are called
-<i>Assemblers</i>.</p>
+assembly designed especially for a <a href='devlog.html'>portable virtual
+machine</a>.</p>
 
 <ul>
 	<li><a href='varvara_zine.html' target='_blank'>Zine</a>, by Clemens Scott.</li>
@@ -16,7 +14,7 @@ files; applications that transform Tal files into Rom files are called
 	<li><a href='../etc/uxntal.bnf.txt' target='_blank'>BNF Notation</a>, by Jack Leightcap.</li>
 </ul>
 
-<h3 id='setup'>Setup</h3>
+<h3 id='setup'>Quick Setup</h3>
 
 <p>Here is a quick way to get started writing programs with a little self-hosted
 assembler and an emulator which includes the <a
@@ -36,3 +34,156 @@ href='varvara.html#console'>Console device</a>:</p>
 <b>uxnmin</b> opctest.rom
 </pre>
 
+<h3 id='introduction'>Introduction</h3>
+
+<p>In stack programming there are no variables and <b>no precedence rules</b>,
+the calculations are merely performed in the sequence <a
+href='concatenative.html'>in which they are presented</a>. The order with which
+elements come off the stack is known as <i>Last In, First Out</i>. In the stack
+<i>a b c</i>, the <i>c</i> item was the last to be added, and will be the first
+to be removed.</p>
+
+<pre>
+#01 DUP ADD #03 MUL <i style='float:right'>program</i>
+</pre>
+<pre style='margin-top:-29px'>
+ 01  01  02  03  06 <i style='float:right'>stack</i>
+     01      02
+</pre>
+
+<p>Numbers in Uxntal are <b>not decimal</b>, they are expressed in <a
+href='hexadecimal.html'>hexadecimal</a>. Which means that counting goes like:
+one, two, three, four, five, six, seven, eight, nine, ha, be, ce, de, he, fe,
+ten! It takes some getting used to, but don't worry, you'll get the hang of it. Now, without further ado..</p>
+
+<h3>Let's dive into it!</h3>
+
+<p>The following example program prints the phrase "Hello World!" by pushing the
+address to a label on the stack, and iterating through each letter found at
+that address with a loop that increments the pointer until it reaches end of
+the phrase, at which point, the stack is emptied and the evaluation halts.</p>
+
+<iframe src="../etc/uxnrepl/index.html" frameborder="0" class='frame'></iframe>
+
+<style>
+.frame { overflow: hidden; height: 450px; margin-bottom: 15px; border-radius:5px }
+</style>
+
+<p>A word starting with <kbd>@</kbd> defines a label, and one starting with
+<kbd>;</kbd> pushes the <a href='uxntal_labels.html#addressing'>absolute
+address</a> of a label to the stack. With that in mind, <kbd>;text</kbd> pushes
+the two bytes equal to the address of the <kbd>@text</kbd> label to the stack.
+In the interpreter above, press "step" to walk through each step of the
+evaluation.</p>
+
+<p>Next, we define a <a href='uxntal_labels.html'>new label</a> named
+<kbd>@while</kbd>, to mark the start of the loop that will print each character
+stored at the text label.</p>
+
+<p>The <kbd><a href='uxntal_opcodes.html#lda'>LDAk</a></kbd> opcode loads a byte
+at the address currently at the top of the stack, in this case, the <a
+href='ascii.html'>ascii</a> letter <i>H</i>(48). The <a
+href='uxntal_opcodes.html#modes'>k-mode</a> indicates that the operator will
+not consume the address.</p>
+
+<p>The <kbd><a href='uxntal_opcodes.html#dup'>DUP</a></kbd> opcode makes a
+copy of the letter. The <kbd>?{</kbd> pops that letter from the
+stack, and if it is <b>not zero</b>, we jump to the corresponding
+<kbd>}</kbd>, which is an <a href='uxntal_labels.html#anonymous'>anonymous
+label(λ00)</a>.</p>
+
+<pre>
+( Disassembly of the example above:
+|addr   bytecode   Uxntal
+-----   --------   ------- )
+|0100   a0 01 12   ( ;text )
+
+@while
+|0103   94         ( LDAk )
+|0104   06         ( DUP )
+|0105   20 00 03   ( ?λ00 )
+|0108   02         ( POP )
+|0109   22         ( POP2 )
+|010a   00         ( BRK )
+</pre>
+
+<p>The <kbd>#18</kbd> word pushes a number to the stack, which maps to the <a
+href='varvara.html#console'>Console/write port(#18)</a>, followed by the
+<kbd><a href='uxntal_opcodes.html#deo'>DEO</a></kbd> opcode that pops both
+bytes(the letter and the port) and sends the letter to that device port,
+telling the Console to print it, leaving only the address on top of the
+stack.</p>
+
+<p>The <a href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a> opcode increments
+the address, moving the text pointer to the next letter. The <a
+href='uxntal_opcodes.html#modes'>2-mode</a> is used because the address is made
+of two bytes.</p>
+
+<pre>
+@λ00
+|010b   80 18      ( #18 )
+|010d   17         ( DEO )
+|010e   21         ( INC2 )
+|010f   40 ff f1   ( !while )
+</pre>
+
+<p>Finally, with <kbd>!while</kbd> we jump back to the <kbd>@while</kbd> label,
+and repeat the loop until there are no more letters to load. When that happens,
+we <a href='uxntal_opcodes.html#pop'><kbd>POP</kbd></a> to remove the
+duplicated letter, and <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to
+remove the address on the stack to keep the stack clean at the end of the
+evaluation.</p>
+
+<pre>
+@text
+|0112   48 65 6c   ( H e l )
+|0115   6c 6f 20   ( l o   )
+|0117   57 6f 72   ( W o r )
+|011a   6c 64 21   ( l d ! )</pre>
+
+<h3>Summary</h3>
+
+<p><a href='uxntal_notation.html#comments'>Comments</a> are within parentheses, <a
+href='uxntal_numbers.html'>numbers</a> are lowercase hexadecimal shorts or
+bytes and <a href='uxntal_opcodes.html'>opcodes</a> are uppercased reserved
+words with lowercased modes. A rune is a non-alphanumeric symbol at the start
+of a word, literal numbers are prefixed with a # rune, <a
+href='uxntal_labels.html#addressing'>addressing</a> is done by one of six
+runes. Labels and macros are unique non-numeric, non-opcode and non-runic
+symbols.</p>
+
+<table border="1" id='runes'>
+	<tr><th colspan="4">Padding Runes</th><th colspan="4">Number Rune</th></tr>
+	<tr>
+		<td><code>|</code></td><td><a href='uxntal_memory.html#absolute'>absolute</a></td>
+		<td><code>$</code></td><td><a href='uxntal_memory.html#relative'>relative</a></td>
+		<td><code>#</code></td><td colspan="3"><a href='uxntal_numbers.html'>literal number</a></td>
+	</tr>
+	<tr><th colspan="4">Label Runes</th><th colspan="4">Ascii Runes</th></tr>
+	<tr>
+		<td><code>@</code></td><td><a href='uxntal_labels.html#parent'>parent</a></td>
+		<td><code>&</code></td><td><a href='uxntal_labels.html#child'>child</a></td>
+		<td><code>&quot;</code></td><td colspan="3">raw ascii</td>
+	</tr>
+	<tr><th colspan="4">Addressing Runes</th><th colspan="4">Wrapping Runes</th></tr>
+	<tr>
+		<td><code>,</code></td><td><a href='uxntal_labels.html#litrel'>literal relative</a></td>
+		<td><code>_</code></td><td><a href='uxntal_labels.html#rawrel'>raw relative</a></td>
+		<td><code>( )</code></td><td colspan='3'><a href='uxntal_notation.html#comments'>comment</a></td>
+	<tr>
+		<td><code>.</code></td><td><a href='uxntal_labels.html#litzep'>literal zero-page</a></td>
+		<td><code>-</code></td><td><a href='uxntal_labels.html#rawzep'>raw zero-page</a></td>
+		<td><code>{ }</code></td><td colspan='3'><a href='uxntal_labels.html#anonymous'>anonymous</a></td>
+	</tr>
+	<tr>
+		<td><code>;</code></td><td><a href='uxntal_labels.html#litabs'>literal absolute</a></td>
+		<td><code>=</code></td><td><a href='uxntal_labels.html#rawabs'>raw absolute</a></td>
+		<td><code>[ ]</code></td><td colspan='3'><a href='uxntal_notation.html#brackets'>ignored</a></td>
+	</tr>
+	<tr><th colspan="4">Immediate Runes</th><th colspan="4">Pre-processor Runes</th></tr>
+	<tr>
+		<td><code>!</code></td><td><a href='uxntal_opcodes.html#jmi'>jmi</a></td>
+		<td><code>?</code></td><td><a href='uxntal_opcodes.html#jci'>jci</a></td>
+		<td><code>% { }</code></td><td><a href='uxntal_macros.html'>macro</a></td>
+	</tr>
+</table>
