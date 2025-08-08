@@ -109,7 +109,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "2 20 "Aug 20 "2025 $2
+	( date ) "7 20 "Aug 20 "2025 $2
 
 
 
@@ -335,8 +335,8 @@
 (
 @|Lambda )
 
-@lambda/make-name ( -- name* )
-	[ LIT &count $1 ] INCk ,&count STR
+@lambda/make-name ( token* -- name* )
+	POP2 [ LIT &count $1 ] INCk ,&count STR
 	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
 	( >> )
@@ -364,6 +364,12 @@
 	( not opcode ) opcodes/is-opcode else-return
 	&fail ( -- )
 	;dict/invalid ;dict/Name !err/<token>
+
+@name/unpack ( name* -- name* )
+	LDAk [ LIT "{ ] EQU ?lambda/make-name
+	LDAk [ LIT "/ ] EQU ?scope/make-name
+	LDAk [ LIT "& ] EQU ?scope/make-name
+	JMP2r
 
 (
 @|Macros )
@@ -501,17 +507,17 @@
 @|References )
 
 @refs/get-any ( str* -- value* )
-	str/not-hex ?/get-ref
-	!str/hex
+	str/not-hex ?{ !str/hex }
+	DUP2 name/unpack syms/find-name INC2 ORA ?{
+		( ! ) ;dict/invalid ;dict/Reference err/<token> }
+	!/get-ref
 
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
 	( >> )
 
 @refs/get-ref ( token* -- addr* )
-	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/make-name }
-	LDAk [ LIT "/ ] NEQ ?{ scope/make-name }
-	LDAk [ LIT "& ] NEQ ?{ scope/make-name }
+	name/unpack
 	( | find symbol or create it )
 	syms/find-alloc
 	( | check if declared )
