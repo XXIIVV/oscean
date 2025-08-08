@@ -1093,12 +1093,12 @@ Famisido	Firearms, musketry (musketeer)
 Famisire	Bomb, cannon, mortar
 Famisimi	Percussion, drums
 Famisifa	Shoot, rifle, shooting, discharge
-Famisisol	??
+Famisisol	--
 Famisila	Pistol, handgun
 Fasoldore	Gunpowder
 Fasoldomi	Cartrige, (capsule)
 Fasoldofa	Bullet, bullet shells
-Fasoldosol	To begin, initiate, prime, boot up, wick, fuse, (also to light a wick?)
+Fasoldosol	To begin, initiate, prime, boot up, wick, fuse, (also to light a wick)
 Fasoldola	Sword, saber
 Fasoldosi	Dagger, poniard, stilleto
 Fasolredo	Covet, lust, greed, insatiability, rapacious, greedy, insatiable
@@ -1288,7 +1288,7 @@ Solmiresol	Sharp (as in music, "C Sharp")
 Solmirela	Flat (as in music, "B Flat")
 Solmiresi	Natural (as in music), diatonic
 Solmifado	Misconduct, immorality
-Solmifare	Half step (Leading tone?)
+Solmifare	Half step (Leading tone)
 Solmifami	Interval, gap
 Solmifasol	Interval of a tone, semitone, half step
 Solmifala	Major key, major mode
@@ -1311,7 +1311,7 @@ Solmisimi	Method, system, methodist, methodical, systematic, methodically, syste
 Solmisifa	Immobility, immobile
 Solmisisol	Theory, theorist, theoretician theoretical
 Solmisila	Problem, issue, challenge, touble, problematic
-Solfadore	Philotechnic?
+Solfadore	Philotechnic
 Solfadomi	Philharmonic, philharmonic society
 Solfadofa	Choirmaster
 Solfadosol	Choir, singer, choir member, chorus, in chorus
@@ -1443,7 +1443,7 @@ Ladosolmi	Unwind, unravel, spool
 Ladosolfa	Spinning, spinner
 Ladosolla	Canvas, cretonne, chintz, batiste, cambric
 Ladosolsi	Cotton, calico, percale, jaconet
-Ladolado	Muslin, organdy, tarlatan, gauze, (Pancake?? (Crêpe))
+Ladolado	Muslin, organdy, tarlatan, gauze, Pancake, Crêpe
 Ladolare	Wool, flannel, merino, cashmere
 Ladolami	Sheet, draper, clothmaker
 Ladolafa	Silk, silk industry, silky
@@ -1488,7 +1488,7 @@ Larelasi	Nomenclature, list, collection, catalog, nomenclator
 Laresido	Assess, appraise, esteem, evaluation, estimate, price
 Laresire	Worth, cost, value, valuable, valuably
 Laresimi	Sum
-Laresifa	Pay, settle, break free (from debt?), payment, payer, payable
+Laresifa	Pay, settle, break free (from debt), payment, payer, payable
 Laresisol	Bill, invoice, check
 Laresila	Receipt, payed for, acquitted, received
 Lamidore	Augment, increase, enlarge, add to, magnify, magnification, extra, added, increased, additional
@@ -1615,7 +1615,7 @@ Lasimido	Cowardice, coward, without courage, cowardly
 Lasimire	Amass, accumulate, pile, stack, heap, accumulation, mass
 Lasimifa	Encumber, congest, congestion, hinder, hindrance
 Lasimisol	Haberdashery, sewing materials vendor
-Lasimila	Ball of thread, (Pincushion?)
+Lasimila	Ball of thread, Pincushion
 Lasimisi	Skein
 Lasifado	Indelicacy, indelicate, incelicately
 Lasifare	Fair, showman
@@ -1689,7 +1689,7 @@ Sirefami	Modesty, humility, modest, humble, modestly, humbly
 Sirefasol	Duke, duchess, marquis, marquise, count, countess, viscount, viscountess, baron, baroness
 Sirefala	Chivalry, knighthood, knight
 Sirefasi	Coat of arms, blazon, escutcheon
-Siresoldo	Entitle, entitled, titled, title (honorific?), qualification
+Siresoldo	Entitle, entitled, titled, title (honorific), qualification
 Siresolre	Sire, your majesty
 Siresolmi	My Lord, You Lordship, Lord, etc. (as an address)
 Siresolfa	Your Excellence (as an address)
@@ -1704,12 +1704,12 @@ Sirelasi	Constitute, establish, form, constitution, formation, constituent, cons
 Siresido	Diplomacy, diplomat, statesman, diplomatic, diplomatically
 Siresire	Politics
 Siresimi	Spirit of the Party, partisanship, sect, partisan, proselyte, sectarian, follower
-Siresifa	Imperialism, royalism, monarchy, legitimacy (lawfulness?), imperial, royal, monarchist, royalist, monarchical, monarchically
+Siresifa	Imperialism, royalism, monarchy, legitimacy (lawfulness), imperial, royal, monarchist, royalist, monarchical, monarchically
 Siresisol	Liberalism, liberal
 Siresila	Republic, republicanism, republican
 Simidore	Ministry, minister, ministerial, ministerially
 Simidomi	Bureaucracy, bureaucrat, bureaucratic, bureaucratically
-Simidofa	Supernumerary, assistant, second-in-command, chief, boss, head (??)
+Simidofa	Supernumerary, assistant, second-in-command, chief, boss
 Simidosol	Secretary, secretarial work
 Simidola	Preside, presidency, president, vice-president
 Simidosi	Commission, comittee, committe member
@@ -1778,7 +1778,7 @@ Sifasire	Play, play a game, game
 Sifasimi	Billiards, pool, ball, pool ball, bowling
 Sifasifa	Cards, playing cards
 Sifasisol	Age, antiquity, antiques, old antique, gothic, ancient, anciently, formerly, once, long ago
-Sifasila	Chess, checkers, dominos, lotto, chip (poker?), card
+Sifasila	Chess, checkers, dominos, lotto, chip (poker), card
 Sisoldore	Scholarship, scholar
 Sisoldomi	Bank, banker
 Sisoldofa	Place (values), investment
@@ -1800,7 +1800,7 @@ Sisolmisi	Usury, usurer, stockbroker
 Sisolfado	Lie, falsehood, hypocrisy, liar, false, hypocritical, falsely, hypocritically
 Sisolfare	Dressing up, disguise, masquerade, mask, carnival
 Sisolfami	Scream, yell, shout one's lungs out, cry,  shouting, crier
-Sisolfasol	To stun, daze, astound, noise, tumult, explosion, hubbub, noisy, tumultuous, deafening, tumultuously
+Sisolfasol	To stun, daze, astound, noise, tumult, explosion, hubbub, noisy, tumultuous, deafening, tumultuously, loud, loudly
 Sisolfala	Shock, offend, scandal, bad example, shocking, offensive, scandalous
 Sisolfasi	Abuse, misuse, encroach upon, abuse, excess, abusive, abusively
 Sisollado	Populate, people, population, people, the vulgar, plebeian, proletarian
