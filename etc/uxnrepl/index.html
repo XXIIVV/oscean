@@ -39,7 +39,8 @@
 	<div id='menu'>
 		<input type="button" id="run" value="Run"> <input type="button" id="step" value="Step">
 		<span id='wst'>Ready.</span>
-		<input type="button" id="save" value="Build">
+		<input type="button" id="dump" class="option" value="Hex">
+		<input type="button" id="save" class="option" value="Rom">
 		<select name="cars" id="examples">
 			<option value="0_tal">0. Hello World</option>
 			<option value="1_tal">1. Stack</option>
@@ -65,8 +66,14 @@ let wst_el = document.getElementById("wst")
 let run_el = document.getElementById("run")
 let step_el = document.getElementById("step")
 let save_el = document.getElementById("save")
+let dump_el = document.getElementById("dump")
 
 document.body.className = "active"
+
+run_el.addEventListener("click", run)
+step_el.addEventListener("click", step)
+save_el.addEventListener("click", save)
+dump_el.addEventListener("click", dump)
 
 function assemble(query, program) {
 	let emu_asm = new Emu()
@@ -173,6 +180,18 @@ function save() {
 	}
 }
 
+function dump() {
+	let program = new Uint8Array(0x10000)
+	let length = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+	if(length) {
+		let body = ""
+		for(let i = 0; i < length; i++)
+			body += `${program[i].toString(16).padStart(2, '0')}${(i + 1) % 0x10 ? ' ' : '\n'}`
+		const popup = window.open('', 'Popup', 'width=400,height=300');
+		popup.document.body.innerHTML = `<pre>${body}</pre>`;
+	}
+}
+
 // Editor
 
 const editor = document.getElementById("editor")
@@ -192,10 +211,6 @@ editor.addEventListener("keydown", (e) => {
 		status(1, "Restart", "Step")
 });
 
-run_el.addEventListener("click", run)
-step_el.addEventListener("click", step)
-save_el.addEventListener("click", save)
-
 document.getElementById('examples').addEventListener('change', (e) => {
 	editor_el.value = examples[e.currentTarget.value]
 	term_el.innerHTML = `Press <b>Run</b> to evaluate.`
@@ -213,11 +228,10 @@ document.getElementById('examples').addEventListener('change', (e) => {
 		div#menu select { float:right }
 		body.active textarea { height:calc(100% - 140px); }
 		body.active div#term, body.active div#menu { display:block }
-		#run, #step, #save { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
-		#step, #save { background: #fff; color:black}
-		#save { float:right; margin-left:10px }
-		#run:hover, #step:hover, #save:hover { background: #58ac96; color:#000 }
-		#run:hover, #step:hover, #save:hover { background: #58ac96; color:#000 }
+		#run, #step { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
+		#step { background: #fff; color:black}
+		#run:hover, #step:hover { background: #58ac96; color:#000 }
+		.option { float:right; margin-left:10px; cursor:pointer }
 		dialog { background:#a4f4e0; display: none; padding: 10px; padding-bottom: 0; }
 		dialog[open] { display: block; }
 		dialog > * { margin: 0; margin-bottom: 10px; }
