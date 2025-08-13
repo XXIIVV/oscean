@@ -71,13 +71,22 @@
 	.Screen/auto DEO
 	STH
 	[ LITr -Screen/sprite ] #00 SWP SUB
-	&>ver ( -- )
+	&>ver
 		DEOkr
 		INC DUP ?&>ver
 	POP POP2r JMP2r
 
 (
 @|needles )
+
+%abs2 ( a* -- res* ) {
+	DUP2k #1f SFT2 MUL2 SUB2 }
+
+%lts2 ( a* b* -- f ) {
+	SUB2 POP #07 SFT }
+
+%gts2 ( a* b* -- f ) {
+	SWP2 lts2 }
 
 @plot ( cx cy radius* -- x* y* )
 	STH2
@@ -96,27 +105,18 @@
 	#0440 #31 <draw-times>
 	( | draw m & h needles )
 	[ LIT2 00 -Screen/auto ] DEO
-	[ LIT2 00 -DateTime/minute ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2 #0090 plot #41 <draw-needle>
-	[ LIT2 00 -DateTime/hour ] DEI #0c DIVk MUL SUB #20 SFTk NIP ADD [ LIT2 00 -DateTime/minute ] DEI #0f DIV ADD2 DUP2 ADD2 ;sin60 ADD2 LDA2 #00b0 plot #41 <draw-needle>
+	[ LIT2 00 -DateTime/minute ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2 #0090 plot #41 <draw-line>
+	[ LIT2 00 -DateTime/hour ] DEI #0c DIVk MUL SUB #20 SFTk NIP ADD [ LIT2 00 -DateTime/minute ] DEI #0f DIV ADD2 DUP2 ADD2 ;sin60 ADD2 LDA2 #00b0 plot #41 <draw-line>
 	( | draw pivot )
 	;middle-icn .Screen/addr DEO2
 	.center/x LDZ2 #0001 SUB2 .Screen/x DEO2
 	.center/y LDZ2 #0001 SUB2 .Screen/y DEO2
 	[ LIT2 45 -Screen/sprite ] DEO
 	( | draw s needle )
-	[ LIT2 00 -DateTime/second ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2 #0090 plot #43 <draw-needle>
-	JMP2r
+	[ LIT2 00 -DateTime/second ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2 #0090 plot #43
+	( >> )
 
-%abs2 ( a* -- res* ) {
-	DUP2k #1f SFT2 MUL2 SUB2 }
-
-%lts2 ( a* b* -- f ) {
-	SUB2 POP #07 SFT }
-
-%gts2 ( a* b* -- f ) {
-	SWP2 lts2 }
-
-@<draw-needle> ( x1* y1* x2* y2* color -- )
+@<draw-line> ( x1* y1* x2* y2* color -- )
 	,&color STR
 	.center/y LDZ2 ,&y2 STR2
 	.center/x LDZ2 ,&x2 STR2
@@ -130,13 +130,13 @@
 	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
 	gts2 [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
-	&>while ( x+y*
-		| x* y* -- )
+	&>w
 		DUP2r [ LITr -Screen/y ] DEO2r
 		OVR2r [ LITr -Screen/x ] DEO2r
 		[ LIT2 &color $1 -Screen/pixel ] DEO
 		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
-			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
+			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
+				( stop ) POP2 POP2r POP2r JMP2r } }
 		( e -> e2 ) DUP2k ADD2 DUP2
 		( y ) [ LIT2 &dy $2 ] lts2 ?{
 			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
@@ -144,8 +144,7 @@
 		( x ) [ LIT2 &dx $2 ] gts2 ?{
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
-		!&>while
-	&end POP2 POP2r POP2r JMP2r
+		!&>w
 
 (
 @|theme )
@@ -175,7 +174,7 @@
 	( name ) "Catclock 0a
 	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "19 20 "Feb 20 "2025 $1
+	( date ) "12 20 "Aug 20 "2025 $1
 	( elements ) 01
 	( > icon ) 83 =appicon
 
