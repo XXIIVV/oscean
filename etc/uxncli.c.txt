@@ -151,7 +151,7 @@ system_load(char *rom_path)
 static unsigned int
 system_boot(char *rom_path, unsigned int has_args)
 {
-	ram = (Uint8 *)calloc(BANKS * 0x10000, sizeof(Uint8));
+	ram = (Uint8 *)calloc(BANKS_CAP, sizeof(Uint8));
 	system_boot_path = rom_path;
 	dev[0x17] = has_args;
 	return system_load(rom_path);
@@ -617,6 +617,18 @@ static unsigned int rL1, rL2;
 
 #include <time.h>
 
+time_t datetime_seconds;
+struct tm *datetime_t, datetime_zt = {0};
+
+void
+datetime_update(void)
+{
+	datetime_seconds = time(NULL);
+	datetime_t = localtime(&datetime_seconds);
+	if(datetime_t == NULL)
+		datetime_t = &datetime_zt;
+}
+
 /*
 @|Core -------------------------------------------------------------- */
 
@@ -630,26 +642,17 @@ emu_dei(const Uint8 port)
 	/* Console */
 	case CMD_LIVE:
 	case CMD_EXIT: check_child(); break;
-	}
-	/* Datetime */
-	if((port & 0xf0) == 0xc0) {
-		time_t seconds = time(NULL);
-		struct tm zt = {0};
-		struct tm *t = localtime(&seconds);
-		if(t == NULL) t = &zt;
-		switch(port) {
-		case 0xc0: return (t->tm_year + 1900) >> 8;
-		case 0xc1: return (t->tm_year + 1900);
-		case 0xc2: return t->tm_mon;
-		case 0xc3: return t->tm_mday;
-		case 0xc4: return t->tm_hour;
-		case 0xc5: return t->tm_min;
-		case 0xc6: return t->tm_sec;
-		case 0xc7: return t->tm_wday;
-		case 0xc8: return t->tm_yday >> 8;
-		case 0xc9: return t->tm_yday;
-		case 0xca: return t->tm_isdst;
-		}
+	case 0xc0: datetime_update(); return (datetime_t->tm_year + 1900) >> 8;
+	case 0xc1: datetime_update(); return (datetime_t->tm_year + 1900);
+	case 0xc2: datetime_update(); return datetime_t->tm_mon;
+	case 0xc3: datetime_update(); return datetime_t->tm_mday;
+	case 0xc4: datetime_update(); return datetime_t->tm_hour;
+	case 0xc5: datetime_update(); return datetime_t->tm_min;
+	case 0xc6: datetime_update(); return datetime_t->tm_sec;
+	case 0xc7: datetime_update(); return datetime_t->tm_wday;
+	case 0xc8: datetime_update(); return datetime_t->tm_yday >> 8;
+	case 0xc9: datetime_update(); return datetime_t->tm_yday;
+	case 0xca: datetime_update(); return datetime_t->tm_isdst;
 	}
 	return dev[port];
 }
@@ -668,6 +671,8 @@ emu_deo(const Uint8 port, const Uint8 value)
 	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
 	case 0x18: fputc(dev[0x18], stdout), fflush(stdout); break;
 	case 0x19: fputc(dev[0x19], stderr), fflush(stderr); break;
+	case 0x1a: fprintf(stderr, "%02x", dev[0x1a]); break;
+	case 0x1b: fprintf(stderr, "%02x", dev[0x1b]); break;
 	case 0x1f: start_fork(); break;
 	/* File 1 */
 	case 0xab: rL1 = PEEK2(&dev[0xaa]); break;
@@ -691,7 +696,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 22 Jul 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 13 Aug 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

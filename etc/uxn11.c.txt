@@ -40,15 +40,17 @@ void emu_deo(const Uint8 port, const Uint8 value);
 
 /* clang-format off */
 
+#define WIDTH (64 * 8)
+#define HEIGHT (40 * 8)
+
+#define clamp(v, a, b) { if(v < a) v = a; else if(v >= b) v = b; }
+#define twos(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
+
 #define BANKS 0x10
 #define BANKS_CAP BANKS * 0x10000
 
-#define WIDTH (64 * 8)
-#define HEIGHT (40 * 8)
 #define PEEK2(d) (*(d) << 8 | (d)[1])
 #define POKE2(d, v) { *(d) = (v) >> 8; (d)[1] = (v); }
-#define clamp(v,a,b) { if(v < a) v = a; else if(v >= b) v = b; }
-#define twos(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
 
 #define OPC(opc, A, B) {\
 	case 0x00|opc: {const int _2=0,_r=0;A B;} break;\
@@ -164,7 +166,7 @@ system_load(const char *rom_path)
 static unsigned int
 system_boot(char *rom_path, const unsigned int has_args)
 {
-	ram = (Uint8 *)calloc(BANKS * 0x10000, sizeof(Uint8));
+	ram = (Uint8 *)calloc(BANKS_CAP, sizeof(Uint8));
 	system_boot_path = rom_path;
 	dev[0x17] = has_args;
 	return ram && system_load(rom_path);
@@ -415,16 +417,30 @@ console_input(int c, unsigned int type)
 typedef struct UxnScreen {
 	int width, height, zoom, resized, x1, y1, x2, y2;
 	unsigned int palette[16], *pixels;
-	Uint8 *fg, *bg;
+	Uint8 *bg;
 } UxnScreen;
 
 static unsigned int screen_vector;
 static UxnScreen uxn_screen;
-static const Uint8 blending[4][16] = {
-	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
-	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
-	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
-	{2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2}};
+
+static const Uint8 blending[16][4] = {
+	{0, 0, 1, 2},
+	{0, 1, 2, 3},
+	{0, 2, 3, 1},
+	{0, 3, 1, 2},
+	{1, 0, 1, 2},
+	{0, 1, 2, 3},
+	{1, 2, 3, 1},
+	{1, 3, 1, 2},
+	{2, 0, 1, 2},
+	{2, 1, 2, 3},
+	{0, 2, 3, 1},
+	{2, 3, 1, 2},
+	{3, 0, 1, 2},
+	{3, 1, 2, 3},
+	{3, 2, 3, 1},
+	{0, 3, 1, 2},
+};
 
 void emu_resize(void);
 
@@ -474,9 +490,8 @@ screen_apply(int width, int height)
 	if(width == uxn_screen.width && height == uxn_screen.height)
 		return;
 	length = MAR2(width) * MAR2(height);
-	uxn_screen.bg = realloc(uxn_screen.bg, length), uxn_screen.fg = realloc(uxn_screen.fg, length);
+	uxn_screen.bg = realloc(uxn_screen.bg, length);
 	memset(uxn_screen.bg, 0, length);
-	memset(uxn_screen.fg, 0, length);
 	uxn_screen.width = width, uxn_screen.height = height, uxn_screen.resized = 1;
 	screen_change(0, 0, width, height);
 }
@@ -488,7 +503,7 @@ screen_redraw(void)
 	for(y = uxn_screen.y1; y < uxn_screen.y2; y++) {
 		const int ys = y * uxn_screen.zoom;
 		for(x = uxn_screen.x1, i = MAR(x) + MAR(y) * MAR2(uxn_screen.width); x < uxn_screen.x2; x++, i++) {
-			const int c = uxn_screen.palette[uxn_screen.fg[i] << 2 | uxn_screen.bg[i]];
+			const int c = uxn_screen.palette[uxn_screen.bg[i]];
 			for(k = 0; k < uxn_screen.zoom; k++) {
 				const int oo = ((ys + k) * uxn_screen.width + x) * uxn_screen.zoom;
 				for(l = 0; l < uxn_screen.zoom; l++)
@@ -510,7 +525,7 @@ screen_draw_pixel(void)
 	const int ctrl = dev[0x2e];
 	const int color = ctrl & 0x3;
 	const int len = MAR2(uxn_screen.width);
-	Uint8 *layer = ctrl & 0x40 ? uxn_screen.fg : uxn_screen.bg;
+	const int above = ctrl & 0x40;
 	/* fill mode */
 	if(ctrl & 0x80) {
 		int x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
@@ -526,13 +541,18 @@ screen_draw_pixel(void)
 		x1 = MAR(x1), y1 = MAR(y1);
 		hor = MAR(x2) - x1, ver = MAR(y2) - y1;
 		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
-			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++)
-				layer[ax] = color;
+			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++) {
+				const int src = uxn_screen.bg[ax];
+				uxn_screen.bg[ax] = above ? (src & 0x3) | color << 2 : (src & 0xc) | color;
+			}
 	}
 	/* pixel mode */
 	else {
-		if(rX >= 0 && rY >= 0 && rX < len && rY < uxn_screen.height)
-			layer[MAR(rX) + MAR(rY) * len] = color;
+		if(rX >= 0 && rY >= 0 && rX < len && rY < uxn_screen.height) {
+			const int ax = MAR(rX) + MAR(rY) * len;
+			const int src = uxn_screen.bg[ax];
+			uxn_screen.bg[ax] = above ? (src & 0x3) | color << 2 : (src & 0xc) | color;
+		}
 		screen_change(rX, rY, rX + 1, rY + 1);
 		if(rMX) rX++;
 		if(rMY) rY++;
@@ -543,13 +563,15 @@ static void
 screen_draw_sprite(void)
 {
 	const int ctrl = dev[0x2f];
-	const int blend = ctrl & 0xf, opaque = blend % 5;
+	const int blend = ctrl & 0xf;
+	const int above = ctrl & 0x40;
+	const int opaque = blend % 5;
 	const int fx = ctrl & 0x10 ? -1 : 1, fy = ctrl & 0x20 ? -1 : 1;
 	const int qfx = fx > 0 ? 7 : 0, qfy = fy < 0 ? 7 : 0;
 	const int dxy = fy * rDX, dyx = fx * rDY;
 	const int wmar = MAR(uxn_screen.width), wmar2 = MAR2(uxn_screen.width);
 	const int hmar2 = MAR2(uxn_screen.height);
-	Uint8 *layer = ctrl & 0x40 ? uxn_screen.fg : uxn_screen.bg;
+	const Uint8 *table = blending[blend];
 	int i, x1, x2, y1, y2, ax, ay, qx, qy, x = rX, y = rY;
 	if(ctrl & 0x80) {
 		const int addr_incr = rMA << 2;
@@ -563,7 +585,10 @@ screen_draw_sprite(void)
 					const int ch1 = sprite[qy], ch2 = sprite[qy + 8] << 1, bx = xmar2 + ay;
 					for(ax = xmar + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
 						const int color = ((ch1 >> qx) & 1) | ((ch2 >> qx) & 2);
-						if(opaque || color) layer[ax] = blending[color][blend];
+						if(opaque || color) {
+							const int src = uxn_screen.bg[ax];
+							uxn_screen.bg[ax] = above ? (src & 0x3) | table[color] << 2 : (src & 0xc) | table[color];
+						}
 					}
 				}
 			}
@@ -580,7 +605,10 @@ screen_draw_sprite(void)
 					const int ch1 = sprite[qy], bx = xmar2 + ay;
 					for(ax = xmar + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
 						const int color = (ch1 >> qx) & 1;
-						if(opaque || color) layer[ax] = blending[color][blend];
+						if(opaque || color) {
+							const int src = uxn_screen.bg[ax];
+							uxn_screen.bg[ax] = above ? (src & 0x3) | table[color] << 2 : (src & 0xc) | table[color];
+						}
 					}
 				}
 			}
@@ -909,6 +937,18 @@ static unsigned int rL1, rL2;
 
 #include <time.h>
 
+time_t datetime_seconds;
+struct tm *datetime_t, datetime_zt = {0};
+
+void
+datetime_update(void)
+{
+	datetime_seconds = time(NULL);
+	datetime_t = localtime(&datetime_seconds);
+	if(datetime_t == NULL)
+		datetime_t = &datetime_zt;
+}
+
 /*
 @|Core -------------------------------------------------------------- */
 
@@ -935,25 +975,17 @@ emu_dei(const Uint8 port)
 	case 0x2b: return rY;
 	case 0x2c: return rA >> 8;
 	case 0x2d: return rA;
-	}
-	if((port & 0xf0) == 0xc0) {
-		time_t seconds = time(NULL);
-		struct tm zt = {0};
-		struct tm *t = localtime(&seconds);
-		if(t == NULL) t = &zt;
-		switch(port) {
-		case 0xc0: return (t->tm_year + 1900) >> 8;
-		case 0xc1: return (t->tm_year + 1900);
-		case 0xc2: return t->tm_mon;
-		case 0xc3: return t->tm_mday;
-		case 0xc4: return t->tm_hour;
-		case 0xc5: return t->tm_min;
-		case 0xc6: return t->tm_sec;
-		case 0xc7: return t->tm_wday;
-		case 0xc8: return t->tm_yday >> 8;
-		case 0xc9: return t->tm_yday;
-		case 0xca: return t->tm_isdst;
-		}
+	case 0xc0: datetime_update(); return (datetime_t->tm_year + 1900) >> 8;
+	case 0xc1: datetime_update(); return (datetime_t->tm_year + 1900);
+	case 0xc2: datetime_update(); return datetime_t->tm_mon;
+	case 0xc3: datetime_update(); return datetime_t->tm_mday;
+	case 0xc4: datetime_update(); return datetime_t->tm_hour;
+	case 0xc5: datetime_update(); return datetime_t->tm_min;
+	case 0xc6: datetime_update(); return datetime_t->tm_sec;
+	case 0xc7: datetime_update(); return datetime_t->tm_wday;
+	case 0xc8: datetime_update(); return datetime_t->tm_yday >> 8;
+	case 0xc9: datetime_update(); return datetime_t->tm_yday;
+	case 0xca: datetime_update(); return datetime_t->tm_isdst;
 	}
 	return dev[port];
 }
@@ -978,6 +1010,8 @@ emu_deo(const Uint8 port, const Uint8 value)
 	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
 	case 0x18: fputc(dev[0x18], stdout), fflush(stdout); return;
 	case 0x19: fputc(dev[0x19], stderr), fflush(stderr); return;
+	case 0x1a: fprintf(stderr, "%02x", dev[0x1a]); break;
+	case 0x1b: fprintf(stderr, "%02x", dev[0x1b]); break;
 	case 0x1f: console_start_fork(); return;
 	/* Screen */
 	case 0x21: screen_vector = PEEK2(&dev[0x20]); return;
@@ -1227,7 +1261,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 19 Jul 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 13 Aug 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
