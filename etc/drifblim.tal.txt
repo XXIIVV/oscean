@@ -145,7 +145,7 @@
 	JMP2r
 
 @asm-default ( t* -- )
-	( hex ) str/not-hex ?{ !rom/<write-rawhex> }
+	( hex ) str/is-hex ?rom/<write-rawhex>
 	( opc ) opcodes/is-opcode ?rom/<write-opcode>
 	LDZk runes/find INC2k ORA ?{
 		POP2
@@ -159,7 +159,7 @@
 	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
 	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
 	STHkr [ LITr _&depth ] STRr
-	?{ !assembly/<set-default> }
+	#00 EQU ?assembly/<set-default>
 	JMP2r
 
 @asm-macro ( t* -- )
@@ -355,14 +355,11 @@
 (
 @|Name )
 
-%else-return ( bool -- ) {
-	[ JMP JMP2r ] }
-
 @name/<validate> ( name* -- name* )
-	( not hex ) str/not-hex #00 EQU ?&fail
+	( not hex ) str/is-hex ?&fail
 	( not runic ) LDAk runes/find INC2 ORA ?&fail
 	( not lambda ) LDAk LIT "{ EQU ?&fail
-	( not opcode ) opcodes/is-opcode else-return
+	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
 	&fail ( -- )
 	;dict/invalid ;dict/Name !err/<token>
 
@@ -507,16 +504,13 @@
 @|References )
 
 @refs/get-any ( str* -- value* )
-	str/not-hex ?{ !str/hex }
-	DUP2 name/unpack syms/find-name INC2 ORA ?{
+	str/is-hex ?str/hex
+	name/unpack syms/find-name INC2k ORA ?{
 		( ! ) ;dict/invalid ;dict/Reference err/<token> }
-	!/get-ref
+	LDA2 JMP2r
 
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
-	( >> )
-
-@refs/get-ref ( token* -- addr* )
 	name/unpack
 	( | find symbol or create it )
 	syms/find-alloc
@@ -615,7 +609,7 @@
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	str/not-hex ?{
+	str/is-hex #00 EQU ?{
 		str/len DUP #02 NEQ ?{ POP str/hex NIP !/<write-byte> }
 		#04 NEQ ?{ str/hex !/<write-short> } }
 	POP2 ;dict/invalid ;dict/Number !err/<token>
@@ -663,8 +657,8 @@
 
 @chex ( addr* -- addr* <val> )
 	LDAk
-	( dec ) [ LIT "0 ] SUB DUP #09 GTH else-return
-	( hex ) #27 SUB DUP #0a SUB #05 GTH else-return
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
 	( nil ) POP #ff JMP2r
 
 @str/hex ( str* -- value* )
@@ -677,10 +671,10 @@
 @str/len ( str* -- str* length )
 	DUP2k /cap SWP2 INC2 SUB2 NIP JMP2r
 
-@str/not-hex ( str* -- str* f )
+@str/is-hex ( str* -- str* f )
 	DUP2
 	&>wih
-		chex INC ?{ LDA JMP2r }
+		chex INC ?{ LDA #00 EQU JMP2r }
 		INC2 !&>wih
 
 @str/cap ( str* -- end* )
