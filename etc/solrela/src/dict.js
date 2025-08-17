@@ -1910,8 +1910,8 @@ Solsolla	Friday
 Solsolsi	Saturday
 Soldodo	Sunday
 Solrere	The past, former, past, yesterday
-Solmimi	The present
-Solfafa	The future
+Solmimi	The present, today, now
+Solfafa	The future, tomorrow
 Sollala	Hour
 Solsisi	Minute, second, moment, instant
 Lalado	Dawn, twilight
