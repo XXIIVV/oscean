@@ -1527,7 +1527,7 @@ Lamisimi	Disobey, disobedience, insubordination, rebellion, disobedient, rebelli
 Lamisifa	Result, occur, arise, result, consequence, consequently, as a result, accordingly, in consequence, therefore, because of this
 Lamisisol	Balance sheet, toll, assessment, report
 Lamisila	Budget, statistical, budget of things
-Lafadore	Bankrupt, settlement
+Lafadore	Counting, Bankrupt, settlement
 Lafadomi	Add, addition, additional
 Lafadofa	Subtract, subtraction
 Lafadosol	Multiply, multiplier, multiplication, multiple, multipliable

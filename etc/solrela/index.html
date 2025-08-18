@@ -36,7 +36,7 @@ In memory of Daniel Parson(1989-2023)
 </body>
 <script type="text/javascript">
 	'use strict'
-	// Parse dictionary
+
 	let count = 0
 	let source = 0
 	let data = {sr:{}, en:{}};
@@ -44,6 +44,11 @@ In memory of Daniel Parson(1989-2023)
 	let shavs = ['𐑴', '𐑦', '𐑵', '𐑳', '𐑯', '𐑤', '𐑨']
 	let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
 	let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
+	let categories = [
+		["human", "household", "action", "world", "arts & science", "industry", "administration"],
+		["religion", "trade", "syntax", "ills", "ills", "industry", "justice"]
+	]
+
 	dict.split('\n').forEach((value) => {
 		if(!value) return
 		let parts = value.split('\t')
@@ -95,6 +100,12 @@ In memory of Daniel Parson(1989-2023)
 			else return 0
 		}
 		return segments
+	}
+
+	function implode_srs(a) {
+		let res = ""
+		a.forEach((s) => { res += notes[s] })
+		return res
 	}
 
 	function invert_srs(w) {
@@ -214,11 +225,32 @@ In memory of Daniel Parson(1989-2023)
 			sources[s].forEach((w, id) => {
 				html += `<a onclick="run_search('${w}')">${w}</a>${id < sources[s].length-1 ? ',' : ''} `
 			})
-			// Inversion
 			if(lang == 'sr') {
+				// Inversion
 				let inv = invert_srs(target)
+				let exp = explode_srs(target)
 				if(inv != target && data.sr[inv]) {
-					html += `<i class='inv'>inv: <a onclick="run_search('${inv}')">${inv}</a></i>`
+					html += `<i class='inv'>inv: <a onclick="run_search('${inv}')">${Object.keys(data.sr[inv])[0]}</a></i> `
+				}
+				if(exp.length > 2) {
+					// Family
+					let exp_copy = [...exp]
+					if(exp_copy[exp_copy.length-2])
+						exp_copy[exp_copy.length-1] = 0
+					else
+						exp_copy[exp_copy.length-1] = 1
+					let family = implode_srs(exp_copy)
+					let parent = data.sr[family]
+					if(parent) {
+						html += `<i class="fam">fam: <a onclick="run_search('${family}')">${Object.keys(parent)[0]}</a></i> `
+					}
+					// Category
+					let repeated_note = 0
+					let key = exp[0]
+					exp.forEach((k,v) => {
+						if(exp[v+1] == k) repeated_note = 1
+					})
+					html += `<i class="cat c-${notes[key]}">${categories[repeated_note][key]}</i> `
 				}
 			}
 			html += `</li>`
@@ -275,43 +307,51 @@ In memory of Daniel Parson(1989-2023)
 </script>
 
 <style>
-	body { padding: 30px; margin:0px auto; font-family: sans-serif; background:white}
-	body a { color: #000; cursor:pointer }
-	body a:hover { text-decoration: underline }
-	body ul { padding: 0px }
-	body ul li { list-style-type: none; padding:5px 10px; margin-bottom:1px; border-radius:2px; border-bottom:1px solid #d0c0df }
-	body hr { border: 0;clear: both;margin-bottom: 20px; }
-	body h2 i { font-family: serif; font-weight: normal }
-	body #form { border: 1px solid #d0c0df; display: inline-block; padding: 3px; border-radius: 3px;float: left; line-height: 30px;margin-right: 20px; }
-	body #search, body #button { text-transform: lowercase; padding:5px; border:0 }
-	body #search { text-transform: lowercase; padding: 5px; border: 0; background: none; }
+	body { padding:30px; margin:0px auto; font-family:sans-serif; background:white}
+	body a { color:#000; cursor:pointer }
+	body a:hover { text-decoration:underline }
+	body ul { padding:0px }
+	body ul li { list-style-type:none; padding:5px 10px; margin-bottom:1px; border-radius:2px; border-bottom:1px solid #d0c0df }
+	body hr { border:0;clear:both;margin-bottom:20px; }
+	body h2 i { font-family:serif; font-weight:normal }
+	body #form { border:1px solid #d0c0df; display:inline-block; padding:3px; border-radius:3px;float:left; line-height:30px;margin-right:20px; }
+	body #search, body #button { text-transform:lowercase; padding:5px; border:0 }
+	body #search { text-transform:lowercase; padding:5px; border:0; background:none; }
 	body #search:focus { outline:none }
-	body #button { background: #eee9f2; padding: 0 20px; line-height: 30px; border-radius: 3px; }
-	body #button:hover { cursor:pointer; background: #d0c0df }
+	body #button { background:#eee9f2; padding:0 20px; line-height:30px; border-radius:3px; }
+	body #button:hover { cursor:pointer; background:#d0c0df }
 	body #dict { margin:0px; padding:0px; line-height:38px; font-size:90%; float:right }
 	body ul li.match { background:#eee9f2 }
 	body ul li .source { float:right;font-style:italic;color:#756584 }
-	body #summary { line-height: 32px;font-size: 30px;font-family:serif }
+	body #summary { line-height:32px;font-size:30px;font-family:serif }
 	body ul .en { }
 	body ul .sr { }
-	body .inv { font-size:small; padding-left:10px; color: #756584; }
-	.c-do { color: #c40233; }
-	.c-re { color: #e16b1a; }
-	.c-mi { color: #eac100; }
-	.c-fa { color: #00a368; }
-	.c-sol { color: #00b2b0; }
-	.c-la { color: #0088bf; }
-	.c-si { color: #624579; }
-	.sesres { display: inline-block;background: white;border-radius: 3px;padding: 0px 3px; }
-	.sha { display:block; height: 41px;overflow: hidden;margin-right: -6px;margin-bottom: -1px;float: right;margin-top: -3px;}
-	.ses { background-size: contain;width: 26px;height: 60px;display: inline-block;margin-right: -7px;color: rgba(0,0,0,0); text-align:center; vertical-align:middle; position:relative; background-repeat:no-repeat}
+	body .inv, body .fam { font-size:small; padding-left:5px; color:#756584; }
+	body .cat { font-size:small; padding:0px 5px; font-weight:bold; border-radius:3px }
+	.c-do { color:#c40233; }
+	.c-re { color:#e16b1a; }
+	.c-mi { color:#eac100; }
+	.c-fa { color:#00a368; }
+	.c-sol { color:#00b2b0; }
+	.c-la { color:#0088bf; }
+	.c-si { color:#624579; }
+	.b-do { background:#c40233; }
+	.b-re { background:#e16b1a; }
+	.b-mi { background:#eac100; }
+	.b-fa { background:#00a368; }
+	.b-sol { background:#00b2b0; }
+	.b-la { background:#0088bf; }
+	.b-si { background:#624579; }
+	.sesres { display:inline-block;background:white;border-radius:3px;padding:0px 3px; }
+	.sha { display:block; height:41px;overflow:hidden;margin-right:-6px;margin-bottom:-1px;float:right;margin-top:-3px;}
+	.ses { background-size:contain;width:26px;height:60px;display:inline-block;margin-right:-7px;color:rgba(0,0,0,0); text-align:center; vertical-align:middle; position:relative; background-repeat:no-repeat}
 	.ses.do { background-image:url(media/ses_do.png); }
-	.ses.re { background-image:url(media/ses_re.png); }
+	.ses.re { background-image:url(media/ses_re.png); margin-left:-3px; margin-right:-8px;}
 	.ses.mi { background-image:url(media/ses_mi.png); }
 	.ses.fa { background-image:url(media/ses_fa.png); }
-	.ses.sol { background-image:url(media/ses_sol.png); }
+	.ses.sol { background-image:url(media/ses_sol.png); margin-left:2px }
 	.ses.la { background-image:url(media/ses_la.png); }
-	.ses.si { background-image:url(media/ses_si.png); }
+	.ses.si { background-image:url(media/ses_si.png); margin-left:-3px; margin-right:-8px; }
 
 	.ses.pdo { background-image:url(media/ses_pdo.png); margin-left:-19px; }
 	.ses.pre { background-image:url(media/ses_pre.png); margin-left:-19px;  }
