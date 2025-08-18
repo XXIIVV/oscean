@@ -89,7 +89,7 @@ In memory of Daniel Parson(1989-2023)
 		let count = 0
 		let segments = []
 		while(w.length > 0 && count++ < 30) {
-			     if(w[0] == "d" && w[1] == "o") segments.push(0), w = w.substr(2)
+			  if(w[0] == "d" && w[1] == "o") segments.push(0), w = w.substr(2)
 			else if(w[0] == "r" && w[1] == "e") segments.push(1), w = w.substr(2)
 			else if(w[0] == "m" && w[1] == "i") segments.push(2), w = w.substr(2)
 			else if(w[0] == "f" && w[1] == "a") segments.push(3), w = w.substr(2)
@@ -203,6 +203,24 @@ In memory of Daniel Parson(1989-2023)
 		return `<i>${html}</i> <span class='sha'>${shavian}</span>`
 	}
 
+	function is_repeated(arr) {
+		let res = 0
+		arr.forEach((k,v) => {
+			if(arr[v+1] == k) res = 1
+		})
+		return res
+	}
+
+	function get_family(arr) {
+		if(!arr) return ""
+		let cpy = [...arr]
+		if(cpy[cpy.length-2])
+			cpy[cpy.length-1] = 0
+		else
+			cpy[cpy.length-1] = 1
+		return implode_srs(cpy)
+	}
+
 	function echoword(lang, target, cl) {
 		let html = ""
 		if(!target) return ""
@@ -234,22 +252,14 @@ In memory of Daniel Parson(1989-2023)
 				}
 				if(exp.length > 2) {
 					// Family
-					let exp_copy = [...exp]
-					if(exp_copy[exp_copy.length-2])
-						exp_copy[exp_copy.length-1] = 0
-					else
-						exp_copy[exp_copy.length-1] = 1
-					let family = implode_srs(exp_copy)
+					let family = get_family(exp)
 					let parent = data.sr[family]
-					if(parent) {
+					if(parent && cl != "child" && family != target) {
 						html += `<i class="fam">fam: <a onclick="run_search('${family}')">${Object.keys(parent)[0]}</a></i> `
 					}
 					// Category
-					let repeated_note = 0
+					let repeated_note = is_repeated(exp)
 					let key = exp[0]
-					exp.forEach((k,v) => {
-						if(exp[v+1] == k) repeated_note = 1
-					})
 					html += `<i class="cat c-${notes[key]}">${categories[repeated_note][key]}</i> `
 				}
 			}
@@ -265,7 +275,7 @@ In memory of Daniel Parson(1989-2023)
 		let res = ""
 		let unsesed = unses(target)
 		// summary
-		if(explode_srs(target))	
+		if(explode_srs(target))
 			res += `<h2>${summarize(target)}</h2>`
 		else if(unsesed)
 			res += `<h2>${summarize(unsesed)}</h2>`
@@ -277,20 +287,35 @@ In memory of Daniel Parson(1989-2023)
 		if (data.sr[unsesed]) res += echoword("sr", unsesed, "match"), sr_count++;
 		// Search for Solresol match
 		if (data.sr[target]) res += echoword("sr", target, "match"), sr_count++;
-		// Search English
 		if(target.length > 2) {
+			// Search English
 			Object.keys(data.en).forEach((k) => {
 				if (k.includes(target) && k != target && en_count < 5)
 					res += echoword("en", k, " "), en_count++
-			}); }
-		// Search Solresol
-		if(target.length > 2) {
+			});
+			// Search Solresol
 			Object.keys(data.sr).forEach((k) => {
 				if (k.includes(target) && k != target && sr_count < 5)
 					res += echoword("sr", k, " "), sr_count++
 				if (k == unsesed && count < 5)
 					res += echoword("sr", k, " "), sr_count++
 			});
+			// Search children
+			let exp = explode_srs(target)
+			let family = get_family(exp)
+			if(family == target) {
+				notes.forEach((note,id) => {
+					let child_exp = [...exp]
+					let length = child_exp.length
+					child_exp[length-1] = id
+					if(child_exp[length-1] != child_exp[length-2]) {
+						let child = implode_srs(child_exp)
+						if(target != child) {
+							res += echoword("sr", child, "child"), sr_count++
+						}
+					}
+				})
+			}
 		}
 		document.getElementById("result").innerHTML += res
 	}
@@ -322,6 +347,8 @@ In memory of Daniel Parson(1989-2023)
 	body #button:hover { cursor:pointer; background:#d0c0df }
 	body #dict { margin:0px; padding:0px; line-height:38px; font-size:90%; float:right }
 	body ul li.match { background:#eee9f2 }
+	body ul li.child { border-bottom:1px dashed #d0c0df}
+	body ul li.child a { color:#6f627b }
 	body ul li .source { float:right;font-style:italic;color:#756584 }
 	body #summary { line-height:32px;font-size:30px;font-family:serif }
 	body ul .en { }
@@ -354,20 +381,20 @@ In memory of Daniel Parson(1989-2023)
 	.ses.si { background-image:url(media/ses_si.png); margin-left:-3px; margin-right:-8px; }
 
 	.ses.pdo { background-image:url(media/ses_pdo.png); margin-left:-19px; }
-	.ses.pre { background-image:url(media/ses_pre.png); margin-left:-19px;  }
-	.ses.pmi { background-image:url(media/ses_pmi.png); margin-left:-19px;  }
-	.ses.pfa { background-image:url(media/ses_pfa.png); margin-left:-19px;  }
-	.ses.psol { background-image:url(media/ses_psol.png); margin-left:-19px;  }
-	.ses.pla { background-image:url(media/ses_pla.png); margin-left:-19px;  }
-	.ses.psi { background-image:url(media/ses_psi.png); margin-left:-19px;  }
+	.ses.pre { background-image:url(media/ses_pre.png); margin-left:-19px; }
+	.ses.pmi { background-image:url(media/ses_pmi.png); margin-left:-19px; }
+	.ses.pfa { background-image:url(media/ses_pfa.png); margin-left:-19px; }
+	.ses.psol { background-image:url(media/ses_psol.png); margin-left:-19px; }
+	.ses.pla { background-image:url(media/ses_pla.png); margin-left:-19px; }
+	.ses.psi { background-image:url(media/ses_psi.png); margin-left:-19px; }
 
 	.ses.mdo { background-image:url(media/ses_mdo.png); margin-left:-19px; }
-	.ses.mre { background-image:url(media/ses_mre.png); margin-left:-19px;  }
-	.ses.mmi { background-image:url(media/ses_mmi.png); margin-left:-19px;  }
-	.ses.mfa { background-image:url(media/ses_mfa.png); margin-left:-19px;  }
-	.ses.msol { background-image:url(media/ses_msol.png); margin-left:-19px;  }
-	.ses.mla { background-image:url(media/ses_mla.png); margin-left:-19px;  }
-	.ses.msi { background-image:url(media/ses_msi.png); margin-left:-19px;  }
+	.ses.mre { background-image:url(media/ses_mre.png); margin-left:-19px; }
+	.ses.mmi { background-image:url(media/ses_mmi.png); margin-left:-19px; }
+	.ses.mfa { background-image:url(media/ses_mfa.png); margin-left:-19px; }
+	.ses.msol { background-image:url(media/ses_msol.png); margin-left:-19px; }
+	.ses.mla { background-image:url(media/ses_mla.png); margin-left:-19px; }
+	.ses.msi { background-image:url(media/ses_msi.png); margin-left:-19px; }
 
 	.ses.space { width:18px }
 </style>
