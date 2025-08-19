@@ -51,7 +51,7 @@ Solre	Why? What for?
 Solmi	Wrong, evil
 Solfa	Because, for
 Solla	Always, perpetuate, perpetuately, constantly
-Solsi	Thanks, thank
+Solsi	thank
 Lado	Yesterday
 Lare	Today, this day
 Lami	Tomorrow
@@ -3097,7 +3097,7 @@ solre	within, inside, in
 solmi	ill(adv.)
 solfa	because
 solla	always
-solsi	thanks
+solsi	thank
  	 	 	 	 	 	
 lado	your(plur.)
 lare	unknown
