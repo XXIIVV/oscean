@@ -44,10 +44,8 @@ In memory of Daniel Parson(1989-2023)
 	let shavs = ['𐑴', '𐑦', '𐑵', '𐑳', '𐑯', '𐑤', '𐑨']
 	let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
 	let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
-	let categories = [
-		["human", "household", "action", "world", "arts & science", "industry", "administration"],
-		["religion", "trade", "syntax", "ills", "ills", "industry", "justice"]
-	]
+	let ternary = ["Religion", "Philosophy", "Emotions", "Actions(1)", "Actions(2)", "School(1)", "School(2)"]
+	let quadratic = ["Human & Food", "Household", "Vices", "Countryside", "Arts & Science", "Industry & Market", "Administration"]
 
 	dict.split('\n').forEach((value) => {
 		if(!value) return
@@ -162,9 +160,9 @@ In memory of Daniel Parson(1989-2023)
 
 	function unses(w) {
 		let res = ""
-		let segs = explode_ses(w)
-		if(!segs) return ""
-		segs.forEach((s) => { res += s < 0 ? ' ' : notes[s] })
+		let arr = explode_ses(w)
+		if(!arr) return ""
+		arr.forEach((s) => { res += s < 0 ? ' ' : notes[s] })
 		return res
 	}
 
@@ -231,7 +229,7 @@ In memory of Daniel Parson(1989-2023)
 			let a = arr[0] == arr[1] ? arr[1] : -1
 			let b = arr[1] == arr[2] ? arr[1] : -1
 			if(a < 0 && b < 0)
-				return ["Religion", "Philosophy", "Emotions", "Actions(1)", "Actions(2)", "School(1)", "School(2)"][arr[0]]
+				return ternary[arr[0]]
 			return "Units"
 		}
 		else if(length == 4) {
@@ -306,7 +304,7 @@ In memory of Daniel Parson(1989-2023)
 					/* sila- */ case 5: return "Governments"
 				}
 			}
-			return ["Human & Food", "Household", "Vices", "Countryside", "Arts & Science", "Industry & Market", "Administration"][arr[0]]
+			return quadratic[arr[0]]
 		}
 		return ""
 	}
@@ -360,36 +358,44 @@ In memory of Daniel Parson(1989-2023)
 	function search_term(target) {
 		let en_count = 0
 		let sr_count = 0
-		let res = ""
 		let unsesed = unses(target)
-		// summary
-		if(explode_srs(target))
+		let exp = explode_srs(target)
+		let res = ""
+		// Print summary
+		if(exp)
 			res += `<h2>${summarize(target)}</h2>`
 		else if(unsesed)
 			res += `<h2>${summarize(unsesed)}</h2>`
 		else
 			res += `<h2><i>${target}</i></h2>`
 		// Search for English match
-		if (data.en[target]) res += echoword("en", target, "match"), en_count++;
+		if (data.en[target])
+			res += echoword("en", target, "match"), en_count++;
 		// Search for Solresol(Sesed) match
-		if (data.sr[unsesed]) res += echoword("sr", unsesed, "match"), sr_count++;
+		if (data.sr[unsesed])
+			res += echoword("sr", unsesed, "match"), sr_count++;
 		// Search for Solresol match
-		if (data.sr[target]) res += echoword("sr", target, "match"), sr_count++;
+		if (data.sr[target])
+			res += echoword("sr", target, "match"), sr_count++;
 		if(target.length > 2) {
 			// Search English
-			Object.keys(data.en).forEach((k) => {
+			let en_keys = Object.keys(data.en)
+			for(let i = 0; i < en_keys.length; i++) {
+				let k = en_keys[i]
 				if (k.includes(target) && k != target && en_count < 5)
 					res += echoword("en", k, " "), en_count++
-			});
+			}
 			// Search Solresol
-			Object.keys(data.sr).forEach((k) => {
-				if (k.includes(target) && k != target && sr_count < 5)
+			let sr_keys = Object.keys(data.sr)
+			for(let i = 0; i < sr_keys.length; i++) {
+				let k = sr_keys[i]
+				if (k.includes(target) && k != target)
 					res += echoword("sr", k, " "), sr_count++
 				if (k == unsesed && count < 5)
 					res += echoword("sr", k, " "), sr_count++
-			});
+				if(sr_count >= 5) break;
+			}
 			// Search children
-			let exp = explode_srs(target)
 			let family = get_family(exp)
 			if(family == target) {
 				notes.forEach((note,id) => {
