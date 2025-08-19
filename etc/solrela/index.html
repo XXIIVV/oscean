@@ -221,6 +221,96 @@ In memory of Daniel Parson(1989-2023)
 		return implode_srs(cpy)
 	}
 
+	function get_category(arr) {
+		let length = arr.length
+		if(length == 1) 
+			return "Monadic"
+		else if(length == 2)
+			return "Duadic"
+		else if(length == 3) {
+			let a = arr[0] == arr[1] ? arr[1] : -1
+			let b = arr[1] == arr[2] ? arr[1] : -1
+			if(a < 0 && b < 0)
+				return ["Religion", "Philosophy", "Emotions", "Actions(1)", "Actions(2)", "School(1)", "School(2)"][arr[0]]
+			return "Units"
+		}
+		else if(length == 4) {
+			if(is_repeated(arr)) return "Misc"
+			if(arr[0] == 0) {
+				switch(arr[1]) {
+					/* dore- */ case 1: return "Human"
+					/* domi- */ case 2: return "Human & Food"
+					/* dofa- */ case 3: return "Action & Qualities"
+					/* dosol-*/ case 4: return "Relations"
+					/* dola- */ case 5: return "Food"
+					/* dosi- */ case 6: return "Food"
+				}
+			}
+			else if(arr[0] == 1) {
+				switch(arr[1]) {
+					/* redo- */ case 0: return "Clothing & Toiletries"
+					/* remi- */ case 2: return "Objects"
+					/* refa- */ case 3: return "Housing"
+					/* resol-*/ case 4: return "Housing"
+					/* rela- */ case 5: return "Family"
+					/* resi- */ case 6: return "Family"
+				}
+			}
+			else if(arr[0] == 2) {
+				switch(arr[1]) {
+					/* mido- */ case 0: return "Thoughts"
+					/* mire- */ case 1: return "Thoughts"
+					/* mifa- */ case 3: return "Vices"
+					/* misol-*/ case 4: return "Social"
+					/* mila- */ case 5: return "Social"
+					/* misi- */ case 6: return "Thoughts"
+				}
+			}
+			else if(arr[0] == 3) {
+				switch(arr[1]) {
+					/* fado- */ case 0: return "Nature"
+					/* fare- */ case 1: return "Countryside"
+					/* fami- */ case 2: return "Military"
+					/* fasol-*/ case 4: return "War"
+					/* fala- */ case 5: return "Marine"
+					/* fasi- */ case 6: return "Voyage"
+				}
+			}
+			else if(arr[0] == 4) {
+				switch(arr[1]) {
+					/* soldo-*/ case 0: return "Arts & Science"
+					/* solre-*/ case 1: return "Theater"
+					/* solmi-*/ case 2: return "Instruments & Artists"
+					/* solfa-*/ case 3: return "Artists & Music"
+					/* solla-*/ case 5: return "Painters & Savants"
+					/* solsi-*/ case 6: return "Literature & Invention"
+				}
+			}
+			else if(arr[0] == 5) {
+				switch(arr[1]) {
+					/* lado- */ case 0: return "Industry & Commerce"
+					/* lare- */ case 1: return "Industry & Commerce"
+					/* lami- */ case 2: return "Credit & Exchange"
+					/* lafa- */ case 3: return "Money & Units"
+					/* lasol-*/ case 4: return "Units & Exposition"
+					/* lasi- */ case 6: return "Clothing & Objects"
+				}
+			}
+			else if(arr[0] == 6) {
+				switch(arr[1]) {
+					/* sido- */ case 0: return "City & Monuments"
+					/* sire- */ case 1: return "Governments"
+					/* simi- */ case 2: return "Administration"
+					/* sifa- */ case 3: return "Civilization"
+					/* sisol-*/ case 4: return "Markets"
+					/* sila- */ case 5: return "Governments"
+				}
+			}
+			return ["Human & Food", "Household", "Vices", "Countryside", "Arts & Science", "Industry & Market", "Administration"][arr[0]]
+		}
+		return ""
+	}
+
 	function echoword(lang, target, cl) {
 		let html = ""
 		if(!target) return ""
@@ -258,9 +348,7 @@ In memory of Daniel Parson(1989-2023)
 						html += `<i class="fam">fam: <a onclick="run_search('${family}')">${Object.keys(parent)[0]}</a></i> `
 					}
 					// Category
-					let repeated_note = is_repeated(exp)
-					let key = exp[0]
-					html += `<i class="cat c-${notes[key]}">${categories[repeated_note][key]}</i> `
+					html += `<i class="cat c-${notes[exp[0]]}">${get_category(exp)}</i> `
 				}
 			}
 			html += `</li>`
