@@ -1,10 +1,20 @@
 ( uxncli system.rom )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |100
 
 @on-reset ( -> )
 	#800f DEO
+	( | wst )
+	#12 .System/wst DEI #01 EQU ?{
+		;dict/wst1 <test>/fail
+		BRK }
+	;dict/wst1 <test>/pass
+	( | rst )
+	LITr 12 .System/rst DEI #01 EQU ?{
+		;dict/rst1 <test>/fail
+		BRK }
+	;dict/rst1 <test>/pass
 	( | copy left )
 	;buf #0006 ADD2 ;mmu-cpyl/a STA2
 	;buf #0003 ADD2 ;mmu-cpyl/b STA2
@@ -31,13 +41,13 @@
 
 @<test> ( name* f -- )
 	?{
-	<pstr> #010f DEO ;dict/fail !<pstr> }
-	<pstr> ;dict/pass !<pstr>
+	&fail str/<print> #010f DEO ;dict/fail !str/<print> }
+	&pass str/<print> ;dict/pass !str/<print>
 
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 LDAk ?<pstr>
-	POP2 JMP2r
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 @mem/cmp ( a* length* b* -- t )
 	STH2
@@ -48,14 +58,16 @@
 	POP2r EQU2 JMP2r
 
 @dict
-	&cpyl "Expansion/cpyl: 20 $1
-	&cpyr "Expansion/cpyr: 20 $1
-	&fill "Expansion/fill: 20 $1
-	&over "Expansion/overflow: 20 $1
+	&wst1 "System/wst: 20 $1
+	&rst1 "System/rst: 20 $1
+	&cpyl "System/cpyl: 20 $1
+	&cpyr "System/cpyr: 20 $1
+	&fill "System/fill: 20 $1
+	&over "System/overflow: 20 $1
 	&pass "pass 0a $1
-	&fail "FAIL 0a $1
+	&fail "fail 0a $1
 
-@buf  [ "......[hello]..... $1 ]
+@buf [ "......[hello]..... $1 ]
 @res1 [ "...[hello]lo]..... $1 ]
 @res2 [ "...[hello[hello].. $1 ]
 @res3 [ "...[he[hello]lo].. $1 ]

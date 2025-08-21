@@ -1,83 +1,46 @@
-( usage: uxncli console.rom foo "bar baz"
-| Prints Welcome to Uxn!, and listens for incoming stdin events on enter. )
+( echo "foobar" | uxncli console.rom "baz" "qux" )
 
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-
-|000
-
-	@arg $40
-	@std $40
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
 |100
 
 @on-reset ( -> )
-	;Dict/hello <print-str>
-	.Console/type DEI ?{
-		( | no arguments )
-		;on-std .Console/vector DEO2
-		BRK }
-	;on-arg .Console/vector DEO2
+	;on-console .Console/vector DEO2
 	BRK
 
-@on-arg ( -> )
-	[ LIT2 02 -Console/type ] DEI NEQ ?{
-		.Console/read DEI [ LIT2 00 &ptr -arg ] INCk ,&ptr STR
-		STZ2
-		BRK }
-	;arg ;Dict/yousent <print-result>
-	[ LIT2 -arg _&ptr ] STR
-	[ LIT2 04 -Console/type ] DEI NEQ ?{ ;on-std .Console/vector DEO2 }
+@on-console ( -> )
+	.Console/type DEI .Console/read DEI
+	( inc ) [ LIT2 &ptr =expect ] INC2k INC2 ,&ptr STR2
+	LDA2 NEQ2 ?fail
+	[ LIT2 04 -Console/type ] DEI EQU ?pass
 	BRK
 
-@on-std ( -> )
-	[ LIT2 0a -Console/read ] DEI EQU ?{
-		.Console/read DEI [ LIT2 00 &ptr -std ] INCk ,&ptr STR
-		STZ2
-		BRK }
-	;std DUP2 ;Dict/yousaid <print-result>
-	;Dict/quit scmp ?{
-		[ LIT2 -std _&ptr ] STR
-		BRK }
-	( quit ) #800f DEO
+@pass ( -> )
+	;dict/pass str/<print>
+	#800f DEO
 	BRK
 
-@<print-result> ( buf* name* -- )
-	<print-str>
-	[ LIT2 "" 18 ] DEO
-	<print-str>/
-	[ LIT2 "" 18 ] DEO
-	[ LIT2 00 -Console/type ] DEI DUP ADD ;Types ADD2 LDA2 <print-str>/
-	#0a18 DEO
-	JMP2r
-
-@<print-str> ( str* -- )
-	LDAk #18 DEO
-	INC2 & LDAk ?<print-str>
-	POP2 JMP2r
-
-@scmp ( a* b* -- f )
-	STH2
-	&l ( a* b* -- f )
-	LDAk LDAkr STHr NEQk ?&d
-	DUP EOR EQUk ?&d
-	POP2 INC2 INC2r !&l
-
-	&d ( a* c1 c2 b* -- f )
-	NIP2 POP2r EQU JMP2r
+@fail ( -> )
+	;dict/fail str/<print>
+	#010f DEO
+	BRK
 
 (
-@|assets )
+@|Utils )
 
-@Types =Dict/arg-none =Dict/arg-stdin =Dict/arg-data =Dict/arg-spacer =Dict/arg-end
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
-@Dict
-	&hello "Welcome 20 "to 20 "Uxn! 0a $1
-	&yousaid "You 20 "said: 20 $1
-	&yousent "You 20 "sent: 20 $1
-	&quit "quit $1
-	&arg-none "<none> $1
-	&arg-stdin "<stdin> $1
-	&arg-data "<data> $1
-	&arg-spacer "<spacer> $1
-	&arg-end "<end> $1
+(
+@|Data )
+
+@expect [
+	0262 0261 027a 030a 0271 0275 0278 040a
+	0166 016f 016f 0162 0161 0172 010a 0400 ]
+
+@dict
+	&pass "Console: 20 "pass 0a $1
+	&fail "Console: 20 "fail 0a $1
 
