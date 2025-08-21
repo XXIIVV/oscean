@@ -523,9 +523,9 @@ static void
 screen_draw_pixel(void)
 {
 	const int ctrl = dev[0x2e];
-	const int color = ctrl & 0x3;
 	const int len = MAR2(uxn_screen.width);
 	const int above = ctrl & 0x40;
+	const int color = above ? (ctrl & 0x3) << 2 : ctrl & 0x3;
 	/* fill mode */
 	if(ctrl & 0x80) {
 		int x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
@@ -543,7 +543,7 @@ screen_draw_pixel(void)
 		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
 			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++) {
 				const int src = uxn_screen.bg[ax];
-				uxn_screen.bg[ax] = above ? (src & 0x3) | color << 2 : (src & 0xc) | color;
+				uxn_screen.bg[ax] = above ? (src & 0x3) | color : (src & 0xc) | color;
 			}
 	}
 	/* pixel mode */
@@ -551,7 +551,7 @@ screen_draw_pixel(void)
 		if(rX >= 0 && rY >= 0 && rX < len && rY < uxn_screen.height) {
 			const int ax = MAR(rX) + MAR(rY) * len;
 			const int src = uxn_screen.bg[ax];
-			uxn_screen.bg[ax] = above ? (src & 0x3) | color << 2 : (src & 0xc) | color;
+			uxn_screen.bg[ax] = above ? (src & 0x3) | color : (src & 0xc) | color;
 		}
 		screen_change(rX, rY, rX + 1, rY + 1);
 		if(rMX) rX++;

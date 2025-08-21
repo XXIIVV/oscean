@@ -1,0 +1,80 @@
+( uxncli file.rom )
+
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|100
+
+@on-reset ( -> )
+	file/<create>
+	file/<load>
+	#0004 .File/success DEI2 NEQ2 ?fail
+	;file/a1 LDA2 ;file/a2 LDA2 NEQ2 ?fail
+	;file/b1 LDA2 ;file/b2 LDA2 NEQ2 ?fail
+	;file/stat-buf file/<stat>
+	;file/stat-hs LDA2 LIT2 "00 NEQ2 ?fail
+	;file/stat-ls LDA2 LIT2 "04 NEQ2 ?fail
+	file/<delete>
+	;file/null-buf file/<stat>
+	;file/null-buf LDA2 LIT2 "!! NEQ2 ?fail
+	;dict/passed str/<print>
+	#800f DEO
+	BRK
+
+@fail ( -> )
+	;dict/failed str/<print>
+	#010f DEO
+	BRK
+
+(
+@|File )
+
+@file/<create> ( -- )
+	;&name .File/name DEO2
+	#0002 .File/length DEO2
+	;&a1 .File/write DEO2
+	( | append )
+	;&name .File/name DEO2
+	#0002 .File/length DEO2
+	#01 .File/append DEO
+	;&b1 .File/write DEO2
+	JMP2r
+
+@file/<load> ( -- )
+	;&name .File/name DEO2
+	( two more bytes than max length ) #0006 .File/length DEO2
+	;&load-buf .File/read DEO2
+	JMP2r
+
+@file/<stat> ( buf* -- )
+	;&name .File/name DEO2
+	#0004 .File/length DEO2
+	.File/stat DEO2
+	JMP2r
+
+@file/<delete> ( -- )
+	;&name .File/name DEO2
+	#01 .File/delete DEO
+	JMP2r
+
+	&name "test.txt $1
+
+(
+@|Utils )
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+(
+@|Data )
+
+@dict/failed "File: 20 "fail 0a $1
+	&passed "File: 20 "pass 0a $1
+
+@file/data &a1 1234 &b1 5678
+	( load buf ) &load-buf &a2 $2 &b2 $2
+	( stat buf ) &stat-buf &stat-hs $2 &stat-ls $2
+	( null buf ) &null-buf $4
+

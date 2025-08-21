@@ -1,0 +1,68 @@
+( uxncli system.rom )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|100
+
+@on-reset ( -> )
+	#800f DEO
+	( | copy left )
+	;buf #0006 ADD2 ;mmu-cpyl/a STA2
+	;buf #0003 ADD2 ;mmu-cpyl/b STA2
+	;mmu-cpyl .System/expansion DEO2
+	;dict/cpyl ;buf #0013 ;res1 mem/cmp <test>
+	( | copy right )
+	;buf #0003 ADD2 ;mmu-cpyr/a STA2
+	;buf #0009 ADD2 ;mmu-cpyr/b STA2
+	;mmu-cpyr .System/expansion DEO2
+	;dict/cpyr ;buf #0013 ;res2 mem/cmp <test>
+	( | copy left )
+	;buf #0009 ADD2 ;mmu-cpyl/a STA2
+	;buf #0006 ADD2 ;mmu-cpyl/b STA2
+	;mmu-cpyl .System/expansion DEO2
+	;dict/cpyl ;buf #0013 ;res3 mem/cmp <test>
+	( | memset )
+	;buf #0003 ADD2 ;mmu-fill/a STA2
+	;mmu-fill .System/expansion DEO2
+	;dict/fill ;buf #0013 ;res4 mem/cmp <test>
+	( | boundary check )
+	;mmu-over .System/expansion DEO2
+	;dict/over #0000 LDA #ffff LDA #8888 EQU2 <test>
+	BRK
+
+@<test> ( name* f -- )
+	?{
+	<pstr> #010f DEO ;dict/fail !<pstr> }
+	<pstr> ;dict/pass !<pstr>
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@mem/cmp ( a* length* b* -- t )
+	STH2
+	OVR2 ADD2 SWP2
+	&>l
+		EQU2k ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
+	POP2r EQU2 JMP2r
+
+@dict
+	&cpyl "Expansion/cpyl: 20 $1
+	&cpyr "Expansion/cpyr: 20 $1
+	&fill "Expansion/fill: 20 $1
+	&over "Expansion/overflow: 20 $1
+	&pass "pass 0a $1
+	&fail "FAIL 0a $1
+
+@buf  [ "......[hello]..... $1 ]
+@res1 [ "...[hello]lo]..... $1 ]
+@res2 [ "...[hello[hello].. $1 ]
+@res3 [ "...[he[hello]lo].. $1 ]
+@res4 [ "...-------------.. $1 ]
+
+@mmu-fill [ 00 000d 0000 &a $2 2d ]
+@mmu-cpyl [ 01 0007 0000 &a $2 0000 &b $2 ]
+@mmu-cpyr [ 02 0007 0000 &a $2 0000 &b $2 ]
+@mmu-over [ 00 0002 0000 ffff 88 ]
+
