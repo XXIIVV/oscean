@@ -1,12 +1,13 @@
 ( uxnemu basic.rom input.bas )
 
-|00 @System/vector $2 &pad $6 &r $2 &g $2 &b $2
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &chord $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|2000 @prg/length
 
 |000
 
@@ -33,7 +34,7 @@
 	BRK
 	( TODO:
 	| repair SAVE
-	| repair LOAD
+	| gosub catch over/underflow
 	| append lb after file stream
 	| load folder handler
 	| copy/paste
@@ -57,17 +58,11 @@
 @cidc ( c -- f )
 	[ LIT "0 ] SUB #0a LTH JMP2r
 
-@read-size ( filename* -- size* )
-	DUP2 sbyte ,&w STR
-	INC2 INC2 LDAk LIT "x NEQ ?{
-		INC2 sbyte [ LIT &w $1 ] SWP JMP2r }
-	POP2 #1010 JMP2r
-
 @require-file ( str* -- str* )
 	walk-blank LDAk ?{ POP2r ;dict/file !draw-error }
 	JMP2r
 
-@opc/find ( str* -- str* fn* )
+@cmds/find ( str* -- str* fn* )
 	walk-blank STH2k walk-text ;&lut-end ;&lut
 	&>lf
 		LDA2k LDA2 STH2kr sseg ?{
@@ -127,22 +122,22 @@
 @walk-hex ( str* -- val* )
 	( walk $ ) INC2 [ LIT2r 0000 ]
 	&>wh
-		LITr 40 SFT2r LITr 00 chex STH
-		ADD2r INC2 chex INC ?&>wh
+		LITr 40 SFT2r LITr 00 LDAk chex STH
+		ADD2r INC2 LDAk chex INC ?&>wh
 	STH2r JMP2r
 
 (
 @|Compiler )
 
 @prg/<clear> ( -- )
-	!variables/<clear>
+	;&mem ;&length mem/<clr> !variables/<clear>
 
 @prg/find-line ( id* -- <line*> )
 	#0004 MUL2 ;&mem ADD2 JMP2r
 
 @prg/<store> ( str* -- )
 	walk-number /find-line STH2
-	opc/find STH2kr INC2r INC2r STA2
+	cmds/find STH2kr INC2r INC2r STA2
 	;dict/ptr LDA2 STH2r STA2
 	walk-blank !dict/<push-str>
 
@@ -247,12 +242,12 @@
 @|LibDraw )
 
 @mode =dict/mode walk-expr NIP2 NIP ;font/color STA
-	JMP2r
+	#0004 ADD2 JMP2r
 
 @draw =dict/draw walk-expr DUP2 .Screen/x DEO2
 	;<draw-lb>/anchor STA2
 	walk-expr .Screen/y DEO2
-	POP2 JMP2r
+	POP2 #0004 ADD2 JMP2r
 
 @color =dict/color LDAk #00 EQU ?{
 		walk-expr .System/r DEO2
@@ -262,41 +257,41 @@
 
 @cls =dict/cls POP2 #0004 ADD2 !<draw-clear>
 
-@sprite =dict/sprite ;src/buf STHk #0008 <mclr>
+@sprite =dict/sprite ;src/buf STHk #0008 mem/<clr>
 	walk-expr STHkr STZ2
 	INCr INCr walk-expr STHkr STZ2
 	INCr INCr walk-expr STHkr STZ2
 	INCr INCr walk-expr STHr STZ2
 	POP2 ;src/buf .Screen/addr DEO2
 	;font/color LDA .Screen/sprite DEO
-	JMP2r
+	#0004 ADD2 JMP2r
+
+@pict =dict/pict walk-blank icn/<draw-file>
+	#0004 ADD2 JMP2r
 
 (
 @|LibSystem )
-
-@save =dict/save require-file .File/name DEO2
-	( TODO: Implement ) JMP2r
 
 @load =dict/load
 	&do ( str* -- )
 	require-file src/<set>
 	prg/<clear>
+	dict/<clear>
 	input/<clear>
 	;src/buf .File/name DEO2
 	#0001 .File/length DEO2
 	[ LIT2r =&b LITr -File/read ] .File/success-lb
 	&>s
 		DEO2kr
-		DEIk ?{ POPr POP2r POP !<draw-ready> }
+		DEIk ?{
+			POPr POP2r POP #0004 ADD2 !<draw-ready> }
 		[ LIT &b $1 ] input/listen !&>s
 
-@make =dict/make require-file .File/name DEO2
-	#0000 .File/length DEO2
-	#0100 .File/write DEO2 !<draw-ready>
+@save =dict/save require-file .File/name DEO2
+	( TODO: Implement ) JMP2r
 
-@poke =dict/poke walk-expr STH2
-	walk-expr NIP2 STH2r STA2
-	JMP2r
+@make =dict/make require-file .File/name DEO2
+	( TODO: Implement ) #0004 ADD2 !<draw-ready>
 
 (
 @|draw )
@@ -445,6 +440,9 @@
 	STA
 	JMP2r
 
+@dict/<clear> ( -- )
+	;&mem ,&ptr LDR2 OVR2 SUB2 !mem/<clr>
+
 (
 @|math )
 
@@ -463,29 +461,33 @@
 	INC2 DIV2 OVR2 ;dict/zdiv !draw-error
 	&sign DUP2 #0f SFT2 #ffff MUL2 #0001 ORA2 JMP2r
 
-(
-@|pict )
-
-@pict =dict/pict
-	( str* -- ) walk-blank #0008 .File/length DEO2
+@icn/<draw-file> ( src* -- )
 	DUP2 .File/name DEO2
-	scap #0009 SUB2 read-size ,&height STR
+	#0008 .File/length DEO2
+	/read-size ,&height STR
 	,&width STR
 	.Screen/x DEI2 ,&anchor STR2
 	;src/buf .Screen/addr DEO2
 	( | draw )
 	[ LIT2 01 -Screen/auto ] DEO
-	[ LIT2 &height $1 00 ]
+	[ LIT2 &height $1 00 ] ;font/color LDA .Screen/sprite STH2
 	&>v
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
 		[ LIT2 &width $1 00 ]
 		&>h
 			;src/buf .File/read DEO2
-			;font/color LDA .Screen/sprite DEO
+			DEOkr
 			INC GTHk ?&>h
 		POP2 .Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC GTHk ?&>v
-	POP2 JMP2r
+	POP2 POP2r JMP2r
+
+@icn/read-size ( str* -- w h )
+	scap #0009 SUB2 LDA2k /read-byte STH
+	#0003 ADD2 LDA2 /read-byte STHr SWP JMP2r
+
+@icn/read-byte ( a b -- byte )
+	chex SWP chex #40 SFT ORA JMP2r
 
 (
 @|stacks )
@@ -561,7 +563,7 @@
 @|variables )
 
 @variables/<clear> ( -- )
-	;&buf #0034 !<mclr>
+	;&buf #0034 !mem/<clr>
 
 @variables/<set> ( value* uc -- )
 	[ LIT "A ] SUB
@@ -611,15 +613,10 @@
 		DUP cidc ?{ LIT "$ NEQ JMP2r } }
 	POP #00 JMP2r
 
-@chex ( addr* -- addr* <val> )
-	LDAk
+@chex ( addr* -- <val> )
 	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
 	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
 	( nil ) POP #ff JMP2r
-
-@sbyte ( str* -- byte )
-	LDAk chex #40 SFT STH
-	INC2 LDA chex STHr ADD JMP2r
 
 @scap ( str* -- end* )
 	#00 STH
@@ -643,13 +640,6 @@
 	&>w
 		LDAk LDAkr STHr NEQ ?&e
 		INC2r INC2 LDAk ?&>w &e POP2r LDA #00 EQU JMP2r
-
-@<mclr> ( src* len* -- )
-	OVR2 ADD2 SWP2
-	&>l
-		STH2k #00 STH2r STA
-		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
 
 @fchr ( chr -- )
 	,&b STR
@@ -677,22 +667,27 @@
 		INC2 !&>w
 
 @str/<eval> ( str* -- )
-	opc/find ORAk ?{
+	cmds/find ORAk ?{
 		( ! ) POP2 ;dict/command !draw-error }
 	JMP2
+
+@mem/<clr> ( src* len* -- )
+	,&length STR2
+	,&addr STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 00 &length $2 0000 &addr $2 00
 
 (
 @|assets )
 
-@opc/lut [
+@cmds/lut [
 	=let =goto =rem =if
 	=gosub =clear =input =return
 	=list =print =end =run
 	=color =cls =draw =mode
 	=sprite =pict =save =load
-	=make =poke ]
-
-@opc/lut-end
+	=make ] &lut-end
 
 @arithmetic/lut [
 	"+ =math/add "- =math/sub
@@ -794,10 +789,8 @@
 
 @gosub/mem $40
 
-@prg/mem ( opc, dict* )
-	$200
-
-@prg/mem-cap
+@prg/mem ( fn*, dict* )
+	$&length &mem-cap
 
 @dict/mem
 
