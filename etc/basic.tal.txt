@@ -23,7 +23,7 @@
 	( | theme )
 	#e0f1 .System/r DEO2
 	#e0ee .System/g DEO2
-	#f046 .System/b DEO2
+	#f04a .System/b DEO2
 	theme/<load>
 	random/<init>
 	font/<draw-welcome>
@@ -423,7 +423,6 @@
 @variables/get ( uc -- value* )
 	DUP LIT "H NEQ ?{ POP .Screen/height DEI2 JMP2r }
 	DUP LIT "R NEQ ?{ POP !random/generate }
-	DUP LIT "T NEQ ?{ POP !time/make }
 	DUP LIT "W NEQ ?{ POP .Screen/width DEI2 JMP2r }
 	[ LIT "A ] SUB DUP ADD .&buf ADD LDZ2 JMP2r
 
@@ -548,14 +547,22 @@
 	#0020 .Screen/x DEO2
 	#0018 .Screen/y DEO2 !font/<draw-lb>
 
+@logo/<draw> ( -- )
+	[ LIT2 46 -Screen/auto ] DEO
+	;&sprite .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEOk DEOk DEOk DEO
+	JMP2r
+
 (
 @|font )
 
 @font/<draw-welcome> ( -- )
 	<draw-clear>
+	logo/<draw>
+	[ LIT2 01 -Screen/auto ] DEO
+	/<draw-break>
 	/<draw-cursor>
 	;dict/varvara /<draw-str>
-	/<draw-break>
 	/<draw-break>
 	;dict/ram /<draw-str>
 	prg/get-free /<draw-dec>
@@ -704,12 +711,6 @@
 	( ) DUP2 #01 SFT2 EOR2 EOR2
 	( ) ,&y STR2k POP JMP2r
 
-@time/make ( -- time* )
-	( ) [ LIT2 00 -DateTime/second ] DEI
-	( ) [ LIT2 00 -DateTime/minute ] DEI #003c MUL2 ADD2
-	( ) [ LIT2 00 -DateTime/hour ] DEI
-	( MOD ) #0c DIVk MUL SUB #0e10 MUL2 ADD2 JMP2r
-
 @file/<save-line> ( line* id* -- )
 	/<save-dec>
 	#20 /<save-byte>
@@ -817,7 +818,7 @@
 	"= =&equ "! =&neq
 	"% =&mod $3 ]
 
-@dict/varvara "*** 20 "SUNFLOWER 20 "BASIC 20 "*** $1
+@dict/varvara "SUNFLOWER 20 "BASIC 20 $1
 	&ram "64K 20 "RAM 20 "SYSTEM 20 20 $1 &intro 20 "BASIC 20 "BYTES 20 "FREE $1
 	&ready "READY. $1
 	&let "LET $1
@@ -914,6 +915,23 @@
 	0000 7e0c 1830 7e00 1c30 3060 3030 1c00
 	1818 1818 1818 1818 380c 0c06 0c0c 3800
 	0000 60f2 9e0c 0000 0018 1834 3462 7e00 ] $2
+
+@logo/sprite [
+	0000 0000 0000 0303 0000 0000 0000 00e0
+	0000 1818 3c7e 7e7e 0000 0000 0000 0007
+	0000 0000 0000 c0c0 0101 0100 0000 0000
+	f8fc feff ff7f 3f1f ffff ffff ffff c300
+	1f3f 7fff fffe fcf8 8080 8000 0000 0000
+	0007 0f3f 3f0f 0700 fefe fcfc fcfc fefe
+	0000 4242 0000 0000 7f7f 3f3f 3f3f 7f7f
+	00e0 f0fc fcf0 e000 0000 0000 0001 0101
+	1f3f 7fff fffe fcf8 00c3 ffff ffff ffff
+	f8fc feff ff7f 3f1f 0000 0000 0080 8080
+	0303 0000 0000 0000 e000 0000 0000 0000
+	7e7e 7e3c 1818 191b 0700 0000 0000 e0c0
+	c0c0 0000 0000 0000 0000 0000 0000 0000
+	0007 0300 0000 0000 1e9c d878 3818 1818
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
 (
 @|Buffers )
