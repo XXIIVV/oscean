@@ -27,13 +27,22 @@
 	( | size )
 	#0270 .Screen/width DEO2
 	#0180 .Screen/height DEO2
+	( | Init variables )
+	.Screen/width DEI2 LIT "W variables/<set>
+	.Screen/height DEI2 LIT "H variables/<set>
 	theme/<load>
 	random/<init>
+	<clear-screen>
 	font/<draw-welcome>
 	;src/on-console .Console/vector DEO2
 	;on-control .Controller/vector DEO2
-	.Console/type DEI ?{ font/<draw-ready> }
+	.src/buf LDZ ?&soft
+	font/<draw-ready>
 	BRK
+
+	&soft ( -> )
+	prg/<clear>
+	;src/buf load/do BRK
 
 @meta 00
 	&body ( name )
@@ -126,7 +135,8 @@
 @|Compiler )
 
 @prg/<clear> ( -- )
-	;&mem #4000 mem/<clr> !variables/<clear>
+	;&mem #4000 mem/<clear>
+	dict/<clear> !variables/<clear>
 
 @prg/find-line ( id* -- <line*> )
 	#20 SFT2 ;&mem ADD2 JMP2r
@@ -341,7 +351,7 @@
 
 @cls =dict/cls =dict/help-cls
 	( | body )
-	POP2 <draw-clear> !prg/next-instr
+	POP2 <clear-screen> !prg/next-instr
 
 @draw =dict/draw =dict/help-draw
 	( | body )
@@ -407,7 +417,7 @@
 	JMP2r
 
 @dict/<clear> ( -- )
-	;&mem ,&ptr LDR2 OVR2 SUB2 !mem/<clr>
+	;&mem ,&ptr LDR2 OVR2 SUB2 !mem/<clear>
 
 @gosub/<push> ( line* -- )
 	[ LIT2 &ptr =&mem ]
@@ -487,7 +497,7 @@
 	font/<draw-char> !font/<draw-cursor>
 
 @variables/<clear> ( -- )
-	;&buf #0034 !mem/<clr>
+	;&buf #0034 !mem/<clear>
 
 @variables/<set> ( value* uc -- )
 	[ LIT "A ] SUB
@@ -498,9 +508,7 @@
 	JMP2r
 
 @variables/get ( uc -- value* )
-	DUP LIT "H NEQ ?{ POP .Screen/height DEI2 JMP2r }
 	DUP LIT "R NEQ ?{ POP !random/generate }
-	DUP LIT "W NEQ ?{ POP .Screen/width DEI2 JMP2r }
 	[ LIT "A ] SUB DUP ADD .&buf ADD LDZ2 JMP2r
 
 @variables/<capture> ( str* -- )
@@ -599,7 +607,7 @@
 (
 @|draw )
 
-@<draw-clear> ( -- )
+@<clear-screen> ( -- )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
 	[ LIT2 82 -Screen/pixel ] DEO
@@ -634,7 +642,7 @@
 @|font )
 
 @font/<draw-welcome> ( -- )
-	<draw-clear>
+	<clear-screen>
 	logo/<draw>
 	[ LIT2 01 -Screen/auto ] DEO
 	/<draw-break>
@@ -710,7 +718,7 @@
 @font/<draw-lb> ( -- )
 	[ LIT2 &anchor 0020 ] .Screen/x DEO2
 	.Screen/y DEI2k #0008 ADD2 STH2k ROT DEO2
-	STH2r .Screen/height DEI2 #0018 SUB2 LTH2 ?{ !<draw-clear> }
+	STH2r .Screen/height DEI2 #0018 SUB2 LTH2 ?{ !<clear-screen> }
 	JMP2r
 
 @font/<draw-cursor> ( -- )
@@ -860,7 +868,7 @@
 		LDAk LDAkr STHr NEQ ?&e
 		INC2r INC2 LDAk ?&>ws &e POP2r LDA #00 EQU JMP2r
 
-@mem/<clr> ( src* len* -- )
+@mem/<clear> ( src* len* -- )
 	,&lclr STR2
 	,&aclr STR2
 	;&clr .System/expansion DEO2
