@@ -351,14 +351,20 @@
 
 @cls =dict/cls =dict/help-cls
 	( | body )
-	POP2 <clear-screen> !prg/next-instr
+	POP2 #0020 ;font/anchor STA2
+	<clear-screen>
+	font/<draw-cursor> !prg/next-instr
 
 @draw =dict/draw =dict/help-draw
 	( | body )
-	walk-expr DUP2 .Screen/x DEO2
-	;font/anchor STA2
-	walk-expr .Screen/y DEO2
-	POP2 !prg/next-instr
+	( x ) walk-expr
+	( > ) DUP2 #0000 EQU2 ?{
+		DUP2 .Screen/x DEO2
+		DUP2 ;font/anchor STA2 }
+	POP2
+	( y ) walk-expr
+	( > ) DUP2 #0000 EQU2 ?{ DUP2 .Screen/y DEO2 }
+	POP2 POP2 font/<draw-cursor> !prg/next-instr
 
 @mode =dict/mode =dict/help-mode
 	( | body )
