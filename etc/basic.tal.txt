@@ -411,8 +411,7 @@
 @dict/<push-str> ( str* -- )
 	( | TODO: Find and alloc )
 	LDAk ?{
-		( String is empty ) POP2 JMP2r
-	}
+		( String is empty ) POP2 JMP2r }
 	&>w
 		LDAk DUP #1f GTH ?{ POP POP2 #00 !/<push> }
 		/<push>
@@ -547,8 +546,6 @@
 
 @bind/<interrupt> ( addr* -- )
 	#0004 ADD2 .&addr STZ2
-	.Screen/x DEI2 .Mouse/x DEO2
-	.Screen/y DEI2 .Mouse/y DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-control .Controller/vector DEO2
 	JMP2r
@@ -669,9 +666,10 @@
 	;dict/ready /<draw-str> !/<draw-break>
 
 @font/<draw-line> ( line* id* -- )
+	OVR2 LDA2 ORA ?{ POP2 POP2 JMP2r }
 	/<draw-dec>
 	/<draw-ws>
-	LDA2k #0002 SUB2 LDA2 /<draw-str>
+	LDA2k #0004 SUB2 LDA2 /<draw-str>
 	/<draw-ws>
 	INC2 INC2 LDA2 /<draw-str> !/<draw-lb>
 
