@@ -138,11 +138,11 @@
 	;&mem #4000 mem/<clear>
 	dict/<clear> !variables/<clear>
 
-@prg/find-line ( id* -- <line*> )
+@prg/get-line ( id* -- line* )
 	#20 SFT2 ;&mem ADD2 JMP2r
 
 @prg/<store> ( str* -- )
-	walk-number /find-line DUP2 ;&cap LTH2 ?{
+	walk-number /get-line DUP2 ;&cap LTH2 ?{
 		POP2 POP2
 		( ! ) ;dict/overflow ;dict/line !font/<draw-error> }
 	STH2
@@ -171,6 +171,9 @@
 
 @prg/<draw> ( -- )
 	;&cap ;&mem
+	( >> )
+
+@prg/<draw-range> ( to* from* -- )
 	&>ld
 		LDA2k #0000 EQU2 ?{ DUP2 /<draw-line> }
 		#0004 ADD2 GTH2k ?&>ld
@@ -227,8 +230,16 @@
 
 @list =dict/list =dict/help-list
 	( | body )
-	walk-blank LDAk ?{ POP2 prg/<draw> !font/<draw-cursor> }
-	walk-expr prg/find-line NIP2 prg/<draw-line> !font/<draw-cursor>
+	walk-blank LDAk ?&single
+	POP2 prg/<draw> !font/<draw-cursor>
+
+	&single ( str* -- )
+	walk-expr STH2
+	walk-blank LDAk ?&range
+	POP2 STH2r prg/get-line prg/<draw-line> !font/<draw-cursor>
+
+	&range ( str* . from* -- )
+	walk-expr prg/get-line INC2 NIP2 STH2r prg/get-line prg/<draw-range> !font/<draw-cursor>
 
 @clear =dict/clear =dict/help-clear
 	( | body )
@@ -247,7 +258,7 @@
 		walk-blank LDAk ?{ POP2 !prg/next-instr }
 		LDAk ,&var STR
 		INC2 walk-blank LDAk [ LIT "= ] EQU ?{
-			( ! ) ;dict/variable !font/<draw-error> }
+			( ! ) ;dict/variable font/<draw-error> !prg/next-instr }
 		INC2 walk-expr [ LIT &var $1 ] variables/<set> !&>w
 
 @if =dict/if =dict/help-if
@@ -257,10 +268,10 @@
 
 @goto =dict/goto =dict/help-goto
 	( | body )
-	walk-expr DUP2 prg/find-line LDA2 ORA ?{
+	walk-expr DUP2 prg/get-line LDA2 ORA ?{
 		POP2 NIP2 #f000
 		( ! ) SWP2 ;dict/line !font/<draw-error> }
-	NIP2 NIP2 !prg/find-line
+	NIP2 NIP2 !prg/get-line
 
 @end =dict/end =dict/help-end
 	( | body )
@@ -272,10 +283,10 @@
 
 @gosub =dict/gosub =dict/help-gosub
 	( | body )
-	walk-expr DUP2 prg/find-line LDA2 ORA ?{
+	walk-expr DUP2 prg/get-line LDA2 ORA ?{
 		POP2 NIP2 #f000
 		( ! ) SWP2 ;dict/line !font/<draw-error> }
-	NIP2 SWP2 #0004 ADD2 gosub/<push> !prg/find-line
+	NIP2 SWP2 #0004 ADD2 gosub/<push> !prg/get-line
 
 @return =dict/return =dict/help-return
 	( | body )
@@ -313,8 +324,6 @@
 @|LibSystem )
 
 @load =dict/load =dict/help-load
-	( | body )
-
 	&do ( str* -- )
 	walk-blank src/<set>
 	;src/buf file/exists ?{
@@ -358,12 +367,12 @@
 @draw =dict/draw =dict/help-draw
 	( | body )
 	( x ) walk-expr
-	( > ) DUP2 #0000 EQU2 ?{
+	( > ) ORAk #00 EQU ?{
 		DUP2 .Screen/x DEO2
 		DUP2 ;font/anchor STA2 }
 	POP2
 	( y ) walk-expr
-	( > ) DUP2 #0000 EQU2 ?{ DUP2 .Screen/y DEO2 }
+	( > ) ORAk #00 EQU ?{ DUP2 .Screen/y DEO2 }
 	POP2 POP2 font/<draw-cursor> !prg/next-instr
 
 @mode =dict/mode =dict/help-mode
@@ -686,7 +695,12 @@
 	LIT "> /<draw-char>
 	LIT ": /<draw-char>
 	/<draw-ws>
-	/<draw-str> !/<draw-lb>
+	/<draw-str>
+	/<draw-lb>
+	;hash-icn .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEO
+	.Screen/x DEI2k #0008 SUB2 ROT DEO2
+	JMP2r
 
 @font/<draw-quote> ( str* -- str* )
 	&>wdq
@@ -727,15 +741,16 @@
 		#ff ,&z STR }
 	POP MUL2 SUB2 JMP2r
 
-@font/<draw-break> ( -- )
-	/<clear-cursor>
-	/<draw-lb> !/<draw-cursor>
-
 @font/<draw-lb> ( -- )
 	[ LIT2 &anchor 0020 ] .Screen/x DEO2
 	.Screen/y DEI2k #0008 ADD2 STH2k ROT DEO2
 	STH2r .Screen/height DEI2 #0018 SUB2 LTH2 ?{ !<clear-screen> }
 	JMP2r
+
+@font/<draw-break> ( -- )
+	/<clear-cursor>
+	/<draw-lb>
+	( >> )
 
 @font/<draw-cursor> ( -- )
 	;fill-icn .Screen/addr DEO2
@@ -936,8 +951,9 @@
 	&variable "VARIABLE $1
 	&command "COMMAND $1
 	&run "RUN $1 &help-run 7f "RUN 20 "Begin 20 "evaluation 20 "from 20 "smallest 20 "line 20 "number. $1
-	&list "LIST $1 &help-list 7f "LIST 2020 20 20 20 20 "Print 20 "entire 20 "program. 0a
-	( > ) 7f "LIST 20 "123 2020 "Print 20 "line 20 "123. $1
+	&list "LIST $1 &help-list 7f "LIST 20 20 20 20 20 20 20 2020 "Print 20 "entire 20 "program. 0a
+	( > ) 7f "LIST 20 "12 20 20 20 20 2020 "Print 20 "line 20 "12 0a
+	( > ) 7f "LIST 20 "20, 20 "30 2020 "Print 20 "lines 20 "20 20 "to 20 "30. $1
 	&clear "CLEAR $1 &help-clear 7f "CLEAR 2020 "Erase 20 "entire 20 "program. $1
 	&rem "REM $1 &help-rem 7f "REM 20 "This 20 "is 20 "a 20 "comment.. 2020 "Leave 20 "remark. $1
 	&let "LET $1 &help-let 7f "LET 20 "X=12, 20 "Y=A+1 2020 "Assign 20 "expression 20 "to 20 "variable. $1
@@ -960,6 +976,8 @@
 	&poke "POKE $1 &help-poke 7f "POKE 20 "$10, 20 "$1234, 20 "$4567, 20 ".. 2020 "Set 20 "data 20 "at 20 "$10. $1
 
 @fill-icn [ ffff ffff ffff ffff ]
+
+@hash-icn [ aa55 aa55 aa55 aa55 ]
 
 @cursor/up-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808
