@@ -147,18 +147,19 @@
 	cmds/find STH2kr INC2r INC2r STA2
 	walk-blank ;dict/ptr LDA2 STH2r STA2 !dict/<push-str>
 
-@prg/eval-line ( line* -- line* )
-	LDA2k ORA ?{ !/next-instr }
-	INC2k INC2 LDA2 OVR2 LDA2 JMP2
-
 @prg/next-instr ( addr* -- addr* )
 	#0004 ADD2 JMP2r
 
 @prg/<eval> ( addr* -- )
-	;&cap SWP2
+	;&cap SWP2 [ LIT2r 0000 ]
 	&>l
-		/eval-line GTH2k ?&>l
-	POP2 POP2 JMP2r
+		( skip empty ) LDA2k ORA ?{ /next-instr !&continue }
+		( check overflow ) INC2r ORAkr STHr ?{
+			POP2 POP2 POP2r
+			( ! ) ;dict/infinite ;dict/loop !font/<draw-error> }
+		( body* ) INC2k INC2 LDA2
+		( body* fn* ) OVR2 LDA2 JSR2 &continue GTH2k ?&>l
+	POP2 POP2 POP2r JMP2r
 
 @prg/<draw> ( -- )
 	;&cap ;&mem
@@ -900,9 +901,11 @@
 	&ready "READY. $1
 	&help "HELP $1
 	&error "ERROR $1
+	&infinite "INFINITE $1
 	&line "LINE $1
 	&path "PATH $1
 	&file "FILE $1
+	&loop "LOOP $1
 	&zdiv "DIV-BY-ZERO $1
 	&underflow "UNDERFLOW $1
 	&overflow "OVERFLOW $1
