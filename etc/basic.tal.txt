@@ -35,7 +35,8 @@
 	BRK
 
 @meta 00
-	( name ) "TinyBASIC 0a
+	&body ( name )
+	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "24 20 "Aug 20 "2025 $2
@@ -52,7 +53,24 @@
 		LDA2k LDA2 STH2kr str/seg ?{
 			INC2 INC2 GTH2k ?&>lf
 		POP2 POP2 POP2r #0000 JMP2r }
-	POP2r NIP2 LDA2 INC2 INC2 JMP2r
+	POP2r NIP2 LDA2 #0004 ADD2 JMP2r
+
+@cmds/<print> ( -- )
+	.Screen/x DEI2 ;&lut-nohelp ;&lut [ LIT2r 0000 ]
+	&>lp
+		STHkr #03 AND ?{ font/<draw-break> }
+		STHk2r #0003 AND2 #60 SFT2 #0020 ADD2 .Screen/x DEO2
+		LDA2k LDA2 font/<draw-str>
+		INC2 INC2 INCr GTH2k ?&>lp
+	POP2 POP2 POP2r .Screen/x DEO2
+	font/<draw-lb>
+	font/<draw-lb>
+	;dict/manual font/<draw-str>
+	font/<draw-lb> !font/<draw-cursor>
+
+@cmds/<print-help> ( cmd* -- )
+	#0002 SUB2 LDA2 font/<draw-str>
+	font/<draw-lb> !font/<draw-cursor>
 
 @walk-text ( str* -- str* )
 	&>w
@@ -113,7 +131,7 @@
 	#20 SFT2 ;&mem ADD2 JMP2r
 
 @prg/get-free ( -- space* )
-	;dict/cap ;&mem SUB2 JMP2r
+	#0000 ;&mem SUB2 JMP2r
 
 @prg/<store> ( str* -- )
 	walk-number /find-line DUP2 ;&cap LTH2 ?{
@@ -188,11 +206,30 @@
 	INC2 LDA2 POPr JMP2r
 
 (
-@|LibDefaults )
+@|LibHypervisor )
 
-@run =dict/run POP2 ;prg/mem !prg/<eval>
+@run =dict/run =dict/help-run
+	( | body )
+	POP2 ;prg/mem !prg/<eval>
 
-@let =dict/let
+@list =dict/list =dict/help-list
+	( | body )
+	walk-blank LDAk ?{ POP2 prg/<draw> !font/<draw-cursor> }
+	walk-expr prg/find-line NIP2 prg/<draw-line> !font/<draw-cursor>
+
+@clear =dict/clear =dict/help-clear
+	( | body )
+	( no params ) POP2 theme/<load> !prg/<clear>
+
+(
+@|LibCore )
+
+@rem =dict/rem =dict/help-rem
+	( | body )
+	( no params ) POP2 !prg/next-instr
+
+@let =dict/let =dict/help-let
+	( | body )
 	&>w
 		walk-blank LDAk ?{ POP2 !prg/next-instr }
 		LDAk ,&var STR
@@ -200,36 +237,43 @@
 			( ! ) ;dict/variable !font/<draw-error> }
 		INC2 walk-expr [ LIT &var $1 ] variables/<set> !&>w
 
-@rem =dict/rem
-	( no params ) POP2 !prg/next-instr
-
-@if =dict/if walk-expr ORA ?{ POP2 !prg/next-instr }
+@if =dict/if =dict/help-if
+	( | body )
+	walk-expr ORA ?{ POP2 !prg/next-instr }
 	!str/<eval>
 
-@gosub =dict/gosub walk-expr DUP2 prg/find-line LDA2 ORA ?{
-		POP2 NIP2 #f000
-		( ! ) SWP2 ;dict/line !font/<draw-error> }
-	NIP2 SWP2 #0004 ADD2 gosub/<push> !prg/find-line
-
-@goto =dict/goto walk-expr DUP2 prg/find-line LDA2 ORA ?{
+@goto =dict/goto =dict/help-goto
+	( | body )
+	walk-expr DUP2 prg/find-line LDA2 ORA ?{
 		POP2 NIP2 #f000
 		( ! ) SWP2 ;dict/line !font/<draw-error> }
 	NIP2 NIP2 !prg/find-line
 
-@return =dict/return POP2 POP2 !gosub/pop
+@end =dict/end =dict/help-end
+	( | body )
+	POP2
+	( replace addr* ) POP2 #fff0 JMP2r
 
-@clear =dict/clear
-	( no params ) POP2 theme/<load> !prg/<clear>
+(
+@|LibSubroutines )
 
-@input =dict/input variables/<capture>
-	( replace addr* ) bind/<interrupt>
-	#fff0 JMP2r
+@gosub =dict/gosub =dict/help-gosub
+	( | body )
+	walk-expr DUP2 prg/find-line LDA2 ORA ?{
+		POP2 NIP2 #f000
+		( ! ) SWP2 ;dict/line !font/<draw-error> }
+	NIP2 SWP2 #0004 ADD2 gosub/<push> !prg/find-line
 
-@list =dict/list
-	( TODO: Support range ) walk-blank LDAk ?{ POP2 prg/<draw> !font/<draw-cursor> }
-	walk-expr prg/find-line NIP2 prg/<draw-line> !font/<draw-cursor>
+@return =dict/return =dict/help-return
+	( | body )
+	POP2 POP2 !gosub/pop
 
-@print =dict/print [ LIT2 01 _&lb ] STR
+(
+@|LibIO )
+
+@print =dict/print =dict/help-print
+	( | body )
+	[ LIT2 01 _&lb ] STR
 	&>w
 		walk-blank /<print-segment>
 		LDAk ?&>w
@@ -246,39 +290,18 @@
 		( ! ) ;dict/print !font/<draw-error> }
 	JMP2r
 
-@end =dict/end POP2
-	( replace addr* ) POP2 #fff0 JMP2r
-
-(
-@|LibDraw )
-
-@mode =dict/mode walk-expr NIP2 NIP ;font/color STA !prg/next-instr
-
-@draw =dict/draw walk-expr DUP2 .Screen/x DEO2
-	;font/anchor STA2
-	walk-expr .Screen/y DEO2
-	POP2 !prg/next-instr
-
-@color =dict/color LDAk #00 EQU ?{
-		walk-expr .System/r DEO2
-		walk-expr .System/g DEO2
-		walk-expr .System/b DEO2 }
-	POP2 !prg/next-instr
-
-@cls =dict/cls POP2 <draw-clear> !prg/next-instr
-
-@sprite =dict/sprite walk-expr icn/<push>
-	walk-expr icn/<push>
-	walk-expr icn/<push>
-	walk-expr icn/<push>
-	POP2 !prg/next-instr
-
-@pict =dict/pict walk-blank icn/<draw-file> !prg/next-instr
+@input =dict/input =dict/help-input
+	( | body )
+	variables/<capture>
+	( replace addr* ) bind/<interrupt>
+	#fff0 JMP2r
 
 (
 @|LibSystem )
 
-@load =dict/load
+@load =dict/load =dict/help-load
+	( | body )
+
 	&do ( str* -- )
 	walk-blank src/<set>
 	;src/buf file/exists ?{
@@ -295,9 +318,55 @@
 			POPr POP2r POP font/<draw-ready> !prg/next-instr }
 		[ LIT &b $1 ] input/listen !&>s
 
-@save =dict/save walk-blank .File/name DEO2
+@save =dict/save =dict/help-save
+	( | body )
+	walk-blank .File/name DEO2
 	#0001 .File/length DEO2
 	prg/<save> !prg/next-instr
+
+(
+@|LibDraw )
+
+@color =dict/color =dict/help-color
+	( | body )
+	LDAk #00 EQU ?{
+		walk-expr .System/r DEO2
+		walk-expr .System/g DEO2
+		walk-expr .System/b DEO2 }
+	POP2 !prg/next-instr
+
+@cls =dict/cls =dict/help-cls
+	( | body )
+	POP2 <draw-clear> !prg/next-instr
+
+@draw =dict/draw =dict/help-draw
+	( | body )
+	walk-expr DUP2 .Screen/x DEO2
+	;font/anchor STA2
+	walk-expr .Screen/y DEO2
+	POP2 !prg/next-instr
+
+@mode =dict/mode =dict/help-mode
+	( | body )
+	walk-expr NIP2 NIP ;font/color STA !prg/next-instr
+
+@sprite =dict/sprite =dict/help-sprite
+	( | body )
+	walk-expr icn/<push>
+	walk-expr icn/<push>
+	walk-expr icn/<push>
+	walk-expr icn/<push>
+	POP2 !prg/next-instr
+
+@pict =dict/pict =dict/help-pict
+	( | body )
+	walk-blank icn/<draw-file> !prg/next-instr
+
+@help =dict/help =meta/body
+	( | body )
+	walk-blank LDAk ?{ POP2 !cmds/<print> }
+	cmds/find ORAk ?{ NIP2 ;dict/command !font/<draw-error> }
+	NIP2 !cmds/<print-help>
 
 (
 @|buffers )
@@ -319,7 +388,8 @@
 	str/len ;&buf !mem/<cpy>
 
 @dict/<push-str> ( str* -- )
-	( TODO: Find and alloc ) &>w
+	( | TODO: Find and alloc )
+	&>w
 		LDAk DUP #1f GTH ?{ POP POP2 #00 !/<push> }
 		/<push>
 		INC2 !&>w
@@ -567,7 +637,8 @@
 	/<draw-cursor>
 	;dict/varvara /<draw-str>
 	/<draw-break>
-	;dict/ram /<draw-str>
+	;dict/guide /<draw-str>
+	/<draw-break>
 	prg/get-free /<draw-dec>
 	;dict/intro /<draw-str>
 	/<draw-break>
@@ -607,7 +678,8 @@
 		INC2 !&>wds
 
 @font/<draw-char> ( char -- )
-	#00 SWP #30 SFT2 ;&sprites ADD2 .Screen/addr DEO2
+	DUP #0a NEQ ?{ POP !/<draw-lb> }
+	#20 SUB #00 SWP #30 SFT2 ;&sprites ADD2 .Screen/addr DEO2
 	[ LIT2 &color 09 -Screen/sprite ] DEO
 	JMP2r
 
@@ -638,7 +710,7 @@
 @font/<draw-lb> ( -- )
 	[ LIT2 &anchor 0020 ] .Screen/x DEO2
 	.Screen/y DEI2k #0008 ADD2 STH2k ROT DEO2
-	STH2r .Screen/height DEI2 #0018 SUB2 LTH2 ?{ <draw-clear> }
+	STH2r .Screen/height DEI2 #0018 SUB2 LTH2 ?{ !<draw-clear> }
 	JMP2r
 
 @font/<draw-cursor> ( -- )
@@ -777,7 +849,8 @@
 
 @str/<eval> ( str* -- )
 	cmds/find ORAk ?{
-		( TODO: weird? this should be POP2 ) NIP2
+		( | TODO: weird? this should be POP2 )
+		NIP2
 		( ! ) ;dict/command !font/<draw-error> }
 	JMP2
 
@@ -806,12 +879,12 @@
 @|assets )
 
 @cmds/lut [
-	=let =goto =rem =if
-	=gosub =clear =input =return
-	=list =print =end =run
-	=color =cls =draw =mode
-	=sprite =pict =save =load
-	&lut-end ]
+	=run =list =clear =rem
+	=let =if =goto =end
+	=gosub =return =print =input
+	=save =load =color =cls
+	=draw =mode =sprite =pict
+	&lut-nohelp =help &lut-end ]
 
 @math/lut [
 	"+ =&add "- =&sub
@@ -822,38 +895,42 @@
 	"% =&mod $3 ]
 
 @dict/varvara "SUNFLOWER 20 "BASIC 20 $1
-	&ram "64K 20 "RAM 20 "SYSTEM 20 20 $1 &intro 20 "BASIC 20 "BYTES 20 "FREE $1
+	&guide "TYPE 20 ""HELP" 20 "FOR 20 "INFO $1 &intro 20 "BYTES 20 "FREE $1
+	&manual "TYPE 20 ""HELP 20 "PRINT" 20 "FOR 20 "PRINT 20 "DETAILS $1
 	&ready "READY. $1
-	&let "LET $1
-	&goto "GOTO $1
-	&rem "REM $1
-	&if "IF $1
-	&gosub "GOSUB $1
-	&clear "CLEAR $1
-	&input "INPUT $1
-	&return "RETURN $1
-	&list "LIST $1
-	&end "END $1
-	&run "RUN $1
-	&color "COLOR $1
-	&cls "CLS $1
-	&draw "DRAW $1
-	&mode "MODE $1
-	&sprite "SPRITE $1
-	&pict "PICT $1
-	&save "SAVE $1
-	&load "LOAD $1
+	&help "HELP $1
 	&error "ERROR $1
+	&line "LINE $1
+	&path "PATH $1
+	&file "FILE $1
+	&zdiv "DIV-BY-ZERO $1
 	&underflow "UNDERFLOW $1
 	&overflow "OVERFLOW $1
 	&number "NUMBER $1
 	&variable "VARIABLE $1
 	&command "COMMAND $1
-	&line "LINE $1
-	&path "PATH $1
-	&file "FILE $1
-	&print "PRINT $1
-	&zdiv "DIV-BY-ZERO $1
+	&run "RUN $1 &help-run 7f "RUN 20 "Begin 20 "evaluation 20 "from 20 "smallest 20 "line 20 "number. $1
+	&list "LIST $1 &help-list 7f "LIST 2020 20 20 20 20 "Print 20 "entire 20 "program. 0a
+	( > ) 7f "LIST 20 "123 2020 "Print 20 "line 20 "123. $1
+	&clear "CLEAR $1 &help-clear 7f "CLEAR 2020 "Erase 20 "entire 20 "program. $1
+	&rem "REM $1 &help-rem 7f "REM 20 "This 20 "is 20 "a 20 "comment.. 2020 "Leave 20 "remark. $1
+	&let "LET $1 &help-let 7f "LET 20 "X=12, 20 "Y=A+1 2020 "Assign 20 "expression 20 "to 20 "variable. $1
+	&if "IF $1 &help-if 7f "IF 20 "A>B 20 "PRINT 20 "C 2020 "Evaluate 20 "only 20 "when 20 "not 20 "zero. $1
+	&goto "GOTO $1 &help-goto 7f "GOTO 20 "A+1 2020 "Continue 20 "evaluation 20 "at 20 "line. $1
+	&end "END $1 &help-end 7f "END 2020 "Terminate 20 "evaluation. $1
+	&gosub "GOSUB $1 &help-gosub 7f "GOSUB 20 "A+1 2020 "Evaluate 20 "subroutine 20 "until 20 "RETURN. $1
+	&return "RETURN $1 &help-return 7f "RETURN 2020 "Continue 20 "evaluation 20 "from 20 "subroutine. $1
+	&print "PRINT $1 &help-print 7f "PRINT 20 ""A 20 "string" 20 "A+1 2020 "Display 20 "text 20 "with 20 "linebreak. 0a
+	( > ) 7f "PRINT 20 ""A 20 "string"; 20 20 20 2020 "Display 20 "text. $1
+	&input "INPUT $1 &help-input 7f "INPUT 20 "X, 20 "Y 2020 "Pause 20 "evaluation 20 "until 20 "user 20 "input. $1
+	&load "LOAD $1 &help-load 7f "LOAD 20 "input.bas 2020 "Load 20 "basic 20 "file. $1
+	&save "SAVE $1 &help-save 7f "SAVE 20 "output.bas 2020 "Save 20 "basic 20 "file. $1
+	&color "COLOR $1 &help-color 7f "COLOR 20 "$50f2, 20 "$b0f9, 20 "$a0f8 2020 "Set 20 "interface 20 "colors. $1
+	&cls "CLS $1 &help-cls 7f "CLR 2020 "Clear 20 "screen. $1
+	&draw "DRAW $1 &help-draw 7f "DRAW 20 "32, 20 "48 2020 "Set 20 "drawing 20 "position. $1
+	&mode "MODE $1 &help-mode 7f "MODE 20 "2 2020 "Set 20 "drawing 20 "mode. $1
+	&sprite "SPRITE $1 &help-sprite 7f "SPRITE 20 "$1c1c, 20 "$087f, 20 "$0814, 20 "$2241 2020 "Paint 20 "8x8 20 "sprite. $1
+	&pict "PICT $1 &help-pict 7f "PICT 20 "image20x20.icn 2020 "Paint 20 "1-bit 20 "image. $1
 
 @fill-icn [ ffff ffff ffff ffff ]
 
@@ -869,7 +946,7 @@
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @font/sprites ( atari8 )
-	$100 [
+	[
 	0000 0000 0000 0000 6060 6060 6000 6000
 	6666 6600 0000 0000 006c fe6c 6cfe 6c00
 	183e 603c 067c 1800 0066 6c18 3066 4600
@@ -917,7 +994,7 @@
 	0000 663c 183c 6600 0000 6666 663e 067c
 	0000 7e0c 1830 7e00 1c30 3060 3030 1c00
 	1818 1818 1818 1818 380c 0c06 0c0c 3800
-	0000 60f2 9e0c 0000 0018 1834 3462 7e00 ] $2
+	0000 60f2 9e0c 0000 e0f0 f8fc fcf8 f0e0 ] $2
 
 @logo/sprite [
 	0000 0000 0000 0303 0000 0000 0000 00e0
