@@ -382,6 +382,13 @@
 	cmds/find ORAk ?{ NIP2 ;dict/command !font/<draw-error> }
 	NIP2 !cmds/<print-help>
 
+@poke =dict/poke =dict/help-poke
+	( | body )
+	walk-expr #30 SFT2 ;font/sprites ADD2 STH2
+	&>w
+		walk-blank LDAk ?{ POP2 POP2r !prg/next-instr }
+		walk-expr STH2kr INC2r INC2r STA2 !&>w
+
 (
 @|buffers )
 
@@ -403,6 +410,9 @@
 
 @dict/<push-str> ( str* -- )
 	( | TODO: Find and alloc )
+	LDAk ?{
+		( String is empty ) POP2 JMP2r
+	}
 	&>w
 		LDAk DUP #1f GTH ?{ POP POP2 #00 !/<push> }
 		/<push>
@@ -537,6 +547,8 @@
 
 @bind/<interrupt> ( addr* -- )
 	#0004 ADD2 .&addr STZ2
+	.Screen/x DEI2 .Mouse/x DEO2
+	.Screen/y DEI2 .Mouse/y DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-control .Controller/vector DEO2
 	JMP2r
@@ -687,7 +699,7 @@
 
 @font/<draw-char> ( char -- )
 	DUP #0a NEQ ?{ POP !/<draw-lb> }
-	#20 SUB #00 SWP #30 SFT2 ;&sprites ADD2 .Screen/addr DEO2
+	#00 SWP #30 SFT2 ;&sprites ADD2 .Screen/addr DEO2
 	[ LIT2 &color 09 -Screen/sprite ] DEO
 	JMP2r
 
@@ -892,7 +904,7 @@
 	=gosub =return =print =input
 	=save =load =color =cls
 	=draw =mode =sprite =pict
-	&lut-nohelp =help &lut-end ]
+	&lut-nohelp =help =poke &lut-end ]
 
 @math/lut [
 	"+ =&add "- =&sub
@@ -941,6 +953,7 @@
 	&mode "MODE $1 &help-mode 7f "MODE 20 "2 2020 "Set 20 "drawing 20 "mode. $1
 	&sprite "SPRITE $1 &help-sprite 7f "SPRITE 20 "$1c1c, 20 "$087f, 20 "$0814, 20 "$2241 2020 "Paint 20 "8x8 20 "sprite. $1
 	&pict "PICT $1 &help-pict 7f "PICT 20 "image20x20.icn 2020 "Paint 20 "1-bit 20 "image. $1
+	&poke "POKE $1 &help-poke 7f "POKE 20 "$10, 20 "$1234, 20 "$4567, 20 ".. 2020 "Set 20 "data 20 "at 20 "$10. $1
 
 @fill-icn [ ffff ffff ffff ffff ]
 
@@ -956,7 +969,7 @@
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @font/sprites ( atari8 )
-	[
+	$100 [
 	0000 0000 0000 0000 6060 6060 6000 6000
 	6666 6600 0000 0000 006c fe6c 6cfe 6c00
 	183e 603c 067c 1800 0066 6c18 3066 4600
