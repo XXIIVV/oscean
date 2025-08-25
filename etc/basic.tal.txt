@@ -566,7 +566,6 @@
 	JMP2r
 
 @bind/<resume> ( -- )
-	cursor/<clear>
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
@@ -576,7 +575,14 @@
 	cursor/<update>
 	[ LIT &last $1 ] .Mouse/state DEI DUP ,&last STR
 	#0001 EQU2 ?{ BRK }
-	.Mouse/x DEI2 /assoc POP .Mouse/y DEI2 /assoc ?{ /<resume> }
+	( | x )
+	.Mouse/x DEI2 /assoc ?{ cursor/<clear>
+		/<resume>
+		BRK }
+	( | y )
+	.Mouse/y DEI2 /assoc ?{ cursor/<clear>
+		/<resume>
+		BRK }
 	BRK
 
 @bind/on-control ( -> )
