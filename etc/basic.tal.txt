@@ -32,6 +32,7 @@
 	font/<draw-welcome>
 	;src/on-console .Console/vector DEO2
 	;on-control .Controller/vector DEO2
+	.Console/type DEI ?{ font/<draw-ready> }
 	BRK
 
 @meta 00
@@ -39,7 +40,7 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "24 20 "Aug 20 "2025 $2
+	( date ) "25 20 "Aug 20 "2025 $2
 
 @on-control ( -> )
 	.Controller/key DEI input/listen BRK
@@ -130,9 +131,6 @@
 @prg/find-line ( id* -- <line*> )
 	#20 SFT2 ;&mem ADD2 JMP2r
 
-@prg/get-free ( -- space* )
-	#0000 ;&mem SUB2 JMP2r
-
 @prg/<store> ( str* -- )
 	walk-number /find-line DUP2 ;&cap LTH2 ?{
 		POP2 POP2
@@ -178,6 +176,10 @@
 
 @prg/<draw-line> ( line* -- )
 	DUP2 ;&mem SUB2 #02 SFT2 !font/<draw-line>
+
+@prg/<draw-free> ( -- )
+	#0000 ;dict/ptr LDA2 SUB2 font/<draw-dec>
+	;dict/bytes-free font/<draw-str> !font/<draw-cursor>
 
 (
 @|Math )
@@ -316,7 +318,8 @@
 	&>s
 		DEO2kr
 		DEIk ?{
-			POPr POP2r POP font/<draw-ready> !prg/next-instr }
+			POPr POP2r POP prg/<draw-free>
+			font/<draw-ready> !prg/next-instr }
 		[ LIT &b $1 ] input/listen !&>s
 
 @save =dict/save =dict/help-save
@@ -639,11 +642,7 @@
 	;dict/varvara /<draw-str>
 	/<draw-break>
 	;dict/guide /<draw-str>
-	/<draw-break>
-	prg/get-free /<draw-dec>
-	;dict/intro /<draw-str>
-	/<draw-break>
-	( >> )
+	prg/<draw-free> !/<draw-break>
 
 @font/<draw-ready> ( -- )
 	/<draw-break>
@@ -896,7 +895,7 @@
 	"% =&mod $3 ]
 
 @dict/varvara "SUNFLOWER 20 "BASIC 20 $1
-	&guide "TYPE 20 ""HELP" 20 "FOR 20 "INFO $1 &intro 20 "BYTES 20 "FREE $1
+	&guide "TYPE 20 ""HELP" 20 "FOR 20 "INFO 20 7f 20 $1 &bytes-free 20 "BYTES 20 "FREE 0a $1
 	&manual "TYPE 20 ""HELP 20 "PRINT" 20 "FOR 20 "PRINT 20 "DETAILS $1
 	&ready "READY. $1
 	&help "HELP $1
@@ -997,7 +996,7 @@
 	0000 663c 183c 6600 0000 6666 663e 067c
 	0000 7e0c 1830 7e00 1c30 3060 3030 1c00
 	1818 1818 1818 1818 380c 0c06 0c0c 3800
-	0000 60f2 9e0c 0000 e0f0 f8fc fcf8 f0e0 ] $2
+	0000 60f2 9e0c 0000 1038 7cfe 7c38 1000 ] $2
 
 @logo/sprite [
 	0000 0000 0000 0303 0000 0000 0000 00e0
