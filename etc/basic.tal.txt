@@ -49,13 +49,18 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Aug 20 "2025 $2
+	( date ) "26 20 "Aug 20 "2025 $2
 
 @on-control ( -> )
-	.Controller/key DEI input/listen BRK
+	.Controller/button DEI2
+	( | Handlers )
+	DUP2 [ LIT2 01 "v ] NEQ2 ?{ POP2 snarf/<paste>
+		BRK }
+	input/<listen>
+	POP BRK
 
 (
-@|helpers )
+@|Helpers )
 
 @cmds/find ( str* -- str* fn* )
 	walk-blank STH2k walk-text ;&lut-end ;&lut
@@ -293,9 +298,6 @@
 	( | body )
 	POP2 POP2 !gosub/pop
 
-(
-@|LibIO )
-
 @print =dict/print =dict/help-print
 	( | body )
 	[ LIT2 01 _&lb ] STR
@@ -310,7 +312,7 @@
 		INC2 [ LIT2 00 _&lb ] STR !font/<draw-cursor> }
 	LDAk [ LIT "" ] NEQ ?{ INC2 !font/<draw-quote> }
 	LDAk [ LIT "# ] NEQ ?{ INC2 walk-expr NIP !font/<draw-char> }
-	LDAk cixp ?{ walk-expr !font/<draw-sdec> }
+	LDAk chr/isxp ?{ walk-expr !font/<draw-sdec> }
 	LDAk #00 EQU ?{
 		( ! ) ;dict/print !font/<draw-error> }
 	JMP2r
@@ -320,9 +322,6 @@
 	variables/<capture>
 	( replace addr* ) bind/<interrupt>
 	#fff0 JMP2r
-
-(
-@|LibSystem )
 
 @load =dict/load =dict/help-load
 	&do ( str* -- )
@@ -340,16 +339,13 @@
 		DEIk ?{
 			POPr POP2r POP prg/<draw-free>
 			font/<draw-ready> !prg/next-instr }
-		[ LIT &b $1 ] input/listen !&>s
+		[ LIT &b $1 ] input/<listen> !&>s
 
 @save =dict/save =dict/help-save
 	( | body )
 	walk-blank .File/name DEO2
 	#0001 .File/length DEO2
 	prg/<save> !prg/next-instr
-
-(
-@|LibDraw )
 
 @color =dict/color =dict/help-color
 	( | body )
@@ -406,7 +402,7 @@
 		walk-expr STH2kr INC2r INC2r STA2 !&>w
 
 (
-@|buffers )
+@|Buffers )
 
 @src/on-console ( -> )
 	[ LIT2 0a -Console/read ] DEI NEQk ?{ POP2 ;&buf load/do BRK }
@@ -466,7 +462,7 @@
 	#0002 SUB2 DUP2 ,&ptr STR2
 	LDA2 JMP2r
 
-@input/listen ( char -- )
+@input/<listen> ( char -- )
 	DUP #08 EQU ?&erase
 	DUP #0a EQU ?&parse
 	DUP #0d EQU ?&parse
@@ -594,7 +590,8 @@
 @bind/on-control ( -> )
 	[ LIT2 00 -Controller/button ] DEI DUP ?{
 		POP2 .Controller/key DEI DUP ?{ POP BRK }
-		input/listen BRK }
+		input/<listen>
+		BRK }
 	/assoc ?{ /<resume> }
 	BRK
 
@@ -641,7 +638,7 @@
 	chr/hex SWP chr/hex #40 SFT ORA JMP2r
 
 (
-@|draw )
+@|Draw )
 
 @<clear-screen> ( -- )
 	#0000 .Screen/x DEO2
@@ -673,9 +670,6 @@
 	;&sprite .Screen/addr DEO2
 	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEOk DEOk DEOk DEO
 	JMP2r
-
-(
-@|font )
 
 @font/<draw-welcome> ( -- )
 	<clear-screen>
@@ -800,24 +794,7 @@
 	JMP2r
 
 (
-@|theme )
-
-@theme/<load> ( -- )
-	;&path .File/name DEO2
-	#0002 .File/length DEO2
-	;&r .File/read DEO2
-	;&g .File/read DEO2
-	;&b .File/read DEO2
-	.File/success DEI2 ORA ?{ JMP2r }
-	LIT2 &r $2 .System/r DEO2
-	LIT2 &g $2 .System/g DEO2
-	LIT2 &b $2 .System/b DEO2
-	JMP2r
-
-	&path ".theme $1
-
-(
-@|random )
+@|Misc )
 
 @random/<init> ( -- )
 	( ) [ LIT2 00 -DateTime/second ] DEI
@@ -836,6 +813,29 @@
 	( ) [ LIT2 &y $2 ] DUP2 ,&x STR2
 	( ) DUP2 #01 SFT2 EOR2 EOR2
 	( ) ,&y STR2k POP JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success DEI2 ORA ?{ JMP2r }
+	LIT2 &r $2 .System/r DEO2
+	LIT2 &g $2 .System/g DEO2
+	LIT2 &b $2 .System/b DEO2
+	JMP2r
+
+	&path ".theme $1
+
+@snarf/<paste> ;&path .File/name DEO2
+	#0001 .File/length DEO2
+	&>s
+		;&b .File/read DEO2
+		.File/success-lb DEI ?{ JMP2r }
+		[ LIT &b $1 ] input/<listen> !&>s
+
+	&path ".snarf $1
 
 @file/<save-line> ( line* id* -- )
 	/<save-dec>
@@ -873,9 +873,9 @@
 	[ LIT &b $1 ] chr/hex INC JMP2r
 
 (
-@|stdlib )
+@|Utils )
 
-@cixp ( c -- f )
+@chr/isxp ( c -- f )
 	DUP chr/isuc ?{
 		DUP chr/isdc ?{ LIT "$ NEQ JMP2r } }
 	POP #00 JMP2r
@@ -916,7 +916,7 @@
 	&clr 00 &lclr $2 0000 &aclr $2 00
 
 (
-@|assets )
+@|Assets )
 
 @cmds/lut [
 	=run =list =clear =rem
