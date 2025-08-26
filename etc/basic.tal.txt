@@ -543,6 +543,11 @@
 		INC2 LDAk ?&>w
 	POP2 JMP2r
 
+@bind/<clean> ( -- )
+	.&buf DUP ,&ptr STR
+	,&queue STR
+	JMP2r
+
 @bind/<push> ( var -- )
 	[ LIT &ptr -&buf ] DUP .&cap NEQ ?{
 		POP
@@ -571,7 +576,8 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
-	.&addr LDZ2 #0000 .&addr STZ2 !prg/<eval>
+	.&addr LDZ2 #0000 .&addr STZ2
+	/<clean> !prg/<eval>
 
 @bind/on-mouse ( -> )
 	cursor/<update>
@@ -588,11 +594,16 @@
 	BRK
 
 @bind/on-control ( -> )
-	[ LIT2 00 -Controller/button ] DEI DUP ?{
-		POP2 .Controller/key DEI DUP ?{ POP BRK }
-		input/<listen>
-		BRK }
-	/assoc ?{ /<resume> }
+	( | Handle button )
+	.Controller/button DEI DUP ?&on-button
+	POP
+	( | Handle key )
+	.Controller/key DEI input/<listen>
+	BRK
+
+@bind/on-button ( button -> )
+	#00 SWP .bind/addr LDZ ?{ POP2 BRK }
+	bind/assoc ?{ bind/<resume> }
 	BRK
 
 (
