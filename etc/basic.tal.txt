@@ -226,7 +226,8 @@
 
 @run =dict/run =dict/help-run
 	( | body )
-	POP2 ;prg/mem !prg/<eval>
+	POP2 variables/<clear>
+	;prg/mem !prg/<eval>
 
 @list =dict/list =dict/help-list
 	( | body )
@@ -413,15 +414,20 @@
 	POP BRK
 
 @src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{
+	[ LIT &ptr -&buf ] DUP .&cap NEQ ?{
 		POP2
 		( ! ) ;dict/overflow ;dict/path !font/<draw-error> }
 	INCk ,&ptr STR
-	STZ2
+	STZ
 	JMP2r
 
 @src/<set> ( str* -- )
-	str/len ;&buf !mem/<cpy>
+	[ LIT2 -&buf _&ptr ] STR
+	&>w
+		LDAk DUP ?{ /<push>
+			POP2 JMP2r }
+		/<push>
+		INC2 !&>w
 
 @dict/<push-str> ( str* -- )
 	( | TODO: Find and alloc )
@@ -889,9 +895,6 @@
 	LDAk ?{ INC2 JMP2r }
 	INC2 !/cap
 
-@str/len ( str* -- str* length* )
-	DUP2k /cap SWP2 INC2 SUB2 JMP2r
-
 @str/<eval> ( str* -- )
 	cmds/find ORAk ?{
 		( | TODO: weird? this should be POP2 )
@@ -911,14 +914,6 @@
 	;&clr .System/expansion DEO2
 	JMP2r
 	&clr 00 &lclr $2 0000 &aclr $2 00
-
-@mem/<cpy> ( src* len* dst* -- )
-	,&bcpy STR2
-	,&lcpy STR2
-	,&acpy STR2
-	;&cpy .System/expansion DEO2
-	JMP2r
-	&cpy 01 &lcpy $2 0000 &acpy $2 0000 &bcpy $2
 
 (
 @|assets )
