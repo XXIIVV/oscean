@@ -197,23 +197,22 @@
 	( >> )
 
 @prg/<draw-range> ( to* from* -- )
-	,&from STR2
-	,&to STR2
+	( MIN ) ;&mem GTH2k [ JMP SWP2 ] POP2 ,&from STR2
+	( MAX ) ;&cap LTH2k [ JMP SWP2 ] POP2 ,&to STR2
 	;&on-screen .Screen/vector DEO2
 	JMP2r
 
 @prg/on-screen ( -> )
 	[ LIT2 &to $2 ] [ LIT2 &from $2 ]
-	( | find next )
-	&lo LDAk ?{ #0004 ADD2 !&lo }
-	( | reached end )
-	GTH2k ?{
-		POP2 POP2 font/<draw-cursor>
-		#0000 .Screen/vector DEO2
-		BRK }
-	DUP2 /<draw-line>
-	#0004 ADD2 ,&from STR2
-	POP2 BRK
+	&>lo
+		LDA2k #0000 EQU2 ?{
+			DUP2 /<draw-line>
+			#0004 ADD2 ,&from STR2
+			POP2 BRK }
+		#0004 ADD2 GTH2k ?&>lo
+	POP2 POP2 font/<draw-cursor>
+	#0000 .Screen/vector DEO2
+	BRK
 
 (
 @|Math )
