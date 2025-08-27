@@ -49,7 +49,7 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Aug 20 "2025 $2
+	( date ) "27 20 "Aug 20 "2025 $2
 
 @on-control ( -> )
 	.Controller/button DEI2
@@ -177,16 +177,6 @@
 		( body* fn* ) OVR2 LDA2 JSR2 &continue GTH2k ?&>l
 	POP2 POP2 POP2r JMP2r
 
-@prg/<draw> ( -- )
-	;&cap ;&mem
-	( >> )
-
-@prg/<draw-range> ( to* from* -- )
-	&>ld
-		LDA2k #0000 EQU2 ?{ DUP2 /<draw-line> }
-		#0004 ADD2 GTH2k ?&>ld
-	POP2 POP2 JMP2r
-
 @prg/<save> ( -- )
 	;&cap ;&mem
 	&>ls
@@ -201,6 +191,29 @@
 @prg/<draw-free> ( -- )
 	#0000 ;dict/ptr LDA2 SUB2 font/<draw-dec>
 	;dict/bytes-free font/<draw-str> !font/<draw-cursor>
+
+@prg/<draw> ( -- )
+	;&cap ;&mem
+	( >> )
+
+@prg/<draw-range> ( to* from* -- )
+	,&from STR2
+	,&to STR2
+	;&on-screen .Screen/vector DEO2
+	JMP2r
+
+@prg/on-screen ( -> )
+	[ LIT2 &to $2 ] [ LIT2 &from $2 ]
+	( | find next )
+	&lo LDAk ?{ #0004 ADD2 !&lo }
+	( | reached end )
+	GTH2k ?{
+		POP2 POP2 font/<draw-cursor>
+		#0000 .Screen/vector DEO2
+		BRK }
+	DUP2 /<draw-line>
+	#0004 ADD2 ,&from STR2
+	POP2 BRK
 
 (
 @|Math )
@@ -368,11 +381,12 @@
 	( | body )
 	( x ) walk-expr
 	( > ) ORAk #00 EQU ?{
-		DUP2 .Screen/x DEO2
+		DUP2 #03ff AND2 .Screen/x DEO2
 		DUP2 ;font/anchor STA2 }
 	POP2
 	( y ) walk-expr
-	( > ) ORAk #00 EQU ?{ DUP2 .Screen/y DEO2 }
+	( > ) ORAk #00 EQU ?{
+		DUP2 #03ff AND2 .Screen/y DEO2 }
 	POP2 POP2 font/<draw-cursor> !prg/next-instr
 
 @mode =dict/mode =dict/help-mode
@@ -381,15 +395,15 @@
 
 @sprite =dict/sprite =dict/help-sprite
 	( | body )
-	walk-expr icn/<push>
-	walk-expr icn/<push>
-	walk-expr icn/<push>
-	walk-expr icn/<push>
+	walk-expr pict/<push>
+	walk-expr pict/<push>
+	walk-expr pict/<push>
+	walk-expr pict/<push>
 	POP2 !prg/next-instr
 
 @pict =dict/pict =dict/help-pict
 	( | body )
-	walk-blank icn/<draw-file> !prg/next-instr
+	walk-blank /<draw-file> !prg/next-instr
 
 @help =dict/help =meta/body
 	( | body )
@@ -429,7 +443,6 @@
 		INC2 !&>w
 
 @dict/<push-str> ( str* -- )
-	( | TODO: Find and alloc )
 	LDAk ?{
 		( String is empty ) POP2 JMP2r }
 	&>w
@@ -612,18 +625,21 @@
 (
 @|Icon )
 
-@icn/<draw-file> ( src* -- )
+@pict/<draw-file> ( src* -- )
 	DUP2 file/exists ?{
 		( ! ) ;dict/file !font/<draw-error> }
 	DUP2 .File/name DEO2
-	#0008 .File/length DEO2
+	( | depth )
+	DUP2 /read-depth .File/length DEO2
+	;font/color LDA .Screen/sprite ORA2 STH2
+	( | size )
 	/read-size ,&height STR
 	,&width STR
 	.Screen/x DEI2 ,&anchor STR2
 	;&mem .Screen/addr DEO2
 	( | draw )
 	[ LIT2 01 -Screen/auto ] DEO
-	[ LIT2 &height $1 00 ] [ LIT2r =font/color ] LDAr [ LITr -Screen/sprite ]
+	[ LIT2 &height $1 00 ]
 	&>v
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
 		[ LIT2 &width $1 00 ]
@@ -635,7 +651,7 @@
 		INC GTHk ?&>v
 	POP2 POP2r JMP2r
 
-@icn/<push> ( short* -- )
+@pict/<push> ( short* -- )
 	[ LIT2 &ptr =&mem ] INC2k INC2 STH2k ,&ptr STR2
 	STA2
 	STH2r ;&cap NEQ2 ?{
@@ -644,12 +660,19 @@
 		;font/color LDA .Screen/sprite DEO }
 	JMP2r
 
-@icn/read-size ( str* -- w h )
+@pict/read-size ( str* -- w h )
 	str/cap #000a SUB2 LDA2k /read-byte STH
 	#0003 ADD2 LDA2 /read-byte STHr SWP JMP2r
 
-@icn/read-byte ( a b -- byte )
+@pict/read-byte ( a b -- byte )
 	chr/hex SWP chr/hex #40 SFT ORA JMP2r
+
+@pict/read-depth ( str* -- length* mask* )
+	str/cap #0004 SUB2 LDA2 [ LIT2 "ch ] EQU2 ?&2bit
+	#0000 #0008 JMP2r
+
+	&2bit ( str* -- length* mask* )
+	#8000 #0010 JMP2r
 
 (
 @|Draw )
@@ -883,8 +906,9 @@
 @file/exists ( -- t )
 	.File/name DEO2
 	#0001 .File/length DEO2
-	;&b .File/stat DEO2
-	[ LIT &b $1 ] chr/hex INC JMP2r
+	;&b .File/read DEO2
+	.File/success-lb DEI JMP2r
+	[ LIT &b $1 ]
 
 (
 @|Utils )
@@ -911,7 +935,6 @@
 
 @str/<eval> ( str* -- )
 	cmds/find ORAk ?{
-		( | TODO: weird? this should be POP2 )
 		NIP2
 		( ! ) ;dict/command !font/<draw-error> }
 	JMP2
@@ -1078,7 +1101,7 @@
 
 @gosub/mem $40 &cap $2
 
-@icn/mem $8 &cap
+@pict/mem $10 &cap
 
 @prg/mem $4000 &cap
 
