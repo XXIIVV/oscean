@@ -38,7 +38,7 @@
 	( name ) "Turye 0a
 	( details ) "A 20 "Font 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "Mar 20 "19, 20 "2025 00
+	( date ) "27 20 "Aug 20 "2025 00
 	( data ) 02
 	( icon ) 83 =appicon
 	( mani ) 0a =manifest/dat
@@ -103,7 +103,7 @@
 
 @src/<inject> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
-	&>w ( -- )
+	&>w
 		LDAk /<push>
 		INC2 LDAk #1f GTH ?&>w
 	POP2 JMP2r
@@ -150,20 +150,20 @@
 @glyph/<drag-u> ( -- )
 	glyph/get-addr STH2
 	#2000
-	&ldu ( -- )
-	( load ) #00 OVR STH2kr ADD2 INC2k LDA
-	( save ) ROT ROT STA
-	INC GTHk ?&ldu
+	&>ldu
+		#00 OVR STH2kr ADD2 INC2k LDA
+		( save ) ROT ROT STA
+		INC GTHk ?&>ldu
 	POP2
 	( cap ) #00 STH2r #001f ADD2 STA !<redraw>
 
 @glyph/<drag-d> ( -- )
 	glyph/get-addr STH2
 	#2000
-	&ldd ( -- )
-	( load ) #00 OVR #1f SWP SUB STH2kr ADD2 LDAk
-	( save ) ROT ROT INC2 STA
-	INC GTHk ?&ldd
+	&>ldd
+		( load ) #00 OVR #1f SWP SUB STH2kr ADD2 LDAk
+		( save ) ROT ROT INC2 STA
+		INC GTHk ?&>ldd
 	POP2 #00 STH2r STA !<redraw>
 
 @glyph/<drag-l> ( -- )
@@ -175,7 +175,7 @@
 	,&dir STR
 	glyph/get-addr STH2
 	#1000
-	&>ls ( -- )
+	&>ls
 		#00 OVR STH2kr ADD2
 		( left* right* ) DUP2 #0010 ADD2
 		( load ) LDAk STH
@@ -241,7 +241,7 @@
 	( | table )
 	[ LIT2 15 -Screen/auto ] DEO
 	#00
-	&>l ( -- )
+	&>l
 		( | glyph )
 		#00 OVR
 		( x ) DUP2 #0f AND #50 SFT2 #000c ADD2 .Screen/x DEO2
@@ -258,14 +258,17 @@
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
 	( | handlers )
-	#0001 NEQ2 ?{
-		( mouse ) .Mouse/x DEI2 #0008 SUB2
-		( glyph ) #00 glyph/get-width #30 SFT2 GTH2 ?{
-			( ) ;&on-mouse-paint .Mouse/vector DEO2
-			BRK }
-		.Mouse/x DEI2 ,&anchor STR2
-		;&on-mouse-scale .Mouse/vector DEO2
+	#0001 EQU2 ?&down
+	BRK
+
+	&down ( -> )
+	( mouse ) .Mouse/x DEI2 #0008 SUB2
+	( glyph ) #00 glyph/get-width #30 SFT2 GTH2 ?{
+		( ) ;&on-mouse-paint .Mouse/vector DEO2
+		/<paint-at-mouse>
 		BRK }
+	.Mouse/x DEI2 ,&anchor STR2
+	;&on-mouse-scale .Mouse/vector DEO2
 	BRK
 
 @editor/on-mouse-scale ( -> )
@@ -276,6 +279,14 @@
 	SUB2 abs2 STHr /<drag-width>
 	BRK
 
+@editor/on-mouse-paint ( -> )
+	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
+		BRK }
+	cursor/<update-trap>
+	.Mouse/state DEI ?{ BRK }
+	/<paint-at-mouse>
+	BRK
+
 @editor/<drag-width> ( abs* dir -- )
 	?{
 		( right ) #0008 GTH2 ?{ JMP2r }
@@ -283,24 +294,16 @@
 	( right ) #0008 GTH2 ?{ JMP2r }
 	.Mouse/x DEI2 ,&anchor STR2 !glyph/<incr-width>
 
-@abs2 ( a* -- b* )
-	DUP2k #1f SFT2 MUL2 SUB2 JMP2r
-
-@editor/on-mouse-paint ( -> )
-	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
-		BRK }
-	cursor/<update-trap>
-	.Mouse/state DEI ?{ BRK }
+@editor/<paint-at-mouse> ( -- )
 	( a ) glyph/get-addr
 	( x ) .Mouse/y DEI2 #001c SUB2 #43 SFT2 NIP
-	( y ) .Mouse/x DEI2 #0008 SUB2 #03 SFT2 NIP ORA <toggle-pixel>
-	BRK
+	( y ) .Mouse/x DEI2 #0008 SUB2 #03 SFT2 NIP ORA !<toggle-pixel>
 
 @editor/<draw> ( -- )
 	#0008 .Screen/x DEO2
 	#001c .Screen/y DEO2
 	#0b00
-	&>ld ( -- )
+	&>ld
 		DUP .glyph/sel LDZ ADD /<draw-glyph>
 		INC GTHk ?&>ld
 	POP2
@@ -317,7 +320,7 @@
 	#00 OVR #50 SFT2 ;data/glyphs ADD2 ,&addr STR2
 	DUP /get-color ,&color STR
 	#0000
-	&>l ( -- )
+	&>l
 		#00 OVR #0f AND #30 SFT2 [ LIT2 &x $2 ] ADD2 .Screen/x DEO2
 		#00 OVR #34 SFT2 [ LIT2 &y $2 ] ADD2 .Screen/y DEO2
 		STHk [ LIT2 &addr $2 ] STHr get-pixel #00 SWP #30 SFT ;pixel-icn ADD2 .Screen/addr DEO2
@@ -336,13 +339,13 @@
 @frame/<draw> ( -- )
 	( | hor )
 	#1001
-	&>llv ( -- )
+	&>llv
 		DUP ;line-ver-icn/dotted /<draw-line-ver>
 		INC GTHk ?&>llv
 	POP2
 	( | ver )
 	#1001
-	&>llh ( -- )
+	&>llh
 		DUP ;line-hor-icn/dotted /<draw-line-hor>
 		INC GTHk ?&>llh
 	POP2
@@ -383,7 +386,7 @@
 	.Screen/height DEI2 #0014 SUB2 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	;&mem
-	&>wd ( -- )
+	&>wd
 		LDAk #00 SWP DUP2
 		( addr ) #50 SFT2 ;data/glyphs ADD2 .Screen/addr DEO2
 		( move ) ;data/widths ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
@@ -405,7 +408,7 @@
 
 @data/get-str-width ( addr* -- width* )
 	[ LIT2r 0000 ]
-	&>ww ( -- )
+	&>ww
 		LDAk #00 SWP ;data/widths ADD2 LDA [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>ww
 	POP2 STH2r JMP2r
@@ -495,6 +498,9 @@
 	#0008 .Screen/x DEO2
 	#0023 [ LIT2 00 -&height ] LDZ #30 SFT2 ADD2 .Screen/y DEO2
 	#0fc0 ;line-hor-icn/dotted #01 !<draw-times>
+
+@abs2 ( a* -- b* )
+	DUP2k #1f SFT2 MUL2 SUB2 JMP2r
 
 (
 @|assets )
@@ -895,14 +901,6 @@
 	;&mmu .System/expansion DEO2
 	JMP2r
 	&mmu 00 &length $2 0000 &addr $2 00
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
 
 
 
