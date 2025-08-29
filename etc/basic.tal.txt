@@ -324,7 +324,8 @@
 
 	&<print-segment> ( str* -- str* )
 	LDAk LIT "; NEQ ?{
-		INC2 [ LIT2 00 _&lb ] STR !font/<draw-cursor> }
+		INC2 [ LIT2 00 _&lb ] STR
+		JMP2r }
 	LDAk [ LIT "" ] NEQ ?{ INC2 !font/<draw-quote> }
 	LDAk [ LIT "# ] NEQ ?{ INC2 walk-expr NIP !font/<draw-char> }
 	LDAk chr/isxp ?{ walk-expr !font/<draw-sdec> }
@@ -386,7 +387,7 @@
 	( y ) walk-expr
 	( > ) ORAk #00 EQU ?{
 		DUP2 #03ff AND2 .Screen/y DEO2 }
-	POP2 POP2 font/<draw-cursor> !prg/next-instr
+	POP2 POP2 !prg/next-instr
 
 @mode =dict/mode =dict/help-mode
 	( | body )
@@ -442,8 +443,7 @@
 		INC2 !&>w
 
 @dict/<push-str> ( str* -- )
-	LDAk ?{
-		( String is empty ) POP2 JMP2r }
+	LDAk ?{ POP2 JMP2r }
 	&>w
 		LDAk DUP #1f GTH ?{ POP POP2 #00 !/<push> }
 		/<push>
@@ -584,6 +584,7 @@
 @bind/<interrupt> ( addr* -- )
 	#0004 ADD2 .&addr STZ2
 	;&on-mouse .Mouse/vector DEO2
+	;&on-console .Console/vector DEO2
 	;&on-control .Controller/vector DEO2
 	JMP2r
 
@@ -591,13 +592,17 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
+	;src/on-console .Console/vector DEO2
 	.&addr LDZ2 #0000 .&addr STZ2
 	/<clean> !prg/<eval>
 
+@bind/on-console ( -> )
+	[ LIT2 00 -Console/read ] DEI /assoc ?{ /<resume> }
+	BRK
+
 @bind/on-mouse ( -> )
 	cursor/<update>
-	[ LIT &last $1 ] .Mouse/state DEI DUP ,&last STR
-	#0001 EQU2 ?{ BRK }
+	.Mouse/state DEI ?{ BRK }
 	( | x )
 	.Mouse/x DEI2 /assoc ?{ cursor/<clear>
 		/<resume>
@@ -617,8 +622,8 @@
 	BRK
 
 @bind/on-button ( button -> )
-	#00 SWP .bind/addr LDZ ?{ POP2 BRK }
-	bind/assoc ?{ bind/<resume> }
+	#00 SWP .&addr LDZ ?{ POP2 BRK }
+	/assoc ?{ /<resume> }
 	BRK
 
 (
@@ -1100,7 +1105,7 @@
 
 @gosub/mem $40 &cap $2
 
-@pict/mem $10 &cap
+@pict/mem $8 &cap $8
 
 @prg/mem $4000 &cap
 
