@@ -7,6 +7,7 @@
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &chord $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|ff00 @halt
 
 |000
 
@@ -42,7 +43,8 @@
 
 	&soft ( -> )
 	prg/<clear>
-	;src/buf load/do BRK
+	;src/buf file/<load>
+	BRK
 
 @meta 00
 	&body ( name )
@@ -70,7 +72,7 @@
 		POP2 POP2 POP2r #0000 JMP2r }
 	POP2r NIP2 LDA2 #0004 ADD2 JMP2r
 
-@cmds/<print> ( -- )
+@cmds/<draw-all> ( -- )
 	.Screen/x DEI2 ;&lut-nohelp ;&lut [ LIT2r 0000 ]
 	&>lp
 		STHkr #03 AND ?{ font/<draw-break> }
@@ -83,8 +85,10 @@
 	;dict/manual font/<draw-str>
 	font/<draw-lb> !font/<draw-cursor>
 
-@cmds/<print-help> ( cmd* -- )
-	#0002 SUB2 LDA2 font/<draw-str>
+@cmds/<draw> ( str* -- )
+	LDAk ?{ POP2 !cmds/<draw-all> }
+	cmds/find ORAk ?{ ;dict/command !font/<draw-error> }
+	( draw one ) NIP2 #0002 SUB2 LDA2 font/<draw-str>
 	font/<draw-lb> !font/<draw-cursor>
 
 @walk-text ( str* -- str* )
@@ -177,7 +181,9 @@
 		( body* fn* ) OVR2 LDA2 JSR2 &continue GTH2k ?&>l
 	POP2 POP2 POP2r JMP2r
 
-@prg/<save> ( -- )
+@prg/<save> ( name* -- )
+	.File/name DEO2
+	#0001 .File/length DEO2
 	;&cap ;&mem
 	&>ls
 		LDA2k #0000 EQU2 ?{
@@ -271,16 +277,13 @@
 
 @rem =dict/rem =dict/help-rem
 	( | body )
-	( no params ) POP2 !prg/next-instr
+	POP2 !prg/next-instr
 
 @let =dict/let =dict/help-let
 	( | body )
 	&>w
 		walk-blank LDAk ?{ POP2 !prg/next-instr }
-		LDAk ,&var STR
-		INC2 walk-blank LDAk [ LIT ": ] EQU ?{
-			( ! ) ;dict/variable font/<draw-error> !prg/next-instr }
-		INC2 walk-expr [ LIT &var $1 ] variables/<set> !&>w
+		variables/assign !&>w
 
 @if =dict/if =dict/help-if
 	( | body )
@@ -289,25 +292,19 @@
 
 @goto =dict/goto =dict/help-goto
 	( | body )
-	walk-expr DUP2 prg/get-line LDA2 ORA ?{
-		POP2 NIP2 #f000
-		( ! ) SWP2 ;dict/line !font/<draw-error> }
-	NIP2 NIP2 !prg/get-line
+	NIP2 walk-expr NIP2 !prg/get-line
 
 @end =dict/end =dict/help-end
 	( | body )
-	POP2
-	( replace addr* ) POP2 #fff0 JMP2r
+	POP2 POP2 ;halt JMP2r
 
 (
 @|LibSubroutines )
 
 @gosub =dict/gosub =dict/help-gosub
 	( | body )
-	walk-expr DUP2 prg/get-line LDA2 ORA ?{
-		POP2 NIP2 #f000
-		( ! ) SWP2 ;dict/line !font/<draw-error> }
-	NIP2 SWP2 #0004 ADD2 gosub/<push> !prg/get-line
+	SWP2 #0004 ADD2 gosub/<push>
+	walk-expr NIP2 !prg/get-line
 
 @return =dict/return =dict/help-return
 	( | body )
@@ -335,33 +332,20 @@
 
 @input =dict/input =dict/help-input
 	( | body )
-	variables/<capture>
+	&>w
+		walk-blank LDAk chr/islc ?{ LDAk bind/<push> }
+		INC2 LDAk ?&>w
+	POP2
 	( replace addr* ) bind/<interrupt>
-	#fff0 JMP2r
+	;halt JMP2r
 
 @load =dict/load =dict/help-load
-	&do ( str* -- )
-	walk-blank src/<set>
-	;src/buf file/exists ?{
-		( ! ) ;src/buf ;dict/file !font/<draw-error> }
-	prg/<clear>
-	dict/<clear>
-	input/<clear>
-	;src/buf .File/name DEO2
-	#0001 .File/length DEO2
-	[ LIT2r =&b LITr -File/read ] .File/success-lb
-	&>s
-		DEO2kr
-		DEIk ?{
-			POPr POP2r POP prg/<draw-free>
-			font/<draw-ready> !prg/next-instr }
-		[ LIT &b $1 ] input/<listen> !&>s
+	( | body )
+	file/<load> !prg/next-instr
 
 @save =dict/save =dict/help-save
 	( | body )
-	walk-blank .File/name DEO2
-	#0001 .File/length DEO2
-	prg/<save> !prg/next-instr
+	walk-blank prg/<save> !prg/next-instr
 
 @color =dict/color =dict/help-color
 	( | body )
@@ -399,13 +383,11 @@
 
 @help =dict/help =meta/body
 	( | body )
-	walk-blank LDAk ?{ POP2 cmds/<print> !prg/next-instr }
-	cmds/find ORAk ?{ ;dict/command font/<draw-error> !prg/next-instr }
-	NIP2 cmds/<print-help> !prg/next-instr
+	walk-blank cmds/<draw> !prg/next-instr
 
 @poke =dict/poke =dict/help-poke
 	( | body )
-	walk-expr #00ff AND2 #30 SFT2 ;font/sprites ADD2 STH2
+	walk-expr #007f AND2 #30 SFT2 ;font/sprites ADD2 STH2
 	&>w
 		walk-blank LDAk ?{ POP2 POP2r !prg/next-instr }
 		walk-expr STH2kr INC2r INC2r STA2 !&>w
@@ -414,7 +396,8 @@
 @|Buffers )
 
 @src/on-console ( -> )
-	[ LIT2 0a -Console/read ] DEI NEQk ?{ POP2 ;&buf load/do BRK }
+	[ LIT2 0a -Console/read ] DEI NEQk ?{ POP2 ;&buf file/<load>
+		BRK }
 	/<push>
 	POP BRK
 
@@ -464,7 +447,7 @@
 @gosub/pop ( -- line* )
 	,&ptr LDR2
 	( UF ) DUP2 ;&mem NEQ2 ?{
-		POP2 #f000
+		POP2 ;halt
 		( ! ) ;dict/underflow ;dict/gosub !font/<draw-error> }
 	#0002 SUB2 DUP2 ,&ptr STR2
 	LDA2 JMP2r
@@ -544,11 +527,13 @@
 	DUP LIT "R NEQ ?{ POP !random/generate }
 	[ LIT "A ] SUB DUP ADD .&buf ADD LDZ2 JMP2r
 
-@variables/<capture> ( str* -- )
-	&>w
-		walk-blank LDAk chr/isuc #00 EQU ?{ LDAk bind/<push> }
-		INC2 LDAk ?&>w
-	POP2 JMP2r
+@variables/assign ( str* -- str* )
+	LDAk ,&v STR
+	INC2 walk-blank LDAk [ LIT ": ] NEQ ?&assign-error
+	INC2 walk-expr [ LIT &v $1 ] !/<set>
+
+	&assign-error ( str* -- str* )
+	( ! ) DUP2 ;dict/variable !font/<draw-error>
 
 @bind/<clean> ( -- )
 	.&buf DUP ,&ptr STR
@@ -852,14 +837,38 @@
 
 	&path ".theme $1
 
-@snarf/<paste> ;&path .File/name DEO2
-	#0001 .File/length DEO2
-	&>s
-		;&b .File/read DEO2
-		.File/success-lb DEI ?{ JMP2r }
-		[ LIT &b $1 ] input/<listen> !&>s
+@snarf/<paste> ;&path !file/<inject>
 
 	&path ".snarf $1
+
+@file/<save-byte> ( byte -- )
+	,&b STR
+	;&b .File/write DEO2
+	JMP2r
+
+@file/<inject> ( str* -- )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	;&b .File/read
+	&>s
+		DEO2k .File/success-lb DEI ?{ POP POP2 JMP2r }
+		[ LIT &b $1 ] input/<listen> !&>s
+
+@file/exists ( -- t )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI JMP2r
+
+@file/<load> ( str* -- )
+	walk-blank src/<set>
+	;src/buf /exists ?{
+		( ! ) ;src/buf ;dict/file !font/<draw-error> }
+	prg/<clear>
+	dict/<clear>
+	input/<clear>
+	;src/buf /<inject>
+	prg/<draw-free> !font/<draw-ready>
 
 @file/<save-line> ( line* id* -- )
 	/<save-dec>
@@ -885,18 +894,6 @@
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
-@file/<save-byte> ( byte -- )
-	,&b STR
-	;&b .File/write DEO2
-	JMP2r
-
-@file/exists ( -- t )
-	.File/name DEO2
-	#0001 .File/length DEO2
-	;&b .File/read DEO2
-	.File/success-lb DEI JMP2r
-	[ LIT &b $1 ]
-
 (
 @|Utils )
 
@@ -907,6 +904,9 @@
 
 @chr/isuc ( c -- f )
 	[ LIT "A ] SUB #1a LTH JMP2r
+
+@chr/islc ( c -- f )
+	[ LIT "A ] SUB #19 GTH JMP2r
 
 @chr/isdc ( c -- f )
 	[ LIT "0 ] SUB #0a LTH JMP2r
