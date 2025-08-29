@@ -49,7 +49,7 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Aug 20 "2025 $2
+	( date ) "28 20 "Aug 20 "2025 $2
 
 @on-control ( -> )
 	.Controller/button DEI2
@@ -393,23 +393,15 @@
 	( | body )
 	walk-expr NIP2 NIP ;font/color STA !prg/next-instr
 
-@sprite =dict/sprite =dict/help-sprite
-	( | body )
-	walk-expr pict/<push>
-	walk-expr pict/<push>
-	walk-expr pict/<push>
-	walk-expr pict/<push>
-	POP2 !prg/next-instr
-
 @pict =dict/pict =dict/help-pict
 	( | body )
 	walk-blank /<draw-file> !prg/next-instr
 
 @help =dict/help =meta/body
 	( | body )
-	walk-blank LDAk ?{ POP2 !cmds/<print> }
-	cmds/find ORAk ?{ NIP2 ;dict/command !font/<draw-error> }
-	NIP2 !cmds/<print-help>
+	walk-blank LDAk ?{ POP2 cmds/<print> !prg/next-instr }
+	cmds/find ORAk ?{ ;dict/command font/<draw-error> !prg/next-instr }
+	NIP2 cmds/<print-help> !prg/next-instr
 
 @poke =dict/poke =dict/help-poke
 	( | body )
@@ -654,15 +646,6 @@
 		POP2 font/<draw-lb>
 		INC GTHk ?&>v
 	POP2 POP2r JMP2r
-
-@pict/<push> ( short* -- )
-	[ LIT2 &ptr =&mem ] INC2k INC2 STH2k ,&ptr STR2
-	STA2
-	STH2r ;&cap NEQ2 ?{
-		;&mem DUP2 .Screen/addr DEO2
-		,&ptr STR2
-		;font/color LDA .Screen/sprite DEO }
-	JMP2r
 
 @pict/read-size ( str* -- w h )
 	str/cap #000a SUB2 LDA2k /read-byte STH
@@ -964,8 +947,8 @@
 	=let =if =goto =end
 	=gosub =return =print =input
 	=save =load =color =cls
-	=draw =mode =sprite =pict
-	&lut-nohelp =help =poke &lut-end ]
+	=draw =mode =poke =pict
+	&lut-nohelp =help &lut-end ]
 
 @math/lut [
 	"+ =&add "- =&sub
@@ -1013,9 +996,8 @@
 	&cls "CLS $1 &help-cls 7f "CLR 2020 "Clear 20 "screen. $1
 	&draw "DRAW $1 &help-draw 7f "DRAW 20 "32, 20 "48 2020 "Set 20 "drawing 20 "position. $1
 	&mode "MODE $1 &help-mode 7f "MODE 20 "2 2020 "Set 20 "drawing 20 "mode. $1
-	&sprite "SPRITE $1 &help-sprite 7f "SPRITE 20 "$1c1c, 20 "$087f, 20 "$0814, 20 "$2241 2020 "Paint 20 "8x8 20 "sprite. $1
 	&pict "PICT $1 &help-pict 7f "PICT 20 "image20x20.icn 2020 "Paint 20 "1-bit 20 "image. $1
-	&poke "POKE $1 &help-poke 7f "POKE 20 "$10, 20 "$1234, 20 "$4567, 20 ".. 2020 "Set 20 "data 20 "at 20 "$10. $1
+	&poke "POKE $1 &help-poke 7f "POKE 20 "$10, 20 "$1234, 20 "$4567, 20 ".. 2020 "Set 20 "data 20 "from 20 "$80. $1
 
 @fill-icn [ ffff ffff ffff ffff ]
 
@@ -1105,7 +1087,7 @@
 
 @gosub/mem $40 &cap $2
 
-@pict/mem $8 &cap $8
+@pict/mem $10
 
 @prg/mem $4000 &cap
 
