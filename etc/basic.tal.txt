@@ -70,7 +70,7 @@
 		LDA2k LDA2 STH2kr str/seg ?{
 			INC2 INC2 GTH2k ?&>lf
 		POP2 POP2 POP2r #0000 JMP2r }
-	POP2r NIP2 LDA2 #0004 ADD2 JMP2r
+	POP2r NIP2 LDA2 !prg/next-instr
 
 @cmds/<draw-all> ( -- )
 	.Screen/x DEI2 ;&lut-nohelp ;&lut [ LIT2r 0000 ]
@@ -150,22 +150,21 @@
 @prg/get-line ( id* -- line* )
 	#20 SFT2 ;&mem ADD2 JMP2r
 
-@prg/<store> ( str* -- )
+@prg/<compile> ( str* -- )
 	walk-number /get-line DUP2 ;&cap LTH2 ?{
 		POP2 POP2
 		( ! ) ;dict/overflow ;dict/line !font/<draw-error> }
 	STH2
-	walk-blank LDAk ?{
-		( | erase line )
-		POP2 #0000 STH2kr INC2r INC2r STA2
-		#0000 STH2r STA2
-		JMP2r }
+	( | erase line )
+	walk-blank LDAk ?{ POP2 STH2r #0004 !mem/<clear> }
 	( | insert line )
-	cmds/find STH2kr INC2r INC2r STA2
-	walk-blank LDAk ?{
-		( empty string ) #fffe STH2r STA2
-		POP2 JMP2r }
-	;dict/ptr LDA2 STH2r STA2 !dict/<push-str>
+	cmds/find ORAk ?{
+		POP2 POP2r
+		( ! ) ;dict/command !font/<draw-error> }
+	( | compile line )
+	( cmd* ) STH2kr INC2r INC2r STA2
+	( exp* ) walk-blank dict/push-str STH2r STA2
+	JMP2r
 
 @prg/next-instr ( addr* -- addr* )
 	#0004 ADD2 JMP2r
@@ -188,7 +187,7 @@
 	&>ls
 		LDA2k #0000 EQU2 ?{
 			DUP2 DUP2 ;&mem SUB2 #02 SFT2 file/<save-line> }
-		#0004 ADD2 GTH2k ?&>ls
+		/next-instr GTH2k ?&>ls
 	POP2 POP2 JMP2r
 
 @prg/<draw-line> ( line* -- )
@@ -213,9 +212,9 @@
 	&>lo
 		LDA2k #0000 EQU2 ?{
 			DUP2 /<draw-line>
-			#0004 ADD2 ,&from STR2
+			/next-instr ,&from STR2
 			POP2 BRK }
-		#0004 ADD2 GTH2k ?&>lo
+		/next-instr GTH2k ?&>lo
 	POP2 POP2 font/<draw-cursor>
 	#0000 .Screen/vector DEO2
 	BRK
@@ -303,7 +302,7 @@
 
 @gosub =dict/gosub =dict/help-gosub
 	( | body )
-	SWP2 #0004 ADD2 gosub/<push>
+	SWP2 prg/next-instr gosub/<push>
 	walk-expr NIP2 !prg/get-line
 
 @return =dict/return =dict/help-return
@@ -417,10 +416,13 @@
 		/<push>
 		INC2 !&>w
 
-@dict/<push-str> ( str* -- )
-	LDAk ?{ POP2 JMP2r }
+@dict/push-str ( str* -- ptr* )
+	LDAk ?{ POP2 #fffe JMP2r }
+	[ LIT2r =dict/ptr ] LDA2r
 	&>w
-		LDAk DUP #1f GTH ?{ POP POP2 #00 !/<push> }
+		LDAk DUP #1f GTH ?{
+			POP POP2 #00 /<push>
+			STH2r JMP2r }
 		/<push>
 		INC2 !&>w
 
@@ -476,7 +478,7 @@
 
 @input/<parse> ( -- )
 	.bind/addr LDZ ?/<bind>
-	;&buf LDAk #20 LTH ?{ LDAk chr/isdc ?prg/<store>
+	;&buf LDAk #20 LTH ?{ LDAk chr/isdc ?prg/<compile>
 		!str/<eval> }
 	POP2 JMP2r
 
@@ -515,29 +517,23 @@
 @variables/<clear> ( -- )
 	;&buf #0034 !mem/<clear>
 
-@variables/<set> ( value* uc -- )
-	[ LIT "A ] SUB
-	( ! ) DUP #1a LTH ?{
-		POP POP2
-		( ! ) ;dict/variable !font/<draw-error> }
-	DUP ADD .&buf ADD STZ2
-	JMP2r
-
 @variables/get ( uc -- value* )
 	DUP LIT "R NEQ ?{ POP !random/generate }
 	[ LIT "A ] SUB DUP ADD .&buf ADD LDZ2 JMP2r
 
 @variables/assign ( str* -- str* )
 	LDAk ,&v STR
-	INC2 walk-blank LDAk [ LIT ": ] NEQ ?&assign-error
-	INC2 walk-expr [ LIT &v $1 ] !/<set>
+	INC2 walk-blank LDAk [ LIT ": ] EQU ?{
+		( ! ) DUP2 ;dict/variable !font/<draw-error> }
+	INC2 walk-expr [ LIT &v $1 ]
+	( >> )
 
-	&assign-error ( str* -- str* )
-	( ! ) DUP2 ;dict/variable !font/<draw-error>
-
-@bind/<clean> ( -- )
-	.&buf DUP ,&ptr STR
-	,&queue STR
+@variables/<set> ( value* uc -- )
+	[ LIT "A ] SUB
+	( ! ) DUP #1a LTH ?{
+		POP POP2
+		( ! ) ;dict/variable !font/<draw-error> }
+	DUP ADD .&buf ADD STZ2
 	JMP2r
 
 @bind/<push> ( var -- )
@@ -559,7 +555,7 @@
 	( diff ) ,&ptr LDR ,&queue LDR SUB JMP2r
 
 @bind/<interrupt> ( addr* -- )
-	#0004 ADD2 .&addr STZ2
+	prg/next-instr .&addr STZ2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-console .Console/vector DEO2
 	;&on-control .Controller/vector DEO2
@@ -571,7 +567,8 @@
 	;on-control .Controller/vector DEO2
 	;src/on-console .Console/vector DEO2
 	.&addr LDZ2 #0000 .&addr STZ2
-	/<clean> !prg/<eval>
+	.&buf DUP ,&ptr STR
+	,&queue STR !prg/<eval>
 
 @bind/on-console ( -> )
 	[ LIT2 00 -Console/read ] DEI /assoc ?{ /<resume> }
@@ -841,11 +838,6 @@
 
 	&path ".snarf $1
 
-@file/<save-byte> ( byte -- )
-	,&b STR
-	;&b .File/write DEO2
-	JMP2r
-
 @file/<inject> ( str* -- )
 	.File/name DEO2
 	#0001 .File/length DEO2
@@ -872,11 +864,18 @@
 
 @file/<save-line> ( line* id* -- )
 	/<save-dec>
-	#20 /<save-byte>
+	;&ws .File/write DEO2
 	LDA2k #0004 SUB2 LDA2 /<save-str>
-	#20 /<save-byte>
+	;&ws .File/write DEO2
 	INC2 INC2 LDA2 /<save-str>
-	#0a !/<save-byte>
+	;&lb .File/write DEO2
+	JMP2r
+
+@file/<save-byte> ( byte -- )
+	,&b STR
+	;&b .File/write DEO2
+	JMP2r
+	&lb 0a &ws 20
 
 @file/<save-str> ( str* -- )
 	&>w
