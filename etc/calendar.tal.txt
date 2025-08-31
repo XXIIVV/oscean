@@ -44,7 +44,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "30 20 "Mar 20 "2025 $2
+	( date ) "31 20 "Aug 20 "2025 $2
 
 (
 @|vectors )
@@ -117,8 +117,7 @@
 	BRK
 
 @input/<inject> ( addr* -- )
-
-	&>w ( -- )
+	&>w
 		LDAk ?{ POP2 events/<erase> !/<draw> }
 		LDAk #0a NEQ ?{ POP2 events/<erase> !/<draw> }
 		LDAk /<push>
@@ -338,9 +337,8 @@
 
 @is-selected ( event* -- f )
 	.day LDZ .offset LDZ SUB INC ,&day STR
-	DUP2 wildcard-year ?{
-		DUP2 wildcard-month ?{
-			DUP2 #0008 ADD2 sdec [ LIT2 00 &day $1 ] NEQ2 ?{ POP2 #01 JMP2r } } }
+	DUP2 wildcard-month ?{
+		DUP2 #0008 ADD2 sdec [ LIT2 00 &day $1 ] NEQ2 ?{ POP2 #01 JMP2r } }
 	POP2 #00 JMP2r
 
 @select/<prev-day> ( -- )
@@ -419,10 +417,6 @@
 	.DateTime/month DEI EQU STH
 	.DateTime/year DEI2 EQU2 STHr AND }
 
-@wildcard-year ( str* -- f )
-	LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
-	sdec .year LDZ2 NEQ2 JMP2r
-
 @wildcard-month ( str* -- f )
 	#0005 ADD2 LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
 	sdec [ LIT2 00 -month ] LDZ INC NEQ2 JMP2r
@@ -430,7 +424,7 @@
 @events/<erase> ( -- )
 	;select/filepath .File/name DEO2
 	.&ptr LDZ2 ;&buf
-	&>ler ( -- )
+	&>ler
 		DUP2 is-selected ?{ DUP2 /<save-event> }
 		lcap GTH2k ?&>ler
 	POP2 POP2 !select/<reselect>
@@ -438,7 +432,7 @@
 @events/<copy> ( -- )
 	;select/filepath .File/name DEO2
 	.&ptr LDZ2 ;&buf
-	&>lco ( -- )
+	&>lco
 		DUP2 is-selected #00 EQU ?{
 			DUP2 #000b ADD2 ;dict/snarf-txt .File2/name DEO2
 			DUP2 lcap OVR2 SUB2 .File2/length DEO2
@@ -450,7 +444,7 @@
 @events/<cut> ( -- )
 	;select/filepath .File/name DEO2
 	.&ptr LDZ2 ;&buf
-	&>lcu ( -- )
+	&>lcu
 		DUP2 is-selected #00 EQU ?{
 			DUP2 #000b ADD2 ;dict/snarf-txt .File2/name DEO2
 			DUP2 lcap OVR2 SUB2 .File2/length DEO2
@@ -463,7 +457,7 @@
 	input/<start>
 	;dict/snarf-txt .File2/name DEO2
 	#0001 .File2/length DEO2
-	&>s ( -- )
+	&>s
 		;&c .File2/read DEO2
 		.File2/success-lb DEI ?{ !input/<done> }
 		[ LIT &c $1 ] input/<push> !&>s
@@ -489,7 +483,7 @@
 
 @events/find ( -- {event}* )
 	.&ptr LDZ2 ;&buf
-	&>lf ( -- )
+	&>lf
 		DUP2 is-selected #00 EQU ?{ NIP2 JMP2r }
 		lcap GTH2k ?&>lf
 	POP2 POP2 #ffff JMP2r
@@ -497,12 +491,11 @@
 @events/find-event ( day* -- {events}* )
 	STH2
 	.&ptr LDZ2 ;&buf EQU2k ?{
-		&>lfind ( -- )
+		&>lfind
 			LDAk ?{ POP2 POP2 JMP2r }
-			DUP2 wildcard-year ?{
-				DUP2 wildcard-month ?{
-					DUP2 #0008 ADD2 sdec STH2kr NEQ2 ?{
-						( found ) NIP2 POP2r JMP2r } } }
+			DUP2 wildcard-month ?{
+				DUP2 #0008 ADD2 sdec STH2kr NEQ2 ?{
+					( found ) NIP2 POP2r JMP2r } }
 			lcap GTH2k ?&>lfind }
 	POP2 POP2 POP2r #ffff JMP2r
 
@@ -514,7 +507,7 @@
 	#001a .Screen/y DEO2
 	#01 ;chicago/color STA
 	#0700
-	&>lw ( -- )
+	&>lw
 		#00 OVR #0050 MUL2 #0008 ADD2 .Screen/x DEO2
 		#00 OVR #20 SFT2 ;dict/dotw-txt ADD2 chicago/<draw-str>
 		INC GTHk ?&>lw
@@ -526,13 +519,13 @@
 	[ LIT2 0f -Screen/sprite ] DEO
 	( | hor )
 	#0701
-	&>llv ( -- )
+	&>llv
 		DUP ;line-ver-icn /<draw-line-ver>
 		INC GTHk ?&>llv
 	POP2
 	( | ver )
 	#0601
-	&>llh ( -- )
+	&>llh
 		DUP ;line-hor-icn /<draw-line-hor>
 		INC GTHk ?&>llh
 	POP2
@@ -566,7 +559,7 @@
 
 @chicago/get-word-width ( text* -- width* )
 	[ LITr 00 ]
-	&>ww ( -- )
+	&>ww
 		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
 		( > ) ADDr INC2 LDAk #20 GTH ?&>ww
 	POP2 #00 STHr JMP2r
@@ -576,7 +569,7 @@
 
 @chicago/<draw-str> ( str* -- )
 	[ LIT2 15 -Screen/auto ] DEO
-	&>ws ( -- )
+	&>ws
 		LDAk #1f GTH ?{ POP2 JMP2r }
 		LDAk /<draw-char>
 		INC2 !&>ws
@@ -593,11 +586,11 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	,&color STR
 	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
+	&>get
 		SWP2k DIV2k MUL2 SUB2 STH
 		POP OVR2 DIV2 ORAk ?&>get
 	POP2 POP2
-	&>put ( -- )
+	&>put
 		STHr INCk ?{ POP JMP2r }
 		[ LIT "0 ] ADD /<draw-char> !&>put
 
@@ -607,7 +600,7 @@
 	#003c ADD2 STH2
 	.Screen/y DEI2 #0010 ADD2 ,&boundary STR2
 	[ LIT2 15 -Screen/auto ] DEO
-	&>wl ( -- )
+	&>wl
 		LDAk #20 NEQ ?{
 			INC2k /get-word-width .Screen/x DEI2 ADD2 STH2kr LTH2 ?{
 				.Screen/y DEI2k #000d ADD2 ROT DEO2
@@ -671,7 +664,7 @@
 	.DateTime/day DEI .today STZ
 	.year LDZ2 .month LDZ is-current-month .is-month STZ
 	#2a00
-	&>ld ( -- )
+	&>ld
 		#00 OVR #07 DIVk MUL SUB #0050 MUL2 .anchor/x STZ2
 		#00 OVR #07 DIV ;CELLHEIGHT MUL2 .anchor/y STZ2
 		<draw-day>
@@ -698,11 +691,17 @@
 	( | today )
 	DUP .day LDZ EQU ?/type-selected
 	INCk .offset LDZ SUB .today LDZ EQU .is-month LDZ AND ?/type-today
-	#00 OVR .offset LDZ SUB INC events/find-event #ffff NEQ2 ?/type-event
+	#00 OVR .offset LDZ SUB INC events/find-event INC2k ORA ?/type-event
+	( event* ) POP2
+	( | default )
 	#05 !<draw-date>
 
-	&type-event ( day -- day )
-	#03 <draw-bg>
+	&type-event ( day event* -- day )
+	#0006 ADD2 LDA [ LIT "* ] EQU ?{
+		#03 <draw-bg>
+		#05 <draw-date>
+		#05 !<draw-event> }
+	#00 <draw-bg>
 	#05 <draw-date>
 	#05 !<draw-event>
 
@@ -740,7 +739,7 @@
 	.Screen/addr DEO2
 	SWP STH
 	[ LITr -Screen/sprite ]
-	&>l ( -- )
+	&>l
 		DEOkr
 		INC DUP ?&>l
 	POP POP2r JMP2r
@@ -750,7 +749,7 @@
 	,&addr STR2
 	SWP STH
 	[ LITr -Screen/sprite ]
-	&>l ( -- )
+	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
 		INC DUP ?&>l
@@ -784,31 +783,16 @@
 
 @sdec ( str* -- val* )
 	[ LIT2r 0000 ]
-	&w ( -- )
-	LDAk ?{ POP2 STH2r JMP2r }
-	( validate ) LDAk [ LIT "0 ] SUB #09 GTH ?&end
-	( accumulate ) [ LIT2r 000a ] MUL2r
-	( combine ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
-	ADD2r
-	( continue ) INC2 LDAk [ LIT "- ] NEQ ?&w &end POP2 STH2r JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
-
-@<print-line> ( str* -- )
-	LDAk ?{ POP2 JMP2r }
-	LDAk #0a NEQ ?{ POP2 JMP2r }
-	LDAk #18 DEO
-	INC2 !<print-line>
+	&>w
+		LDAk ?{ POP2 STH2r JMP2r }
+		( validate ) LDAk [ LIT "0 ] SUB #09 GTH ?&end
+		( accumulate ) [ LIT2r 000a ] MUL2r
+		( combine ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
+		ADD2r
+		( continue ) INC2 LDAk [ LIT "- ] NEQ ?&>w &end POP2 STH2r JMP2r
 
 @lcap ( str* -- cap* )
-	LDAk ?{ JMP2r }
-	&>w ( -- )
+	&>w
 		LDAk ?{ JMP2r }
 		LDAk #0a NEQ ?{ INC2 JMP2r }
 		INC2 !&>w

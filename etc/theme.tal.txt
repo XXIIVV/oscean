@@ -28,13 +28,14 @@
 	#00 color/<set-force>
 	( | unlock )
 	;on-mouse .Mouse/vector DEO2
+	;on-button .Controller/vector DEO2
 	BRK
 
 @meta 00
 	( name ) "Theme 0a
 	( details ) "A 20 "Theme 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Jul 20 "2025 $1 00
+	( date ) "31 20 "Aug 20 "2025 $1 00
 
 (
 @|Vector )
@@ -49,9 +50,17 @@
 		BRK }
 	( blue ) #0028 SUB2 DUP2 #000a GTH2 ?{ POP2 blue/<set>
 		BRK }
-	( color ) #0028 SUB2 DUP2 #000a GTH2 ?{ POP2 color/<set>
+	( color ) #0028 SUB2 DUP2 #000a GTH2 ?{ POP2 color/<set-pos>
 		BRK }
 	POP2 POP BRK
+
+@on-button ( -> )
+	.Controller/button DEI2
+	( ) DUP2 [ LIT2 00 "1 ] NEQ2 ?{ #00 color/<set> }
+	( ) DUP2 [ LIT2 00 "2 ] NEQ2 ?{ #01 color/<set> }
+	( ) DUP2 [ LIT2 00 "3 ] NEQ2 ?{ #02 color/<set> }
+	( ) DUP2 [ LIT2 00 "4 ] NEQ2 ?{ #03 color/<set> }
+	POP2 BRK
 
 (
 @|Colors )
@@ -135,8 +144,10 @@
 @color/<save> ( -- )
 	red/get green/get blue/get theme/<set> !theme/<save>
 
-@color/<set> ( x -- )
-	clamp #02 SFT [ LIT &value 00 ] NEQk ?{ POP2 JMP2r }
+@color/<set-pos> ( x -- )
+	clamp #02 SFT
+	&<set> ( x -- )
+	[ LIT &value 00 ] NEQk ?{ POP2 JMP2r }
 	POP
 	&<set-force> ( x -- )
 	,&value STR
@@ -256,14 +267,6 @@
 		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
 		( > ) ADDr INC2 LDAk ?&>ww
 	POP2 #00 STHr JMP2r
-
-@chicago/<draw-center-color> ( text* color -- )
-	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
-	( >> )
-
-@chicago/<draw-left-color> ( text* color -- )
-	,&color STR
-	( >> )
 
 @chicago/<draw-left> ( text* -- )
 	[ LIT2 15 -Screen/auto ] DEO
@@ -405,17 +408,6 @@
 	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
 
 	&path ".theme $1
-
-(
-@|helpers )
-
-@<phex> ( short* -- )
-	SWP /b
-	&b ( byte -- )
-	DUP #04 SFT /c
-	&c ( byte -- )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
 
 
 
