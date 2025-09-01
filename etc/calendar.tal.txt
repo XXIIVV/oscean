@@ -280,20 +280,20 @@
 	#09 ;chicago/color STA
 	.month LDZ .DateTime/month DEI EQU ?{
 		#00f8 .Screen/x DEO2
-		#20 chicago/<draw-char>
-		#20 chicago/<draw-char>
+		chicago/<draw-ws>
+		chicago/<draw-ws>
 		[ LIT2 00 -month ] LDZ #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-		#20 chicago/<draw-char>
+		chicago/<draw-ws>
 		.year LDZ2 #09 !chicago/<draw-dec> }
 	#00e8 .Screen/x DEO2
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
+	chicago/<draw-ws>
+	chicago/<draw-ws>
 	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
+	chicago/<draw-ws>
 	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
-	#20 chicago/<draw-char>
+	chicago/<draw-ws>
 	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
+	chicago/<draw-ws>
 	.DateTime/year DEI2 #09 !chicago/<draw-dec>
 
 (
@@ -574,6 +574,10 @@
 		LDAk /<draw-char>
 		INC2 !&>ws
 
+@chicago/<draw-ws> ( -- )
+	#20
+	( >> )
+
 @chicago/<draw-char> ( char -- )
 	#00 SWP #20 SUB DUP2
 	( addr ) #50 SFT2 ;&font ADD2 .Screen/addr DEO2
@@ -712,7 +716,7 @@
 
 	&type-selected ( day -- day )
 	#02 <draw-bg>
-	#05 <draw-date>
+	#05 <draw-arvelie>
 	#05 !<draw-event>
 
 @<draw-bg> ( day color -- )
@@ -726,6 +730,18 @@
 	.anchor/x LDZ2 #000b ADD2 .Screen/x DEO2
 	.anchor/y LDZ2 #0032 ADD2 .Screen/y DEO2
 	#00 OVR .offset LDZ SUB INC STHr !chicago/<draw-dec>
+
+@<draw-arvelie> ( day color -- day )
+	STH
+	.anchor/x LDZ2 #000b ADD2 .Screen/x DEO2
+	.anchor/y LDZ2 #0032 ADD2 .Screen/y DEO2
+	#00 OVR .offset LDZ SUB INC STHkr chicago/<draw-dec>
+	chicago/<draw-ws>
+	chicago/<draw-ws>
+	( doty ) #00 .day LDZ .offset LDZ SUB get-doty ADD2
+	( letter ) DUP2 #000e DIV2 NIP #11 ADD DUP #2a GTH #30 MUL SUB
+	( letter ) [ LIT "0 ] ADD chicago/<draw-char>
+	#000e DIV2k MUL2 SUB2 STHr !chicago/<draw-dec>
 
 @<draw-event> ( day color -- day )
 	STH
@@ -757,6 +773,13 @@
 
 (
 @|utils )
+
+@get-doty ( -- doty* )
+	[ LIT2r 0000 ] .month LDZ #00 NEQ2k ?{ POP2 STH2r JMP2r }
+	&>l
+		GTHk ?{ POP2 STH2r JMP2r }
+		#00 OVR .year LDZ2 diam #00 SWP STH2
+		ADD2r INC !&>l
 
 @dotw ( y* m d -- dotw )
 	( y -= m < 3; ) OVR STH
