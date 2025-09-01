@@ -17,7 +17,6 @@ function Emu (embed)
 	this.screen = new Screen(this)
 	this.datetime = new DateTime(this)
 	this.mouse = new Mouse(this)
-	this.file = new FileDvc(this)
 
 	if (typeof UxnWASM !== 'undefined') {
 		console.log("Using WebAssembly core")

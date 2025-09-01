@@ -35,9 +35,12 @@
 	random/<init>
 	<clear-screen>
 	font/<draw-welcome>
-	;src/on-console .Console/vector DEO2
+	;input/on-console .Console/vector DEO2
 	;on-control .Controller/vector DEO2
+	( | expect path )
 	.src/buf LDZ ?&soft
+	[ LIT2 00 -Console/type ] DEI EQU ?{
+		( override ) ;src/on-console .Console/vector DEO2 }
 	font/<draw-ready>
 	BRK
 
@@ -51,7 +54,7 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "29 20 "Aug 20 "2025 $2
+	( date ) "1 20 "Sep 20 "2025 $2
 
 @on-control ( -> )
 	.Controller/button DEI2
@@ -395,7 +398,9 @@
 @|Buffers )
 
 @src/on-console ( -> )
-	[ LIT2 0a -Console/read ] DEI NEQk ?{ POP2 ;&buf file/<load>
+	[ LIT2 0a -Console/read ] DEI NEQk ?{
+		POP2 ;&buf file/<load>
+		;input/on-console .Console/vector DEO2
 		BRK }
 	/<push>
 	POP BRK
@@ -453,6 +458,10 @@
 		( ! ) ;dict/underflow ;dict/gosub !font/<draw-error> }
 	#0002 SUB2 DUP2 ,&ptr STR2
 	LDA2 JMP2r
+
+@input/on-console ( -> )
+	.Console/read DEI /<listen>
+	BRK
 
 @input/<listen> ( char -- )
 	DUP #08 EQU ?&erase

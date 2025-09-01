@@ -6,12 +6,13 @@ function Controller(emu)
 
 	this.init = () => {
 		if(keyctrl){
-			window.addEventListener("keydown", emu.controller.on_button)
-			window.addEventListener("keyup", emu.controller.on_button)
+			window.addEventListener("keydown", this.on_button)
+			window.addEventListener("keyup", this.on_button)
 		}
 		else {
-			window.addEventListener("keydown", emu.controller.on_keybutton)
-			window.addEventListener("keyup", emu.controller.on_keybutton)
+			window.addEventListener("paste", this.on_paste)
+			window.addEventListener("keydown", this.on_keybutton)
+			window.addEventListener("keyup", this.on_keybutton)
 		}
 	}
 
@@ -44,7 +45,7 @@ function Controller(emu)
 		case 39: // Right
 			mask = 0x80; break;
 		}
-		if (event.type == "keydown") 
+		if (event.type == "keydown")
 			this.state |= mask;
 		else
 			this.state &= ~mask;
@@ -99,7 +100,14 @@ function Controller(emu)
 			emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
 		if(event.type == "keydown")
 			emu.uxn.dev[0x83] = 0;
-		if(document.activeElement != emu.console.input_el)
+		if(document.activeElement != emu.console.input_el && event.key != 'v' && event.key != 'c') {
 			event.preventDefault();
+		}
+	}
+
+	this.on_paste = (e) => {
+		const text = event.clipboardData.getData('text/plain');
+		for (let i = 0; i < text.length; i++)
+			emu.console.input(text.charAt(i).charCodeAt(0), 0)
 	}
 }
