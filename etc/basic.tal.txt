@@ -36,7 +36,7 @@
 	<clear-screen>
 	font/<draw-welcome>
 	;input/on-console .Console/vector DEO2
-	;on-control .Controller/vector DEO2
+	;input/on-control .Controller/vector DEO2
 	( | expect path )
 	.src/buf LDZ ?&soft
 	[ LIT2 00 -Console/type ] DEI EQU ?{
@@ -54,15 +54,7 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Sep 20 "2025 $2
-
-@on-control ( -> )
-	.Controller/button DEI2
-	( | Handlers )
-	DUP2 [ LIT2 01 "v ] NEQ2 ?{ POP2 snarf/<paste>
-		BRK }
-	input/<listen>
-	POP BRK
+	( date ) "2 20 "Sep 20 "2025 $2
 
 (
 @|Helpers )
@@ -278,7 +270,7 @@
 
 @clear =dict/clear =dict/help-clear
 	( | body )
-	( no params ) POP2 theme/<load> !prg/<clear>
+	POP2 POP2 ;halt theme/<load> !prg/<clear>
 
 (
 @|LibCore )
@@ -462,9 +454,28 @@
 	#0002 SUB2 DUP2 ,&ptr STR2
 	LDA2 JMP2r
 
+@input/on-control ( -> )
+	.Controller/button DEI2
+	( | Handlers )
+	DUP2 [ LIT2 01 "v ] NEQ2 ?{ POP2 snarf/<paste>
+		BRK }
+	DUP #7f NEQ ?{ POP2 /<clear>
+		font/<draw-break>
+		BRK }
+	/<listen>
+	( | Recall history )
+	#10 NEQ ?{ ;history/buf /<set> }
+	BRK
+
 @input/on-console ( -> )
 	.Console/read DEI /<listen>
 	BRK
+
+@input/<set> ( src* -- )
+	&>ws
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<listen>
+		INC2 !&>ws
 
 @input/<listen> ( char -- )
 	DUP #08 EQU ?&erase
@@ -490,8 +501,9 @@
 
 @input/<parse> ( -- )
 	.bind/addr LDZ ?/<bind>
-	;&buf LDAk #20 LTH ?{ LDAk chr/isdc ?prg/<compile>
-		!str/<eval> }
+	;&buf LDAk #20 LTH ?{
+		LDAk chr/isdc ?prg/<compile>
+		DUP2 history/<set> !str/<eval> }
 	POP2 JMP2r
 
 @input/<bind> ( -- )
@@ -525,6 +537,19 @@
 
 @input/<draw> ( char -- )
 	font/<draw-char> !font/<draw-cursor>
+
+@history/<set> ( str* -- )
+	;&buf ,&ptr STR2
+	&>w
+		LDAk DUP ?{ /<push>
+			POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@history/<push> ( byte -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
 
 @variables/<clear> ( -- )
 	;&buf #0034 !mem/<clear>
@@ -579,7 +604,7 @@
 @bind/<resume> ( -- )
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 .Mouse/vector DEO2
-	;on-control .Controller/vector DEO2
+	;input/on-control .Controller/vector DEO2
 	;src/on-console .Console/vector DEO2
 	.&addr LDZ2 #0000 .&addr STZ2
 	.&buf DUP ,&ptr STR
@@ -755,7 +780,7 @@
 
 @font/<draw-dec> ( short* -- )
 	[ LIT2 01 -Screen/auto ] DEO
-	#00 ,&z STR
+	[ LIT2 00 _&z ] STR
 	#2710 /<parse>
 	#03e8 /<parse>
 	#0064 /<parse>
@@ -765,7 +790,7 @@
 @font/<parse> ( a* b* -- )
 	DIV2k DUPk [ LIT &z $1 ] EQU ?{
 		DUP #30 ADD /<draw-char>
-		#ff ,&z STR }
+		[ LIT2 ff _&z ] STR }
 	POP MUL2 SUB2 JMP2r
 
 @font/<draw-lb> ( -- )
@@ -1095,6 +1120,8 @@
 @|Buffers )
 
 @gosub/mem $40 &cap $2
+
+@history/buf $40
 
 @pict/mem $10
 
