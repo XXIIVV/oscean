@@ -123,20 +123,23 @@
 	walk-blank LDAk [ LIT "$ ] EQU ?walk-hex
 	LDAk chr/isuc ?walk-var
 	LDAk chr/isdc ?walk-dec
-	#0000
+	( advance ) INC2 #0000
 	( ! ) OVR2 ;dict/number !font/<draw-error>
 
-@walk-var ( str* -- val* )
-	INC2k SWP2 LDA !variables/get
+@walk-var ( str* -- str* val* )
+	INC2k LDAk LIT ". NEQ ?{
+		INC2 walk-expr STH
+		POP SWP2 LDA STHr ADD !variables/get }
+	SWP2 LDA !variables/get
 
-@walk-dec ( str* -- val* )
+@walk-dec ( str* -- str* val* )
 	[ LIT2r 0000 ]
 	&>wn
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
 		ADD2r INC2 LDAk #30 SUB #0a LTH ?&>wn
 	STH2r JMP2r
 
-@walk-hex ( str* -- val* )
+@walk-hex ( str* -- str* val* )
 	( walk $ ) INC2 [ LIT2r 0000 ]
 	&>wh
 		LITr 40 SFT2r LITr 00 LDAk chr/hex STH
@@ -260,15 +263,18 @@
 @list =dict/list =dict/help-list
 	( | body )
 	walk-blank LDAk ?&single
-	POP2 prg/<draw> !font/<draw-cursor>
+	POP2 prg/<draw>
+	font/<draw-cursor> !prg/next-instr
 
 	&single ( str* -- )
 	walk-expr STH2
 	walk-blank LDAk ?&range
-	POP2 STH2r prg/get-line prg/<draw-line> !font/<draw-cursor>
+	POP2 STH2r prg/get-line prg/<draw-line>
+	font/<draw-cursor> !prg/next-instr
 
 	&range ( str* . from* -- )
-	walk-expr prg/get-line INC2 NIP2 STH2r prg/get-line prg/<draw-range> !font/<draw-cursor>
+	walk-expr prg/get-line INC2 NIP2 STH2r prg/get-line prg/<draw-range>
+	font/<draw-cursor> !prg/next-instr
 
 @clear =dict/clear =dict/help-clear
 	( | body )
@@ -327,10 +333,7 @@
 		JMP2r }
 	LDAk [ LIT "" ] NEQ ?{ INC2 !font/<draw-quote> }
 	LDAk [ LIT "# ] NEQ ?{ INC2 walk-expr NIP !font/<draw-char> }
-	LDAk chr/isxp ?{ walk-expr !font/<draw-sdec> }
-	LDAk #00 EQU ?{
-		( ! ) ;dict/print !font/<draw-error> }
-	JMP2r
+	walk-expr !font/<draw-sdec>
 
 @input =dict/input =dict/help-input
 	( | body )
@@ -528,20 +531,23 @@
 
 @variables/get ( uc -- value* )
 	DUP LIT "R NEQ ?{ POP !random/generate }
-	[ LIT "A ] SUB DUP ADD .&buf ADD LDZ2 JMP2r
+	[ LIT "A ] SUB
+	( outside ) DUP #1a LTH ?{ POP #0000 JMP2r }
+	DUP ADD .&buf ADD LDZ2 JMP2r
 
 @variables/assign ( str* -- str* )
 	LDAk ,&v STR
-	INC2 walk-blank LDAk [ LIT ": ] EQU ?{
+	INC2 LDAk [ LIT ". ] NEQ ?{
+		INC2 walk-expr ,&v LDR ADD ,&v STR
+		POP }
+	walk-blank LDAk [ LIT ": ] EQU ?{
 		( ! ) DUP2 ;dict/variable !font/<draw-error> }
 	INC2 walk-expr [ LIT &v $1 ]
 	( >> )
 
 @variables/<set> ( value* uc -- )
 	[ LIT "A ] SUB
-	( ! ) DUP #1a LTH ?{
-		POP POP2
-		( ! ) ;dict/variable !font/<draw-error> }
+	( outside ) DUP #1a LTH ?{ POP POP2 JMP2r }
 	DUP ADD .&buf ADD STZ2
 	JMP2r
 
@@ -904,11 +910,6 @@
 
 (
 @|Utils )
-
-@chr/isxp ( c -- f )
-	DUP chr/isuc ?{
-		DUP chr/isdc ?{ LIT "$ NEQ JMP2r } }
-	POP #00 JMP2r
 
 @chr/isuc ( c -- f )
 	[ LIT "A ] SUB #1a LTH JMP2r
