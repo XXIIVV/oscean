@@ -371,10 +371,7 @@
 
 @<write-link> ( name* -- )
 	;&a html/<str>
-	DUP2 [ LIT2 20 "_ ] str/<swap>
-	DUP2 html/<str>
-	DUP2 [ LIT2 "_ 20 ] str/<swap>
-	;dict/html-ext html/<str>
+	DUP2 path/set html/<str>
 	;ascii/quote .File2/write DEO2
 	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr html/<attribute> }
 	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr html/<attribute> }
@@ -459,6 +456,22 @@
 		INC2 !&>w
 
 	&res [ "site/ &buf $30 ]
+
+@path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;dict/html-ext
+	( >> )
+
+@path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ &buf $30 ]
 
 @srchtm-path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
