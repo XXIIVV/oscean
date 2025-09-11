@@ -32,8 +32,8 @@
 	DUP2 site-path-rel/set .File2/name DEO2
 	#0001 .File2/length DEO2
 	( cleanup ) #0000 #0100 mem/<clr>
-	DUP2 <load-diary>
-	DUP2 <load-incoming>
+	DUP2 diary/<load>
+	DUP2 incoming/<load>
 	( | verify orphans )
 	.File/success DEI2 ORA ?{ DUP2 ;err/orphan <print-warning> }
 	( | fill name )
@@ -45,8 +45,8 @@
 		;term/diary [ LIT2 09 00 ] str/<swap> }
 	POP2 JMP2r
 
-@<load-diary> ( name* -- )
-	tmplog-path/set .File/name DEO2
+@diary/<load> ( name* -- )
+	/set-path .File/name DEO2
 	#1000 .File/length DEO2
 	;diary/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
 	DUP2 .File/read DEO2
@@ -54,14 +54,38 @@
 	.File/success DEI2 ,&length STR2
 	JMP2r
 
-@<load-incoming> ( name* -- )
-	tmpmap-path/set .File/name DEO2
+@diary/set-path ( name* -- buf* )
+	;&resbuf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/log- &resbuf $30 ]
+
+@incoming/<load> ( name* -- )
+	/set-path .File/name DEO2
 	#1000 .File/length DEO2
-	;incoming/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
+	;&buf DUP2 [ LIT2 &length $2 ] mem/<clr>
 	DUP2 .File/read DEO2
 	#0a00 str/<swap>
 	.File/success DEI2 ,&length STR2
 	JMP2r
+
+@incoming/set-path ( name* -- buf* )
+	;&resbuf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/map- &resbuf $30 ]
 
 %log/get-rune ( log* -- log* rune ) {
 	DUP2 #0005 ADD2 LDA }
@@ -227,13 +251,13 @@
 	&>w
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
-			INC2k INC2 <load-diary>
+			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr
-	( restore diary ) DUP2 !<load-diary>
+	( restore diary ) DUP2 !diary/<load>
 
 @<build-module-archive> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
@@ -251,7 +275,7 @@
 	&>w
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
-			INC2k INC2 <load-diary>
+			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
@@ -311,18 +335,10 @@
 		LDAk #00 EQU ?{ #0001 SUB2 LDAk ?&>w }
 	JMP2r
 
-@next-tab ( addr* -- addr* )
-	&>w
-		LDAk #09 EQU ?{ INC2 LDAk ?&>w }
-	JMP2r
-
 @walk-seg ( str* -- next* )
 	&>w
 		INC2 LDAk #1f GTH ?&>w
 	INC2 JMP2r
-
-(
-@|tools )
 
 @diary/find ( -- diary* )
 	;&buf
@@ -395,7 +411,7 @@
 	BRK
 
 (
-@|paths )
+@|buffers )
 
 @diary-path-abs/get ( diary* -- path* )
 	#0006 ADD2
@@ -476,30 +492,6 @@
 
 	&res [ "src/htm/ &buf $30 ]
 
-@tmplog-path/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "tmp/log- &buf $30 ]
-
-@tmpmap-path/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "tmp/map- &buf $30 ]
-
 @substr/set ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&buf SWP2
@@ -523,10 +515,6 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
 		INC2 !&>wp
-
-@str/<cat> ( src* dst* -- )
-	str/scap-1
-	( >> )
 
 @str/<copy> ( src* dst* -- )
 	STH2
