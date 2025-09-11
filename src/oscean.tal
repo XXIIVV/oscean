@@ -66,6 +66,20 @@
 
 	&res [ "tmp/log- &resbuf $30 ]
 
+@diary/find ( -- diary* )
+	;&buf
+	&>wf
+		log/has-no-picture ?{ JMP2r }
+		str/cap LDAk ?&>wf
+	POP2 #ffff JMP2r
+
+@diary/count ( -- count* )
+	[ LIT2r 0000 ] ;diary/buf
+	&>wc
+		log/has-no-picture ?{ INC2r }
+		str/cap LDAk ?&>wc
+	POP2 STH2r JMP2r
+
 @incoming/<load> ( name* -- )
 	/set-path .File/name DEO2
 	#1000 .File/length DEO2
@@ -340,20 +354,6 @@
 		INC2 LDAk #1f GTH ?&>w
 	INC2 JMP2r
 
-@diary/find ( -- diary* )
-	;&buf
-	&>wf
-		log/has-no-picture ?{ JMP2r }
-		str/cap LDAk ?&>wf
-	POP2 #ffff JMP2r
-
-@diary/count ( -- count* )
-	[ LIT2r 0000 ] ;diary/buf
-	&>wc
-		log/has-no-picture ?{ INC2r }
-		str/cap LDAk ?&>wc
-	POP2 STH2r JMP2r
-
 @find-parent ( term* -- parent* )
 	DUP2 #0002 SUB2 LDA chr/hex ?{ JMP2r }
 	prev-nil INC2 LDAk chr/hex #01 SUB ,&depth STR
@@ -363,9 +363,6 @@
 			NIP2 INC2 INC2 INC2 JMP2r }
 		LTH2k ?&>l
 	#0002 JMP2r
-
-(
-@|framework )
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;dict/og-title <write-meta-og>
