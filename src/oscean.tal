@@ -93,50 +93,53 @@
 
 %html/<quoted> ( str* -- ) {
 	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
-	<write-str>
+	html/<str>
 	DEO2r }
 
 %html/<attribute> ( body* attr* -- ) {
 	;ascii/space .File2/write DEO2
-	<write-str>
+	html/<str>
 	;ascii/equal .File2/write DEO2
 	html/<quoted> }
 
 %html/<open> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
-	<write-str>
+	html/<str>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<open-class> ( class* tag* -- ) {
 	;ascii/lt .File2/write DEO2
-	<write-str>
+	html/<str>
 	;dict/class-attr html/<attribute>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<close> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
 	;ascii/slash .File2/write DEO2
-	<write-str>
+	html/<str>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<auto> ( str* tag* -- ) {
 	DUP2 html/<open>
-	SWP2 <write-str>
+	SWP2 html/<str>
 	html/<close> }
 
 %html/<img> ( src* alt* -- ) {
 	;ascii/lt .File2/write DEO2
-	;dict/img-tag <write-str>
+	;dict/img-tag html/<str>
 	;dict/alt-attr html/<attribute>
 	;dict/src-attr html/<attribute>
 	;ascii/gt .File2/write DEO2 }
+
+%html/<str> ( addr* -- ) {
+	DUP2 scap/ OVR2 SUB2 html/<length> }
 
 (
 @|Build )
 
 @<build-page> ( name* -- name* )
 	( | render )
-	;dict/doctype <write-str>
+	;dict/doctype html/<str>
 	;dict/html-tag html/<open>
 	( | head )
 	;dict/head-tag html/<open>
@@ -145,11 +148,11 @@
 	<write-opengraph>
 	( | head/title )
 	;dict/title-tag html/<open>
-	;dict/title-txt <write-str>
+	;dict/title-txt html/<str>
 	;ascii/space .File2/write DEO2
-	;dict/mdash-entity-txt <write-str>
+	;dict/mdash-entity-txt html/<str>
 	;ascii/space .File2/write DEO2
-	DUP2 <write-str>
+	DUP2 html/<str>
 	;dict/title-tag html/<close>
 	;dict/head-tag html/<close>
 	( | body )
@@ -295,9 +298,10 @@
 	( clip wrap ) ;dict/code-tag html/<auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
 	( event spacer ) ;ascii/space .File2/write DEO2
-	;dict/mdash-entity-txt <write-str>
+	;dict/mdash-entity-txt html/<str>
 	;ascii/space .File2/write DEO2
-	( event name ) DUP2 #000a ADD2 walk-seg !<write-str>
+	( event name ) DUP2 #000a ADD2 walk-seg html/<str>
+	JMP2r
 
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
@@ -312,9 +316,9 @@
 	;term/name OVR2 #000a ADD2 sseg ?{
 		DUP2 extract-term <write-link>
 		;ascii/space .File2/write DEO2
-		;dict/mdash-entity-txt <write-str>
+		;dict/mdash-entity-txt html/<str>
 		;ascii/space .File2/write DEO2 }
-	( + title ) STH2r <write-str>
+	( + title ) STH2r html/<str>
 	;dict/right-txt ;dict/span-tag html/<open-class>
 	( + date ) #0005 html/<length>
 	;dict/span-tag html/<close>
@@ -407,16 +411,16 @@
 	JMP2r
 
 @<write-link> ( name* -- )
-	;&a <write-str>
+	;&a html/<str>
 	DUP2 [ LIT2 20 "_ ] <cswp>
-	DUP2 <write-str>
+	DUP2 html/<str>
 	DUP2 [ LIT2 "_ 20 ] <cswp>
-	;dict/html-ext <write-str>
+	;dict/html-ext html/<str>
 	;ascii/quote .File2/write DEO2
 	DUP2 ;term/name scmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr html/<attribute> }
 	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr html/<attribute> }
 	;ascii/gt .File2/write DEO2
-	<write-str>
+	html/<str>
 	;dict/a-tag html/<close>
 	JMP2r
 
@@ -424,15 +428,11 @@
 
 @<write-meta-og> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
-	;dict/meta-tag <write-str>
+	;dict/meta-tag html/<str>
 	;dict/property-attr html/<attribute>
 	;dict/content-attr html/<attribute>
 	;ascii/slash .File2/write DEO2
 	;ascii/gt .File2/write DEO2
-	JMP2r
-
-@<write-str> ( addr* -- )
-	DUP2 scap/ OVR2 SUB2 html/<length>
 	JMP2r
 
 @prev-char ( addr* char -- addr* )
