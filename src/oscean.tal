@@ -84,19 +84,38 @@
 	DUP2 ;dict/no-picture log/has-picture }
 
 (
+@|Html )
+
+%html/<quoted> ( str* -- ) {
+	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
+	<write-str>
+	DEO2r }
+
+%html/<attribute> ( body* attr* -- ) {
+	;ascii/space .File2/write DEO2
+	<write-str>
+	;ascii/equal .File2/write DEO2
+	html/<quoted> }
+
+%html/<open> ( tag* -- ) {
+	;ascii/lt .File2/write DEO2
+	<write-str>
+	;ascii/gt .File2/write DEO2 }
+
+(
 @|Build )
 
 @<build-page> ( name* -- name* )
 	( | render )
 	;dict/doctype <write-str>
-	;dict/html-tag <write-open>
+	;dict/html-tag html/<open>
 	( | head )
-	;dict/head-tag <write-open>
+	;dict/head-tag html/<open>
 	( | head/meta )
 	;dict/meta-head-path <write-inc>
 	<write-opengraph>
 	( | head/title )
-	;dict/title-tag <write-open>
+	;dict/title-tag html/<open>
 	;dict/title-txt <write-str>
 	;ascii/space .File2/write DEO2
 	;dict/mdash-entity-txt <write-str>
@@ -105,7 +124,7 @@
 	;dict/title-tag <write-close>
 	;dict/head-tag <write-close>
 	( | body )
-	;dict/body-tag <write-open>
+	;dict/body-tag html/<open>
 	;dict/meta-header-path <write-inc>
 	<build-page-nav>
 	<build-page-main>
@@ -114,7 +133,7 @@
 	;dict/html-tag !<write-close>
 
 @<build-page-nav> ( name* -- name* )
-	;dict/nav-tag <write-open>
+	;dict/nav-tag html/<open>
 	DUP2 #0002 SUB2 LDA chex STHk #00 EQU ?{
 		STHkr #02 LTH ?{
 			DUP2 find-parent find-parent <build-children>
@@ -127,13 +146,13 @@
 	JMP2r
 
 @<build-children> ( name* -- name* )
-	;dict/ul-tag <write-open>
+	;dict/ul-tag html/<open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
 	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
-			;dict/li-tag <write-open>
+			;dict/li-tag html/<open>
 			INC2k INC2 <write-link>
 			;dict/li-tag <write-close> }
 		INC2 INC2 scap/ INC2 LDAk ?&>w
@@ -141,7 +160,7 @@
 	POP2 POPr ;dict/ul-tag !<write-close>
 
 @<build-page-main> ( name* -- name* )
-	;dict/main-tag <write-open>
+	;dict/main-tag html/<open>
 	( | picture )
 	;term/pict LDA #00 EQU ?{ ;term/diary <build-module-photo> }
 	( body ) <build-page-body>
@@ -166,11 +185,11 @@
 	JMP2r
 
 @<build-page-events> ( name* -- name* )
-	;dict/ul-tag <write-open>
+	;dict/ul-tag html/<open>
 	;diary/buf
 	&>w
 		log/get-rune [ LIT "+ ] NEQ ?{
-			;dict/li-tag <write-open>
+			;dict/li-tag html/<open>
 			DUP2 <build-module-event>
 			;dict/li-tag <write-close> }
 		scap/ INC2 LDAk ?&>w
@@ -248,14 +267,14 @@
 
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
-	;dict/figure-tag <write-open>
+	;dict/figure-tag html/<open>
 	( | copy number )
 	DUP2 #0006 ADD2
 	( > x00 ) LDAk ;&bufa STA
 	( > 0xx ) INC2 LDA2 ;&bufb STA2
 	;&diary-path
 	( + image ) OVR2 #000a ADD2 walk-seg STH2k <write-img>
-	;dict/figcaption-tag <write-open>
+	;dict/figcaption-tag html/<open>
 	;term/name OVR2 #000a ADD2 sseg ?{
 		DUP2 extract-term <write-link>
 		;ascii/space .File2/write DEO2
@@ -356,8 +375,8 @@
 @<write-img> ( src* alt* -- )
 	;ascii/lt .File2/write DEO2
 	;dict/img-tag <write-str>
-	;dict/alt-attr <write-attr>
-	;dict/src-attr <write-attr>
+	;dict/alt-attr html/<attribute>
+	;dict/src-attr html/<attribute>
 	;ascii/gt .File2/write DEO2
 	JMP2r
 
@@ -368,28 +387,19 @@
 	DUP2 [ LIT2 "_ 20 ] <cswp>
 	;dict/html-ext <write-str>
 	;ascii/quote .File2/write DEO2
-	DUP2 ;term/name scmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr <write-attr> }
-	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr <write-attr> }
+	DUP2 ;term/name scmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr html/<attribute> }
+	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr html/<attribute> }
 	;ascii/gt .File2/write DEO2
 	<write-str>
 	;dict/a-tag !<write-close>
 
 	&a "<a 20 "href=" $1
 
-@<write-attr> ( body* attr* -- )
-	;ascii/space .File2/write DEO2
-	<write-str>
-	;ascii/equal .File2/write DEO2
-	;ascii/quote .File2/write DEO2
-	<write-str>
-	;ascii/quote .File2/write DEO2
-	JMP2r
-
 @<write-meta-og> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
 	;dict/meta-tag <write-str>
-	;dict/property-attr <write-attr>
-	;dict/content-attr <write-attr>
+	;dict/property-attr html/<attribute>
+	;dict/content-attr html/<attribute>
 	;ascii/slash .File2/write DEO2
 	;ascii/gt .File2/write DEO2
 	JMP2r
@@ -397,18 +407,12 @@
 @<write-open-class> ( tag* class* -- )
 	;ascii/lt .File2/write DEO2
 	<write-str>
-	;dict/class-attr <write-attr>
-	;ascii/gt .File2/write DEO2
-	JMP2r
-
-@<write-open> ( tag* -- )
-	;ascii/lt .File2/write DEO2
-	<write-str>
+	;dict/class-attr html/<attribute>
 	;ascii/gt .File2/write DEO2
 	JMP2r
 
 @<write-auto> ( str* tag* -- )
-	DUP2 <write-open>
+	DUP2 html/<open>
 	SWP2 <write-str>
 	( >> )
 
