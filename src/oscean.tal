@@ -20,7 +20,7 @@
 	&>w
 		INC2 INC2 <init-page>
 		<build-page>
-		str/scap INC2 LDAk ?&>w
+		str/scap LDAk ?&>w
 	POP2
 	( Halt. ) #800f DEO
 	BRK
@@ -181,14 +181,14 @@
 @<build-children> ( name* -- name* )
 	;dict/ul-tag html/<open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) str/scap INC2
+	( start after ) str/scap
 	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
 			;dict/li-tag html/<open>
 			INC2k INC2 <write-link>
 			;dict/li-tag html/<close> }
-		INC2 INC2 str/scap INC2 LDAk ?&>w
+		INC2 INC2 str/scap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr ;dict/ul-tag html/<close>
 	JMP2r
@@ -243,7 +243,7 @@
 			;dict/li-tag html/<open>
 			DUP2 <build-module-event>
 			;dict/li-tag html/<close> }
-		str/scap INC2 LDAk ?&>w
+		str/scap LDAk ?&>w
 	POP2 ;dict/ul-tag html/<close>
 	JMP2r
 
@@ -258,7 +258,7 @@
 			DUP2 <write-link>
 			;ascii/space .File2/write DEO2
 			DUP2 ,&last STR2 }
-		str/scap INC2 LDAk ?&>w
+		str/scap LDAk ?&>w
 	POP2 ;dict/p-tag html/<close>
 	JMP2r
 
@@ -267,36 +267,36 @@
 	&>w
 		log/has-no-picture ?{
 			DUP2 ;term/pict log/has-picture ?{ DUP2 <build-module-photo> } }
-		str/scap INC2 LDAk ?&>w
+		str/scap LDAk ?&>w
 	POP2 JMP2r
 
 @<build-module-portal> ( -- )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) str/scap INC2
+	( start after ) str/scap
 	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
 			INC2k INC2 <load-diary>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
-		INC2 INC2 str/scap INC2 LDAk ?&>w
+		INC2 INC2 str/scap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr
 	( restore diary ) DUP2 !<load-diary>
 
 @<build-module-archive> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) str/scap INC2
+	( start after ) str/scap
 	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
-		INC2 INC2 str/scap INC2 LDAk ?&>w
+		INC2 INC2 str/scap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr JMP2r
 
 @<build-module-both> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) str/scap INC2
+	( start after ) str/scap
 	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
@@ -304,7 +304,7 @@
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
-		INC2 INC2 str/scap INC2 LDAk ?&>w
+		INC2 INC2 str/scap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr JMP2r
 
@@ -373,14 +373,14 @@
 	;&buf
 	&>wf
 		log/has-no-picture ?{ JMP2r }
-		str/scap INC2 LDAk ?&>wf
+		str/scap LDAk ?&>wf
 	POP2 #ffff JMP2r
 
 @diary/count ( -- count* )
 	[ LIT2r 0000 ] ;diary/buf
 	&>wc
 		log/has-no-picture ?{ INC2r }
-		str/scap INC2 LDAk ?&>wc
+		str/scap LDAk ?&>wc
 	POP2 STH2r JMP2r
 
 @find-parent ( term* -- parent* )
@@ -471,11 +471,11 @@
 
 @str/scap ( str* -- end* )
 	&>w
-		LDAk ?{ JMP2r }
+		LDAk ?{ INC2 JMP2r }
 		INC2 !&>w
 
 @scat ( src* dst* -- )
-	str/scap
+	str/scap-old
 	( >> )
 
 @<scpy> ( src* dst* -- )
