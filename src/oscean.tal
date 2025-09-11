@@ -276,7 +276,7 @@
 	( + image ) OVR2 #000a ADD2 walk-seg STH2k html/<img>
 	;tag/figcaption html/<open>
 	;term/name OVR2 #000a ADD2 str/seg ?{
-		DUP2 extract-term <write-link>
+		DUP2 #000a ADD2 extract-term <write-link>
 		;dict/mdash-entity-txt html/<str> }
 	( + title ) STH2r html/<str>
 	;dict/right-txt ;tag/span html/<open-class>
@@ -322,8 +322,9 @@
 	INC2 JMP2r
 
 @extract-term ( diary* -- term* )
+	DUP2 str/<print>
+	#0a18 DEO
 	[ LIT2 00 _&buf ] STR
-	#000a ADD2
 	( clip bound ) DUP2 next-tab STH2
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;&buf str/<cat>
@@ -432,8 +433,7 @@
 @site-path-abs/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{
-			POP [ LIT "_ ] }
+		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
@@ -449,8 +449,7 @@
 @site-path-rel/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{
-			POP [ LIT "_ ] }
+		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
@@ -459,7 +458,7 @@
 
 @path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
+	;&buf SWP2 /<push-str>
 	;dict/html-ext
 	( >> )
 
@@ -470,8 +469,7 @@
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
-
-	&res [ &buf $30 ]
+	&buf $30
 
 @srchtm-path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
@@ -482,8 +480,7 @@
 @srchtm-path/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{
-			POP [ LIT "_ ] }
+		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
@@ -495,8 +492,7 @@
 	;&res SWP2
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{
-			POP [ LIT "_ ] }
+		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
@@ -508,8 +504,7 @@
 	;&res SWP2
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{
-			POP [ LIT "_ ] }
+		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
