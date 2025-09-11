@@ -276,7 +276,7 @@
 	( + image ) OVR2 #000a ADD2 walk-seg STH2k html/<img>
 	;tag/figcaption html/<open>
 	;term/name OVR2 #000a ADD2 str/seg ?{
-		DUP2 #000a ADD2 extract-term <write-link>
+		DUP2 #000a ADD2 substr/set <write-link>
 		;dict/mdash-entity-txt html/<str> }
 	( + title ) STH2r html/<str>
 	;dict/right-txt ;tag/span html/<open-class>
@@ -320,17 +320,6 @@
 	&>w
 		INC2 LDAk #1f GTH ?&>w
 	INC2 JMP2r
-
-@extract-term ( diary* -- term* )
-	DUP2 str/<print>
-	#0a18 DEO
-	[ LIT2 00 _&buf ] STR
-	( clip bound ) DUP2 next-tab STH2
-	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;&buf str/<cat>
-	( clip restore ) #09 STH2r STA
-	;&buf JMP2r
-	&buf $16
 
 (
 @|tools )
@@ -510,6 +499,16 @@
 		INC2 !&>w
 
 	&res [ "tmp/map- &buf $30 ]
+
+@substr/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&buf SWP2
+	&>w
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+	&buf $30
 
 (
 @|stdlib )
