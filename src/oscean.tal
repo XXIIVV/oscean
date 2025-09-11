@@ -46,17 +46,13 @@
 	POP2 JMP2r
 
 @<load-diary> ( name* -- )
-	;&buf str/<copy>
-	;&buf [ LIT2 20 "_ ] str/<swap>
-	;&log-path .File/name DEO2
+	tmplog-path/set .File/name DEO2
 	#1000 .File/length DEO2
 	;diary/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
 	DUP2 .File/read DEO2
 	#0a00 str/<swap>
 	.File/success DEI2 ,&length STR2
 	JMP2r
-
-	&log-path [ "tmp/log- &buf $30 ]
 
 @<load-incoming> ( name* -- )
 	;&buf str/<copy>
@@ -484,6 +480,19 @@
 		INC2 !&>w
 
 	&res [ "src/htm/ &buf $30 ]
+
+@tmplog-path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{
+			POP [ LIT "_ ] }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/log- &buf $30 ]
 
 (
 @|stdlib )
