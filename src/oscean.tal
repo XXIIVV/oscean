@@ -126,7 +126,7 @@
 
 %html/<img> ( src* alt* -- ) {
 	;ascii/lt .File2/write DEO2
-	;dict/img-tag html/<str>
+	;tag/img html/<str>
 	;dict/alt-attr html/<attribute>
 	;dict/src-attr html/<attribute>
 	;ascii/gt .File2/write DEO2 }
@@ -138,35 +138,28 @@
 @|Build )
 
 @<build-page> ( name* -- name* )
-	( | render )
 	;dict/doctype html/<str>
-	;dict/html-tag html/<open>
-	( | head )
-	;dict/head-tag html/<open>
-	( | head/meta )
+	;tag/html html/<open>
+	;tag/head html/<open>
 	;dict/meta-head-path <build-page-include>
 	<write-opengraph>
-	( | head/title )
-	;dict/title-tag html/<open>
+	;tag/title html/<open>
 	;dict/title-txt html/<str>
-	;ascii/space .File2/write DEO2
 	;dict/mdash-entity-txt html/<str>
-	;ascii/space .File2/write DEO2
 	DUP2 html/<str>
-	;dict/title-tag html/<close>
-	;dict/head-tag html/<close>
-	( | body )
-	;dict/body-tag html/<open>
+	;tag/title html/<close>
+	;tag/head html/<close>
+	;tag/body html/<open>
 	;dict/meta-header-path <build-page-include>
 	<build-page-nav>
 	<build-page-main>
 	;dict/meta-footer-path <build-page-include>
-	;dict/body-tag html/<close>
-	;dict/html-tag html/<close>
+	;tag/body html/<close>
+	;tag/html html/<close>
 	JMP2r
 
 @<build-page-nav> ( name* -- name* )
-	;dict/nav-tag html/<open>
+	;tag/nav html/<open>
 	DUP2 #0002 SUB2 LDA chr/hex STHk #00 EQU ?{
 		STHkr #02 LTH ?{
 			DUP2 find-parent find-parent <build-children>
@@ -174,34 +167,34 @@
 		DUP2 find-parent <build-children>
 		POP2 }
 	POPr <build-children>
-	;dict/nav-tag html/<close>
+	;tag/nav html/<close>
 	;ascii/line .File2/write DEO2
 	JMP2r
 
 @<build-children> ( name* -- name* )
-	;dict/ul-tag html/<open>
+	;tag/ul html/<open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
 	&>w
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
-			;dict/li-tag html/<open>
+			;tag/li html/<open>
 			INC2k INC2 <write-link>
-			;dict/li-tag html/<close> }
+			;tag/li html/<close> }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
-	POP2 POPr ;dict/ul-tag html/<close>
+	POP2 POPr ;tag/ul html/<close>
 	JMP2r
 
 @<build-page-main> ( name* -- name* )
-	;dict/main-tag html/<open>
+	;tag/main html/<open>
 	( | picture )
 	;term/pict LDA #00 EQU ?{ ;term/diary <build-module-photo> }
 	( body ) <build-page-body>
 	( module ) <build-page-module>
 	( events ) <build-page-events>
 	( incoming ) <build-page-incoming>
-	( close ) ;dict/main-tag html/<close>
+	( close ) ;tag/main html/<close>
 	JMP2r
 
 @<build-page-body> ( name* -- name* )
@@ -236,21 +229,21 @@
 	JMP2r
 
 @<build-page-events> ( name* -- name* )
-	;dict/ul-tag html/<open>
+	;tag/ul html/<open>
 	;diary/buf
 	&>w
 		log/get-rune [ LIT "+ ] NEQ ?{
-			;dict/li-tag html/<open>
+			;tag/li html/<open>
 			DUP2 <build-module-event>
-			;dict/li-tag html/<close> }
+			;tag/li html/<close> }
 		str/cap LDAk ?&>w
-	POP2 ;dict/ul-tag html/<close>
+	POP2 ;tag/ul html/<close>
 	JMP2r
 
 @<build-page-incoming> ( -- )
 	;incoming/buf LDAk ?{ POP2 JMP2r }
-	;dict/incoming-txt ;dict/p-tag html/<open-class>
-	;dict/incoming-txt ;dict/b-tag html/<auto>
+	;dict/incoming-txt ;tag/p html/<open-class>
+	;dict/incoming-txt ;tag/b html/<auto>
 	[ LIT2 00 _&last ] STR
 	;ascii/space .File2/write DEO2
 	&>w
@@ -259,7 +252,7 @@
 			;ascii/space .File2/write DEO2
 			DUP2 ,&last STR2 }
 		str/cap LDAk ?&>w
-	POP2 ;dict/p-tag html/<close>
+	POP2 ;tag/p html/<close>
 	JMP2r
 
 @<build-module-album> ( name* -- name* )
@@ -311,35 +304,31 @@
 @<build-module-event> ( diary* -- )
 	( clip bound ) DUP2 #0005 ADD2 STH2
 	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;dict/code-tag html/<auto>
+	( clip wrap ) ;tag/code html/<auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
-	( event spacer ) ;ascii/space .File2/write DEO2
 	;dict/mdash-entity-txt html/<str>
-	;ascii/space .File2/write DEO2
 	( event name ) DUP2 #000a ADD2 walk-seg html/<str>
 	JMP2r
 
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
-	;dict/figure-tag html/<open>
+	;tag/figure html/<open>
 	( | copy number )
 	DUP2 #0006 ADD2
 	( > x00 ) LDAk ;&bufa STA
 	( > 0xx ) INC2 LDA2 ;&bufb STA2
 	;&diary-path
 	( + image ) OVR2 #000a ADD2 walk-seg STH2k html/<img>
-	;dict/figcaption-tag html/<open>
+	;tag/figcaption html/<open>
 	;term/name OVR2 #000a ADD2 str/seg ?{
 		DUP2 extract-term <write-link>
-		;ascii/space .File2/write DEO2
-		;dict/mdash-entity-txt html/<str>
-		;ascii/space .File2/write DEO2 }
+		;dict/mdash-entity-txt html/<str> }
 	( + title ) STH2r html/<str>
-	;dict/right-txt ;dict/span-tag html/<open-class>
+	;dict/right-txt ;tag/span html/<open-class>
 	( + date ) #0005 html/<length>
-	;dict/span-tag html/<close>
-	;dict/figcaption-tag html/<close>
-	;dict/figure-tag html/<close>
+	;tag/span html/<close>
+	;tag/figcaption html/<close>
+	;tag/figure html/<close>
 	;ascii/line .File2/write DEO2
 	JMP2r
 
@@ -432,14 +421,14 @@
 	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr html/<attribute> }
 	;ascii/gt .File2/write DEO2
 	html/<str>
-	;dict/a-tag html/<close>
+	;tag/a html/<close>
 	JMP2r
 
 	&a "<a 20 "href=" $1
 
 @<write-meta-og> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
-	;dict/meta-tag html/<str>
+	;tag/meta html/<str>
 	;dict/property-attr html/<attribute>
 	;dict/content-attr html/<attribute>
 	;ascii/slash .File2/write DEO2
@@ -489,7 +478,7 @@
 	,&a STR
 	&>w
 		LDAk [ LIT &a $1 ] NEQ ?{
-			STH2k [ LIT &b $1 ] STH2r STA }
+			[ LITr &b $1 ] STH2k STAr }
 		INC2 LDAk ?&>w
 	POP2 JMP2r
 
@@ -542,31 +531,14 @@
 	&meta-header-path "src/htm/meta_header.htm $1
 	&meta-footer-path "src/htm/meta_footer.htm $1
 	&lexicon-path "src/tables/lexicon $1
-	&self-txt "self $1
-	&mdash-entity-txt "&mdash; $1
+	&self-txt "self $1 &mdash-entity-txt 20 "&mdash; 20 $1
 	&parent-txt "parent $1
 	&title-txt "XXIIVV $1
 	&class-attr "class $1
 	&html-ext ".html $1
 	&htm-ext ".htm $1
 	&doctype "<!DOCTYPE 20 "html> $1
-	&html-tag "html $1
-	&head-tag "head $1
-	&meta-tag "meta $1
-	&title-tag "title $1
-	&body-tag "body $1
-	&nav-tag "nav $1
-	&main-tag "main $1
-	&p-tag "p $1
-	&b-tag "b $1
-	&ul-tag "ul $1
-	&li-tag "li $1
-	&a-tag "a $1
-	&span-tag "span $1
-	&img-tag "img $1
-	&code-tag "code $1
-	&figure-tag "figure $1
-	&figcaption-tag "figcaption $1
+	
 	&og-title "og:title $1
 	&og-image "og:image $1
 	&og-url "og:url $1
@@ -577,6 +549,25 @@
 	&no-picture "000 $1
 	&incoming-txt "incoming $1
 	&right-txt "right $1
+
+@tag
+	&html "html $1
+	&head "head $1
+	&meta "meta $1
+	&title "title $1
+	&body "body $1
+	&nav "nav $1
+	&main "main $1
+	&p "p $1
+	&b "b $1
+	&ul "ul $1
+	&li "li $1
+	&a "a $1
+	&span "span $1
+	&img "img $1
+	&code "code $1
+	&figure "figure $1
+	&figcaption "figcaption $1
 
 @ascii &space 20 &line 0a
 	&lt "<
