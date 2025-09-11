@@ -102,6 +102,17 @@
 	<write-str>
 	;ascii/gt .File2/write DEO2 }
 
+%html/<close> ( tag* -- ) {
+	;ascii/lt .File2/write DEO2
+	;ascii/slash .File2/write DEO2
+	<write-str>
+	;ascii/gt .File2/write DEO2 }
+
+%html/<auto> ( str* tag* -- ) {
+	DUP2 html/<open>
+	SWP2 <write-str>
+	html/<close> }
+
 (
 @|Build )
 
@@ -121,16 +132,17 @@
 	;dict/mdash-entity-txt <write-str>
 	;ascii/space .File2/write DEO2
 	DUP2 <write-str>
-	;dict/title-tag <write-close>
-	;dict/head-tag <write-close>
+	;dict/title-tag html/<close>
+	;dict/head-tag html/<close>
 	( | body )
 	;dict/body-tag html/<open>
 	;dict/meta-header-path <write-inc>
 	<build-page-nav>
 	<build-page-main>
 	;dict/meta-footer-path <write-inc>
-	;dict/body-tag <write-close>
-	;dict/html-tag !<write-close>
+	;dict/body-tag html/<close>
+	;dict/html-tag html/<close>
+	JMP2r
 
 @<build-page-nav> ( name* -- name* )
 	;dict/nav-tag html/<open>
@@ -141,7 +153,7 @@
 		DUP2 find-parent <build-children>
 		POP2 }
 	POPr <build-children>
-	;dict/nav-tag <write-close>
+	;dict/nav-tag html/<close>
 	;ascii/line .File2/write DEO2
 	JMP2r
 
@@ -154,10 +166,11 @@
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
 			;dict/li-tag html/<open>
 			INC2k INC2 <write-link>
-			;dict/li-tag <write-close> }
+			;dict/li-tag html/<close> }
 		INC2 INC2 scap/ INC2 LDAk ?&>w
 	&end ( name* . depth -- )
-	POP2 POPr ;dict/ul-tag !<write-close>
+	POP2 POPr ;dict/ul-tag html/<close>
+	JMP2r
 
 @<build-page-main> ( name* -- name* )
 	;dict/main-tag html/<open>
@@ -167,7 +180,8 @@
 	( module ) <build-page-module>
 	( events ) <build-page-events>
 	( incoming ) <build-page-incoming>
-	( close ) ;dict/main-tag !<write-close>
+	( close ) ;dict/main-tag html/<close>
+	JMP2r
 
 @<build-page-body> ( name* -- name* )
 	STH2k ;dict/htm-ext ;&buf STH2r <make-path-ext>
@@ -191,14 +205,15 @@
 		log/get-rune [ LIT "+ ] NEQ ?{
 			;dict/li-tag html/<open>
 			DUP2 <build-module-event>
-			;dict/li-tag <write-close> }
+			;dict/li-tag html/<close> }
 		scap/ INC2 LDAk ?&>w
-	POP2 ;dict/ul-tag !<write-close>
+	POP2 ;dict/ul-tag html/<close>
+	JMP2r
 
 @<build-page-incoming> ( -- )
 	;incoming/buf LDAk ?{ POP2 JMP2r }
 	;dict/incoming-txt ;dict/p-tag <write-open-class>
-	;dict/incoming-txt ;dict/b-tag <write-auto>
+	;dict/incoming-txt ;dict/b-tag html/<auto>
 	[ LIT2 00 _&last ] STR
 	;ascii/space .File2/write DEO2
 	&>w
@@ -207,7 +222,8 @@
 			;ascii/space .File2/write DEO2
 			DUP2 ,&last STR2 }
 		scap/ INC2 LDAk ?&>w
-	POP2 ;dict/p-tag !<write-close>
+	POP2 ;dict/p-tag html/<close>
+	JMP2r
 
 @<build-module-album> ( name* -- name* )
 	;diary/buf
@@ -258,7 +274,7 @@
 @<build-module-event> ( diary* -- )
 	( clip bound ) DUP2 #0005 ADD2 STH2
 	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;dict/code-tag <write-auto>
+	( clip wrap ) ;dict/code-tag html/<auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
 	( event spacer ) ;ascii/space .File2/write DEO2
 	;dict/mdash-entity-txt <write-str>
@@ -283,9 +299,9 @@
 	( + title ) STH2r <write-str>
 	;dict/right-txt ;dict/span-tag <write-open-class>
 	( + date ) #0005 <write-len>
-	;dict/span-tag <write-close>
-	;dict/figcaption-tag <write-close>
-	;dict/figure-tag <write-close>
+	;dict/span-tag html/<close>
+	;dict/figcaption-tag html/<close>
+	;dict/figure-tag html/<close>
 	;ascii/line .File2/write DEO2
 	JMP2r
 
@@ -391,7 +407,8 @@
 	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr html/<attribute> }
 	;ascii/gt .File2/write DEO2
 	<write-str>
-	;dict/a-tag !<write-close>
+	;dict/a-tag html/<close>
+	JMP2r
 
 	&a "<a 20 "href=" $1
 
@@ -408,18 +425,6 @@
 	;ascii/lt .File2/write DEO2
 	<write-str>
 	;dict/class-attr html/<attribute>
-	;ascii/gt .File2/write DEO2
-	JMP2r
-
-@<write-auto> ( str* tag* -- )
-	DUP2 html/<open>
-	SWP2 <write-str>
-	( >> )
-
-@<write-close> ( tag* -- )
-	;ascii/lt .File2/write DEO2
-	;ascii/slash .File2/write DEO2
-	<write-str>
 	;ascii/gt .File2/write DEO2
 	JMP2r
 
