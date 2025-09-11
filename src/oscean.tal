@@ -132,7 +132,7 @@
 	;ascii/gt .File2/write DEO2 }
 
 %html/<str> ( addr* -- ) {
-	DUP2 str/scap-old OVR2 SUB2 html/<length> }
+	DUP2 str/scap-1 OVR2 SUB2 html/<length> }
 
 (
 @|Build )
@@ -348,14 +348,25 @@
 (
 @|helpers )
 
+@prev-nil ( addr* -- addr* )
+	&>w
+		LDAk #00 EQU ?{ #0001 SUB2 LDAk ?&>w }
+	JMP2r
+
+@next-tab ( addr* -- addr* )
+	&>w
+		LDAk #09 EQU ?{ INC2 LDAk ?&>w }
+	JMP2r
+
 @walk-seg ( str* -- next* )
-	INC2 LDAk #1f GTH ?walk-seg
+	&>w
+		INC2 LDAk #1f GTH ?&>w
 	INC2 JMP2r
 
 @extract-term ( diary* -- term* )
 	[ LIT2 00 _&buf ] STR
 	#000a ADD2
-	( clip bound ) DUP2 #09 next-char STH2
+	( clip bound ) DUP2 next-tab STH2
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;&buf str/<cat>
 	( clip restore ) #09 STH2r STA
@@ -385,10 +396,10 @@
 
 @find-parent ( term* -- parent* )
 	DUP2 #0002 SUB2 LDA chr/hex ?{ JMP2r }
-	#00 prev-char INC2 LDAk chr/hex #01 SUB ,&depth STR
+	prev-nil INC2 LDAk chr/hex #01 SUB ,&depth STR
 	;lexicon/buf SWP2
 	&>l
-		#0001 SUB2 #00 prev-char INC2k LDA chr/hex [ LIT &depth $1 ] NEQ ?{
+		#0001 SUB2 prev-nil INC2k LDA chr/hex [ LIT &depth $1 ] NEQ ?{
 			NIP2 INC2 INC2 INC2 JMP2r }
 		LTH2k ?&>l
 	#0002 JMP2r
@@ -435,18 +446,6 @@
 	;ascii/gt .File2/write DEO2
 	JMP2r
 
-@prev-char ( addr* char -- addr* )
-	,&t STR
-	&>w
-		LDAk [ LIT &t $1 ] EQU ?{ #0001 SUB2 LDAk ?&>w }
-	JMP2r
-
-@next-char ( addr* char -- addr* )
-	,&t STR
-	&>w
-		LDAk [ LIT &t $1 ] EQU ?{ INC2 LDAk ?&>w }
-	JMP2r
-
 @<print-warning> ( name* msg* -- )
 	( msg ) str/<print>
 	( name ) str/<print>
@@ -463,22 +462,19 @@
 (
 @|stdlib )
 
+@chr/hex ( c -- <val> )
+	( dec ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0f GTH [ JMP JMP2r ]
+	( err ) POP #ff JMP2r
+
 @str/<print> ( str* -- )
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
 		INC2 !&>wp
 
-@str/cap ( str* -- end* )
-	&>wc
-		LDAk ?{ INC2 JMP2r }
-		INC2 !&>wc
-
-@str/cmp ( a* b* -- bool )
-	DUP2k /cap SWP2 SUB2 SWP2 !mem/cmp
-
 @str/<cat> ( src* dst* -- )
-	str/scap-old
+	str/scap-1
 	( >> )
 
 @str/<copy> ( src* dst* -- )
@@ -487,13 +483,6 @@
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>wo
 	POP2 POP2r JMP2r
-
-@str/seg ( a* b* -- f )
-	STH2
-	&>l
-		LDAk LDAkr STHr NEQ ?{
-			INC2k LDA #00 EQU ?{ INC2 INC2r !&>l } }
-	LDA LDAr STHr EQU JMP2r
 
 @str/<swap> ( str* a b -- )
 	,&b STR
@@ -504,20 +493,30 @@
 		INC2 LDAk ?&>w
 	POP2 JMP2r
 
-@str/scap-old ( str* -- end* )
+@str/scap-1 ( str* -- end* )
 	&>w2
 		LDAk ?{ JMP2r }
 		INC2 !&>w2
+
+@str/cap ( str* -- end* )
+	&>wc
+		LDAk ?{ INC2 JMP2r }
+		INC2 !&>wc
+
+@str/cmp ( a* b* -- bool )
+	DUP2k /cap SWP2 SUB2 SWP2 !mem/cmp
+
+@str/seg ( a* b* -- f )
+	STH2
+	&>l
+		LDAk LDAkr STHr NEQ ?{
+			INC2k LDA #00 EQU ?{ INC2 INC2r !&>l } }
+	LDA LDAr STHr EQU JMP2r
 
 @str/cmp3 ( a* b* -- f )
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@chr/hex ( c -- <val> )
-	( dec ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
-	( hex ) #27 SUB DUP #0f GTH [ JMP JMP2r ]
-	( err ) POP #ff JMP2r
 
 @mem/cmp ( a* length* b* -- t )
 	STH2
