@@ -55,17 +55,13 @@
 	JMP2r
 
 @<load-incoming> ( name* -- )
-	;&buf str/<copy>
-	;&buf [ LIT2 20 "_ ] str/<swap>
-	;&map-path .File/name DEO2
+	tmpmap-path/set .File/name DEO2
 	#1000 .File/length DEO2
 	;incoming/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
 	DUP2 .File/read DEO2
 	#0a00 str/<swap>
 	.File/success DEI2 ,&length STR2
 	JMP2r
-
-	&map-path [ "tmp/map- &buf $30 ]
 
 %log/get-rune ( log* -- log* rune ) {
 	DUP2 #0005 ADD2 LDA }
@@ -493,6 +489,19 @@
 		INC2 !&>w
 
 	&res [ "tmp/log- &buf $30 ]
+
+@tmpmap-path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{
+			POP [ LIT "_ ] }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/map- &buf $30 ]
 
 (
 @|stdlib )
