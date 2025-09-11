@@ -189,10 +189,7 @@
 	JMP2r
 
 @<build-page-body> ( name* -- name* )
-	STH2k ;dict/htm-ext ;&buf STH2r <make-path-ext>
-	;&htm-path !<build-include>
-
-	&htm-path [ "src/htm/ &buf $30 ]
+	DUP2 srchtm-path/set !<build-include>
 
 @<build-page-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
@@ -448,6 +445,27 @@
 	;&buf JMP2r
 
 	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@srchtm-path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	/<push-str>
+	;dict/htm-ext /<push-str>
+	;&res JMP2r
+
+@srchtm-path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@srchtm-path/<push> ( char -- )
+	DUP #20 NEQ ?{
+		POP [ LIT "_ ] }
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+	&res [ "src/htm/ &buf $30 ]
 
 (
 @|stdlib )
