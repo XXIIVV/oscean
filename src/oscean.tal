@@ -124,6 +124,13 @@
 	SWP2 <write-str>
 	html/<close> }
 
+%html/<img> ( src* alt* -- ) {
+	;ascii/lt .File2/write DEO2
+	;dict/img-tag <write-str>
+	;dict/alt-attr html/<attribute>
+	;dict/src-attr html/<attribute>
+	;ascii/gt .File2/write DEO2 }
+
 (
 @|Build )
 
@@ -300,7 +307,7 @@
 	( > x00 ) LDAk ;&bufa STA
 	( > 0xx ) INC2 LDA2 ;&bufb STA2
 	;&diary-path
-	( + image ) OVR2 #000a ADD2 walk-seg STH2k <write-img>
+	( + image ) OVR2 #000a ADD2 walk-seg STH2k html/<img>
 	;dict/figcaption-tag html/<open>
 	;term/name OVR2 #000a ADD2 sseg ?{
 		DUP2 extract-term <write-link>
@@ -397,14 +404,6 @@
 	POP2 STHr ?{ DUP2 ;err/source <print-error> }
 	POP2
 	( restore ) #0001 .File2/length DEO2
-	JMP2r
-
-@<write-img> ( src* alt* -- )
-	;ascii/lt .File2/write DEO2
-	;dict/img-tag <write-str>
-	;dict/alt-attr html/<attribute>
-	;dict/src-attr html/<attribute>
-	;ascii/gt .File2/write DEO2
 	JMP2r
 
 @<write-link> ( name* -- )
