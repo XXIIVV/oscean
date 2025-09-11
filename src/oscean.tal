@@ -86,6 +86,11 @@
 (
 @|Html )
 
+%html/<length> ( src* length* -- ) {
+	.File2/length DEO2
+	.File2/write DEO2
+	#0001 .File2/length DEO2 }
+
 %html/<quoted> ( str* -- ) {
 	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
 	<write-str>
@@ -100,6 +105,12 @@
 %html/<open> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
 	<write-str>
+	;ascii/gt .File2/write DEO2 }
+
+%html/<open-class> ( class* tag* -- ) {
+	;ascii/lt .File2/write DEO2
+	<write-str>
+	;dict/class-attr html/<attribute>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<close> ( tag* -- ) {
@@ -212,7 +223,7 @@
 
 @<build-page-incoming> ( -- )
 	;incoming/buf LDAk ?{ POP2 JMP2r }
-	;dict/incoming-txt ;dict/p-tag <write-open-class>
+	;dict/incoming-txt ;dict/p-tag html/<open-class>
 	;dict/incoming-txt ;dict/b-tag html/<auto>
 	[ LIT2 00 _&last ] STR
 	;ascii/space .File2/write DEO2
@@ -297,8 +308,8 @@
 		;dict/mdash-entity-txt <write-str>
 		;ascii/space .File2/write DEO2 }
 	( + title ) STH2r <write-str>
-	;dict/right-txt ;dict/span-tag <write-open-class>
-	( + date ) #0005 <write-len>
+	;dict/right-txt ;dict/span-tag html/<open-class>
+	( + date ) #0005 html/<length>
 	;dict/span-tag html/<close>
 	;dict/figcaption-tag html/<close>
 	;dict/figure-tag html/<close>
@@ -421,23 +432,8 @@
 	;ascii/gt .File2/write DEO2
 	JMP2r
 
-@<write-open-class> ( tag* class* -- )
-	;ascii/lt .File2/write DEO2
-	<write-str>
-	;dict/class-attr html/<attribute>
-	;ascii/gt .File2/write DEO2
-	JMP2r
-
-@<write-len> ( src* length* -- )
-	.File2/length DEO2
-	.File2/write DEO2
-	#0001 .File2/length DEO2
-	JMP2r
-
 @<write-str> ( addr* -- )
-	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
-	.File2/write DEO2
-	( restore ) #0001 .File2/length DEO2
+	DUP2 scap/ OVR2 SUB2 html/<length>
 	JMP2r
 
 @prev-char ( addr* char -- addr* )
