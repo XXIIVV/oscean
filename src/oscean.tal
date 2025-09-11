@@ -29,8 +29,7 @@
 @|build )
 
 @<init-page> ( name* -- name* )
-	STH2k ;dict/html-ext ;&buf STH2r <make-path-ext>
-	;&site-path .File2/name DEO2
+	DUP2 site-path/set .File2/name DEO2
 	#0001 .File2/length DEO2
 	( cleanup ) #0000 #0100 mem/<clr>
 	DUP2 <load-diary>
@@ -45,8 +44,6 @@
 		DUP2 ;term/diary str/<copy>
 		;term/diary [ LIT2 09 00 ] str/<swap> }
 	POP2 JMP2r
-
-	&site-path [ "site/ &buf $30 ]
 
 @<load-diary> ( name* -- )
 	;&buf str/<copy>
@@ -445,9 +442,9 @@
 
 @srchtm-path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
-	/<push-str>
-	;dict/htm-ext /<push-str>
-	;&res JMP2r
+	;&res SWP2 /<push-str>
+	;dict/htm-ext
+	( >> )
 
 @srchtm-path/<push-str> ( str* -- )
 	&>w
@@ -459,6 +456,23 @@
 		INC2 !&>w
 
 	&res [ "src/htm/ &buf $30 ]
+
+@site-path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;dict/html-ext
+	( >> )
+
+@site-path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{
+			POP [ LIT "_ ] }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "site/ &buf $30 ]
 
 (
 @|stdlib )
