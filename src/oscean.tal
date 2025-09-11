@@ -141,19 +141,25 @@
 	;dict/doctype html/<str>
 	;tag/html html/<open>
 	;tag/head html/<open>
-	;dict/meta-head-path <build-page-include>
+	;dict/meta-head-path <build-include>
 	<write-opengraph>
 	;tag/title html/<open>
-	;dict/title-txt html/<str>
+	;dict/xxiivv-txt html/<str>
 	;dict/mdash-entity-txt html/<str>
 	DUP2 html/<str>
 	;tag/title html/<close>
 	;tag/head html/<close>
 	;tag/body html/<open>
-	;dict/meta-header-path <build-page-include>
+	;dict/meta-header-path <build-include>
 	<build-page-nav>
-	<build-page-main>
-	;dict/meta-footer-path <build-page-include>
+	;tag/main html/<open>
+	;term/pict LDA #00 EQU ?{ ;term/diary <build-module-photo> }
+	<build-page-body>
+	<build-page-module>
+	<build-page-events>
+	<build-page-incoming>
+	;tag/main html/<close>
+	;dict/meta-footer-path <build-include>
 	;tag/body html/<close>
 	;tag/html html/<close>
 	JMP2r
@@ -186,38 +192,11 @@
 	POP2 POPr ;tag/ul html/<close>
 	JMP2r
 
-@<build-page-main> ( name* -- name* )
-	;tag/main html/<open>
-	( | picture )
-	;term/pict LDA #00 EQU ?{ ;term/diary <build-module-photo> }
-	( body ) <build-page-body>
-	( module ) <build-page-module>
-	( events ) <build-page-events>
-	( incoming ) <build-page-incoming>
-	( close ) ;tag/main html/<close>
-	JMP2r
-
 @<build-page-body> ( name* -- name* )
 	STH2k ;dict/htm-ext ;&buf STH2r <make-path-ext>
-	;&htm-path !<build-page-include>
+	;&htm-path !<build-include>
 
 	&htm-path [ "src/htm/ &buf $30 ]
-
-@<build-page-include> ( path* -- )
-	DUP2 .File/name DEO2
-	#8000 .File/length DEO2
-	[ LITr 00 ] ;workarea
-	&>s
-		DUP2 .File/read DEO2
-		.File/success DEI2
-		( ) DUP2 .File2/length DEO2
-		( ) #0000 EQU2 ?{
-			DUP2 .File2/write DEO2
-			INCr !&>s }
-	POP2 STHr ?{ DUP2 ;err/source <print-error> }
-	POP2
-	( restore ) #0001 .File2/length DEO2
-	JMP2r
 
 @<build-page-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
@@ -333,6 +312,22 @@
 	JMP2r
 
 	&diary-path "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@<build-include> ( path* -- )
+	DUP2 .File/name DEO2
+	#8000 .File/length DEO2
+	[ LITr 00 ] ;workarea
+	&>s
+		DUP2 .File/read DEO2
+		.File/success DEI2
+		( ) DUP2 .File2/length DEO2
+		( ) #0000 EQU2 ?{
+			DUP2 .File2/write DEO2
+			INCr !&>s }
+	POP2 STHr ?{ DUP2 ;err/source <print-error> }
+	POP2
+	( restore ) #0001 .File2/length DEO2
+	JMP2r
 
 (
 @|helpers )
@@ -533,12 +528,11 @@
 	&lexicon-path "src/tables/lexicon $1
 	&self-txt "self $1 &mdash-entity-txt 20 "&mdash; 20 $1
 	&parent-txt "parent $1
-	&title-txt "XXIIVV $1
+	&xxiivv-txt "XXIIVV $1
 	&class-attr "class $1
 	&html-ext ".html $1
 	&htm-ext ".htm $1
 	&doctype "<!DOCTYPE 20 "html> $1
-	
 	&og-title "og:title $1
 	&og-image "og:image $1
 	&og-url "og:url $1
@@ -550,8 +544,7 @@
 	&incoming-txt "incoming $1
 	&right-txt "right $1
 
-@tag
-	&html "html $1
+@tag/html "html $1
 	&head "head $1
 	&meta "meta $1
 	&title "title $1
