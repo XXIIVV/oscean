@@ -6,7 +6,7 @@
 
 |000
 
-	@term/name $16 &parent $16 &diary $6 &pict $4
+	@term/name $16 &parent $16 &diary $6 &pict $4 &cap
 
 |100
 
@@ -19,6 +19,7 @@
 	( ) DUP2 #0a00 str/<swap>
 	&>w
 		INC2 INC2 <init-page>
+		#0001 .File2/length DEO2
 		<build-page>
 		str/cap LDAk ?&>w
 	POP2
@@ -28,10 +29,19 @@
 (
 @|build )
 
+%log/get-rune ( log* -- log* rune ) {
+	DUP2 #0005 ADD2 LDA }
+
+%log/has-picture ( log* picture* -- flag ) {
+	SWP2 #0006 ADD2 str/cmp3 }
+
+%log/has-no-picture ( log* -- log* t ) {
+	DUP2 ;dict/no-picture log/has-picture }
+
 @<init-page> ( name* -- name* )
 	DUP2 site-path-rel/set .File2/name DEO2
-	#0001 .File2/length DEO2
-	( cleanup ) #0000 #0100 mem/<clr>
+	( | cleanup )
+	#0000 ;term/cap mem/<clr>
 	DUP2 diary/<load>
 	DUP2 incoming/<load>
 	( | verify orphans )
@@ -101,15 +111,6 @@
 
 	&res [ "tmp/map- &resbuf $30 ]
 
-%log/get-rune ( log* -- log* rune ) {
-	DUP2 #0005 ADD2 LDA }
-
-%log/has-picture ( log* picture* -- flag ) {
-	SWP2 #0006 ADD2 str/cmp3 }
-
-%log/has-no-picture ( log* -- log* t ) {
-	DUP2 ;dict/no-picture log/has-picture }
-
 (
 @|Html )
 
@@ -160,6 +161,14 @@
 
 %html/<str> ( addr* -- ) {
 	DUP2 str/scap-1 OVR2 SUB2 html/<length> }
+
+%html/<meta-og> ( content* property* -- ) {
+	;ascii/lt .File2/write DEO2
+	;tag/meta html/<str>
+	;dict/property-attr html/<attribute>
+	;dict/content-attr html/<attribute>
+	;ascii/slash .File2/write DEO2
+	;ascii/gt .File2/write DEO2 }
 
 (
 @|Build )
@@ -365,10 +374,13 @@
 	#0002 JMP2r
 
 @<write-opengraph> ( name* -- name* )
-	DUP2 ;dict/og-title <write-meta-og>
-	DUP2 site-path-abs/set ;dict/og-url <write-meta-og>
-	;term/diary LDAk ?{ POP2 ;&default-image ;dict/og-image !<write-meta-og> }
-	diary-path-abs/get ;dict/og-image !<write-meta-og>
+	DUP2 ;dict/og-title html/<meta-og>
+	DUP2 site-path-abs/set ;dict/og-url html/<meta-og>
+	;term/diary LDAk ?{
+		POP2 ;&default-image ;dict/og-image html/<meta-og>
+		JMP2r }
+	diary-path-abs/get ;dict/og-image html/<meta-og>
+	JMP2r
 
 	&default-image "https://wiki.xxiivv.com/media/ "services/rss.jpg $1
 
@@ -384,15 +396,6 @@
 	JMP2r
 
 	&a "<a 20 "href=" $1
-
-@<write-meta-og> ( content* property* -- )
-	;ascii/lt .File2/write DEO2
-	;tag/meta html/<str>
-	;dict/property-attr html/<attribute>
-	;dict/content-attr html/<attribute>
-	;ascii/slash .File2/write DEO2
-	;ascii/gt .File2/write DEO2
-	JMP2r
 
 @<print-warning> ( name* msg* -- )
 	( msg ) str/<print>
