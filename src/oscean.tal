@@ -163,7 +163,7 @@
 	;ascii/line .File2/write DEO2
 	;tag/main html/<open>
 	;term/diary <build-module-photo>
-	<build-page-body>
+	DUP2 <build-include>
 	<build-page-module>
 	<build-page-events>
 	<build-page-incoming>
@@ -187,9 +187,6 @@
 	&end ( name* . depth -- )
 	POP2 POPr ;tag/ul html/<close>
 	JMP2r
-
-@<build-page-body> ( name* -- name* )
-	DUP2 srchtm-path/set !<build-include>
 
 @<build-page-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
@@ -254,7 +251,7 @@
 	( start after ) str/cap
 	&>w
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
+		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr JMP2r
@@ -268,7 +265,7 @@
 			INC2k INC2 <load-diary>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
+		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
 	POP2 POPr JMP2r
@@ -302,7 +299,7 @@
 	JMP2r
 
 @<build-include> ( path* -- )
-	DUP2 .File/name DEO2
+	srchtm-path/set DUP2 .File/name DEO2
 	#8000 .File/length DEO2
 	[ LITr 00 ] ;workarea
 	&>s
@@ -455,15 +452,11 @@
 @srchtm-path/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push>
+		DUP #20 NEQ ?{
+			POP [ LIT "_ ] }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
 		INC2 !&>w
-
-@srchtm-path/<push> ( char -- )
-	DUP #20 NEQ ?{
-		POP [ LIT "_ ] }
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
 
 	&res [ "src/htm/ &buf $30 ]
 
@@ -546,9 +539,9 @@
 @|dict )
 
 @dict/xxiivv-txt "XXIIVV $1
-	&meta-head-path "src/htm/meta_head.htm $1
-	&meta-header-path "src/htm/meta_header.htm $1
-	&meta-footer-path "src/htm/meta_footer.htm $1
+	&meta-head-path "meta_head $1
+	&meta-header-path "meta_header $1
+	&meta-footer-path "meta_footer $1
 	&lexicon-path "src/tables/lexicon $1
 	&self-txt "self $1 &mdash-entity-txt 20 "&mdash; 20 $1
 	&parent-txt "parent $1
