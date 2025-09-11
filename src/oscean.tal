@@ -151,20 +151,6 @@
 	;tag/head html/<close>
 	;tag/body html/<open>
 	;dict/meta-header-path <build-include>
-	<build-page-nav>
-	;tag/main html/<open>
-	;term/pict LDA #00 EQU ?{ ;term/diary <build-module-photo> }
-	<build-page-body>
-	<build-page-module>
-	<build-page-events>
-	<build-page-incoming>
-	;tag/main html/<close>
-	;dict/meta-footer-path <build-include>
-	;tag/body html/<close>
-	;tag/html html/<close>
-	JMP2r
-
-@<build-page-nav> ( name* -- name* )
 	;tag/nav html/<open>
 	DUP2 #0002 SUB2 LDA chr/hex STHk #00 EQU ?{
 		STHkr #02 LTH ?{
@@ -175,6 +161,16 @@
 	POPr <build-children>
 	;tag/nav html/<close>
 	;ascii/line .File2/write DEO2
+	;tag/main html/<open>
+	;term/pict LDA #00 EQU ?{ ;term/diary <build-module-photo> }
+	<build-page-body>
+	<build-page-module>
+	<build-page-events>
+	<build-page-incoming>
+	;tag/main html/<close>
+	;dict/meta-footer-path <build-include>
+	;tag/body html/<close>
+	;tag/html html/<close>
 	JMP2r
 
 @<build-children> ( name* -- name* )
@@ -223,15 +219,16 @@
 	;incoming/buf LDAk ?{ POP2 JMP2r }
 	;tag/p html/<open>
 	;dict/incoming-txt ;tag/b html/<auto>
-	[ LIT2 00 _&last ] STR
+	[ LIT2r =&null ]
 	&>w
-		DUP2 [ LIT2 &last $2 ] str/cmp ?{
+		DUP2 STH2kr str/cmp ?{
 			DUP2 <write-link>
 			;ascii/space .File2/write DEO2
-			DUP2 ,&last STR2 }
+			POP2r STH2k }
 		str/cap LDAk ?&>w
-	POP2 ;tag/p html/<close>
+	POP2 POP2r ;tag/p html/<close>
 	JMP2r
+	&null ffff
 
 @<build-module-album> ( name* -- name* )
 	;diary/buf
@@ -520,14 +517,13 @@
 (
 @|dict )
 
-@dict
+@dict/xxiivv-txt "XXIIVV $1
 	&meta-head-path "src/htm/meta_head.htm $1
 	&meta-header-path "src/htm/meta_header.htm $1
 	&meta-footer-path "src/htm/meta_footer.htm $1
 	&lexicon-path "src/tables/lexicon $1
 	&self-txt "self $1 &mdash-entity-txt 20 "&mdash; 20 $1
 	&parent-txt "parent $1
-	&xxiivv-txt "XXIIVV $1
 	&class-attr "class $1
 	&html-ext ".html $1
 	&htm-ext ".htm $1
@@ -561,7 +557,7 @@
 	&figure "figure $1
 	&figcaption "figcaption $1
 
-@ascii &space 20 &line 0a
+@ascii/space 20 &line 0a
 	&lt "<
 	&gt ">
 	&equal "=
