@@ -80,11 +80,11 @@
 	#20 err/<pchr>
 	;dst/buf err/<pstr>
 	;dict/in err/<pstr>
-	;&length LDA2 DUP2 #0100 SUB2 err/<pdec>
+	/get-length DUP2 err/<pdec>
 	;dict/bytes err/<pstr>
 	( | write rom )
 	;dst/buf .File/name DEO2
-	#0100 SUB2 .File/length DEO2
+	.File/length DEO2
 	;&output .File/write DEO2
 	( | write rom.sym )
 	;dict/sym-ext dst/<push-str>
@@ -624,16 +624,19 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	head/get-inc STH2k ;&mem ADD2
+	head/get-inc ;&mem ADD2
 	( | test boundary )
 	INC2k ;rom/output GTH2 ?{
-		POP2 POP2r POP
+		POP2 POP
 		( ! ) ;dict/too-far ;dict/Writing !err/<token> }
 	STA
-	STH2r
-	( | set length )
-	DUP2 [ LIT2 &length 0100 ] LTH2 ?{ INC2k ,&length STR2 }
-	POP2 JMP2r
+	JMP2r
+
+@rom/get-length ( -- length* )
+	;&output #ffff
+	&>lg
+		LDAk ?{ #0001 SUB2 NEQ2k ?&>lg }
+	SWP2 SUB2 INC2 JMP2r
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
