@@ -32,28 +32,26 @@
 	BRK
 
 @on-frame ( -> )
-	( | only draw once per second )
-	.DateTime/second DEI .last LDZ NEQk ?{ POP2 BRK }
-	.last STZ
-	POP <redraw>
-	BRK
+	[ LIT2 &last $1 -DateTime/second ] DEI NEQk ?{ <redraw> }
+	,&last STR
+	POP BRK
 
 @on-mouse ( -> )
 	.Mouse/state DEI ?{ BRK }
-	select [ LIT2 00 -Mouse/state ] DEO
+	<toggle-style>
+	[ LIT2 00 -Mouse/state ] DEO
 	BRK
 
 @on-button ( -> )
 	.Controller/button DEI ?{ BRK }
-	select [ LIT2 00 -Controller/button ] DEO
+	<toggle-style>
+	[ LIT2 00 -Controller/button ] DEO
 	BRK
 
-@select ( -- )
+@<toggle-style> ( -- )
 	.style LDZ INC #03 DIVk MUL SUB .style STZ
 	;tiles [ LIT2 00 -style ] LDZ #40 SFT ADD2 <cover-pattern>
 	( >> )
-(
-@|drawing )
 
 @<redraw> ( -- )
 	( | hrs )
@@ -65,6 +63,7 @@
 	( | sec )
 	.center/x LDZ2 #0018 SUB2 .center/y LDZ2 #0018 ADD2 .DateTime/second DEI #0a DIV <draw-number>
 	.center/x LDZ2 #0008 ADD2 .center/y LDZ2 #0018 ADD2 .DateTime/second DEI #0a DIVk MUL SUB
+	( >> )
 
 @<draw-number> ( x* y* n -- )
 	,&digit STR
