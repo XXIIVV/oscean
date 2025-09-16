@@ -70,7 +70,8 @@
 	#0a DIVk MUL SUB ,&digit STR
 	,&y STR2
 	,&x STR2
-	#0f00
+	[ LIT2 00 -Screen/auto ] DEO
+	#0f00 [ LIT2r 01 -Screen/sprite ]
 	&>loop
 		( save-x ) DUP #03 DIVk MUL SUB #00 SWP #30 SFT2 [ LIT2 &x $2 ] ADD2 .Screen/x DEO2
 		( save-y ) DUP #03 DIV #00 SWP #30 SFT2 [ LIT2 &y $2 ] ADD2 .Screen/y DEO2
@@ -78,24 +79,25 @@
 		( get bit ) ROT #0e SWP SUB SFT2 #0001 AND2
 		( set tile ) #30 SFT2 ;tiles ADD2
 		( set style ) .style LDZ #40 SFT #00 SWP ADD2 .Screen/addr DEO2
-		( draw ) [ LIT2 01 -Screen/sprite ] DEO
+		( draw ) DEOkr
 		INC GTHk ?&>loop
-	POP2 JMP2r
+	POP2 POP2r JMP2r
 
 @<cover-pattern> ( addr* -- )
 	.Screen/addr DEO2
+	[ LIT2 01 -Screen/auto ] DEO
 	.Screen/height DEI2 #03 SFT2 ,&h STR
 	POP .Screen/width DEI2 #03 SFT2 ,&w STR
-	POP [ LIT2 &h $1 00 ]
+	POP [ LIT2r 01 -Screen/sprite ] [ LIT2 &h $1 00 ]
 	&>ver
-		#00 OVR #30 SFT2 .Screen/y DEO2
+		#0000 .Screen/x DEO2
 		[ LIT2 &w $1 00 ]
 		&>hor
-			#00 OVR #30 SFT2 .Screen/x DEO2
-			[ LIT2 01 -Screen/sprite ] DEO
+			DEOkr
 			INC GTHk ?&>hor
-		POP2 INC GTHk ?&>ver
-	POP2 JMP2r
+		POP2 .Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC GTHk ?&>ver
+	POP2 POP2r JMP2r
 
 (
 @|assets )
