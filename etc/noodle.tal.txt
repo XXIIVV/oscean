@@ -52,7 +52,7 @@
 @meta 00 "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "16 20 "Sep 20 "2025 00 01
+	( date ) "17 20 "Sep 20 "2025 00 01
 	( icon ) 83 =appicon
 
 (
@@ -125,7 +125,7 @@
 	canvas/<clear>
 	filestate/<unchange>
 	/<load>
-	/get-size canvas/<set-size> !canvas/<center>
+	/get-size !canvas/<set-size>
 
 @filepath/<load> ( -- )
 	/is-tga ?tga/<load>
@@ -365,8 +365,7 @@
 	.&y LDZ2 SUB2 SWP2 .&x LDZ2 SUB2 SWP2 brush/get-tool JMP2
 
 @canvas/<maximize> ( -- )
-	.window/cols LDZ .window/rows LDZ #02 SUB /<set-size>
-	#0000 #0010 /<set-position> !/<draw>
+	.window/cols LDZ .window/rows LDZ #02 SUB !/<set-size>
 
 @canvas/<draw-bg> ( -- )
 	.&x LDZ2 #0000 NEQ2 .&y LDZ2 #0010 NEQ2 ORA ?{ JMP2r }
@@ -375,25 +374,21 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 ;window/cols LDZ SUB ;window/rows LDZ SUB ;hash2-icn [ LIT2 0b -Screen/sprite ] !<draw-rect>
 
-@canvas/<center> ( -- )
-	( x ) .Screen/width DEI2 #01 SFT2 ;&w LDZ #20 SFT2 SUB2
-	( y ) .Screen/height DEI2 #01 SFT2 ;&h LDZ #20 SFT2 SUB2 #0008 ADD2 /<set-position>
-	/<draw-bg>
-	/<draw>
-	panel/<stick> !panel/<draw>
-
-@canvas/<set-position> ( x* y* -- )
-	DUP2 ;&h LDZ #30 SFT2 ADD2 .&y2 STZ2
-	.&y STZ2
-	DUP2 ;&w LDZ #30 SFT2 ADD2 .&x2 STZ2
-	.&x STZ2 !/<draw>
-
 @canvas/<set-size> ( w h -- )
 	( clamp x ) SWP .window/cols LDZ LTHk [ JMP SWP ] POP SWP
 	( clamp y ) .window/rows LDZ #02 SUB LTHk [ JMP SWP ] POP
 	( change name ) DUP2 filepath/<put-size>
 	.&h STZ
-	.&w STZ !/<draw-size>
+	.&w STZ
+	/<draw-size>
+	( | center )
+	.Screen/width DEI2 #01 SFT2 ;&w LDZ STH2k #20 SFT2 SUB2 DUP2 STH2r #30 SFT2 ADD2 .&x2 STZ2
+	.&x STZ2
+	.Screen/height DEI2 #01 SFT2 ;&h LDZ STH2k #20 SFT2 SUB2 #0008 ADD2 DUP2 STH2r #30 SFT2 ADD2 .&y2 STZ2
+	.&y STZ2
+	/<draw-bg>
+	/<draw>
+	panel/<stick> !panel/<draw>
 
 @canvas/<draw-size> ( -- )
 	[ LIT2 01 -Screen/auto ] DEO
@@ -491,18 +486,21 @@
 
 @canvas/<request> ( x* y* -- )
 	#03 SFT2 NIP STH
-	#03 SFT2 NIP STHr /find ?{
-		[ LIT2 &ptr =&stack ] INC2k INC2
-		( | overflow )
-		DUP2 ;&cap LTH2 ?{
-			POP2 POP2 POP2 ;canvas/on-frame-full .Screen/vector DEO2
-			JMP2r }
-		( | push )
-		,&ptr STR2
-		STA2
-		;canvas/on-frame .Screen/vector DEO2
-		JMP2r }
+	#03 SFT2 NIP STHr /find ?{ DUP2 /<push> }
 	POP2 JMP2r
+
+@canvas/<push> ( xy* -- )
+	[ LIT2 &ptr =&stack ] INC2k INC2
+	( | overflow )
+	DUP2 ;&cap LTH2 ?{
+		POP2 POP2 POP2 ;&stack ,&ptr STR2
+		;canvas/on-frame-full .Screen/vector DEO2
+		JMP2r }
+	( | push )
+	,&ptr STR2
+	STA2
+	;canvas/on-frame .Screen/vector DEO2
+	JMP2r
 
 @canvas/on-frame ( -> )
 	,&ptr LDR2 ;&stack
@@ -514,9 +512,9 @@
 	BRK
 
 @canvas/on-frame-full ( -> )
+	/<draw>
 	;&stack ,&ptr STR2
 	#0000 .Screen/vector DEO2
-	/<draw>
 	BRK
 
 @canvas/drag-u ( -- )
@@ -548,10 +546,10 @@
 	POP2 POP2 POP2r /<draw> !panel/<draw>
 
 @canvas/crop-h ( -- )
-	.&size LDZ2 #01 SUB /<set-size> !/<center>
+	.&size LDZ2 #01 SUB !/<set-size>
 
 @canvas/size-h ( -- )
-	.&size LDZ2 INC /<set-size> !/<center>
+	.&size LDZ2 INC !/<set-size>
 
 @canvas/crop-w ( -- )
 	[ LIT2r =&buf ] ;&buf /get-length ADD2 ;&buf
@@ -560,7 +558,7 @@
 		mem/<sfl>
 		;&w LDZ #30 SFT2 ADD2 GTH2k ?&>lsl
 	POP2 POP2 POP2r
-	( update ) .&size LDZ2 #0100 SUB2 /<set-size> !/<center>
+	( update ) .&size LDZ2 #0100 SUB2 !/<set-size>
 
 @canvas/size-w ( -- )
 	[ LIT2r =&buf ] ;&buf /get-length ADD2 ;&buf
@@ -569,7 +567,7 @@
 		mem/<sfr>
 		;&w LDZ #30 SFT2 ADD2 GTH2k ?&>lsr
 	POP2 POP2 POP2r
-	( update ) .&size LDZ2 #0100 ADD2 /<set-size> !/<center>
+	( update ) .&size LDZ2 #0100 ADD2 !/<set-size>
 
 (
 @|Font )
@@ -1079,19 +1077,16 @@
 	;filepath/buf .File/name DEO2
 	#0012 .File/length DEO2
 	;image .File/read DEO2
+	( | rename )
+	filepath/<pop-ext>
+	;&icn-ext filepath/<push-str>
 	( | flip endianness )
-	;image/w STH2k LDA2 SWP STH2r STA2
-	;image/h STH2k LDA2 SWP STH2r STA2
+	;image/w LDA2k SWP SWP2 STA2
+	;image/h LDA2k SWP SWP2 STA2
 	( | resize canvas )
 	;image/w LDA2 #03 SFT2 NIP ;image/h LDA2 #03 SFT2 NIP canvas/<set-size>
 	( | get parser )
-	;image/image-type LDA
-	( | handler )
-	#03 NEQ ?{
-		;&filter-pixel-raw-bw #0001 tga/<parse>
-		filepath/<pop-ext>
-		;&icn-ext filepath/<push-str>
-		.canvas/size LDZ2 !filepath/<put-size> }
+	;image/image-type LDA #03 NEQ ?{ !tga/<parse-bw> }
 	;&error-unknown-txt str/<print>
 	[ #00 ;image/image-type LDA DUP ADD ] ;image-types ADD2 LDA2 str/<print>
 	#0a18 DEO
@@ -1099,39 +1094,29 @@
 
 	&error-unknown-txt "Unsupported 20 "tga-type: 20 $1
 
-@tga/<parse> ( filter* length* -- )
-	( depth ) ;image/depth LDA #03 SFT MUL .File/length DEO2
-	,&filter STR2
-	#0000 ,&x STR2
-	#0000 ,&y STR2
+@tga/<parse-bw> ( -- )
+	#00 ;image/depth LDA #03 SFT .File/length DEO2
+	#0000 #0000
 	&>stream
 		;&pixel .File/read DEO2
-		.File/success-lb ] DEI ?{ JMP2r }
-		[ LIT2 &x $1 &xl $1 ] [ LIT2 &y $1 &yl $1 ] ;&pixel [ LIT2 &filter $2 ] JSR2 canvas/<set-pixel>
-		( move ) ,&x LDR2 INC2 DUP2 ,&x STR2
-		;image/w LDA2 NEQ2 ?{
-			#0000 ,&x STR2
-			,&y LDR2 INC2 ,&y STR2 }
-		!&>stream
+		.File/success-lb ] DEI ?{ POP2 POP2 JMP2r }
+		OVR2 OVR2 ROTk ROT POP
+		( | draw )
+		[ LIT2 00 _&pixel ] LDR #16 SFT ;&bw-lut ADD2 LDA2 JSR2 canvas/<set-pixel>
+		SWP2 INC2 DUP2 ;image/w LDA2 NEQ2 ?{
+			( linebreak ) POP2 #0000 SWP2 INC2 SWP2 }
+		SWP2 !&>stream
 	&pixel $8
-	&icn-ext "00x00.icn $1
-
-@tga/filter-pixel-raw-bw ( pixel* -- color )
-	LDA #06 SFT #00 SWP #10 SFT2 ;&bw-lut ADD2 LDA2 JMP2
-
-@tga/bw-lut [ =&shade-a =&shade-b =&shade-c =&shade-d ]
+	&icn-ext "00x00.icn 00
+	&bw-lut [
+	=&shade-a =patternize/a
+	=patternize/b =&shade-d ]
 
 @tga/shade-a ( -- pixel )
-	#01 JMP2r
-
-@tga/shade-b ( -- pixel )
-	;&xl LDA ;&yl LDA !patternize/a
-
-@tga/shade-c ( -- pixel )
-	;&xl LDA ;&yl LDA !patternize/b
+	POP2 #01 JMP2r
 
 @tga/shade-d ( -- pixel )
-	#00 JMP2r
+	POP2 #00 JMP2r
 
 @image-types-txts
 	&null "no-data $1
@@ -1603,5 +1588,5 @@ c060 3018 0c06 0300 3c0c 0c0c 0c0c 3c00
 0000 60f2 9e0c 0000 3c42 9985 8599 423c
 
 
-@canvas/stack $100 &cap $1
+@canvas/stack $100 &cap $2
 @canvas/buf
