@@ -75,30 +75,43 @@
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
+@rom/<put> ( byte addr* -- )
+	,&dst STR2
+	,&v STR
+	;&mmu-put .System/expansion DEO2
+	JMP2r
+
+	&mmu-put [ 00 0001 0001 &dst $2 &v $1 ]
+	&mmu-get [ 01 0001 0001 &src $2 0000 =&buf ] &buf $1
+
 @rom/<emit> ( -- )
 	;dict/assembled err/<pstr>
 	#20 err/<pchr>
 	;dst/buf err/<pstr>
 	;dict/in err/<pstr>
-	/get-length DUP2 err/<pdec>
+	;head/length LDA2 DUP2 #0100 SUB2 err/<pdec>
 	;dict/bytes err/<pstr>
-	( | write rom )
+	( | emit rom )
 	;dst/buf .File/name DEO2
-	.File/length DEO2
-	;&output .File/write DEO2
-	( | write rom.sym )
+	#0001 .File/length DEO2
+	#0100
+	&>ler
+		DUP2 ,&src STR2
+		;&mmu-get .System/expansion DEO2
+		;&buf .File/write DEO2
+		INC2 GTH2k ?&>ler
+	POP2 POP2
+	( | emit sym )
 	;dict/sym-ext dst/<push-str>
-	[ LIT2 80 -System/state ] DEI NEQ ?{
-		;dst/buf .File/name DEO2
-		;syms/ptr LDA2 ;syms/mem
-		&>l
-			#0002 .File/length DEO2
-			DUP2 .File/write DEO2
-			#0003 ADD2 DUP2 str/cap SWP2k SUB2 .File/length DEO2
-			SWP2 .File/write DEO2
-			GTH2k ?&>l
-		POP2 POP2 }
-	JMP2r
+	;dst/buf .File/name DEO2
+	;syms/ptr LDA2 ;syms/mem
+	&>les
+		#0002 .File/length DEO2
+		DUP2 .File/write DEO2
+		#0003 ADD2 DUP2 str/cap SWP2k SUB2 .File/length DEO2
+		SWP2 .File/write DEO2
+		GTH2k ?&>les
+	POP2 POP2 JMP2r
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&Path "Path $1
@@ -109,7 +122,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Sep 20 "2025 $2
+	( date ) "18 20 "Sep 20 "2025 $2
 
 
 
@@ -624,22 +637,16 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	head/get-inc ;&mem ADD2
-	( | test boundary )
-	INC2k ;rom/output GTH2 ?{
+	head/get-inc
+	( | test zero-page )
+	OVR ?{
 		POP2 POP
-		( ! ) ;dict/too-far ;dict/Writing !err/<token> }
-	STA
-	JMP2r
-
-@rom/get-length ( -- length* )
-	;&output #ffff
-	&>lg
-		LDAk ?{ #0001 SUB2 NEQ2k ?&>lg }
-	SWP2 SUB2 INC2 JMP2r
+		( ! ) ;dict/zero-page ;dict/Writing !err/<token> }
+	!rom/<put>
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
+	INC2k [ LIT2 &length 0100 ] LTH2 ?{ INC2k ,&length STR2 }
 	JMP2r
 
 @head/get ( -- addr* )
@@ -753,6 +760,7 @@
 	&invalid "invalid $1
 	&duplicate "duplicate $1
 	&too-far "too 20 "far $1
+	&zero-page "zero-page $1
 	&open "open $1
 	&trail ".. $1
 	&reset "RESET $1

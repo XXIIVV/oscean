@@ -1,6 +1,4 @@
-( cat input.tal
-| uxncli drifloon.rom >
-	output.rom )
+( cat input.tal | uxncli drifloon.rom > output.rom )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
@@ -24,13 +22,17 @@
 	assembly/<resolve>
 	BRK
 
+@rom/<put> ( byte addr* -- )
+	;&mem ADD2 STA
+	JMP2r
+
 @rom/<emit> ( -- )
 	;dict/assembled err/<pstr>
 	;dict/in err/<pstr>
-	/get-length DUP2 err/<pdec>
+	;head/length LDA2 DUP2 #0100 SUB2 err/<pdec>
 	;dict/bytes err/<pstr>
 	( | write )
-	;rom/output ADD2 ;rom/output
+	;rom/mem ADD2 ;rom/output
 	&>l
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
@@ -47,7 +49,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Sep 20 "2025 $2
+	( date ) "19 20 "Sep 20 "2025 $2
 
 
 
@@ -562,22 +564,16 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	head/get-inc ;&mem ADD2
-	( | test boundary )
-	INC2k ;rom/output GTH2 ?{
+	head/get-inc
+	( | test zero-page )
+	OVR ?{
 		POP2 POP
-		( ! ) ;dict/too-far ;dict/Writing !err/<token> }
-	STA
-	JMP2r
-
-@rom/get-length ( -- length* )
-	;&output #ffff
-	&>lg
-		LDAk ?{ #0001 SUB2 NEQ2k ?&>lg }
-	SWP2 SUB2 INC2 JMP2r
+		( ! ) ;dict/zero-page ;dict/Writing !err/<token> }
+	!rom/<put>
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
+	INC2k [ LIT2 &length 0100 ] LTH2 ?{ INC2k ,&length STR2 }
 	JMP2r
 
 @head/get ( -- addr* )
@@ -691,6 +687,7 @@
 	&invalid "invalid $1
 	&duplicate "duplicate $1
 	&too-far "too 20 "far $1
+	&zero-page "zero-page $1
 	&open "open $1
 	&trail ".. $1
 	&reset "RESET $1
