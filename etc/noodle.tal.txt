@@ -17,6 +17,7 @@
 	@canvas/rect &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
 	@window/cols $1 &rows $1
 	@filepath/buf $40
+	@zoom/active $1 &x $2 &y $2
 
 |100
 
@@ -52,7 +53,7 @@
 @meta 00 "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "17 20 "Sep 20 "2025 00 01
+	( date ) "22 20 "Sep 20 "2025 00 01
 	( icon ) 83 =appicon
 
 (
@@ -66,12 +67,13 @@
 	JMP2r
 
 @on-mouse ( -> )
-	.Mouse/y DEI2 #000c LTH2 ?menu/<trap>
+	.Mouse/y DEI2 #0010 LTH2 ?menu/<trap>
 	( | test area )
 	.Mouse/x DEI2 .Mouse/y DEI2
 	( | handlers )
-	OVR2 OVR2 .panel/rect within-rect ?panel/capture
-	OVR2 OVR2 .canvas/rect within-rect ?canvas/capture
+	OVR2 OVR2 .panel/rect within-rect ?panel/<capture>
+	.zoom/active LDZ ?zoom/<capture>
+	OVR2 OVR2 .canvas/rect within-rect ?canvas/<capture>
 	POP2 POP2
 	( | Continue .. )
 	cursor/<update>
@@ -86,9 +88,8 @@
 @on-drag ( x* y* -> )
 	.pointer/drag LDZ #08 ADD LDZ2 JMP2
 
-@on-mouse-release ( -> )
+@on-mouse-release ( x* y* -> )
 	cursor/<clear>
-	zoom/<clear>
 	POP2 POP2 ;on-mouse .Mouse/vector DEO2
 	BRK
 
@@ -140,10 +141,10 @@
 	;canvas/buf .File/write DEO2 !filestate/<unchange>
 
 @filepath/<draw> ( -- )
-	#00d8 .Screen/x DEO2
+	#0100 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	[ LIT2 01 -Screen/auto ] DEO
-	#08 ;font/color STA
+	#08 font/<set-color>
 	LIT "- font/<draw-chr>
 	LIT 20 font/<draw-chr>
 	;&buf font/draw-str POP2 JMP2r
@@ -200,7 +201,7 @@
 (
 @|Panel )
 
-@panel/capture ( x* y* -> )
+@panel/<capture> ( x* y* -> )
 	cursor/<clear>
 	;&on-mouse .Mouse/vector DEO2
 	POP2 POP2 BRK
@@ -281,7 +282,7 @@
 @panel/<draw-shadow> ( -- )
 	.&x LDZ2 .Screen/x DEO2
 	.&y LDZ2 .Screen/y DEO2
-	#ef22 ;hash-icn [ LIT2 43 -Screen/sprite ] !<draw-times>
+	#ef22 ;hash2-icn [ LIT2 43 -Screen/sprite ] !<draw-times>
 
 @panel/<clear> ( -- )
 	.&x LDZ2 .Screen/x DEO2
@@ -351,7 +352,7 @@
 %<draw-lb> ( -- ) {
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2 }
 
-@canvas/capture ( x* y* -> )
+@canvas/<capture> ( x* y* -> )
 	cursor/<clear>
 	;&on-mouse .Mouse/vector DEO2
 	POP2 POP2 BRK
@@ -372,7 +373,7 @@
 	( | is not covered )
 	#0010 .Screen/y DEO2
 	[ LIT2 01 -Screen/auto ] DEO
-	#0000 ;window/cols LDZ SUB ;window/rows LDZ SUB ;hash2-icn [ LIT2 0b -Screen/sprite ] !<draw-rect>
+	#0000 ;window/cols LDZ SUB ;window/rows LDZ SUB ;hash-icn [ LIT2 08 -Screen/sprite ] !<draw-rect>
 
 @canvas/<set-size> ( w h -- )
 	( clamp x ) SWP .window/cols LDZ LTHk [ JMP SWP ] POP SWP
@@ -394,7 +395,7 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	.Screen/width DEI2 #0030 SUB2 .Screen/x DEO2
 	#0004 .Screen/y DEO2
-	#0b ;font/color STA
+	#0b font/<set-color>
 	.&size LDZ2 !font/<draw-size>
 
 @canvas/get-length ( -- length* )
@@ -464,11 +465,13 @@
 
 @canvas/<draw> ( -- )
 	.&size LDZ2 ORA ?{ JMP2r }
+	.zoom/active LDZ ?zoom/<draw>
 	[ LIT2 05 -Screen/auto ] DEO
 	.&y LDZ2 .Screen/y DEO2
 	.&x LDZ2 ;&w LDZ SUB ;&h LDZ SUB ;&buf [ LIT2 01 -Screen/sprite ] !<draw-rect>
 
 @canvas/<draw-tile> ( x h -- )
+	.zoom/active LDZ ?zoom/<draw-tile>
 	DUP2 canvas/get-row-icn .Screen/addr DEO2
 	#00 SWP #30 SFT2 .canvas/y LDZ2 ADD2 .Screen/y DEO2
 	#00 SWP #30 SFT2 .canvas/x LDZ2 ADD2 .Screen/x DEO2
@@ -485,8 +488,12 @@
 	POP2 POP2 STH2r #00 JMP2r
 
 @canvas/<request> ( x* y* -- )
-	#03 SFT2 NIP STH
-	#03 SFT2 NIP STHr /find ?{ DUP2 /<push> }
+	.zoom/active LDZ ?{
+		#03 SFT2 NIP STH
+		#03 SFT2 NIP STHr /find ?{ DUP2 /<push> }
+		POP2 JMP2r }
+	.zoom/y LDZ2 SUB2 NIP STH
+	.zoom/x LDZ2 SUB2 NIP STHr /find ?{ DUP2 /<push> }
 	POP2 JMP2r
 
 @canvas/<push> ( xy* -- )
@@ -503,6 +510,7 @@
 	JMP2r
 
 @canvas/on-frame ( -> )
+	[ LIT2 01 -Screen/auto ] DEO
 	,&ptr LDR2 ;&stack
 	&>lo
 		LDA2k /<draw-tile>
@@ -570,6 +578,91 @@
 	( update ) .&size LDZ2 #0100 ADD2 !/<set-size>
 
 (
+@|Zoom )
+
+@zoom/<capture> ( x* y* -> )
+	cursor/<clear>
+	;&on-mouse .Mouse/vector DEO2
+	POP2 POP2 BRK
+
+@zoom/on-mouse ( -> )
+	cursor/<update>
+	.Mouse/x DEI2 .Mouse/y DEI2
+	( | handlers )
+	OVR2 OVR2 .panel/rect within-rect ?on-mouse-release
+	DUP2 #0011 LTH2 ?on-mouse-release
+	( y ) #0010 SUB2 #03 SFT2 .&y LDZ2 ADD2 SWP2
+	( x ) #03 SFT2 .&x LDZ2 ADD2 SWP2 brush/get-tool JMP2
+
+@zoom/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#0010 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	[ LIT2 01 -Screen/auto ] DEO
+	;window/rows LDZ #0000
+	&>ver
+		DUP2 .&y LDZ2 ADD2 STH2
+		;window/cols LDZ #0000
+		&>hor
+			DUP2 .&x LDZ2 ADD2 STH2kr /<draw-pixel>
+			INC2 GTH2k ?&>hor
+		POP2 POP2 POP2r #0000 .Screen/x DEO2
+		<draw-lb>
+		INC2 GTH2k ?&>ver
+	POP2 POP2 JMP2r
+
+@zoom/<draw-tile> ( x h -- )
+	STH
+	#00 STHkr #30 SFT2 #0010 ADD2 .Screen/y DEO2
+	#00 SWP DUP2 #30 SFT2 .Screen/x DEO2
+	.&x LDZ2 ADD2 #00 STHr .&y LDZ2 ADD2
+	( >> )
+
+@zoom/<draw-pixel> ( x* y* -- )
+	DUP #07 AND ?{
+		;ver-icn .Screen/addr DEO2
+		[ LIT2 05 -Screen/sprite ] DEO
+		.Screen/x DEI2k #0008 SUB2 ROT DEO2 }
+	OVR2 NIP #07 AND ?{
+		;hor-icn .Screen/addr DEO2
+		[ LIT2 05 -Screen/sprite ] DEO
+		.Screen/x DEI2k #0008 SUB2 ROT DEO2 }
+	canvas/get-pixel DUP #02 EQU ?{
+		#00 SWP #30 SFT2 ;pixel-icns ADD2 .Screen/addr DEO2
+		[ LIT2 05 -Screen/sprite ] DEO
+		JMP2r }
+	POP ;hash2-icn .Screen/addr DEO2
+	[ LIT2 08 -Screen/sprite ] DEO
+	JMP2r
+
+@zoom/<toggle> ( -- )
+	.&active LDZ ?{
+		#01 .&active STZ
+		;&on-mouse .Mouse/vector DEO2
+		canvas/<draw-bg>
+		canvas/<draw> !panel/<draw> }
+	#00 .&active STZ
+	;on-mouse .Mouse/vector DEO2
+	canvas/<draw-bg>
+	canvas/<draw> !panel/<draw>
+
+@zoom/move-u ( -- )
+	.&y LDZ2 #0001 SUB2 .&y STZ2
+	canvas/<draw> !panel/<draw>
+
+@zoom/move-d ( -- )
+	.&y LDZ2 INC2 .&y STZ2
+	canvas/<draw> !panel/<draw>
+
+@zoom/move-l ( -- )
+	.&x LDZ2 #0001 SUB2 .&x STZ2
+	canvas/<draw> !panel/<draw>
+
+@zoom/move-r ( -- )
+	.&x LDZ2 INC2 .&x STZ2
+	canvas/<draw> !panel/<draw>
+
+(
 @|Font )
 
 @font/get-width ( str* -- width* )
@@ -605,6 +698,10 @@
 	[ LIT2 &color 03 -Screen/sprite ] DEO
 	JMP2r
 
+@font/<set-color> ( color -- )
+	,&color STR
+	JMP2r
+
 @cursor/<clear> ( -- )
 	;Screen/auto DEO
 	#40 ;fill-icn !/<draw>
@@ -621,39 +718,6 @@
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
-	JMP2r
-
-@zoom/<clear> ( -- )
-	[ LIT &clean $1 ] ?{
-		[ LIT2 01 _&clean ] STR
-		[ LIT2 &x $2 ] .Screen/x DEO2
-		[ LIT2 &y $2 ] .Screen/y DEO2
-		#f782 ;fill-icn [ LIT2 40 -Screen/sprite ] !<draw-times> }
-	JMP2r
-
-@zoom/<redraw> ( x* y* -- )
-	/<clear>
-	.Mouse/x DEI2 #0020 SUB2 DUP2 ,&x STR2
-	DUP2 ,&anchor STR2
-	.Screen/x DEO2
-	.Mouse/y DEI2 #0020 SUB2 DUP2 ,&y STR2
-	.Screen/y DEO2
-	#0004 SUB2 ,&offy STR2
-	#0004 SUB2 ,&offx STR2
-	;fill-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/auto ] DEO
-	#0900
-	&>ver
-		STHk #0900
-		&>hor
-			( x ) #00 OVR [ LIT2 &offx $2 ] ADD2
-			( y ) #00 STHkr [ LIT2 &offy $2 ] ADD2 canvas/get-pixel #01 AND
-			( draw ) INC INC #40 ORA .Screen/sprite DEO
-			INC GTHk ?&>hor
-		POP2 POPr [ LIT2 &anchor $2 ] .Screen/x DEO2
-		<draw-lb>
-		INC GTHk ?&>ver
-	POP2 #00 ;&clean STA
 	JMP2r
 
 (
@@ -1055,20 +1119,20 @@
 @box/hover ( x* y* -> )
 	POP2 POP2 BRK
 
-@magnify/down ( x* y* -> )
-	.Mouse/state DEI #02 LTH canvas/<set-pixel>
+@magnify/up ( x* y* -> )
+	;window/rows LDZ #01 SFT2 SUB2 .zoom/y STZ2
+	;window/cols LDZ #01 SFT2 SUB2 .zoom/x STZ2
+	zoom/<toggle>
 	BRK
 
-@magnify/up ( x* y* -> )
+@magnify/hover ( x* y* -> )
+	( >> )
+
+@magnify/down ( x* y* -> )
 	( >> )
 
 @magnify/drag ( x* y* -> )
-	( >> )
-
-@magnify/hover ( x* y* -> )
-	zoom/<redraw>
-	#45 ;pointers-icns cursor/<draw>
-	BRK
+	POP2 POP2 BRK
 
 (
 @|tga )
@@ -1152,7 +1216,7 @@
 	#0004 .Screen/y DEO2
 	[ LIT2r &sel ff 00 ] [ LIT2 &manifest =manifest ]
 	&>cat
-		#0b09 EQUkr STHr [ JMP SWP POP ] ;font/color STA
+		#0b09 EQUkr STHr [ JMP SWP POP ] font/<set-color>
 		INC2k font/draw-str POP2 #20 font/<draw-chr>
 		skip-sub INCr LDAk ?&>cat
 	POP2 POP2r JMP2r
@@ -1275,7 +1339,7 @@
 		LDAk STH
 		INC2 str/cap STHr #00
 		&>subcat
-			STHk #0b09 STHr [ LIT &sel-sub ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;font/color STA
+			STHk #0b09 STHr [ LIT &sel-sub ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND font/<set-color>
 			[ LIT2 &anchor $2 ] .Screen/x DEO2
 			#00 OVR INC #30 SFT2 #0004 ADD2 .Screen/y DEO2
 			SWP2 /<draw-label>
@@ -1442,6 +1506,12 @@
 		41 00 =canvas/crop-w "Crop 20 "Width $1
 		81 00 =canvas/size-w "Size 20 "Width $1
 		00 09 =canvas/invert "Invert $1 ]
+	05 "Zoom $1 [
+		02 00 =zoom/<toggle> "Toggle $1
+		10 00 =zoom/move-u "Up $1
+		20 00 =zoom/move-d "Down $1
+		40 00 =zoom/move-l "Left $1
+		80 00 =zoom/move-r "Right $1 ]
 	09 "Tool $1 [
 		00 "q =brush/<set-tool-pen> "Pen $1
 		00 "w =brush/<set-tool-brush> "Brush $1
@@ -1465,17 +1535,18 @@
 
 ( icn )
 
-@hand-icn [ 2020 20b8 7c7c 3838 ]
-@blank-icn [ 0000 0000 0000 0000 ]
-@fill-icn [ ffff ffff ffff ffff ]
-@hash-icn [ cccc 3333 cccc 3333 ]
-@diag-icn [ 0000 0010 0000 0000 ]
-
-@state-icn
-	1038 7cfe 7c38 1000
-@eyes-icns
-	0000 0082 4438 0000
-	0038 4492 2810 0000
+@hand-icn   [ 2020 20b8 7c7c 3838 ]
+@blank-icn  [ 0000 0000 0000 0000 ]
+@fill-icn   [ ffff ffff ffff ffff ]
+@hash-icn   [ aa55 aa55 aa55 aa55 ]
+@hash2-icn  [ cccc 3333 cccc 3333 ]
+@hash3-icn  [ aa00 8000 8000 8000 ]
+@diag-icn   [ 0000 0010 0000 0000 ]
+@state-icn  [ 1038 7cfe 7c38 1000 ]
+@ver-icn    [ ff00 0000 0000 0000 ]
+@hor-icn    [ 8080 8080 8080 8080 ]
+@pixel-icns [ aa00 8000 8000 8000 aa7f ff7f ff7f ff7f ]
+@eyes-icns  [ 0000 0082 4438 0000 0038 4492 2810 0000 ]
 
 @size-icns
 	0000 0010 0000 0000
@@ -1528,13 +1599,12 @@
 @menu/bg-icn [
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
-@hash2-icn [ aa00 8000 8000 8000 ]
 
 @appicon [
-	0000 0000 0000 0000 0000 0000 0000 0001 0000 0000 0000 78fc 0c1e 1e07 037b 8503 
-	0000 0000 0000 0078 0000 0000 0000 7884 0101 0303 0303 0303 0202 0404 0404 0707 
-	feff fff9 f6e9 c9e6 0100 0006 0f1f 3fff fcfc fefe fe7e 3e7c 0202 0101 0181 c3fe 
-	0301 0100 0000 0000 0703 0301 0000 0000 f9ff ffff 7f37 0500 ffff ffff ff7f 3f07 
+	0000 0000 0000 0000 0000 0000 0000 0001 0000 0000 0000 78fc 0c1e 1e07 037b 8503
+	0000 0000 0000 0078 0000 0000 0000 7884 0101 0303 0303 0303 0202 0404 0404 0707
+	feff fff9 f6e9 c9e6 0100 0006 0f1f 3fff fcfc fefe fe7e 3e7c 0202 0101 0181 c3fe
+	0301 0100 0000 0000 0703 0301 0000 0000 f9ff ffff 7f37 0500 ffff ffff ff7f 3f07
 	fcf8 f8f0 e0c0 0000 fefc fcf8 f0e0 c000 ]
 
 @font/spritesheet ( atari8 )
