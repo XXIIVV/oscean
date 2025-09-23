@@ -619,19 +619,22 @@
 	( >> )
 
 @zoom/<draw-pixel> ( x* y* -- )
-	DUP #07 AND ?{
-		;ver-icn .Screen/addr DEO2
-		[ LIT2 05 -Screen/sprite ] DEO
-		.Screen/x DEI2k #0008 SUB2 ROT DEO2 }
-	OVR2 NIP #07 AND ?{
-		;hor-icn .Screen/addr DEO2
-		[ LIT2 05 -Screen/sprite ] DEO
-		.Screen/x DEI2k #0008 SUB2 ROT DEO2 }
-	canvas/get-pixel DUP #02 EQU ?{
+	OVR2 OVR2 canvas/get-pixel DUP #02 EQU ?{
 		#00 SWP #30 SFT2 ;pixel-icns ADD2 .Screen/addr DEO2
-		[ LIT2 05 -Screen/sprite ] DEO
-		JMP2r }
-	POP ;hash2-icn .Screen/addr DEO2
+		[ LIT2 01 -Screen/sprite ] DEO
+		( | ver )
+		#07 AND ?{
+			.Screen/x DEI2k #0008 SUB2 ROT DEO2
+			;ver-icn .Screen/addr DEO2
+			[ LIT2 05 -Screen/sprite ] DEO }
+		POP
+		( | hor )
+		#07 AND ?{
+			.Screen/x DEI2k #0008 SUB2 ROT DEO2
+			;hor-icn .Screen/addr DEO2
+			[ LIT2 05 -Screen/sprite ] DEO }
+		POP JMP2r }
+	POP POP2 POP2 ;hash2-icn .Screen/addr DEO2
 	[ LIT2 08 -Screen/sprite ] DEO
 	JMP2r
 
