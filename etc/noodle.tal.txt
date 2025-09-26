@@ -53,7 +53,7 @@
 @meta 00 "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "22 20 "Sep 20 "2025 00 01
+	( date ) "25 20 "Sep 20 "2025 00 01
 	( icon ) 83 =appicon
 
 (
@@ -256,10 +256,6 @@
 	;&on-drag .Mouse/vector DEO2
 	BRK
 
-@panel/<stick> ( -- )
-	.canvas/x LDZ2 #0019 SUB2 .canvas/y LDZ2
-	( >> )
-
 @panel/<set-position> ( x* y* -- )
 	DUP2 #8000 GTH2 ?&invalid
 	OVR2 #8000 GTH2 ?&invalid
@@ -282,7 +278,7 @@
 @panel/<draw-shadow> ( -- )
 	.&x LDZ2 .Screen/x DEO2
 	.&y LDZ2 .Screen/y DEO2
-	#ef22 ;hash2-icn [ LIT2 43 -Screen/sprite ] !<draw-times>
+	#ef22 ;fill-icn [ LIT2 42 -Screen/sprite ] !<draw-times>
 
 @panel/<clear> ( -- )
 	.&x LDZ2 .Screen/x DEO2
@@ -376,8 +372,10 @@
 	#0000 ;window/cols LDZ SUB ;window/rows LDZ SUB ;hash-icn [ LIT2 08 -Screen/sprite ] !<draw-rect>
 
 @canvas/<set-size> ( w h -- )
-	( clamp x ) SWP .window/cols LDZ LTHk [ JMP SWP ] POP SWP
-	( clamp y ) .window/rows LDZ #02 SUB LTHk [ JMP SWP ] POP
+	( max x ) SWP .window/cols LDZ LTHk [ JMP SWP ] POP
+	( min x ) #02 GTHk [ JMP SWP ] POP SWP
+	( max y ) .window/rows LDZ #02 SUB LTHk [ JMP SWP ] POP
+	( min y ) #02 GTHk [ JMP SWP ] POP
 	( change name ) DUP2 filepath/<put-size>
 	.&h STZ
 	.&w STZ
@@ -387,9 +385,9 @@
 	.&x STZ2
 	.Screen/height DEI2 #01 SFT2 ;&h LDZ STH2k #20 SFT2 SUB2 #0008 ADD2 DUP2 STH2r #30 SFT2 ADD2 .&y2 STZ2
 	.&y STZ2
+	zoom/<center>
 	/<draw-bg>
-	/<draw>
-	panel/<stick> !panel/<draw>
+	/<draw> !panel/<draw>
 
 @canvas/<draw-size> ( -- )
 	[ LIT2 01 -Screen/auto ] DEO
@@ -451,12 +449,15 @@
 	( save ) ROT ROT STA
 	JMP2r
 
-@canvas/clean-pixel ( x* y* -- )
-	OVR2 OVR2 #0001 SUB2 /get-pixel STH
-	OVR2 INC2 OVR2 /get-pixel DUP ADD STH
-	ADDr OVR2 OVR2 INC2 /get-pixel #20 SFT STH
-	ADDr OVR2 #0001 SUB2 OVR2 /get-pixel #30 SFT STH
-	ADDr STHr DUP #03 EQU ?&remove
+@canvas/<clean-pixel> ( x* y* -- )
+	OVR2 OVR2 canvas/<request>
+	( u ) OVR2 OVR2 #0001 SUB2 /get-pixel STH
+	( r ) OVR2 INC2 OVR2 /get-pixel DUP ADD STH
+	( d ) OVR2 OVR2 INC2 /get-pixel #20 SFT STH
+	( l ) OVR2 #0001 SUB2 OVR2 /get-pixel #30 SFT STH
+	ORA2r ORAr STHr
+	( | handlers )
+	DUP #03 EQU ?&remove
 	DUP #06 EQU ?&remove
 	DUP #09 EQU ?&remove
 	DUP #0c EQU ?&remove
@@ -472,9 +473,9 @@
 
 @canvas/<draw-tile> ( x h -- )
 	.zoom/active LDZ ?zoom/<draw-tile>
-	DUP2 canvas/get-row-icn .Screen/addr DEO2
-	#00 SWP #30 SFT2 .canvas/y LDZ2 ADD2 .Screen/y DEO2
-	#00 SWP #30 SFT2 .canvas/x LDZ2 ADD2 .Screen/x DEO2
+	DUP2 /get-row-icn .Screen/addr DEO2
+	#00 SWP #30 SFT2 .&y LDZ2 ADD2 .Screen/y DEO2
+	#00 SWP #30 SFT2 .&x LDZ2 ADD2 .Screen/x DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
 	JMP2r
 
@@ -500,13 +501,12 @@
 	[ LIT2 &ptr =&stack ] INC2k INC2
 	( | overflow )
 	DUP2 ;&cap LTH2 ?{
-		POP2 POP2 POP2 ;&stack ,&ptr STR2
-		;canvas/on-frame-full .Screen/vector DEO2
+		POP2 POP2 POP2 ;&on-frame-full .Screen/vector DEO2
 		JMP2r }
 	( | push )
 	,&ptr STR2
 	STA2
-	;canvas/on-frame .Screen/vector DEO2
+	;&on-frame .Screen/vector DEO2
 	JMP2r
 
 @canvas/on-frame ( -> )
@@ -515,13 +515,15 @@
 	&>lo
 		LDA2k /<draw-tile>
 		INC2 INC2 GTH2k ?&>lo
-	POP2 POP2 ;&stack ,&ptr STR2
+	POP2 POP2 panel/<draw>
+	;&stack ;&ptr STA2
 	#0000 .Screen/vector DEO2
 	BRK
 
 @canvas/on-frame-full ( -> )
 	/<draw>
-	;&stack ,&ptr STR2
+	panel/<draw>
+	;&stack ;&ptr STA2
 	#0000 .Screen/vector DEO2
 	BRK
 
@@ -634,7 +636,25 @@
 			;hor-icn .Screen/addr DEO2
 			[ LIT2 05 -Screen/sprite ] DEO }
 		POP JMP2r }
-	POP POP2 POP2 ;hash2-icn .Screen/addr DEO2
+	POP
+	( | handle borders )
+	DUP2 ;canvas/h LDZ #30 SFT2 NEQ2 ?{
+		OVR2 ;canvas/w LDZ #30 SFT2 GTH2 ?{
+			POP2
+			( | corner )
+			;canvas/w LDZ #30 SFT2 NEQ2 ?{
+				;&border-corner .Screen/addr DEO2
+				[ LIT2 81 -Screen/sprite ] DEO
+				JMP2r }
+			;&border-bottom .Screen/addr DEO2
+			[ LIT2 81 -Screen/sprite ] DEO
+			JMP2r } }
+	OVR2 ;canvas/w LDZ #30 SFT2 NEQ2 ?{
+		DUP2 ;canvas/h LDZ #30 SFT2 GTH2 ?{
+			POP2 POP2 ;&border-right .Screen/addr DEO2
+			[ LIT2 81 -Screen/sprite ] DEO
+			JMP2r } }
+	POP2 POP2 ;hash2-icn .Screen/addr DEO2
 	[ LIT2 08 -Screen/sprite ] DEO
 	JMP2r
 
@@ -648,6 +668,11 @@
 	;on-mouse .Mouse/vector DEO2
 	canvas/<draw-bg>
 	canvas/<draw> !panel/<draw>
+
+@zoom/<center> ( -- )
+	#0000 .Screen/width DEI2 #04 SFT2 SUB2 [ LIT2 00 -canvas/w ] LDZ #31 SFT2 ADD2 .&x STZ2
+	#0000 .Screen/height DEI2 #04 SFT2 SUB2 [ LIT2 00 -canvas/h ] LDZ #31 SFT2 ADD2 .&y STZ2
+	JMP2r
 
 @zoom/move-u ( -- )
 	.&y LDZ2 #0001 SUB2 .&y STZ2
@@ -714,7 +739,9 @@
 	;Screen/auto DEO
 	#45 ;pointers-icns .Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
-	( >> )
+	/<draw>
+	[ LIT2 42 -Screen/pixel ] DEO
+	JMP2r
 
 @cursor/<draw> ( color addr* -- )
 	.Screen/addr DEO2
@@ -828,17 +855,17 @@
 	POP2 JMP2r
 
 @brush/<paint-magic> ( x* y* -- )
-	STH2
-	STH2
-	.&size LDZ #00
+	,&ym STR2
+	,&xm STR2
+	#0700
 	&>verm
-		.&size LDZ #00
+		STHk #0700
 		&>horm
-			OVR2 NIP OVR SWP #00 SWP ROT #00 SWP STH2kr SWP2r STH2kr SWP2r ROT2 ADD2 ROT2 ROT2 ADD2 SWP2
-			( skip blanks ) OVR2 OVR2 canvas/get-pixel #00 EQU ?&blank
-			OVR2 OVR2 canvas/clean-pixel OVR2 OVR2 canvas/<request> &blank POP2 POP2 INC GTHk ?&>horm
-		POP2 INC GTHk ?&>verm
-	POP2 POP2r POP2r JMP2r
+			( x ) #00 OVR [ LIT2 &xm $2 ] ADD2
+			( y ) #00 STHkr [ LIT2 &ym $2 ] ADD2 canvas/<clean-pixel>
+			INC GTHk ?&>horm
+		POP2 POPr INC GTHk ?&>verm
+	POP2 JMP2r
 
 @brush/<apply> ( x* y* -- )
 	ROTk ROT POP .&patt-fn LDZ2 JSR2 ?{ POP2 POP2 JMP2r }
@@ -948,12 +975,6 @@
 	=&full =&a =&b =&c
 	=&diag-r =&diag-l =&ver =&hor ]
 
-@guide/<draw-line> ( -- )
-	.&x LDZ2 .&y LDZ2 .&x2 LDZ2 .&y2 LDZ2 ;&do-draw !line/<paint>
-
-@guide/<clear-line> ( -- )
-	.&x LDZ2 .&y LDZ2 .&x2 LDZ2 .&y2 LDZ2 ;&do-clear !line/<paint>
-
 @guide/do-draw ( x* y* -- )
 	.Screen/y DEO2
 	.Screen/x DEO2
@@ -966,12 +987,23 @@
 	[ LIT2 40 -Screen/pixel ] DEO
 	JMP2r
 
+@guide/<draw-line> ( -- )
+	.zoom/active LDZ ?{
+		.&x LDZ2 .&y LDZ2 .&x2 LDZ2 .&y2 LDZ2 ;&do-draw !line/<paint> }
+	JMP2r
+
+@guide/<clear-line> ( -- )
+	.zoom/active LDZ ?{
+		.&x LDZ2 .&y LDZ2 .&x2 LDZ2 .&y2 LDZ2 ;&do-clear !line/<paint> }
+	JMP2r
+
 @guide/<clear-rect> ( -- )
-	#40 !guide/<line-rect>
+	.zoom/active LDZ ?{ #40 !guide/<line-rect> }
+	JMP2r
 
 @guide/<draw-rect> ( -- )
-	#42
-	( >> )
+	.zoom/active LDZ ?{ #42 !guide/<line-rect> }
+	JMP2r
 
 @guide/<line-rect> ( color -- )
 	STH
@@ -1550,6 +1582,9 @@
 @hor-icn    [ 8080 8080 8080 8080 ]
 @pixel-icns [ aa00 8000 8000 8000 aa7f ff7f ff7f ff7f ]
 @eyes-icns  [ 0000 0082 4438 0000 0038 4492 2810 0000 ]
+@zoom/border-bottom [ ff00 0000 0000 0000 0033 cccc 3333 cccc ]
+@zoom/border-right  [ 8080 8080 8080 8080 3333 4c4c 3333 4c4c ]
+@zoom/border-corner [ 8000 0000 0000 0000 3333 cccc 3333 cccc ]
 
 @size-icns
 	0000 0010 0000 0000
