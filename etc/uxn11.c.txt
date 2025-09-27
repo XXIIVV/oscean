@@ -25,15 +25,10 @@ cc -DNDEBUG -O2 -g0 -s src/uxn11.c -lX11 -lutil -o bin/uxn11
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 
-typedef struct {
-	Uint8 dat[0x100], ptr;
-} Stack;
-
 static XImage *ximage;
 static Display *display;
 static Window window;
-static Uint8 *ram, dev[0x100];
-static Stack wst, rst;
+static Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
 
 Uint8 emu_dei(const Uint8 port);
 void emu_deo(const Uint8 port, const Uint8 value);
@@ -57,25 +52,25 @@ void emu_deo(const Uint8 port, const Uint8 value);
 	case 0x20|opc: {const int _2=1,_r=0;A B;} break;\
 	case 0x40|opc: {const int _2=0,_r=1;A B;} break;\
 	case 0x60|opc: {const int _2=1,_r=1;A B;} break;\
-	case 0x80|opc: {const int _2=0,_r=0;int k=wst.ptr;A wst.ptr=k;B;} break;\
-	case 0xa0|opc: {const int _2=1,_r=0;int k=wst.ptr;A wst.ptr=k;B;} break;\
-	case 0xc0|opc: {const int _2=0,_r=1;int k=rst.ptr;A rst.ptr=k;B;} break;\
-	case 0xe0|opc: {const int _2=1,_r=1;int k=rst.ptr;A rst.ptr=k;B;} break;\
+	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[_r];A ptr[_r]=k;B;} break;\
 }
 
 /* Microcode */
 
-#define REM if(_r) rst.ptr -= 1 + _2; else wst.ptr -= 1 + _2;
+#define REM    ptr[_r] -= 1 + _2;
+#define DEC(m) stk[m][--ptr[m]]
+#define INC(m) stk[m][ptr[m]++]
 #define IMM(o) o = ram[pc] << 8 | ram[pc + 1], pc += 2;
 #define MOV(x) { if(_2) pc = x; else pc += (signed char)x; }
-#define DEC(s) s.dat[--s.ptr]
-#define PO1(o) { if(_r) o = DEC(rst); else o = DEC(wst); }
-#define PO2(o) { PO1(o) if(_r) o |= DEC(rst) << 8; else o |= DEC(wst) << 8; }
+#define PO1(o) { o = DEC(_r); }
+#define PO2(o) { o = DEC(_r) | DEC(_r) << 8; }
 #define POx(o) { if(_2) PO2(o) else PO1(o) }
 #define GOT(o) { if(_2) PO1(o[1]) PO1(o[0]) }
-#define INC(s) s.dat[s.ptr++]
-#define RP1(i) { if(_r) INC(wst) = i; else INC(rst) = i; }
-#define PU1(i) { if(_r) INC(rst) = i; else INC(wst) = i; }
+#define RP1(i) { INC(!_r) = i; }
+#define PU1(i) { INC(_r) = i; }
 #define PUx(i) { if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i) }
 #define PUT(i) { PU1(i[0]) if(_2) PU1(i[1]) }
 #define DEI(i,o) o[0] = emu_dei(i); if(_2) o[1] = emu_dei(i + 1); PUT(o)
@@ -86,17 +81,17 @@ void emu_deo(const Uint8 port, const Uint8 value);
 static unsigned int
 uxn_eval(unsigned short pc)
 {
-	unsigned int a, b, c, x[2], y[2], z[2], step = 0x8000000;
+	unsigned int a, b, c, x[2], y[2], z[2], step = 0x80000000;
 	while(step--) {
 		switch(ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
-		/* JCI */ case 0x20: IMM(c) if(DEC(wst)) pc += c; break;
+		/* JCI */ case 0x20: IMM(c) if(DEC(0)) pc += c; break;
 		/* JMI */ case 0x40: IMM(c) pc += c; break;
-		/* JSI */ case 0x60: IMM(c) INC(rst) = pc >> 8, INC(rst) = pc, pc += c; break;
-		/* LI2 */ case 0xa0: INC(wst) = ram[pc++]; /* fall-through */
-		/* LIT */ case 0x80: INC(wst) = ram[pc++]; break;
-		/* L2r */ case 0xe0: INC(rst) = ram[pc++]; /* fall-through */
-		/* LIr */ case 0xc0: INC(rst) = ram[pc++]; break;
+		/* JSI */ case 0x60: IMM(c) INC(1) = pc >> 8, INC(1) = pc, pc += c; break;
+		/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
+		/* LIT */ case 0x80: INC(0) = ram[pc++]; break;
+		/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
+		/* LIr */ case 0xc0: INC(1) = ram[pc++]; break;
 		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
 		/* POP */ OPC(0x02,REM,{})
 		/* NIP */ OPC(0x03,GOT(x) REM,PUT(x))
@@ -130,7 +125,7 @@ uxn_eval(unsigned short pc)
 		/* SFT */ OPC(0x1f,PO1(a) POx(b),PUx(b >> (a & 0xf) << (a >> 4)))
 		}
 	}
-	return !fprintf(stdout, "Exhausted cycles limit.\n");
+	return 0;
 }
 
 /* clang-format on */
@@ -141,13 +136,13 @@ uxn_eval(unsigned short pc)
 static char *system_boot_path;
 
 static void
-system_print(const char *name, const Stack *s)
+system_print(char *name, int r)
 {
 	Uint8 i;
 	fprintf(stderr, "%s ", name);
-	for(i = s->ptr - 8; i != (Uint8)(s->ptr); i++)
-		fprintf(stderr, "%02x%c", s->dat[i], i == 0xff ? '|' : ' ');
-	fprintf(stderr, "<%02x\n", s->ptr);
+	for(i = ptr[r] - 8; i != ptr[r]; i++)
+		fprintf(stderr, "%02x%c", stk[r][i], i == 0xff ? '|' : ' ');
+	fprintf(stderr, "<%02x\n", ptr[r]);
 }
 
 static unsigned int
@@ -178,7 +173,7 @@ system_reboot(const unsigned int soft)
 	unsigned int i;
 	for(i = 0x0; i < 0x100; i++) dev[i] = 0;
 	for(i = soft ? 0x100 : 0; i < 0x10000; i++) ram[i] = 0;
-	wst.ptr = rst.ptr = 0;
+	ptr[0] = ptr[1] = 0;
 	return system_load(system_boot_path);
 }
 
@@ -959,8 +954,8 @@ emu_dei(const Uint8 port)
 {
 	switch(port) {
 	/* System */
-	case 0x04: return wst.ptr;
-	case 0x05: return rst.ptr;
+	case 0x04: return ptr[0];
+	case 0x05: return ptr[1];
 	/* Console */
 	case CMD_LIVE:
 	case CMD_EXIT: check_child(); break;
@@ -997,15 +992,15 @@ emu_deo(const Uint8 port, const Uint8 value)
 	switch(port) {
 	/* System */
 	case 0x03: system_expansion(PEEK2(dev + 2)); return;
-	case 0x04: wst.ptr = dev[4]; return;
-	case 0x05: rst.ptr = dev[5]; return;
+	case 0x04: ptr[0] = dev[4]; return;
+	case 0x05: ptr[1] = dev[5]; return;
 	case 0x08:
 	case 0x09:
 	case 0x0a:
 	case 0x0b:
 	case 0x0c:
 	case 0x0d: screen_palette(); return;
-	case 0x0e: system_print("WST", &wst), system_print("RST", &rst); return;
+	case 0x0e: system_print("WST", 0), system_print("RST", 1); return;
 	/* Console */
 	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
 	case 0x18: fputc(dev[0x18], stdout), fflush(stdout); return;
@@ -1261,7 +1256,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 13 Aug 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 26 Sep 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

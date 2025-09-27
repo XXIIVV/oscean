@@ -1,12 +1,7 @@
 #include <stdio.h>
 
-typedef struct {
-	unsigned char dat[0x100], ptr;
-} Stack;
-
 static unsigned int console_vector;
-static unsigned char ram[0x10000], dev[0x100];
-static Stack wst, rst;
+static unsigned char ram[0x10000], dev[0x100], ptr[2], stk[2][0x100];
 
 /* I/O */
 
@@ -34,25 +29,25 @@ emu_deo(const unsigned char port, const unsigned char value)
 	case 0x20|opc: {const int _2=1,_r=0;A B;} break;\
 	case 0x40|opc: {const int _2=0,_r=1;A B;} break;\
 	case 0x60|opc: {const int _2=1,_r=1;A B;} break;\
-	case 0x80|opc: {const int _2=0,_r=0;int k=wst.ptr;A wst.ptr=k;B;} break;\
-	case 0xa0|opc: {const int _2=1,_r=0;int k=wst.ptr;A wst.ptr=k;B;} break;\
-	case 0xc0|opc: {const int _2=0,_r=1;int k=rst.ptr;A rst.ptr=k;B;} break;\
-	case 0xe0|opc: {const int _2=1,_r=1;int k=rst.ptr;A rst.ptr=k;B;} break;\
+	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[_r];A ptr[_r]=k;B;} break;\
 }
 
 /* Microcode */
 
-#define REM if(_r) rst.ptr -= 1 + _2; else wst.ptr -= 1 + _2;
+#define REM    ptr[_r] -= 1 + _2;
+#define DEC(m) stk[m][--ptr[m]]
+#define INC(m) stk[m][ptr[m]++]
 #define IMM(o) o = ram[pc] << 8 | ram[pc + 1], pc += 2;
 #define MOV(x) { if(_2) pc = x; else pc += (signed char)x; }
-#define DEC(s) s.dat[--s.ptr]
-#define PO1(o) { if(_r) o = DEC(rst); else o = DEC(wst); }
-#define PO2(o) { PO1(o) if(_r) o |= DEC(rst) << 8; else o |= DEC(wst) << 8; }
+#define PO1(o) { o = DEC(_r); }
+#define PO2(o) { o = DEC(_r) | DEC(_r) << 8; }
 #define POx(o) { if(_2) PO2(o) else PO1(o) }
 #define GOT(o) { if(_2) PO1(o[1]) PO1(o[0]) }
-#define INC(s) s.dat[s.ptr++]
-#define RP1(i) { if(_r) INC(wst) = i; else INC(rst) = i; }
-#define PU1(i) { if(_r) INC(rst) = i; else INC(wst) = i; }
+#define RP1(i) { INC(!_r) = i; }
+#define PU1(i) { INC(_r) = i; }
 #define PUx(i) { if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i) }
 #define PUT(i) { PU1(i[0]) if(_2) PU1(i[1]) }
 #define DEI(i,o) o[0] = emu_dei(i); if(_2) o[1] = emu_dei(i + 1); PUT(o)
@@ -67,13 +62,13 @@ uxn_eval(unsigned short pc)
 	while(step--) {
 		switch(ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
-		/* JCI */ case 0x20: IMM(c) if(DEC(wst)) pc += c; break;
+		/* JCI */ case 0x20: IMM(c) if(DEC(0)) pc += c; break;
 		/* JMI */ case 0x40: IMM(c) pc += c; break;
-		/* JSI */ case 0x60: IMM(c) INC(rst) = pc >> 8, INC(rst) = pc, pc += c; break;
-		/* LI2 */ case 0xa0: INC(wst) = ram[pc++]; /* fall-through */
-		/* LIT */ case 0x80: INC(wst) = ram[pc++]; break;
-		/* L2r */ case 0xe0: INC(rst) = ram[pc++]; /* fall-through */
-		/* LIr */ case 0xc0: INC(rst) = ram[pc++]; break;
+		/* JSI */ case 0x60: IMM(c) INC(1) = pc >> 8, INC(1) = pc, pc += c; break;
+		/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
+		/* LIT */ case 0x80: INC(0) = ram[pc++]; break;
+		/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
+		/* LIr */ case 0xc0: INC(1) = ram[pc++]; break;
 		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
 		/* POP */ OPC(0x02,REM,{})
 		/* NIP */ OPC(0x03,GOT(x) REM,PUT(x))
