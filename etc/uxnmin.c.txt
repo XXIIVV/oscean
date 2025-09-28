@@ -3,8 +3,6 @@
 static unsigned int console_vector;
 static unsigned char ram[0x10000], dev[0x100], ptr[2], stk[2][0x100];
 
-/* I/O */
-
 static unsigned char
 emu_dei(const unsigned char port)
 {
@@ -22,34 +20,30 @@ emu_deo(const unsigned char port, const unsigned char value)
 	}
 }
 
-/* Unroll */
-
 #define OPC(opc, A, B) {\
 	case 0x00|opc: {const int _2=0,_r=0;A B;} break;\
 	case 0x20|opc: {const int _2=1,_r=0;A B;} break;\
 	case 0x40|opc: {const int _2=0,_r=1;A B;} break;\
 	case 0x60|opc: {const int _2=1,_r=1;A B;} break;\
-	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[_r];A ptr[_r]=k;B;} break;\
-	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[_r];A ptr[_r]=k;B;} break;\
-	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[_r];A ptr[_r]=k;B;} break;\
-	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[_r];A ptr[_r]=k;B;} break;\
+	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[0];A ptr[0]=k;B;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[0];A ptr[0]=k;B;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[1];A ptr[1]=k;B;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[1];A ptr[1]=k;B;} break;\
 }
 
-/* Microcode */
-
-#define REM    ptr[_r] -= 1 + _2;
+#define REM ptr[_r] -= 1 + _2;
 #define DEC(m) stk[m][--ptr[m]]
 #define INC(m) stk[m][ptr[m]++]
-#define IMM(o) o = ram[pc] << 8 | ram[pc + 1], pc += 2;
-#define MOV(x) { if(_2) pc = x; else pc += (signed char)x; }
-#define PO1(o) { o = DEC(_r); }
-#define PO2(o) { o = DEC(_r) | DEC(_r) << 8; }
-#define POx(o) { if(_2) PO2(o) else PO1(o) }
-#define GOT(o) { if(_2) PO1(o[1]) PO1(o[0]) }
-#define RP1(i) { INC(!_r) = i; }
-#define PU1(i) { INC(_r) = i; }
-#define PUx(i) { if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i) }
-#define PUT(i) { PU1(i[0]) if(_2) PU1(i[1]) }
+#define IMM(o) o = ram[pc++] << 8 | ram[pc++];
+#define MOV(x) if(_2) pc = x; else pc += (signed char)x;
+#define PO1(o) o = DEC(_r);
+#define PO2(o) o = DEC(_r) | DEC(_r) << 8;
+#define POx(o) if(_2) PO2(o) else PO1(o)
+#define GOT(o) if(_2) PO1(o[1]) PO1(o[0])
+#define RP1(i) INC(!_r) = i;
+#define PU1(i) INC(_r) = i;
+#define PUx(i) if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i)
+#define PUT(i) PU1(i[0]) if(_2) PU1(i[1])
 #define DEI(i,o) o[0] = emu_dei(i); if(_2) o[1] = emu_dei(i + 1); PUT(o)
 #define DEO(i,j) emu_deo(i, j[0]); if(_2) emu_deo(i + 1, j[1]);
 #define PEK(i,o,m) o[0] = ram[i]; if(_2) o[1] = ram[(i + 1) & m]; PUT(o)
@@ -58,7 +52,7 @@ emu_deo(const unsigned char port, const unsigned char value)
 static unsigned int
 uxn_eval(unsigned short pc)
 {
-	unsigned int a, b, c, x[2], y[2], z[2], step = 0x800000;
+	unsigned int a, b, c, x[2], y[2], z[2], step = 0x80000000;
 	while(step--) {
 		switch(ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
