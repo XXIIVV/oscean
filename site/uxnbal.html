@@ -1,0 +1,90 @@
+<!DOCTYPE html><html><head>
+<link href="../links/main.css" type="text/css" rel="stylesheet">
+<link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property='og:type' content='website'/>
+<meta property='og:site_name' content='XXIIVV'/>
+<meta property='og:description' content="By Devine Lu Linvega"/>
+<meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<meta property="og:title" content="uxnbal"/><meta property="og:url" content="https://wiki.xxiivv.com/site/uxnbal.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/><title>XXIIVV &mdash; uxnbal</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+<nav><ul><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html" class="parent">uxntal software</a></li></ul><ul><li><a href="uxntal_bootstrap.html">uxntal bootstrap</a></li><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="uxnfor.html">uxnfor</a></li><li><a href="uxnbal.html" class="self">uxnbal</a></li><li><a href="uxnlin.html">uxnlin</a></li><li><a href="bicycle.html">bicycle</a></li><li><a href="beetbug.html">beetbug</a></li></ul><ul></ul></nav>
+<main><h2>Uxnbal is a stack effect validator.</h2>
+
+<p>Program validation is done at <b>compile-time</b> by comparing a routine's stack effect,
+against the resulting balance of all stack changes occurring in the routine's code. Words that do not pass the stack-checker are generating a warning, and so
+essentially this defines a very basic and permissive type system that
+nevertheless catches some invalid programs and enables compiler optimizations. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>.</p>
+
+<p>The simplest case is when a piece of code does not have any branches or
+recursion, and merely pushes literals and calls words. The stack effect
+routines is always known statically from the declaration.</p>
+
+<pre>
+<b>@add-eight</b> <i>( a -- a+8 )</i>
+	#0008 ADD JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack imbalance of +1, in add-eight.</pre>
+
+<p>In the case of <b>branching</b>, each branch is evaluated and if an imbalance occurs inside one of the branches, the branch name is indicated:</p>
+<pre>
+<b>@branching</b> <i>( a* -- c )</i>
+	LDAk #01 EQU ?&one
+	LDAk #02 EQU ?&two
+	POP2 #ff JMP2r
+	<b>&one</b> <i>( a* -- c )</i> POP2 #12 JMP2r
+	<b>&two</b> <i>( a* -- c d )</i> ADD JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack imbalance of -1, in branching/two.</pre>
+
+<p>In the case of a <b>recursion</b>, the validator will use the stack effect instead of repeatedly walking through the body of the routine.</p>
+
+<pre>
+<b>@print-string</b> <i>( str* -- )</i>
+	LDAk DUP ?{ POP POP2 JMP2r }
+	emit-letter 
+	INC2 !print-string
+</pre>
+
+<p>For <b>loops</b> that exits without affecting the stack depth, a <kbd>></kbd> prefixed label is used as a shorthand to reduce the need for extraneous stack effect definitions in cases where it can be inferred:</p>
+<pre>
+<b>@many-times</b> <i>( a -- )</i>
+	DUP
+	<b>&>l</b>
+		INC DUP ?&>l
+	POP2 JMP2r
+</pre>
+
+<p>Routines that pull items from the stack beyond their allowed depth will also raise a warning, making the stack effect act a sort of boundary:</p>
+
+<pre>
+<b>@shallow</b> <i>( a -- )</i>
+	POP2 JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack depth error of 1, in shallow.</pre>
+
+<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
+one point during the execution of a program, is to read the <a
+href='varvara.html#system'>System/wst</a> port and compare it against a given
+stack pointer byte value.</p>
+
+<pre>
+<b>@on-reset</b> <i>( -> )</i>
+	#abcd DUP2 
+	.System/wst DEI #05 EQU ?{
+		#01 .System/debug DEO }
+	BRK
+</pre><ul></ul><p><b>incoming: </b><a href="uxntal_software.html" class="parent">uxntal software</a> </p></main>
+<footer>
+	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
+	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
+	<a href="devine_lu_linvega.html">Devine Lu Linvega</a> <span> &bull; 2008-2025</span>
+	<div class="right"><a href="about.html#license">BY-NC-SA 4.0</a>
+		<a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.png" alt="CreativeCommons"/></a>
+		<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/rotonde.png" alt="Webring"/></a>
+		<a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.png" alt="Merveilles"/></a>
+	</div>
+	<hr/>
+</footer>
+</body></html>

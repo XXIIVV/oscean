@@ -1,6 +1,6 @@
 <h2>Uxntal Notation</h2>
 
-<p>The Uxntal notation follows that of the <a href='forth.html'>Forth</a>
+<p>The stack-effect notation follows that of the <a href='forth.html'>Forth</a>
 programming language, where each item on the left of the <kbd>--</kbd> spacer
 is the state of the stack before, and to the right, the state of the stack
 after. On each side, the right-most item is the last to the pushed and the
@@ -20,7 +20,7 @@ with the top item to the right:</p>
 	ROT JMP2r
 </pre>
 
-<p>The dot notation is used to indicate that stack effects to the right of the
+<p>The dot notation is used to indicate that stack-effects to the right of the
 dot are happening on the <a href='uxntal_stacks.html'>return stack</a>:</p>
 
 <pre>
@@ -42,74 +42,8 @@ the notation goes before the macro's body:</p>
 <pre>
 <b>%macro</b> <i>( a b -- res )</i> {
 	DIVk MUL SUB }</pre>
-
-<h3 id='validation'>Validation</h3>
-
-<p>Program validation is done at <b>compile-time</b> by comparing a routine's stack effect,
-against the resulting balance of all stack changes occurring in the routine's code. Words that do not pass the stack-checker are generating a warning, and so
-essentially this defines a very basic and permissive type system that
-nevertheless catches some invalid programs and enables compiler optimizations. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal'
-target='_blank'>Uxnbal</a>.</p>
-
-<p>The simplest case is when a piece of code does not have any branches or
-recursion, and merely pushes literals and calls words. The stack effect
-routines is always known statically from the declaration.</p>
-
-<pre>
-<b>@add-eight</b> <i>( a -- a+8 )</i>
-	#0008 ADD JMP2r
-</pre>
-<pre style='margin-top:-29px'>Working-stack imbalance of +1, in add-eight.</pre>
-
-<p>In the case of <b>branching</b>, each branch is evaluated and if an imbalance occurs inside one of the branches, the branch name is indicated:</p>
-<pre>
-<b>@branching</b> <i>( a* -- c )</i>
-	LDAk #01 EQU ?&one
-	LDAk #02 EQU ?&two
-	POP2 #ff JMP2r
-	<b>&one</b> <i>( a* -- c )</i> POP2 #12 JMP2r
-	<b>&two</b> <i>( a* -- c d )</i> ADD JMP2r
-</pre>
-<pre style='margin-top:-29px'>Working-stack imbalance of -1, in branching/two.</pre>
-
-<p>In the case of a <b>recursion</b>, the validator will use the stack effect instead of repeatedly walking through the body of the routine.</p>
-
-<pre>
-<b>@print-string</b> <i>( str* -- )</i>
-	LDAk DUP ?{ POP POP2 JMP2r }
-	emit-letter 
-	INC2 !print-string
-</pre>
-
-<p>For <b>loops</b> that exits without affecting the stack depth, a <kbd>></kbd> prefixed label is used as a shorthand to reduce the need for extraneous stack effect definitions in cases where it can be inferred:</p>
-<pre>
-<b>@many-times</b> <i>( a -- )</i>
-	DUP
-	<b>&>l</b>
-		INC DUP ?&>l
-	POP2 JMP2r
-</pre>
-
-<p>Routines that pull items from the stack beyond their allowed depth will also raise a warning, making the stack effect act a sort of boundary:</p>
-
-<pre>
-<b>@shallow</b> <i>( a -- )</i>
-	POP2 JMP2r
-</pre>
-<pre style='margin-top:-29px'>Working-stack depth error of 1, in shallow.</pre>
-
-<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
-one point during the execution of a program, is to read the <a
-href='varvara.html#system'>System/wst</a> port and compare it against a given
-stack pointer byte value.</p>
-
-<pre>
-<b>@on-reset</b> <i>( -> )</i>
-	#abcd DUP2 
-	.System/wst DEI #05 EQU ?{
-		#01 .System/debug DEO }
-	BRK
-</pre>
+	
+<p>The stack notation is merely present to help readability but can be altogether disregarded without impacting the program.</p>
 
 <h3 id='comments'>Comments</h3>
 
@@ -122,7 +56,7 @@ the enclosed comments parentheses must be whitespace separated on both sides.</p
 <i>( 1+2*(4/3) )</i></pre>
 
 <p>Outermost comments may be <i>named</i>, which means that sometimes the open 
-parenthesis is immediately followed by a word used to indicates some meaning
+parenthesis is immediately followed by a word holding some meaning
 to external tools.</p>
 
 <pre>
@@ -138,7 +72,7 @@ similar to the <code>pragma mark</code> notation:</p>
 
 <h3 id='brackets'>Brackets</h3>
 
-<p>The square brackets do nothing, they are there merely for readability and <a
+<p>The square brackets do nothing, they are used as an aid for readability and <a
 href='uxnfor.html'>formatting</a>, they are useful for making explicit certain
 things like grouping behaviors, joining literals or indicating lookup tables.</p>
 
@@ -151,4 +85,3 @@ things like grouping behaviors, joining literals or indicating lookup tables.</p
 
 <b>@sprite</b> [ 00 66 ff ff ff 7e 3c 18 ]
 </pre>
-

@@ -9,7 +9,7 @@
 <meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
 <meta property="og:title" content="uxntal"/><meta property="og:url" content="https://wiki.xxiivv.com/site/uxntal.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/diary/804.jpg"/><title>XXIIVV &mdash; uxntal</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="subleq.html">subleq</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul></nav>
+<nav><ul><li><a href="subleq.html">subleq</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul></nav>
 <main><figure><img alt="Rostiger's Uxn Zine" src="../media/diary/804.jpg"><figcaption>Rostiger's Uxn Zine<span class="right">16X08</span></figcaption></figure>
 <h2>A programming language for the Uxn virtual machine.</h2>
 
@@ -135,12 +135,10 @@ evaluation.</p>
 
 <p><a href='uxntal_notation.html#comments'>Comments</a> are within parentheses, <a
 href='uxntal_numbers.html'>numbers</a> are lowercase hexadecimal shorts or
-bytes and <a href='uxntal_opcodes.html'>opcodes</a> are uppercased reserved
-words with lowercased modes. A rune is a non-alphanumeric symbol at the start
-of a word, literal numbers are prefixed with a # rune, <a
-href='uxntal_labels.html#addressing'>addressing</a> is done by one of six
-runes. Labels and macros are unique non-numeric, non-opcode and non-runic
-symbols.</p>
+bytes, and <a href='uxntal_opcodes.html'>opcodes</a> are uppercase reserved
+words with lowercase modes. <a
+href='uxntal_labels.html#addressing'>Addressing</a> is done by one of six
+runes. Valid label and macro names are unique non-numeric, non-opcode and non-runic.</p>
 
 <table border="1" id='runes'>
 	<tr><th colspan="4">Padding Runes</th><th colspan="4">Number Rune</th></tr>
@@ -221,7 +219,7 @@ byte to the <a href='varvara.html#system'>System/debug</a> port.</p>
 
 <h2>Uxntal Notation</h2>
 
-<p>The Uxntal notation follows that of the <a href='forth.html'>Forth</a>
+<p>The stack-effect notation follows that of the <a href='forth.html'>Forth</a>
 programming language, where each item on the left of the <kbd>--</kbd> spacer
 is the state of the stack before, and to the right, the state of the stack
 after. On each side, the right-most item is the last to the pushed and the
@@ -241,7 +239,7 @@ with the top item to the right:</p>
 	ROT JMP2r
 </pre>
 
-<p>The dot notation is used to indicate that stack effects to the right of the
+<p>The dot notation is used to indicate that stack-effects to the right of the
 dot are happening on the <a href='uxntal_stacks.html'>return stack</a>:</p>
 
 <pre>
@@ -263,74 +261,8 @@ the notation goes before the macro's body:</p>
 <pre>
 <b>%macro</b> <i>( a b -- res )</i> {
 	DIVk MUL SUB }</pre>
-
-<h3 id='validation'>Validation</h3>
-
-<p>Program validation is done at <b>compile-time</b> by comparing a routine's stack effect,
-against the resulting balance of all stack changes occurring in the routine's code. Words that do not pass the stack-checker are generating a warning, and so
-essentially this defines a very basic and permissive type system that
-nevertheless catches some invalid programs and enables compiler optimizations. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal'
-target='_blank'>Uxnbal</a>.</p>
-
-<p>The simplest case is when a piece of code does not have any branches or
-recursion, and merely pushes literals and calls words. The stack effect
-routines is always known statically from the declaration.</p>
-
-<pre>
-<b>@add-eight</b> <i>( a -- a+8 )</i>
-	#0008 ADD JMP2r
-</pre>
-<pre style='margin-top:-29px'>Working-stack imbalance of +1, in add-eight.</pre>
-
-<p>In the case of <b>branching</b>, each branch is evaluated and if an imbalance occurs inside one of the branches, the branch name is indicated:</p>
-<pre>
-<b>@branching</b> <i>( a* -- c )</i>
-	LDAk #01 EQU ?&one
-	LDAk #02 EQU ?&two
-	POP2 #ff JMP2r
-	<b>&one</b> <i>( a* -- c )</i> POP2 #12 JMP2r
-	<b>&two</b> <i>( a* -- c d )</i> ADD JMP2r
-</pre>
-<pre style='margin-top:-29px'>Working-stack imbalance of -1, in branching/two.</pre>
-
-<p>In the case of a <b>recursion</b>, the validator will use the stack effect instead of repeatedly walking through the body of the routine.</p>
-
-<pre>
-<b>@print-string</b> <i>( str* -- )</i>
-	LDAk DUP ?{ POP POP2 JMP2r }
-	emit-letter 
-	INC2 !print-string
-</pre>
-
-<p>For <b>loops</b> that exits without affecting the stack depth, a <kbd>></kbd> prefixed label is used as a shorthand to reduce the need for extraneous stack effect definitions in cases where it can be inferred:</p>
-<pre>
-<b>@many-times</b> <i>( a -- )</i>
-	DUP
-	<b>&>l</b>
-		INC DUP ?&>l
-	POP2 JMP2r
-</pre>
-
-<p>Routines that pull items from the stack beyond their allowed depth will also raise a warning, making the stack effect act a sort of boundary:</p>
-
-<pre>
-<b>@shallow</b> <i>( a -- )</i>
-	POP2 JMP2r
-</pre>
-<pre style='margin-top:-29px'>Working-stack depth error of 1, in shallow.</pre>
-
-<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
-one point during the execution of a program, is to read the <a
-href='varvara.html#system'>System/wst</a> port and compare it against a given
-stack pointer byte value.</p>
-
-<pre>
-<b>@on-reset</b> <i>( -> )</i>
-	#abcd DUP2 
-	.System/wst DEI #05 EQU ?{
-		#01 .System/debug DEO }
-	BRK
-</pre>
+	
+<p>The stack notation is merely present to help readability but can be altogether disregarded without impacting the program.</p>
 
 <h3 id='comments'>Comments</h3>
 
@@ -343,7 +275,7 @@ the enclosed comments parentheses must be whitespace separated on both sides.</p
 <i>( 1+2*(4/3) )</i></pre>
 
 <p>Outermost comments may be <i>named</i>, which means that sometimes the open 
-parenthesis is immediately followed by a word used to indicates some meaning
+parenthesis is immediately followed by a word holding some meaning
 to external tools.</p>
 
 <pre>
@@ -359,7 +291,7 @@ similar to the <code>pragma mark</code> notation:</p>
 
 <h3 id='brackets'>Brackets</h3>
 
-<p>The square brackets do nothing, they are there merely for readability and <a
+<p>The square brackets do nothing, they are used as an aid for readability and <a
 href='uxnfor.html'>formatting</a>, they are useful for making explicit certain
 things like grouping behaviors, joining literals or indicating lookup tables.</p>
 
@@ -371,6 +303,26 @@ things like grouping behaviors, joining literals or indicating lookup tables.</p
 	GTHk [ JMP SWP ] POP }
 
 <b>@sprite</b> [ 00 66 ff ff ff 7e 3c 18 ]
+</pre>
+<h2>Uxntal Numbers</h2>
+
+<p>Uxntal uses only lowercase unsigned <a href='hexadecimal.html'>hexadecimal
+numbers</a> of either 2 or 4 characters in length. There are two types of
+numbers:</p>
+
+<ul>
+	<li id='lithex'>A <b>Literal Hex</b>, like <kbd>#ab</kbd>, denotes a number that will be
+pushed on the stack when evaluated, it is made of a <a
+href='uxntal_reference.html#lit'>LIT</a> opcode that matches its length,
+followed by a Raw Hex number.</li>
+	<li id='rawhex'>A <b>Raw Hex</b>, like <kbd>aa</kbd>, is the standard textual
+encoding of data in a program, generally speaking these are more often loaded
+than evaluated. It can be anything, an opcode, an ascii byte, an address, part
+of a sprite.</li>
+</ul>
+
+<pre>
+#12 #34 LIT2 5678 ADD2 <span style="float:right">68 ac</span>
 </pre>
 
 <h2>Uxntal Opcodes</h2>
@@ -483,27 +435,6 @@ around in the program's memory.</p>
 
 <p>To learn more about each opcode, see the <a
 href='uxntal_reference.html'>Opcode Reference</a>.</p>
-<h2>Uxntal Numbers</h2>
-
-<p>Uxntal uses only lowercase unsigned <a href='hexadecimal.html'>hexadecimal
-numbers</a> of either 2 or 4 characters in length. There are two types of
-numbers:</p>
-
-<ul>
-	<li id='lithex'>A <b>Literal Hex</b>, like <kbd>#ab</kbd>, denotes a number that will be
-pushed on the stack when evaluated, it is made of a <a
-href='uxntal_reference.html#lit'>LIT</a> opcode that matches its length,
-followed by a Raw Hex number.</li>
-	<li id='rawhex'>A <b>Raw Hex</b>, like <kbd>aa</kbd>, is the standard textual
-encoding of data in a program, generally speaking these are more often loaded
-than evaluated. It can be anything, an opcode, an ascii byte, an address, part
-of a sprite.</li>
-</ul>
-
-<pre>
-#12 #34 LIT2 5678 ADD2 <span style="float:right">68 ac</span>
-</pre>
-
 <h2>Uxntal Labels</h2>
 
 <p>A label is a non-numeric, non-opcode, and non-runic symbol that correspond to
@@ -795,7 +726,7 @@ formatter that standardize the source code, this is the formatting style used
 across the Uxntal documentation.</li>
 	<li><a href='uxnlin.html'>Uxnlin</a> is a
 peephole optimizer that reveals potential optimizations in opcode sequences.</li>
-	<li><a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a> is a
+	<li><a href='uxnbal.html'>Uxnbal</a> is a
 program validator that warns when routines do not match their definitions.</li>
 	<li><a href='https://git.sr.ht/~rabbits/uxndis' target='_blank'>Uxndis</a> is a disassembler that prints the opcodes in a rom file.</li>
 </ul>
