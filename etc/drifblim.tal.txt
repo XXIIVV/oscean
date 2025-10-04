@@ -8,8 +8,8 @@
 
 	@src/buf $2f &cap $1
 	@dst/buf $2f &cap $1
-	@token/buf $2f &cap $1
 	@scope/buf $2f &cap $1
+	@token/buf $6f &cap $1
 
 |100
 
@@ -39,7 +39,7 @@
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
 		BRK }
 	( | assemble )
-	;src/buf <handle-file>
+	;src/buf assembly/<handle-file>
 	assembly/<resolve>
 	BRK
 
@@ -54,14 +54,13 @@
 	/<push>
 	INC2 !/<push-str>
 
-@err/<pchr> ( c -- )
-	#19 DEO
-	JMP2r
+%err/<pchr> ( c -- ) {
+	#19 DEO }
 
 @runes/concat INC2
 	( >> )
 
-@<handle-file> ( f* -- )
+@assembly/<handle-file> ( f* -- )
 	.File/name DEO2
 	#0001 .File/length DEO2
 	token/<new>
@@ -122,7 +121,8 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Sep 20 "2025 $2
+	( date ) "4 20 "Oct 20 "2025 $2
+
 
 
 
@@ -716,13 +716,13 @@
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
 		/<pstr>
-		#20 /<pchr>
+		#20 err/<pchr>
 		SWP2 /<pstr>
 		;dict/spacer /<pstr>
 		/<pstr>
 		;dict/in /<pstr>
 		;scope/buf /<pstr>
-		#0a /<pchr>
+		#0a err/<pchr>
 		[ LIT2 01 -System/state ] DEO
 		JMP2r }
 	POP2 POP2 POP2 JMP2r
@@ -730,7 +730,7 @@
 @err/<pstr> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		/<pchr>
+		err/<pchr>
 		INC2 !&>w
 
 @err/<pdec> ( short* -- )
@@ -739,7 +739,7 @@
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
 	&>write
-		NIP #30 ADD /<pchr>
+		NIP #30 ADD err/<pchr>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
@@ -787,4 +787,5 @@
 
 
 |00 @SymType/empty $1 &used $1 &declared
+
 
