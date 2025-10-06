@@ -53,7 +53,7 @@
 @meta 00 "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "25 20 "Sep 20 "2025 00 01
+	( date ) "5 20 "Oct 20 "2025 00 01
 	( icon ) 83 =appicon
 
 (
@@ -377,17 +377,43 @@
 	( max y ) .window/rows LDZ #02 SUB LTHk [ JMP SWP ] POP
 	( min y ) #02 GTHk [ JMP SWP ] POP
 	( change name ) DUP2 filepath/<put-size>
-	.&h STZ
-	.&w STZ
-	/<draw-size>
-	( | center )
+	DUP2 .&size LDZ2 EQU2 ?{
+		DUP .&h STZ
+		OVR .&w STZ
+		zoom/<center> }
+	/<center>
+	POP2 /<draw-size>
+	/<draw-bg>
+	/<draw> !panel/<draw>
+
+@canvas/<mod-x> ( offset* -- )
+	DUP2 .&x LDZ2 ADD2
+	( >> )
+
+@canvas/<set-x> ( x* -- )
+	DUP2 #8000 LTH2 ?{ POP2 JMP2r }
+	DUP2 .&x STZ2
+	;&w LDZ #20 SFT2 ADD2 .&x2 STZ2
+	/<draw-bg>
+	/<draw> !panel/<draw>
+
+@canvas/<mod-y> ( offset* -- )
+	DUP2 .&y LDZ2 ADD2
+	( >> )
+
+@canvas/<set-y> ( x* -- )
+	DUP2 #0010 SUB2 #8000 LTH2 ?{ POP2 JMP2r }
+	DUP2 .&y STZ2
+	;&h LDZ #20 SFT2 ADD2 .&y2 STZ2
+	/<draw-bg>
+	/<draw> !panel/<draw>
+
+@canvas/<center> ( -- )
 	.Screen/width DEI2 #01 SFT2 ;&w LDZ STH2k #20 SFT2 SUB2 DUP2 STH2r #30 SFT2 ADD2 .&x2 STZ2
 	.&x STZ2
 	.Screen/height DEI2 #01 SFT2 ;&h LDZ STH2k #20 SFT2 SUB2 #0008 ADD2 DUP2 STH2r #30 SFT2 ADD2 .&y2 STZ2
 	.&y STZ2
-	zoom/<center>
-	/<draw-bg>
-	/<draw> !panel/<draw>
+	JMP2r
 
 @canvas/<draw-size> ( -- )
 	[ LIT2 01 -Screen/auto ] DEO
@@ -449,8 +475,9 @@
 	( save ) ROT ROT STA
 	JMP2r
 
-@canvas/<clean-pixel> ( x* y* -- )
-	OVR2 OVR2 canvas/<request>
+@canvas/<magic-pixel> ( x* y* -- )
+	/within ?{ POP2 POP2 JMP2r }
+	OVR2 OVR2 /<request>
 	( u ) OVR2 OVR2 #0001 SUB2 /get-pixel STH
 	( r ) OVR2 INC2 OVR2 /get-pixel DUP ADD STH
 	( d ) OVR2 OVR2 INC2 /get-pixel #20 SFT STH
@@ -675,18 +702,22 @@
 	JMP2r
 
 @zoom/move-u ( -- )
+	.&active LDZ ?{ #fffc !canvas/<mod-y> }
 	.&y LDZ2 #0001 SUB2 .&y STZ2
 	canvas/<draw> !panel/<draw>
 
 @zoom/move-d ( -- )
+	.&active LDZ ?{ #0004 !canvas/<mod-y> }
 	.&y LDZ2 INC2 .&y STZ2
 	canvas/<draw> !panel/<draw>
 
 @zoom/move-l ( -- )
+	.&active LDZ ?{ #fffc !canvas/<mod-x> }
 	.&x LDZ2 #0001 SUB2 .&x STZ2
 	canvas/<draw> !panel/<draw>
 
 @zoom/move-r ( -- )
+	.&active LDZ ?{ #0004 !canvas/<mod-x> }
 	.&x LDZ2 INC2 .&x STZ2
 	canvas/<draw> !panel/<draw>
 
@@ -862,7 +893,7 @@
 		STHk #0700
 		&>horm
 			( x ) #00 OVR [ LIT2 &xm $2 ] ADD2
-			( y ) #00 STHkr [ LIT2 &ym $2 ] ADD2 canvas/<clean-pixel>
+			( y ) #00 STHkr [ LIT2 &ym $2 ] ADD2 canvas/<magic-pixel>
 			INC GTHk ?&>horm
 		POP2 POPr INC GTHk ?&>verm
 	POP2 JMP2r
@@ -1184,6 +1215,7 @@
 	;image/h LDA2k SWP SWP2 STA2
 	( | resize canvas )
 	;image/w LDA2 #03 SFT2 NIP ;image/h LDA2 #03 SFT2 NIP canvas/<set-size>
+	filestate/<change>
 	( | get parser )
 	;image/image-type LDA #03 NEQ ?{ !tga/<parse-bw> }
 	;&error-unknown-txt str/<print>
