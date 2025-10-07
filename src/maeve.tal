@@ -33,6 +33,17 @@
 	#800f DEO
 	BRK
 
+@link/is-external ( path* -- path* t )
+	LDA2k [ LIT2 "ht ] NEQ2 ?{
+		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
+	#00 JMP2r
+
+%link/is-anchor ( path* -- path* t ) {
+	LDAk [ LIT "# ] EQU }
+
+%link/is-relative ( path* -- path* t ) {
+	LDAk [ LIT ". ] EQU }
+
 (
 @|lexicon )
 
@@ -96,36 +107,23 @@
 	LDAk STHkr EQU ?{ POPr JMP2r }
 	POPr !<write-children-rec>
 
-@link/is-external ( path* -- path* t )
-	LDA2k [ LIT2 "ht ] NEQ2 ?{
-		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
-	#00 JMP2r
-
-%link/is-anchor ( path* -- path* t ) {
-	LDAk [ LIT "# ] EQU }
-
-%link/is-relative ( path* -- path* t ) {
-	LDAk [ LIT ". ] EQU }
-
 @<parse-link> ( src* link* -- )
-	link/is-relative ?&end
-	link/is-anchor ?&end
-	link/is-external ?&end
-	( | find broken links )
-	DUP2 ;&buf <scpy-line>
-	;&buf [ LIT2 "_ 20 ] str/<swap-char>
-	;&buf lexicon/find INC2 ORA ?{
-		;dict/redlink str/<print>
-		;&buf str/<print>
-		;dict/in str/<print>
-		OVR2 str/<print-ln>
-		#010f DEO }
-	DUP2 ;&term <scpy-line>
-	;&term [ LIT2 20 "_ ] str/<swap-char>
-	( res ) ;&map-path .File2/name DEO2
-	OVR2 <str>
-	<lb>
-	&end ( src* link* -- )
+	link/is-relative ?{
+		link/is-anchor ?{
+			link/is-external ?{
+				DUP2 ;&buf <scpy-line>
+				;&buf [ LIT2 "_ 20 ] str/<swap-char>
+				;&buf lexicon/find INC2 ORA ?{
+					;dict/redlink str/<print>
+					;&buf str/<print>
+					;dict/in str/<print>
+					OVR2 str/<print-ln>
+					#010f DEO }
+				DUP2 ;&term <scpy-line>
+				;&term [ LIT2 20 "_ ] str/<swap-char>
+				( res ) ;&map-path .File2/name DEO2
+				OVR2 <str>
+				<lb> } } }
 	POP2 POP2 JMP2r
 	&buf $30
 	&map-path [ "tmp/map- &term $30 ]
