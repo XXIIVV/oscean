@@ -141,14 +141,7 @@
 	POP2 POP2 JMP2r
 
 @<parse-diary-line> ( line* -- next* )
-	DUP2k #000a ADD2 ;&term <scpy-line>
-	( | does it exists? )
-	;&term lexicon/find INC2 ORA ?{
-		;dict/warn-unknown str/<print>
-		DUP2 str/<print>
-		#0a18 DEO }
-	;&term [ LIT2 20 "_ ] str/<swap-char>
-	( res ) ;&log-path .File2/name DEO2
+	DUP2 DUP2 #000a ADD2 diary/set-path .File2/name DEO2
 	<str>
 	<lb>
 	( split ) DUP2 #0900 str/<swap-char>
@@ -157,8 +150,6 @@
 	( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
 		;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 <add-to-journal> } }
 	( eol ) str/cap str/cap !scap/
-
-	&log-path [ "tmp/log- &term $30 ]
 
 @<parse-event> ( event* -- )
 	( | add to events )
@@ -312,6 +303,18 @@
 		INC2 !&>w
 
 	&res [ "src/htm/ &buf $30 ]
+
+@diary/set-path ( name* -- buf* )
+	;&resbuf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/log- &resbuf $30 ]
 
 (
 @|stdlib )
