@@ -62,7 +62,7 @@
 	,&t STR2
 	;&buf
 	&>w
-		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?{
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] str/cmp ?{
 			str/cap LDAk ?&>w
 		POP2 #ffff }
 	JMP2r
@@ -149,20 +149,16 @@
 @<parse-diary-page> ( to* from* -- )
 	DUP2 #0a00 str/<swap-char>
 	&>l
-		<parse-diary-line>
-		INC2 GTH2k ?&>l
+		DUP2 DUP2 #000a ADD2 diary/set-path .File2/name DEO2
+		<str>
+		<lb>
+		( split ) DUP2 #0900 str/<swap-char>
+		DUP2 set-diary
+		( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
+		( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
+			DUP2 log/is-unpict ?{ DUP2 <add-to-journal> } }
+		( eol ) str/cap str/cap str/cap GTH2k ?&>l
 	POP2 POP2 JMP2r
-
-@<parse-diary-line> ( line* -- next* )
-	DUP2 DUP2 #000a ADD2 diary/set-path .File2/name DEO2
-	<str>
-	<lb>
-	( split ) DUP2 #0900 str/<swap-char>
-	DUP2 set-diary
-	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
-	( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
-		DUP2 log/is-unpict ?{ DUP2 <add-to-journal> } }
-	( eol ) str/cap str/cap !scap/
 
 @<parse-event> ( event* -- )
 	( | add to events )
@@ -341,12 +337,12 @@
 	POP2 #00 STH2r STA
 	JMP2r
 
-@scmp ( a* b* -- f )
+@str/cmp ( a* b* -- f )
 	STH2
-	&>l
+	&>wcm
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
-		INC2 INC2r !&>l
+		INC2 INC2r !&>wcm
 
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
