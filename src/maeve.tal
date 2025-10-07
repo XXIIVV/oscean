@@ -33,10 +33,12 @@
 	#800f DEO
 	BRK
 
-@link/is-external ( path* -- path* t )
-	LDA2k [ LIT2 "ht ] NEQ2 ?{
-		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
-	#00 JMP2r
+%<lb> { ;dict/0a .File2/write DEO2 }
+
+%<ws> { ;dict/20 .File2/write DEO2 }
+
+(
+@|link )
 
 %link/is-anchor ( path* -- path* t ) {
 	LDAk [ LIT "# ] EQU }
@@ -44,18 +46,42 @@
 %link/is-relative ( path* -- path* t ) {
 	LDAk [ LIT ". ] EQU }
 
+@link/is-external ( path* -- path* t )
+	LDA2k [ LIT2 "ht ] NEQ2 ?{
+		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
+	#00 JMP2r
+
+@link/bind ( src* link* -- src* link* )
+	DUP2 ;&buf <scpy-line>
+	;&buf [ LIT2 "_ 20 ] str/<swap-char>
+	;&buf lexicon/find INC2 ORA ?{
+		;dict/redlink str/<print>
+		;&buf str/<print>
+		;dict/in str/<print>
+		OVR2 str/<print-ln>
+		#010f DEO }
+	DUP2 ;&term <scpy-line>
+	;&term [ LIT2 20 "_ ] str/<swap-char>
+	( res ) ;&map-path .File2/name DEO2
+	OVR2 <str>
+	<lb>
+	JMP2r
+
+@link/<parse> ( src* link* -- )
+	link/is-relative ?{
+		link/is-anchor ?{ link/is-external ?{ link/bind } } }
+	POP2 POP2 JMP2r
+	&buf $30
+	&map-path [ "tmp/map- &term $30 ]
+
 (
 @|lexicon )
-
-%<lb> { ;dict/0a .File2/write DEO2 }
-
-%<ws> { ;dict/20 .File2/write DEO2 }
 
 @<load-file> ( addr* length* path* -- )
 	.File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
-	( check for size ) .File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
+	.File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
 
 @lexicon/find ( name* -- term* )
@@ -79,7 +105,7 @@
 		&>ll
 			LDA2k [ LIT2 "hr ] NEQ2 ?{
 				INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
-					[ LIT2 &src $2 ] OVR2 #0006 ADD2 <parse-link> } }
+					[ LIT2 &src $2 ] OVR2 #0006 ADD2 link/<parse> } }
 			INC2 GTH2k ?&>ll
 		POP2 POP2
 		( next ) str/cap GTH2k ?&>l
@@ -106,27 +132,6 @@
 	( | sibling )
 	LDAk STHkr EQU ?{ POPr JMP2r }
 	POPr !<write-children-rec>
-
-@<parse-link> ( src* link* -- )
-	link/is-relative ?{
-		link/is-anchor ?{
-			link/is-external ?{
-				DUP2 ;&buf <scpy-line>
-				;&buf [ LIT2 "_ 20 ] str/<swap-char>
-				;&buf lexicon/find INC2 ORA ?{
-					;dict/redlink str/<print>
-					;&buf str/<print>
-					;dict/in str/<print>
-					OVR2 str/<print-ln>
-					#010f DEO }
-				DUP2 ;&term <scpy-line>
-				;&term [ LIT2 20 "_ ] str/<swap-char>
-				( res ) ;&map-path .File2/name DEO2
-				OVR2 <str>
-				<lb> } } }
-	POP2 POP2 JMP2r
-	&buf $30
-	&map-path [ "tmp/map- &term $30 ]
 
 (
 @|diary )
