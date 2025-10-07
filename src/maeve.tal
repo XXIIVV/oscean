@@ -135,6 +135,12 @@
 	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
 	INC2 INC2 LDA [ LIT "0 ] EQU JMP2r
 
+%log/is-ignored ( log* -- log* t ) {
+	DUP2 #0005 ADD2 LDA [ LIT ". ] EQU }
+
+%log/is-unevent ( log* -- log* t ) {
+	DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ }
+
 @<parse-diary-pages> ( -- )
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
@@ -153,9 +159,9 @@
 		<str>
 		<lb>
 		( split ) DUP2 #0900 str/<swap-char>
-		DUP2 set-diary
-		( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
-		( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
+		DUP2 <set-diary>
+		log/is-unevent ?{ DUP2 <parse-event> }
+		log/is-ignored ?{
 			DUP2 log/is-unpict ?{ DUP2 <add-to-journal> } }
 		( eol ) str/cap str/cap str/cap GTH2k ?&>l
 	POP2 POP2 JMP2r
@@ -210,7 +216,7 @@
 (
 @|validate )
 
-@set-diary ( log* -- )
+@<set-diary> ( log* -- )
 	( | validate photo id )
 	#0006 ADD2 str/to-dec ORAk ?{ POP2 JMP2r }
 	DUP2 get-diary ?{
