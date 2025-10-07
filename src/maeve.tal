@@ -89,20 +89,14 @@
 	POPr !<write-children-rec>
 
 @<parse-links> ( term* -- )
-	DUP2 ;&term <scpy-line>
-	;&term [ LIT2 20 "_ ] str/<swap-char>
-	;dict/htm-ext ;&term scap/ <scpy-line>
-	( | res )
-	workarea/get-length ;&htm-path <load-file>
-	,&src STR2
+	DUP2 ,&src STR2
+	htm-path/set workarea/get-length ROT2 <load-file>
 	;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
 	&>l
 		;dict/href-attr OVR2 sseg #00 EQU ?{
 			[ LIT2 &src $2 ] OVR2 #0006 ADD2 <parse-link> }
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
-
-	&htm-path [ "src/htm/ &term $30 ]
 
 @<parse-link> ( src* link* -- )
 	( external ) ;dict/http-txt OVR2 sseg ?&end
