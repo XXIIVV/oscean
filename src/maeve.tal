@@ -16,7 +16,7 @@
 	;dict/sitemap-path .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	;dict/ul-tag <w>
-	<parse-lexicon>
+	lexicon/<parse>
 	;dict/ul-tag </w>
 	( | diary )
 	;dict/events-path .File2/name DEO2
@@ -47,20 +47,27 @@
 	( check for size ) .File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
 
-@<parse-lexicon> ( -- )
-	;lexicon/buf
+@lexicon/find ( name* -- term* )
+	,&t STR2
+	;&buf
+	&>w
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?{
+			scap/ INC2 LDAk ?&>w
+		POP2 #ffff }
+	JMP2r
+
+@lexicon/<parse> ( -- )
+	;&buf
 	( load ) DUP2 #2000 ;dict/lexicon-path <load-file>
 	( swap ) DUP2 #0a00 str/<swap-char>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>l
-		INC2 INC2
-		( | do incoming )
-		DUP2 <parse-links>
+		INC2 INC2 DUP2 <parse-links>
 		scap/ INC2 GTH2k ?&>l
 	POP2 POP2
 	( | sitemap )
 	;dict/sitemap-path .File2/name DEO2
-	( start at home ) ;lexicon/buf <write-children-rec>
+	;lexicon/buf <write-children-rec>
 	POP2 JMP2r
 
 @<write-children-rec> ( addr* -- next* )
@@ -85,7 +92,8 @@
 	DUP2 ;&term <scpy-line>
 	;&term [ LIT2 20 "_ ] str/<swap-char>
 	;dict/htm-ext ;&term scap/ <scpy-line>
-	( res ) get-workarea-length ;&htm-path <load-file>
+	( | res )
+	workarea/get-length ;&htm-path <load-file>
 	,&src STR2
 	;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
 	&>l
@@ -119,15 +127,6 @@
 	&buf $30
 	&map-path [ "tmp/map- &term $30 ]
 
-@lexicon/find ( name* -- term* )
-	,&t STR2
-	;&buf
-	&>w
-		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?{
-			scap/ INC2 LDAk ?&>w
-		POP2 #ffff }
-	JMP2r
-
 (
 @|diary )
 
@@ -135,7 +134,7 @@
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&>l
-		LDA2k get-workarea-length ROT2 <load-file>
+		LDA2k workarea/get-length ROT2 <load-file>
 		#0000
 		( to* from* ) ;workarea/buf .File/success DEI2 ADD2
 		( cap ) STA2k NIP2 ;workarea/buf <parse-diary-page>
@@ -213,8 +212,8 @@
 	<lb>
 	JMP2r
 
-@get-workarea-length ( -- buf* length* )
-	;workarea/buf #0000 ;workarea/buf SUB2 JMP2r
+@workarea/get-length ( -- buf* length* )
+	;&buf #0000 OVR2 SUB2 JMP2r
 
 (
 @|validate )
