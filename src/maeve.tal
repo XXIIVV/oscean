@@ -131,6 +131,10 @@
 (
 @|diary )
 
+@log/is-unpict ( log* -- t )
+	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
+	INC2 INC2 LDA [ LIT "0 ] EQU JMP2r
+
 @<parse-diary-pages> ( -- )
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
@@ -157,7 +161,7 @@
 	DUP2 set-diary
 	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
 	( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
-		;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 <add-to-journal> } }
+		DUP2 log/is-unpict ?{ DUP2 <add-to-journal> } }
 	( eol ) str/cap str/cap !scap/
 
 @<parse-event> ( event* -- )
@@ -306,7 +310,8 @@
 @htm-path/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
+		DUP #20 NEQ ?{
+			POP [ LIT "_ ] }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
@@ -364,7 +369,7 @@
 @str/to-dec ( str* -- val* )
 	[ LIT2r 0000 ]
 	&>w
-		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
+		LIT2r 000a MUL2r [ LITr 00 ] LDAk #30 SUB STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
