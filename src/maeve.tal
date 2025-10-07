@@ -97,7 +97,7 @@
 	POPr !<write-children-rec>
 
 @<parse-link> ( src* link* -- )
-	( external ) ;dict/http-txt OVR2 sseg ?&end
+	link/is-external ?&end
 	( hash ) LDAk [ LIT "# ] EQU ?&end
 	( rel ) LDAk [ LIT ". ] EQU ?&end
 	( | find broken links )
@@ -118,6 +118,11 @@
 	POP2 POP2 JMP2r
 	&buf $30
 	&map-path [ "tmp/map- &term $30 ]
+
+@link/is-external ( path* -- path* t )
+	LDA2k [ LIT2 "ht ] NEQ2 ?{
+		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
+	#00 JMP2r
 
 (
 @|diary )
@@ -318,13 +323,6 @@
 
 (
 @|stdlib )
-
-@sseg ( a* b* -- f )
-	STH2
-	&>l
-		LDAk LDAkr STHr NEQ ?{
-			INC2k LDA #00 EQU ?{ INC2 INC2r !&>l } }
-	LDA LDAr STHr EQU JMP2r
 
 @<scpy-line> ( src* dst* -- )
 	STH2
