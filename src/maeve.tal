@@ -52,7 +52,7 @@
 	;&buf
 	&>w
 		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?{
-			scap/ INC2 LDAk ?&>w
+			str/cap LDAk ?&>w
 		POP2 #ffff }
 	JMP2r
 
@@ -62,8 +62,15 @@
 	( swap ) DUP2 #0a00 str/<swap-char>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>l
-		INC2 INC2 DUP2 <parse-links>
-		scap/ INC2 GTH2k ?&>l
+		INC2 INC2 DUP2 DUP2 ,&src STR2
+		htm-path/set workarea/get-length ROT2 <load-file>
+		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
+		&>l2
+			;dict/href-attr OVR2 sseg #00 EQU ?{
+				[ LIT2 &src $2 ] OVR2 #0006 ADD2 <parse-link> }
+			INC2 GTH2k ?&>l2
+		POP2 POP2
+		( next ) str/cap GTH2k ?&>l
 	POP2 POP2
 	( | sitemap )
 	;dict/sitemap-path .File2/name DEO2
@@ -78,7 +85,7 @@
 	INC2 INC2 DUP2 <link>
 	;dict/li-tag </w>
 	<lb>
-	scap/ INC2
+	str/cap
 	( | children )
 	LDAk STHkr INC NEQ ?{
 		;dict/ul-tag <w>
@@ -87,16 +94,6 @@
 	( | sibling )
 	LDAk STHkr EQU ?{ POPr JMP2r }
 	POPr !<write-children-rec>
-
-@<parse-links> ( term* -- )
-	DUP2 ,&src STR2
-	htm-path/set workarea/get-length ROT2 <load-file>
-	;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
-	&>l
-		;dict/href-attr OVR2 sseg #00 EQU ?{
-			[ LIT2 &src $2 ] OVR2 #0006 ADD2 <parse-link> }
-		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
 
 @<parse-link> ( src* link* -- )
 	( external ) ;dict/http-txt OVR2 sseg ?&end
@@ -158,7 +155,7 @@
 	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
 	( photo ) DUP2 #0005 ADD2 LDA [ LIT ". ] EQU ?{
 		;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 <add-to-journal> } }
-	( eol ) scap/ INC2 scap/ INC2 !scap/
+	( eol ) str/cap str/cap !scap/
 
 	&log-path [ "tmp/log- &term $30 ]
 
@@ -173,11 +170,11 @@
 	DUP2 #0005 <len>
 	;dict/code-tag </w>
 	<ws>
-	scap/ INC2
+	str/cap
 	( | term )
 	DUP2 <link>
 	;dict/spacer <str>
-	scap/ INC2
+	str/cap
 	( | name )
 	<str>
 	;dict/br-tag <w>
@@ -192,7 +189,7 @@
 	;dict/journal-path .File2/name DEO2
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2 DUP2 ,&term STR2
-	scap/ INC2 ,&title STR2
+	str/cap ,&title STR2
 	;dict/figure-tag <w>
 	( src ) [ LIT2 &pict $2 ]
 	( alt ) [ LIT2 &title $2 ] <img>
@@ -343,6 +340,11 @@
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
 	JMP2r
+
+@str/cap ( str* -- end* )
+	&>wc
+		LDAk ?{ INC2 JMP2r }
+		INC2 !&>wc
 
 @str/<swap-char> ( str* a b -- )
 	,&b STR
