@@ -7,7 +7,7 @@ LIN=${EMU} ${DIR}/uxnlin.rom
 all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom
 
 clean:
-	@ rm -f bin/* && rm -f tmp/* && rm -f site/*
+	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
 
 bal:
 	@ ${BAL} src/maeve.tal
