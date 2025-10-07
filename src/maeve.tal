@@ -88,7 +88,7 @@
 	LDAk STHkr EQU ?{ POPr JMP2r }
 	POPr !<write-children-rec>
 
-@<parse-links> ( src* -- )
+@<parse-links> ( term* -- )
 	DUP2 ;&term <scpy-line>
 	;&term [ LIT2 20 "_ ] str/<swap-char>
 	;dict/htm-ext ;&term scap/ <scpy-line>
@@ -301,6 +301,25 @@
 	.File2/write DEO2
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
+
+(
+@|buffers )
+
+@htm-path/set ( name* -- res* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;dict/htm-ext
+	( >> )
+
+@htm-path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "src/htm/ &buf $30 ]
 
 (
 @|stdlib )
