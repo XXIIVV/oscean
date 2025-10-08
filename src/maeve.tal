@@ -51,14 +51,6 @@
 		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
 	#00 JMP2r
 
-@link/bind ( src* link* -- )
-	/set SWP2 lexicon/find INC2 ORA ?{ /<print-err> }
-	/has-html-ext ?{ /<print-err> }
-	link/get-path .File2/name DEO2
-	<str>
-	<lb>
-	JMP2r
-
 @link/has-html-ext ( str* -- t )
 	LDA2k [ LIT2 ".h ] NEQ2 ?{
 		INC2 INC2 LDA2k [ LIT2 "tm ] NEQ2 ?{
@@ -70,19 +62,25 @@
 	;dict/redlink str/<print>
 	;&res str/<print>
 	;dict/in str/<print>
-	OVR2 !str/<print-ln>
+	DUP2 !str/<print-ln>
 
 @link/<parse> ( src* link* -- )
 	link/is-relative ?{
-		link/is-anchor ?{ link/is-external ?{ !/bind } } }
+		link/is-anchor ?{
+			link/is-external ?{
+				/set
+				( | handlers )
+				;&res lexicon/find INC2 ORA ?{ /<print-err> }
+				/has-html-ext ?{ /<print-err> }
+				;&res [ LIT2 20 "_ ] str/<swap-char>
+				;&map-path .File2/name DEO2
+				<str>
+				<lb>
+				JMP2r } } }
 	POP2 POP2 JMP2r
-
-@link/get-path ( -- path* )
-	;&map-path ;&res [ LIT2 20 "_ ] !str/<swap-char>
 
 @link/set ( str* -- buf* str* )
 	;&res ,&ptr STR2
-	;&res SWP2
 	&>w
 		LDAk DUP #1f GTH ?{ &end POP JMP2r }
 		DUP [ LIT ". ] EQU ?&end
