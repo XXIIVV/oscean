@@ -27,7 +27,7 @@
 	;dict/p-tag </w>
 	( | print next available id )
 	;dict/available-txt str/<print>
-	find-available dec/<print>
+	diaries/next dec/<print>
 	#0a18 DEO
 	( | halt. )
 	#800f DEO
@@ -110,6 +110,9 @@
 		POP2 #ffff }
 	JMP2r
 
+%workarea/get-length ( -- buf* length* ) {
+	;workarea/buf #0000 OVR2 SUB2 }
+
 @lexicon/<parse> ( -- )
 	;&buf
 	( load ) DUP2 #2000 ;dict/lexicon-path <load-file>
@@ -181,7 +184,7 @@
 		<str>
 		<lb>
 		( split ) DUP2 #0900 str/<swap-char>
-		DUP2 <set-diary>
+		DUP2 diaries/<set>
 		log/is-unevent ?{ DUP2 <parse-event> }
 		log/is-ignored ?{
 			DUP2 log/is-unpict ?{ DUP2 <add-to-journal> } }
@@ -232,32 +235,29 @@
 	<lb>
 	JMP2r
 
-@workarea/get-length ( -- buf* length* )
-	;&buf #0000 OVR2 SUB2 JMP2r
-
 (
 @|validate )
 
-@<set-diary> ( log* -- )
+@diaries/get ( id* -- mask )
+	( bit ) #01 OVR #07 AND #40 SFT SFT STH
+	( res ) #03 SFT2 ;&buf ADD2 LDA STHr AND JMP2r
+
+@diaries/<set> ( log* -- )
 	( | validate photo id )
 	#0006 ADD2 str/to-dec ORAk ?{ POP2 JMP2r }
-	DUP2 get-diary ?{
+	DUP2 /get ?{
 		( bit ) #01 OVR #07 AND #40 SFT SFT STH
-		( res ) #03 SFT2 ;diaries/buf ADD2 LDAk STHr ORA ROT ROT STA
+		( res ) #03 SFT2 ;&buf ADD2 LDAk STHr ORA ROT ROT STA
 		JMP2r }
 	;dict/warn-duplicate str/<print>
 	dec/<print>
 	#0a18 DEO
 	JMP2r
 
-@get-diary ( id* -- mask )
-	( bit ) #01 OVR #07 AND #40 SFT SFT STH
-	( res ) #03 SFT2 ;diaries/buf ADD2 LDA STHr AND JMP2r
-
-@find-available ( -- id* )
+@diaries/next ( -- id* )
 	#0001
 	&>w
-		DUP2 get-diary ?{ JMP2r }
+		DUP2 /get ?{ JMP2r }
 		INC2 !&>w
 
 (
