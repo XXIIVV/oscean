@@ -53,13 +53,17 @@
 
 @link/bind ( src* link* -- src* link* )
 	DUP2 /set SWP2 lexicon/find INC2 ORA ?{ /<print-err> }
-	POP2 ( TODO )
-
-
-link/get-path .File2/name DEO2
+	/has-html-ext ?{ /<print-err> }
+	link/get-path .File2/name DEO2
 	OVR2 <str>
 	<lb>
 	JMP2r
+
+@link/has-html-ext ( str* -- t )
+	LDA2k [ LIT2 ".h ] NEQ2 ?{
+		INC2 INC2 LDA2k [ LIT2 "tm ] NEQ2 ?{
+			INC2 INC2 LDA [ LIT "l ] EQU JMP2r } }
+	POP2 #00 JMP2r
 
 @link/<print-err> ( src* link* -- src* link* )
 	#010f DEO
@@ -70,7 +74,7 @@ link/get-path .File2/name DEO2
 
 @link/<parse> ( src* link* -- )
 	link/is-relative ?{
-		link/is-anchor ?{ link/is-external ?{ link/bind } } }
+		link/is-anchor ?{ link/is-external ?{ /bind } } }
 	POP2 POP2 JMP2r
 
 (
@@ -422,6 +426,7 @@ link/get-path .File2/name DEO2
 @dict/spacer 20 "&mdash; 20 $1
 	&journal-path "src/htm/journal.htm $1
 	&htm-ext ".htm $1
+	&html-ext ".html $1
 	&p-tag "p $1
 	&ul-tag "ul $1
 	&li-tag "li $1
