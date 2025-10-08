@@ -52,15 +52,13 @@
 	#00 JMP2r
 
 @link/bind ( src* link* -- src* link* )
-	DUP2 link/set lexicon/find INC2 ORA ?{
+	DUP2 /set lexicon/find INC2 ORA ?{
 		;dict/redlink str/<print>
 		;&res str/<print>
 		;dict/in str/<print>
 		OVR2 str/<print-ln>
 		#010f DEO }
-	DUP2 ;&term <scpy-line>
-	;&term [ LIT2 20 "_ ] str/<swap-char>
-	( res ) ;&map-path .File2/name DEO2
+	link/get-path .File2/name DEO2
 	OVR2 <str>
 	<lb>
 	JMP2r
@@ -69,7 +67,6 @@
 	link/is-relative ?{
 		link/is-anchor ?{ link/is-external ?{ link/bind } } }
 	POP2 POP2 JMP2r
-	&map-path [ "tmp/map- &term $30 ]
 
 (
 @|lexicon )
@@ -334,6 +331,10 @@
 
 	&res [ "tmp/log- &resbuf $30 ]
 
+@link/get-path ( -- path* )
+	;&res [ LIT2 20 "_ ] str/<swap-char>
+	;&map-path JMP2r
+
 @link/set ( str* -- str* buf* )
 	;&res ,&ptr STR2
 	;&res SWP2
@@ -344,7 +345,8 @@
 		#00 [ LIT2 &ptr =&res ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
-	&res $30
+
+	&map-path [ "tmp/map- &res $30 ]
 
 (
 @|stdlib )
