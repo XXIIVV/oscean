@@ -23,12 +23,12 @@
 	#800f DEO
 	BRK
 
+(
+@|framework )
+
 %<lb> { ;dict/0a .File2/write DEO2 }
 
 %<ws> { ;dict/20 .File2/write DEO2 }
-
-(
-@|framework )
 
 %<len> ( str* len* -- ) {
 	.File2/length DEO2
@@ -38,25 +38,16 @@
 %<str> ( str* -- ) {
 	DUP2 scap/ OVR2 SUB2 <len> }
 
-@<w> ( name* -- )
-	;&a .File2/write DEO2
+%<w> ( name* -- ) {
+	;ascii/lt .File2/write DEO2
 	<str>
-	;&b .File2/write DEO2
-	JMP2r
+	;ascii/gt .File2/write DEO2 }
 
-	&a "<
-	&b ">
-
-@</w> ( name* -- )
-	;&a .File2/write DEO2
-	;&b .File2/write DEO2
+%</w> ( name* -- ) {
+	;ascii/lt .File2/write DEO2
+	;ascii/slash .File2/write DEO2
 	<str>
-	;&c .File2/write DEO2
-	JMP2r
-
-	&a "<
-	&b "/
-	&c ">
+	;ascii/gt .File2/write DEO2 }
 
 @<img> ( src* alt* -- )
 	;&a <str>
@@ -263,9 +254,9 @@
 @<parse-event> ( event* -- )
 	( | add to events )
 	;dict/events-path .File2/name DEO2
-	( year ) LDAk2 ,&last LDR2 EQU2 ?{
+	( year ) LDAk2 ;&last LDA2 EQU2 ?{
 		;dict/br-tag <w>
-		LDA2k ,&last STR2 }
+		LDA2k ;&last STA2 }
 	( | date )
 	;dict/code-tag <w>
 	DUP2 #0005 <len>
@@ -286,7 +277,8 @@
 
 @<add-to-journal> ( photo* -- )
 	( | limit to 20 entries )
-	[ LIT2 &len $2 ] #0020 LTH2 ?{ POP2 JMP2r }
+	[ LIT2 &len $2 ] INC2k ,&len STR2
+	#0020 LTH2 ?{ POP2 JMP2r }
 	;dict/journal-path .File2/name DEO2
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2 DUP2 ,&term STR2
@@ -300,7 +292,6 @@
 	,&title LDR2 <str>
 	;dict/figcaption-tag </w>
 	;dict/figure-tag </w>
-	,&len LDR2 INC2 ,&len STR2
 	<lb>
 	JMP2r
 
@@ -477,6 +468,13 @@
 
 (
 @|memory )
+
+@ascii/space 20 &line 0a
+	&lt "<
+	&gt ">
+	&equal "=
+	&quote ""
+	&slash "/
 
 @lexicon/buf $2000
 
