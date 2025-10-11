@@ -13,18 +13,8 @@
 	[ LIT2 01 -File2/append ] DEO
 	#0001 .File2/length DEO2
 	( | lexicon )
-	;dict/sitemap-path .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	;dict/ul-tag <w>
-	lexicon/<parse>
-	;dict/ul-tag </w>
-	( | diary )
-	;dict/events-path .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	;header-txt <str>
-	;dict/p-tag <w>
-	<parse-diary-pages>
-	;dict/p-tag </w>
+	lexicon/<build>
+	diary/<build>
 	( | print next available id )
 	;dict/available-txt str/<print>
 	diaries/next dec/<print>
@@ -36,6 +26,68 @@
 %<lb> { ;dict/0a .File2/write DEO2 }
 
 %<ws> { ;dict/20 .File2/write DEO2 }
+
+(
+@|framework )
+
+%<len> ( str* len* -- ) {
+	.File2/length DEO2
+	.File2/write DEO2
+	#0001 .File2/length DEO2 }
+
+%<str> ( str* -- ) {
+	DUP2 scap/ OVR2 SUB2 <len> }
+
+@<w> ( name* -- )
+	;&a .File2/write DEO2
+	<str>
+	;&b .File2/write DEO2
+	JMP2r
+
+	&a "<
+	&b ">
+
+@</w> ( name* -- )
+	;&a .File2/write DEO2
+	;&b .File2/write DEO2
+	<str>
+	;&c .File2/write DEO2
+	JMP2r
+
+	&a "<
+	&b "/
+	&c ">
+
+@<img> ( src* alt* -- )
+	;&a <str>
+	<str>
+	;&b <str>
+	<str>
+	;&c <str>
+	JMP2r
+
+	&a "<img 20 "alt=" $1
+	&b "" 20 "src="../media/diary/ $1
+	&c ".jpg"> $1
+
+@<link> ( str* -- )
+	;&a <str>
+	DUP2 <path>
+	;&b <str>
+	<str>
+	;&c <str>
+	JMP2r
+
+	&a "<a 20 "href=' $1
+	&b ".html'> $1
+	&c "</a> $1
+
+@<path> ( str* -- )
+	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
+	;&a .File2/write DEO2
+	INC2 LDAk ?<path>
+	POP2 JMP2r
+	&a $1
 
 (
 @|link )
@@ -93,6 +145,14 @@
 
 (
 @|lexicon )
+
+@lexicon/<build> ( -- )
+	;dict/sitemap-path .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	;dict/ul-tag <w>
+	lexicon/<parse>
+	;dict/ul-tag </w>
+	JMP2r
 
 @<load-file> ( addr* length* path* -- )
 	.File/name DEO2
@@ -155,6 +215,15 @@
 
 (
 @|diary )
+
+@diary/<build> ( -- )
+	;dict/events-path .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	;header-txt <str>
+	;dict/p-tag <w>
+	<parse-diary-pages>
+	;dict/p-tag </w>
+	JMP2r
 
 @log/is-unpict ( log* -- t )
 	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
@@ -259,68 +328,6 @@
 	&>w
 		DUP2 /get ?{ JMP2r }
 		INC2 !&>w
-
-(
-@|framework )
-
-@<w> ( name* -- )
-	;&a .File2/write DEO2
-	<str>
-	;&b .File2/write DEO2
-	JMP2r
-
-	&a "<
-	&b ">
-
-@</w> ( name* -- )
-	;&a .File2/write DEO2
-	;&b .File2/write DEO2
-	<str>
-	;&c .File2/write DEO2
-	JMP2r
-
-	&a "<
-	&b "/
-	&c ">
-
-@<img> ( src* alt* -- )
-	;&a <str>
-	<str>
-	;&b <str>
-	<str>
-	;&c !<str>
-
-	&a "<img 20 "alt=" $1
-	&b "" 20 "src="../media/diary/ $1
-	&c ".jpg"> $1
-
-@<link> ( str* -- )
-	;&a <str>
-	DUP2 <path>
-	;&b <str>
-	<str>
-	;&c !<str>
-
-	&a "<a 20 "href=' $1
-	&b ".html'> $1
-	&c "</a> $1
-
-@<path> ( str* -- )
-	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
-	;&a .File2/write DEO2
-	INC2 LDAk ?<path>
-	POP2 JMP2r
-	&a $1
-
-@<str> ( str* -- )
-	DUP2 scap/ OVR2 SUB2
-	( >> )
-
-@<len> ( str* len* -- )
-	.File2/length DEO2
-	.File2/write DEO2
-	( restore ) #0001 .File2/length DEO2
-	JMP2r
 
 (
 @|buffers )
