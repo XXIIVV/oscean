@@ -20,7 +20,7 @@
 	@is-month $1
 	@offset $1
 	@events/ptr $2
-	@input/buf $40
+	@input/buf $3f &cap $1
 	@select/filepath &x000 $1 &0x00 $1 &00x0 $1 &000x $1 $1
 	@anchor/x $2 &y $2
 
@@ -44,7 +44,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "31 20 "Aug 20 "2025 $2
+	( date ) "15 20 "Oct 20 "2025 $2
 
 (
 @|vectors )
@@ -76,8 +76,8 @@
 	OVR #81 NEQ ?{ select/<next-month> }
 	( | key handlers )
 	DUP #1b NEQ ?{ select/<today> }
-	DUP #08 NEQ ?{ events/<erase> }
-	DUP #7f NEQ ?{ events/<erase> }
+	DUP #08 NEQ ?{ events/<erase-selected> }
+	DUP #7f NEQ ?{ events/<erase-selected> }
 	DUP #0d NEQ ?{ input/<start> }
 	POP
 	( | button handlers )
@@ -118,8 +118,8 @@
 
 @input/<inject> ( addr* -- )
 	&>w
-		LDAk ?{ POP2 events/<erase> !/<draw> }
-		LDAk #0a NEQ ?{ POP2 events/<erase> !/<draw> }
+		LDAk ?{ POP2 events/<erase-selected> !/<draw> }
+		LDAk #0a NEQ ?{ POP2 events/<erase-selected> !/<draw> }
 		LDAk /<push>
 		INC2 !&>w
 
@@ -159,7 +159,9 @@
 @input/<push> ( c -- )
 	DUP ?{ POP JMP2r }
 	DUP #08 EQU ?/<pop>
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -&buf ] INCk
+	( overflow ) DUP .&cap NEQ ?{ POP2 POP2 JMP2r }
+	,&ptr STR
 	STZ2 !/<draw>
 
 @input/<pop> ( c -- )
@@ -172,7 +174,7 @@
 	( | cap )
 	,&ptr LDR [ LIT2 0c -&buf ] ADD LTH ?/<unlock>
 	( | save )
-	;select/filepath events/<export>
+	events/<export>
 	( | push )
 	#0a /<push>
 	[ LIT2 00 _&ptr ] LDR .&buf SUB .File/length DEO2
@@ -390,7 +392,7 @@
 	( 000x ) #000a DIV2k MUL2 SUB2 to-dec .&000x STZ
 	POP
 	( | load )
-	;&filepath events/import header/<draw> !<draw-page>
+	events/import header/<draw> !<draw-page>
 
 @select/<prev-month> ( -- )
 	[ LIT2 ff -day ] STZ
@@ -421,13 +423,16 @@
 	#0005 ADD2 LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
 	sdec [ LIT2 00 -month ] LDZ INC NEQ2 JMP2r
 
-@events/<erase> ( -- )
+@events/<erase-selected> ( -- )
 	;select/filepath .File/name DEO2
-	.&ptr LDZ2 ;&buf
+	.&ptr LDZ2 ;&buf [ LIT2r 0000 ]
 	&>ler
-		DUP2 is-selected ?{ DUP2 /<save-event> }
+		DUP2 is-selected ?{ INC2r DUP2 /<save-event> }
 		lcap GTH2k ?&>ler
-	POP2 POP2 !select/<reselect>
+	POP2 POP2 STH2r ORA ?{
+		[ LIT2 01 -File/delete ] DEO
+		;select/filepath .File/name DEO2 }
+	!select/<reselect>
 
 @events/<copy> ( -- )
 	;select/filepath .File/name DEO2
@@ -449,7 +454,7 @@
 			DUP2 #000b ADD2 ;dict/snarf-txt .File2/name DEO2
 			DUP2 lcap OVR2 SUB2 .File2/length DEO2
 			.File2/write DEO2
-			POP2 POP2 !/<erase> }
+			POP2 POP2 !/<erase-selected> }
 		lcap GTH2k ?&>lcu
 	POP2 POP2 !select/<reselect>
 
@@ -468,15 +473,15 @@
 	.File/write DEO2
 	JMP2r
 
-@events/import ( filepath* -- )
-	.File/name DEO2
+@events/import ( -- )
+	;select/filepath .File/name DEO2
 	#8000 .File/length DEO2
 	;&buf DUP2 .File/read DEO2
 	.File/success DEI2 ADD2 .&ptr STZ2
 	JMP2r
 
-@events/<export> ( filepath* -- )
-	.File/name DEO2
+@events/<export> ( -- )
+	;select/filepath .File/name DEO2
 	;&buf ;&ptr LDA2 OVR2 SUB2 .File/length DEO2
 	.File/write DEO2
 	JMP2r
@@ -803,6 +808,12 @@
 	( leap year if not divisible by 100 ) ( but divisible by 4 ) DUP2 #0003 AND2 #0000 EQU2 ?&leap
 	( all other years are not leap years ) &not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
+
+@str/<print> ( str* -- )
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>wp
 
 @sdec ( str* -- val* )
 	[ LIT2r 0000 ]
