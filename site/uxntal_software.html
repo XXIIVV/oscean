@@ -10,7 +10,7 @@
 <meta property="og:title" content="uxntal software"/><meta property="og:url" content="https://wiki.xxiivv.com/site/uxntal_software.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/><title>XXIIVV &mdash; uxntal software</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 <nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html" class="self">uxntal software</a></li></ul><ul><li><a href="uxntal_bootstrap.html">uxntal bootstrap</a></li><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="uxnfor.html">uxnfor</a></li><li><a href="uxnbal.html">uxnbal</a></li><li><a href="uxnlin.html">uxnlin</a></li><li><a href="bicycle.html">bicycle</a></li><li><a href="beetbug.html">beetbug</a></li></ul></nav>
-<main><h2>Uxntal Utilities</h2>
+<main><h2>Uxntal Software</h2>
 
 <p>Here's a list of small self-hosted development tools:</p>
 
@@ -26,8 +26,499 @@ peephole optimizer that reveals potential optimizations in opcode sequences.</li
 program validator that warns when routines do not match their definitions.</li>
 	<li><a href='https://git.sr.ht/~rabbits/uxndis' target='_blank'>Uxndis</a> is a disassembler that prints the opcodes in a rom file.</li>
 </ul>
-<figure><img alt="The Bicycle Interpreter" src="../media/diary/783.jpg"><figcaption><a href="bicycle.html">bicycle</a> &mdash; The Bicycle Interpreter<span class="right">17O05</span></figcaption></figure>
-<figure><img alt="Beetbug Step Debugger" src="../media/diary/805.jpg"><figcaption><a href="beetbug.html">beetbug</a> &mdash; Beetbug Step Debugger<span class="right">16Y04</span></figcaption></figure>
+<h2 id='bootstrap'>Boostrapping</h2>
+
+<p>Since the assembler is written in the language it is assembling, you have a few
+choices:</p>
+
+<ol>
+	<li>Download a <a href='https://rabbits.srht.site/drifblim/drifblim.rom' target="_blank">pre-assembled rom</a>.</li>
+	<li>Assemble your own with the <a href='../etc/uxnrepl/index.html'>live REPL</a>.</li>
+	<li>Bootstrap from a <a href='../etc/drifblim.rom.txt'>hexdump</a>.</li>
+</ol>
+
+<p>If you are unable to assemble your own copy of drifblim, lost its source file,
+or simply want to make sure that the assembler is unaltered, you will need the
+hexadecimal data of <a href='../etc/drifblim.rom.txt'>drifblim.rom</a>. Here
+are some inspectable tools to help with the bootstrapping process on
+non-unix systems:</p>
+
+<h4>Step 0: xh.rom</h4>
+<p>If for some reason you do not have access to the unix <kbd>xxd</kbd> command,
+you can convert hexadecimal dump to a rom with the <a
+href='../etc/xh.tal.txt'>xh program</a>, which reads a console stream of
+text and output the actual bytes through the console. This step expects a way
+to manually create a binary file, but not having a convenient way of creating
+large files manually.</p>
+
+<pre style='margin-bottom:1px'>
+a001 0780 1037 0080 1216 8030 1906 800a
+0b20 000c 8027 1906 8010 0b20 0002 0200
+c040 5ecf 2000 051d 8018 1700 cf1f</pre>
+<pre>cat <a href='../etc/drifblim.rom.txt'>drifblim.rom.txt</a> | uxncli <b>xh.rom</b> > drifblim.rom</pre>
+
+<h4>Step 1: cat.rom</h4>
+<p>If for some reason you do not have access to the unix <kbd>cat</kbd> program,
+you can read files and output their content through the console with the <a
+href='../etc/cat.tal.txt'>cat program</a>, which reads a file and outputs the
+content via the console.</p>
+
+<pre style='margin-bottom:1px'>
+a001 0780 1037 0080 1216 0680 1f0a 2000
+1502 6000 1aa0 000f 13a0 0317 1608 2000
+04a0 800f 1700 a000 0081 80fb 1331 00a0
+0000 80a8 37a0 0001 80aa 37a0 014b 80ac
+b780 a316 2000 0302 226c a000 1817 40ff
+ef</pre>
+<pre>uxncli <b>cat.rom</b> <a href='../etc/drifblim.rom.txt'>drifblim.rom.txt</a> | uxncli xh.rom > drifblim.rom</pre>
+
+<h4>Step 2: drifboot.rom</h4>
+
+<p>At this point, you have recovered your own drifblim.rom from a hex dump.
+The next step is to make a new drifblim.rom from its source code, using
+the newly assembled rom.</p>
+
+<pre>
+uxncli drifblim.rom <a href='../etc/drifblim.tal.txt'>drifblim.tal.txt</a> drifboot.rom
+</pre>
+
+<p>Note that in Uxntal, hexadecimal numbers are valid code and so any rom can be
+recovered from a hex dump with a working assembler.</p>
+
+<h4>Step 3: hx.rom</h4>
+
+<p>To close the circle, the assembled rom needs to turned back into a hex dump,
+we'll print its hex dump using a the following utility:</p>
+
+<pre style='margin-bottom:1px'>
+@on-reset ( -> )
+	;on-console #10 DEO2 BRK
+@on-console ( -> )
+	#0417 DEI NEQ [ JMP BRK ]
+	#12 DEI DUP #04 SFT emit emit INC
+@spacer ( c -> )
+	DUP #0f AND ?{ #0a18 DEO BRK }
+	DUP #01 AND ?{ #2018 DEO } BRK
+@emit ( c -- )
+	#0f AND DUP #09 GTH #27 MUL ADD
+	LIT "0 ADD #18 DEO JMP2r</pre>
+<pre>
+uxncli drifblim.rom <a href='../etc/hx.tal.txt'>hx.tal.txt</a> hx.rom
+cat drifboot.rom | uxncli hx.rom > drifboot.rom.txt
+</pre>
+
+<h4>Step 4: eq.rom</h4>
+
+<p>Finally, we should have two identical hex dumps of the assembler, where one was
+assembled from the textual source. If for some reason you do not have access to
+the unix <kbd>diff</kbd> command, you can compare the two hexadecimal dumps
+with the <a href='../etc/eq.tal.txt'>eq program</a>, which takes two filepaths
+and compare their content.</p>
+
+<pre>
+uxncli drifblim.rom <a href='../etc/eq.tal.txt'>eq.tal.txt</a> eq.rom
+uxncli eq.rom drifblim.rom.txt drifboot.rom.txt
+</pre>
+
+<p>Alternatively, if your <a href='varvara.html'>Varvara</a> implementation does
+not support the <a href='varvara.html#file'>File device</a>, use the Drifloon
+assembler(<a href='../etc/drifloon.tal.txt'>tal</a>/<a
+href='../etc/drifloon.rom.txt'>rom</a>). To validate your own assembler, see
+the <a href='https://git.sr.ht/~rabbits/drifblim/tree/main/item/tests.sh'
+target='_blank'>tests</a>, and disassemble the result with <a
+href='../etc/uxndis.tal.txt'>uxndis</a>.</p>
+<h2>A collection of commonly used routines in Uxntal projects.</h2>
+
+<p>The following snippets are in the standard format. If you discover faster and smaller helpers, please get in touch with me.</p>
+
+<h3>Hexadecimal Numbers</h3>
+
+<p>To print an hexadecimal number:</p>
+<pre>
+@&lt;phex&gt; ( short* -: )
+	SWP /b
+	&b ( byte -: )
+		DUP #04 SFT /c
+	&c ( byte -: )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
+</pre>
+
+<p>To convert an hexadecimal string to a value:</p>
+<pre>
+@shex ( str* -: val* )
+	[ LIT2r 0000 ]
+	&w ( str* `acc* -: val* )
+	LDAk chex INC #00 EQU ?{
+		[ LITr 40 ] SFT2r LDAk chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&w }
+	POP2 STH2r JMP2r
+</pre>
+
+<p>To convert an hexadecimal character to a nibble:</p>
+<pre>
+@chex ( c -: val! )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH ?{ JMP2r }
+	( hex ) #27 SUB DUP #0f GTH ?{ JMP2r }
+	( err ) POP #ff JMP2r
+</pre>
+
+<h3>Decimal Numbers</h3>
+
+<p>To print a decimal short to decimal:</p>
+<pre>
+@pdec ( short* -- )
+	#000a SWP2 [ LITr ff ]
+	&>get ( -- )
+		SWP2k DIV2k MUL2 SUB2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put ( -- )
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD #18 DEO !&>put
+</pre>
+
+<p>To print a decimal byte to decimal:</p>
+
+<pre>
+@print-dec ( dec -- )
+	DUP #64 DIV print-num/try
+	DUP #0a DIV print-num/try
+	( >> )
+
+@print-num ( num -- )
+	#0a DIVk MUL SUB [ LIT "0 ] ADD #18 DEO
+	JMP2r
+	&try ( num -- )
+		DUP ?print-num
+		POP JMP2r</pre>
+
+<p>To convert a decimal string to a hexadecimal value.</p>
+<pre>
+@sdec ( str* -- val* )
+	[ LIT2r 0000 ]
+	&w ( -- )
+		( validate ) LDAk [ LIT "0 ] SUB #09 GTH ?&end
+		( accumulate ) [ LIT2r 000a ] MUL2r
+		( combine ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH ADD2r
+		( continue ) INC2 LDAk ?&w
+	&end POP2 STH2r JMP2r
+</pre>
+
+<h3 id='strings'>Strings</h3>
+
+<p>To print a string.</p>
+<pre>
+@&lt;pstr&gt; ( str* -: )
+	LDAk #18 DEO
+	INC2 & LDAk ?&lt;pstr&gt;
+	POP2 JMP2r
+</pre>
+
+<p>Helpers for strings:</p>
+
+<pre>
+[TODO]
+</pre>
+
+<h3>Memory</h3>
+
+<p>To print an entire page of memory:</p>
+<pre>
+@pmem ( addr* -- )
+	#0000
+	&l ( -- )
+		ADD2k LDA phex/b
+		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
+		INC NEQk ?&l
+	POP2 POP2 JMP2r
+</pre>
+
+<p>Helpers for memory.</p>
+
+<pre>
+[TODO]
+</pre>
+
+<p>Helpers for bitwise operations.</p>
+
+<pre>
+@popcount ( byte -- count ) LITr 00 #00 &w SFTk #01 AND STH ADDr INC SFTk ?&w POP2 STHr JMP2r
+@popcnt ( v* -- num ) LITr 00 &>w #01 ANDk STH ADDr SFT2 ORAk ?&>w POP2 STHr JMP2r
+</pre>
+
+<h3>Dates</h3>
+
+<p>To find the day of the week from a given date, <a href='https://c-faq.com/misc/zeller.html' target='_blank'>Tomohiko Sakamoto</a>'s method:</p>
+<pre>
+@dotw ( y* m d -- dotw )
+	( y -= m < 3; )
+	OVR STH SWP2 #00 STHr #02 LTH SUB2
+	STH2
+	( t[m-1] + d )
+	#00 ROT ;&t ADD2 LDA #00 SWP
+	ROT #00 SWP ADD2
+	( y + y/4 - y/100 + y/400 )
+	STH2kr
+	STH2kr #02 SFT2 ADD2
+	STH2kr #0064 DIV2 SUB2
+	STH2r #0190 DIV2 ADD2
+	ADD2
+	( % 7 )
+	#0007 DIV2k MUL2 SUB2 NIP
+	JMP2r
+		&t [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
+</pre>
+
+<p>To find if a year is a leap year:</p>
+<pre>
+@is-leap-year ( year* -- bool )
+	( leap year if perfectly divisible by 400 )
+	DUP2 #0190 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
+	( not a leap year if divisible by 100 )
+	( but not divisible by 400 )
+	DUP2 #0064 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
+	( leap year if not divisible by 100 )
+	( but divisible by 4 )
+	DUP2 #0003 AND2 #0000 EQU2 ?&leap
+	( all other years are not leap years )
+	&not-leap
+	POP2 #00
+	JMP2r
+		&leap POP2 #01 JMP2r
+</pre>
+
+<h3>Memory</h3>
+
+<pre>
+@msfl ( b* a* len* -- )
+	STH2
+	SWP2 EQU2k ?&end
+	&l ( -- )
+		DUP2k STH2kr ADD2 LDA ROT ROT STA
+		INC2 GTH2k ?&l
+	POP2 POP2 &end POP2r JMP2r
+
+@msfr ( b* a* len* -- )
+	STH2
+	EQU2k ?&end
+	&l ( -- )
+		DUP2 LDAk ROT ROT STH2kr ADD2 STA
+		#0001 SUB2 LTH2k ?&l
+	POP2 POP2 &end POP2r JMP2r
+</pre>
+
+<h3>Random</h3>
+
+<pre>
+@prng-init ( -- )
+	[ LIT2 00 -DateTime/second ] DEI
+		[ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+		[ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+		[ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+		[ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+		.DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	JMP2r
+
+@prng ( -- number* )
+	[ LIT2 &x $2 ]
+		DUP2 #50 SFT2 EOR2
+		DUP2 #03 SFT2 EOR2
+	[ LIT2 &y $2 ] DUP2 ,&x STR2
+		DUP2 #01 SFT2 EOR2 EOR2
+		,&y STR2k POP
+	JMP2r
+</pre>
+
+<h3>Misc</h3>
+
+<p>To convert a signed byte to a signed short.</p>
+
+<pre>DUP #7f GTH #ff MUL SWP</pre>
+
+<pre>
+@smax ( x* y* -> smax* ) EOR2k POP #80 AND ?min !max
+@min ( x* y* -> min* ) LTH2k JMP SWP2 POP2 JMP2r
+@max ( x* y* -> max* ) LTH2k JMP SWP2 NIP2 JMP2r
+@mod ( x y -- z ) DIVk MUL SUB JMP2r
+@mod2 ( x* y* -- z* ) DIV2k MUL2 SUB2 JMP2r
+
+( Signed macros )
+
+@abs ( a -- b ) DUP #80 LTH ?{ #00 SWP SUB } JMP2r
+@abs2 ( a* -- b* ) DUP2k #1f SFT2 MUL2 SUB2 JMP2r
+@lts2 ( a* b* -- f ) #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+@gts2 ( a* b* -- f ) #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+
+( Binary macros )
+
+@rol ( x y -- z ) DUP #07 SFT SWP #10 SFT ADD JMP2r
+@ror ( x y -- z ) DUP #70 SFT SWP #01 SFT ADD JMP2r
+@rol2 ( x* y* -- z* ) DUP2 #0f SFT2 SWP2 #10 SFT2 ADD2 JMP2r
+@ror2 ( x* y* -- z* ) DUP2 #f0 SFT2 SWP2 #01 SFT2 ADD2 JMP2r
+</pre>
+
+<h2>Uxnfor is a formatter for Uxntal.</h2>
+
+<p>The formatter expects the standard <a href='uxntal_notation.html'>Uxntal
+Notation</a>, sometimes called <i>Drifblim-style</i>.</p>
+
+<ul>
+	<li>Struct labels are capitalized.</li>
+	<li>Source is indented with tabulators.</li>
+	<li>Comments that should be on their own line begin with a ( | pipe ).</li>
+	<li>Routines that consume all their arguments from the stack are &lt;wrapped&gt; inside angle brackets.</li>
+	<li>Subroutines definitions without an stack effect will be inlined</li>
+	<li>Tokens inside square brackets will be formatted as blocks of binary data.</li>
+	<li>The zero-page is indicated by |000, the one-page is indicated by |100.</li>
+	<li>Local forward references are indicated by &>loop for nesting.</li>
+</ul>
+
+<p id='emitting'>If a routine is printing, drawing, or sometimes ingesting all of its arguments, the routine can be wrapped within angular brackets to indicate that it should end a line to <a href='uxnfor.html'>Uxnfor</a>.</p>
+
+<pre>
+@&lt;emit-num&gt; ( num* -- )
+	LIT "0 ADD .Console/write DEO JMP2r
+</pre>
+
+<ul>
+	<li><a href='../etc/uxnfor.tal.txt'>Source</a>, Uxntal</li>
+</ul>
+
+<img src='../media/refs/newwave.png'/>
+<h2>Uxnbal is a stack effect validator.</h2>
+
+<p>Program validation is done at <b>compile-time</b> by comparing a routine's stack effect,
+against the resulting balance of all stack changes occurring in the routine's code. Words that do not pass the stack-checker are generating a warning, and so
+essentially this defines a very basic and permissive type system that
+nevertheless catches some invalid programs and enables compiler optimizations. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>.</p>
+
+<p>The simplest case is when a piece of code does not have any branches or
+recursion, and merely pushes literals and calls words. The stack effect
+routines is always known statically from the declaration.</p>
+
+<pre>
+<b>@add-eight</b> <i>( a -- a+8 )</i>
+	#0008 ADD JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack imbalance of +1, in add-eight.</pre>
+
+<p>In the case of <b>branching</b>, each branch is evaluated and if an imbalance occurs inside one of the branches, the branch name is indicated:</p>
+<pre>
+<b>@branching</b> <i>( a* -- c )</i>
+	LDAk #01 EQU ?&one
+	LDAk #02 EQU ?&two
+	POP2 #ff JMP2r
+	<b>&one</b> <i>( a* -- c )</i> POP2 #12 JMP2r
+	<b>&two</b> <i>( a* -- c d )</i> ADD JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack imbalance of -1, in branching/two.</pre>
+
+<p>In the case of a <b>recursion</b>, the validator will use the stack effect instead of repeatedly walking through the body of the routine.</p>
+
+<pre>
+<b>@print-string</b> <i>( str* -- )</i>
+	LDAk DUP ?{ POP POP2 JMP2r }
+	emit-letter 
+	INC2 !print-string
+</pre>
+
+<p>For <b>loops</b> that exits without affecting the stack depth, a <kbd>></kbd> prefixed label is used as a shorthand to reduce the need for extraneous stack effect definitions in cases where it can be inferred:</p>
+<pre>
+<b>@many-times</b> <i>( a -- )</i>
+	DUP
+	<b>&>l</b>
+		INC DUP ?&>l
+	POP2 JMP2r
+</pre>
+
+<p>Routines that pull items from the stack beyond their allowed depth will also raise a warning, making the stack effect act a sort of boundary:</p>
+
+<pre>
+<b>@shallow</b> <i>( a -- )</i>
+	POP2 JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack depth error of 1, in shallow.</pre>
+
+<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
+one point during the execution of a program, is to read the <a
+href='varvara.html#system'>System/wst</a> port and compare it against a given
+stack pointer byte value.</p>
+
+<pre>
+<b>@on-reset</b> <i>( -> )</i>
+	#abcd DUP2 
+	.System/wst DEI #05 EQU ?{
+		#01 .System/debug DEO }
+	BRK
+</pre><h2>Uxnlin is an optimizer for Uxntal.</h2>
+
+<p>It formats stuff so I don't have too.</p>
+
+<ul>
+	<li><a href='../etc/uxnlin.tal.txt'>Source</a>, Uxntal</li>
+</ul>
+
+<h2>Bicycle is an interactive Uxntal playground.</h2>
+
+<p><b>Bicycle</b> is a little <a href='uxntal.html'>Uxntal</a> interpreter
+designed for teach the language in front of an audience. Bicycle allows you to
+vizualize source code next to its equivalent bytecode and step through the
+evaluation.</p>
+
+<h3>As Companion</h3>
+
+<p>To launch Bicycle as a companion application, you need just pipe the
+<code>left.rom</code> instance of uxnemu to the one of
+<code>bicycle.rom</code>. Left can send both a selection of text to be
+evaluated, or the entire working tal file, by pressing <kbd>ctrl+p</kbd>. The
+result should be instantly displayed in the Bicycle window.</p>
+
+<pre>
+uxnemu left.rom | uxnemu bicycle.rom
+</pre>
+
+<img src="../media/generic/varvara.bicycle.png" width="200" alt="Drawing by Rekka Bellum" style='float:right;margin-left:30px'/>
+
+<p>As an alternative, to experiment with Uxntal you can also use the <a href='../etc/uxnrepl/index.html' target='_blank'>web-based REPL</a>.</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/bicycle' target='_blank'>View Source</a></li>
+	<li><a href='https://rabbits.srht.site/bicycle/bicycle.rom' target='_blank'>Download rom</a></li>
+</ul>
+
+<h2>Beetbug is a step debugger.</h2>
+
+<p>Inspired from <a href='https://github.com/randrew/uxn32' target='_blank'>Uxn32</a>'s fantastic debugger, Beetbug is a step debugger for <a href='varvara.html'>Varvara</a>, written in <a href='uxntal.html'>Uxntal</a>. It is the perfect tool to step through a running program. It uses Varvara's <a href='varvara.html#console'>Console write port</a> to print debug to the interface, and the System's debug port to put a breakpoint.</p>
+
+<p>Beetbug supports <a href='symbols.html'>symbol files</a>, and will highlight both the return address on top of the return stack, and the address on top of the working stack, giving you a visual indication of the addresses that are being accessed.</p>
+
+<h3>Manual</h3>
+
+<p>Launch beetbug with the target rom to debug:</p>
+<pre>
+uxnemu beetbug.rom some_project.rom
+</pre>
+
+<p>Beetbug will evaluate the reset vector, starting at <code>0100</code>, until a <kbd>BRK</kbd> is reached, to pause evaluation, you can use the System's debug port as follow:</p>
+<pre>
+#010e DEO
+</pre>
+
+<h3>Controls</h3>
+<ul>
+	<li><kbd>left</kbd> Back</li>
+	<li><kbd>right</kbd> Step</li>
+	<li><kbd>A</kbd> Play/Pause</li>
+	<li><kbd>B</kbd> Incr. Speed</li>
+</ul>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/beetbug' target='_blank'>view source</a></li>
+	<li><a href='https://rabbits.srht.site/beetbug/beetbug.rom' target='_blank'>download rom</a>, 4kb</li>
+</ul>
+
 <ul></ul><p><b>incoming: </b><a href="uxntal_devlog.html">uxntal devlog</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
