@@ -225,10 +225,9 @@ directly into uxntal using nothing but macros:</p>
 	OVR SWP SUB fac-keep MUL JMP2r
 
 <b>@fac-tail</b> <i>( n -- res )</i>
-	#01
-	<b>&rec</b> <i>( n acc -- res )</i>
-	OVR ?{ NIP JMP2r }
-	OVR MUL #0100 SUB2 !&rec
+	#01 <b>&rec</b> <i>( n acc -- res )</i>
+		OVR ?{ NIP JMP2r }
+		OVR MUL #0100 SUB2 !&rec
 	
 <b>@fac-algol</b> <i>( n -- res )</i>
 	#00 STZ
@@ -237,14 +236,25 @@ directly into uxntal using nothing but macros:</p>
 		#00 LDZ #01 SUB fac-algol
 			MUL JMP2r }
 	#01 JMP2r
-	
+		
+<b>@fac-bitwise</b> <i>( n -- res )</i>
+	DUP ?{ #01 !/add }
+	DUP #ff /add fac-bitwise
+	<b>&mul</b> <i>( x y -- res )</i>
+		DUP ?{ NIP JMP2r }
+		#ff /add OVR /mul
+	<b>&add</b> <i>( x y -- res )</i>
+		DUP ?{ POP JMP2r }
+		ANDk #10 SFT STH EOR STHr !/add
+
 <b>@fac-inline</b> <i>( n -- res )</i>
 	0620 0002 016c 0680
 	0119 60ff f31a 6c00
-	
+
 <b>%fac-macro</b> <i>( n -- res )</i> {
-	#01 OVR #00 EQU ?{
-		OVR MUL #0100 SUB2 40 fff0 }\ NIP }
+	#01 &fac-rec
+	OVR #00 EQU ?{
+		OVR MUL #0100 SUB2 !&fac-rec }\ NIP }
 </pre>
 
 <ul>
