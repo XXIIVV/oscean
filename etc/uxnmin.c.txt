@@ -20,26 +20,13 @@ emu_deo(const unsigned char port, const unsigned char value)
 	}
 }
 
-#define NEXT if(--cycles) goto step; else return 0;
-
-#define OPC(opc, A, B) {\
-	case 0x00|opc: {const int _2=0,_r=0;A B;} NEXT\
-	case 0x20|opc: {const int _2=1,_r=0;A B;} NEXT\
-	case 0x40|opc: {const int _2=0,_r=1;A B;} NEXT\
-	case 0x60|opc: {const int _2=1,_r=1;A B;} NEXT\
-	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[0];A ptr[0]=k;B;} NEXT\
-	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[0];A ptr[0]=k;B;} NEXT\
-	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[1];A ptr[1]=k;B;} NEXT\
-	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[1];A ptr[1]=k;B;} NEXT\
-}
-
 #define REM ptr[_r] -= 1 + _2;
 #define DEC(m) stk[m][--ptr[m]]
 #define INC(m) stk[m][ptr[m]++]
 #define IMM(r) { r = ram[pc++] << 8, r |= ram[pc++]; }
 #define MOV(x) { if(_2) pc = x; else pc += (signed char)x; }
 #define PO1(o) o = DEC(_r);
-#define PO2(o) { o = DEC(_r), o |= DEC(_r) << 8; }
+#define PO2(o) { PO1(o) o |= DEC(_r) << 8; }
 #define POx(o) if(_2) PO2(o) else PO1(o)
 #define GOT(o) if(_2) PO1(o[1]) PO1(o[0])
 #define DEO(o,r) emu_deo(o, r[0]); if(_2) emu_deo(o + 1, r[1]);
@@ -50,6 +37,17 @@ emu_deo(const unsigned char port, const unsigned char value)
 #define PUT(i) PU1(i[0]) if(_2) PU1(i[1])
 #define DEI(i,r) r[0] = emu_dei(i); if(_2) r[1] = emu_dei(i + 1); PUT(r)
 #define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m]; PUT(r)
+
+#define NEXT if(--cycles) goto step; else return 0;
+#define OPC(opc, A, B) {\
+	case 0x00|opc: {const int _2=0,_r=0;A B} NEXT\
+	case 0x20|opc: {const int _2=1,_r=0;A B} NEXT\
+	case 0x40|opc: {const int _2=0,_r=1;A B} NEXT\
+	case 0x60|opc: {const int _2=1,_r=1;A B} NEXT\
+	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[0];A ptr[0]=k;B} NEXT\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[0];A ptr[0]=k;B} NEXT\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[1];A ptr[1]=k;B} NEXT\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[1];A ptr[1]=k;B} NEXT }
 
 static unsigned int
 uxn_eval(unsigned short pc)
