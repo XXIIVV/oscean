@@ -26,7 +26,7 @@ let examples = {
 /*
 @|Add */
 
-"add": `<> (Add 2 + 3 and print the result)
+"add": `<> (Add 2 + 3, print the result)
 
 <> (add (?a) ?b) (add ?a (?b))
 <> (add 0 ?b) (sum ?b)
@@ -84,7 +84,7 @@ let examples = {
 /*
 @|Multiply */
 
-"multiply": `<> (Multiply 2 * 5)
+"multiply": `<> (Multiply 2 * 5, print the result)
 
 <> (?a * (?b)) ((?a * ?b) + ?a)
 <> ((?a) + ?b) (?a + (?b))
@@ -99,39 +99,15 @@ let examples = {
 /*
 @|Find */
 
-"find": `<> (Find a value in a list.)
+"find": `<> (Find a value in a list)
 
-<> ((find ?target) ?target (?next ?tail))
-   (?head (found ?target) ?next ?tail)
-<> ((find ?target) ?head (?next ?tail))
-   (?head ((find ?target) ?next ?tail))
-<> ((find ?target) ?head ())
-   ((unfound ?target) ?head ())
+<> ((find ?target) ?target (?next ?tail)) (?head (found ?target) ?next ?tail)
+<> ((find ?target) ?head (?next ?tail)) (?head ((find ?target) ?next ?tail))
+<> ((find ?target) ?head ()) ((unfound ?target) ?head ())
+<> (?head ((found ?target) ?next ?tail)) ((found ?target) ?head (?next ?tail))
+<> (?head ((unfound ?target) ?next ?tail)) ((unfound ?target) ?head (?next ?tail))
 
-<> (Found)
-<> (?head ((found ?target) ?next ?tail))
-   ((found ?target) ?head (?next ?tail))
-
-<> (Unfound)
-<> (?head ((unfound ?target) ?next ?tail))
-   ((unfound ?target) ?head (?next ?tail))
-
-(
-	(find e)
-	a (b (c (d (e (f (g (h ())))))))
-)`,
-
-/*
-@|Stack-machine */
-
-"stack": 
-`<> ((Stack (?tail ?a)) dup)         (Stack ((?tail ?a) ?a))
-<> ((Stack (?tail ?a)) pop)         (Stack ?tail)
-<> ((Stack ((?tail ?b) ?a)) swap)   (Stack ((?tail ?a) ?b))
-<> ((Stack ((?tail ?c) ?b) ?a) rot) (Stack (((?tail ?a) ?b) ?c))
-
-(((((Stack (((D) C) B) A) rot) pop) swap) dup)`,
-
+((find e) a (b (c (d (e (f (g (h ()))))))))`,
 
 /*
 @|FizzBuzz */
@@ -152,6 +128,23 @@ let examples = {
 <> (?i ?f 5)   ((print-word Buzz) ?i ?f 0)
 <> (?i ?f ?b)  ((print-word ?i) ?i ?f ?b)
 
-(0 0 0)`
+(1 1 1)`,
+
+/*
+@|Fib */
+
+"fib": 
+`<> (Print the nth Fibonacci number)
+
+<> (fib 0) 0
+<> (fib 1) 1
+<> (fib ((?n))) (add (fib (?n)) (fib ?n))
+
+<> (add 0 ?b) ?b
+<> (add (?a) ?b) (add ?a (?b))
+<> (wait) (print)
+<> (?: (print)) ()
+
+((fib 6) (wait))`
 
 }
