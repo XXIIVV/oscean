@@ -64,7 +64,6 @@ function Console(emu)
 	}
 }
 
-
 function DateTime(emu)
 {
 	this.dei = (port) => {
