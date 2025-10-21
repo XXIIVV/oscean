@@ -438,8 +438,9 @@
 
 @syms/<new> ( name* -- )
 	DUP2 /find-name INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared head/get !/<push-sym> }
+		( alloc ) POP2 .SymType/declared head/get ;&ptr LDA2 refs/<record-scope> !/<push-sym> }
 	( | name* sym* -- )
+	DUP2 refs/<record-scope>
 	INC2k INC2 LDA .SymType/declared AND ?{
 		( addr* ) head/get OVR2 STA2
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
@@ -528,8 +529,10 @@
 	INC2k INC2 STH2k LDA .SymType/declared AND ?{
 		DUP2 head/get
 		( addr* ) /<push-short>
-		( value* ) /<push-short>
-		( type ) [ LIT2 &type $2 ] /<push-short> }
+		( symbol* ) /<push-short>
+		( type-fn* ) [ LIT2 &type $2 ] /<push-short>
+		( scope* ) [ LIT2 &scope $2 ] /<push-short>
+		( line* ) ;token/line LDA2 /<push-short> }
 	( | mark as used )
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
@@ -569,9 +572,9 @@
 	,&ptr LDR2 ;&mem
 	&>l
 		EQU2k ?{
-			DUP2 ;&err STA2
+			DUP2 ;err/ref STA2
 			DUP2k #0004 ADD2 LDA2 JSR2
-			( ) #0006 ADD2 !&>l }
+			( ) #000a ADD2 !&>l }
 	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
@@ -579,7 +582,7 @@
 	( ref* sym* ) INC2k INC2 LDA2
 	( ref* sym/addr* ) LDA2
 	( ref* sym/addr* ) INC2k ORA ?{
-		( ! ) ;dict/invalid /<error-resolve> }
+		( ! ) ;dict/invalid !err/<resolve> }
 	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
@@ -596,11 +599,12 @@
 
 @refs/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far
-	( >> )
+	( ! ) ;dict/too-far !err/<resolve>
 
-@refs/<error-resolve> ( adj* -- )
-	[ LIT2 &err $2 ] INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !err/<generic>
+@refs/<record-scope> ( sym* -- )
+	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{
+		POP2 JMP2r }
+	;refs/scope STA2 JMP2r
 
 (
 @|Rom )
@@ -721,6 +725,22 @@
 		JMP2r }
 	POP2 POP2 JMP2r
 
+@err/<resolve> ( adj* -- )
+	.System/state DEI ?{
+		[ LIT2 01 -System/state ] DEO
+		;dict/Reference err/<pstr>
+		#20 err/<pchr>
+		err/<pstr>
+		;dict/spacer err/<pstr>
+		[ LIT2 &ref $2 ] INC2k INC2 LDA2 #0003 ADD2 err/<pstr>
+		;dict/in /<pstr>
+		DUP2 #0006 ADD2 LDA2 err/<pstr>
+		LIT ": err/<pchr>
+		#0008 ADD2 LDA2 err/<pdec>
+		#0a err/<pchr>
+		JMP2r }
+	POP2 JMP2r
+
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
@@ -774,23 +794,23 @@
 (
 @|Buffers )
 
-@macros/mem ( name..00, value..00 )
+@macros/mem ( name\0, value\0 )
 	$1000 &memend
 
 @lambda/mem $100
 
-@refs/mem ( addr*, symbol*, type-fn* )
+@refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
 	$1800 &memend
 
-@syms/mem ( addr*, SymType, body..00 )
+@syms/mem ( addr*, SymType, body\0 )
 	$4800 &memend
 
 @rom/mem ( zeropage )
 	$100
 	&output
+
 (
 @|Enums )
-
 
 |00 @SymType/empty $1 &used $1 &declared
 
