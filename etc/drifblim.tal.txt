@@ -121,7 +121,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "19 20 "Oct 20 "2025 $2
+	( date ) "21 20 "Oct 20 "2025 $2
 
 
 
@@ -198,7 +198,10 @@
 	JMP2r
 
 @token/<push-byte> ( c -- )
-	DUP #20 GTH ?{ POP ;&buf assembly/apply !/<new> }
+	DUP #20 GTH ?{
+		#0a NEQ ?{
+			[ LIT2 &line 0001 ] INC2 ,&line STR2 }
+		;&buf assembly/apply !/<new> }
 	[ LIT2 00 &ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
@@ -583,7 +586,7 @@
 	( ref* sym* ) INC2k INC2 LDA2
 	( ref* sym/addr* ) LDA2
 	( ref* sym/addr* ) INC2k ORA ?{
-		( ! ) ;dict/invalid /<error> }
+		( ! ) ;dict/invalid /<error-resolve> }
 	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
@@ -603,7 +606,7 @@
 	( ! ) ;dict/too-far
 	( >> )
 
-@refs/<error> ( adj* -- )
+@refs/<error-resolve> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
 	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !err/<generic>
 
@@ -711,11 +714,24 @@
 @|Error )
 
 @err/<token> ( adj* topic* -- )
-	;token/buf SWP2
-	( >> )
+	.System/state DEI ?{
+		[ LIT2 01 -System/state ] DEO
+		/<pstr>
+		#20 err/<pchr>
+		/<pstr>
+		;dict/spacer /<pstr>
+		;token/buf /<pstr>
+		;dict/in /<pstr>
+		;scope/buf /<pstr>
+		LIT ": err/<pchr>
+		;token/line LDA2 err/<pdec>
+		#0a err/<pchr>
+		JMP2r }
+	POP2 POP2 JMP2r
 
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
+		[ LIT2 01 -System/state ] DEO
 		/<pstr>
 		#20 err/<pchr>
 		SWP2 /<pstr>
@@ -724,7 +740,6 @@
 		;dict/in /<pstr>
 		;scope/buf /<pstr>
 		#0a err/<pchr>
-		[ LIT2 01 -System/state ] DEO
 		JMP2r }
 	POP2 POP2 POP2 JMP2r
 
