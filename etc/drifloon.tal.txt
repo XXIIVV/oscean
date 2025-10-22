@@ -69,13 +69,16 @@
 
 @assembly/apply ( t* -- )
 	LDZk ?{ POP2 JMP2r }
-	[ LIT2 &mode =asm-default ] JMP2
+	[ LIT2 &mode =standard/assemble ] JMP2
 
-@assembly/<set-default> ( -- )
-	;asm-default ,&mode STR2
+(
+@|Standard )
+
+@standard/<latch> ( -- )
+	;&assemble ;assembly/mode STA2
 	JMP2r
 
-@asm-default ( t* -- )
+@standard/assemble ( t* -- )
 	( hex ) str/is-hex ?rom/<write-rawhex>
 	( opc ) opcodes/is-opcode ?rom/<write-opcode>
 	LDZk runes/find INC2k ORA ?{
@@ -83,6 +86,80 @@
 		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
+
+(
+@|Comment )
+
+@comment/<latch> ( t* -- )
+	POP2 ;&assemble ;assembly/mode STA2
+	[ LIT2 01 _&depth ] STR
+	JMP2r
+
+@comment/assemble ( t* -- )
+	LDA2 DUP2 [ LITr &depth $1 ]
+	( a ) LIT2 "( $1 EQU2 [ STH ADDr ]
+	( b ) LIT2 ") $1 EQU2 [ STH SUBr ]
+	( . ) STHkr LITr _&depth STRr
+	?{ !standard/<latch> }
+	JMP2r
+
+(
+@|Macros )
+
+@macros/<latch> ( t* -- )
+	name/<validate>
+	/<push-word>
+	#00 /<push-byte>
+	;&walk ;assembly/mode STA2
+	JMP2r
+
+	&walk ( t* -- )
+	LDA2 [ LIT2 "{ $1 ] NEQ2 ?{
+		;&assemble ;assembly/mode STA2
+		[ LIT2 01 _&depth ] STR }
+	JMP2r
+
+@macros/assemble ( t* -- )
+	LDA2k DUP2 [ LITr &depth $1 ]
+	( a ) LIT "{ EQU SWP LIT "{ EQU ORA [ STH ADDr ]
+	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
+	( . ) STHkr LITr _&depth STRr
+	?{ POP2 #00 /<push-byte> !standard/<latch> }
+	DUP2 /<push-word>
+	#20 !/<push-byte>
+
+@macros/find-name ( name* -- <addr>* )
+	STH2
+	,&ptr LDR2 ;&mem
+	&>lf
+		EQU2k ?&fail
+		DUP2 STH2kr str/cmp ?{
+			str/cap str/cap !&>lf
+		&fail POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@macros/<push-word> ( t* -- )
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push-byte>
+		INC2 !&>wp
+
+@macros/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k
+	( | check overflow )
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/Macros err/<token> }
+	,&ptr STR2
+	STA
+	JMP2r
+
+@macros/<write> ( t* macro* -- )
+	token/<new>
+	str/cap
+	&>wm
+		LDAk DUP ?{ POP POP2 POP2 JMP2r }
+		token/<push-byte>
+		INC2 !&>wm
 
 (
 @|Token )
@@ -285,80 +362,6 @@
 	LDAk [ LIT "/ ] EQU ?scope/make-name
 	LDAk [ LIT "& ] EQU ?scope/make-name
 	JMP2r
-
-(
-@|Comment )
-
-@comment/<latch> ( t* -- )
-	POP2 ;&assemble ;assembly/mode STA2
-	[ LIT2 01 _&depth ] STR
-	JMP2r
-
-@comment/assemble ( t* -- )
-	LDA2 DUP2 [ LITr &depth $1 ]
-	( a ) LIT2 "( $1 EQU2 [ STH ADDr ]
-	( b ) LIT2 ") $1 EQU2 [ STH SUBr ]
-	( . ) STHkr LITr _&depth STRr
-	?{ !assembly/<set-default> }
-	JMP2r
-
-(
-@|Macros )
-
-@macros/<latch> ( t* -- )
-	name/<validate>
-	/<push-word>
-	#00 /<push-byte>
-	;&walk ;assembly/mode STA2
-	JMP2r
-
-@macros/walk ( t* -- )
-	LDA2 [ LIT2 "{ $1 ] NEQ2 ?{
-		;&assemble ;assembly/mode STA2
-		[ LIT2 01 _&depth ] STR }
-	JMP2r
-
-@macros/assemble ( t* -- )
-	LDA2k DUP2 [ LITr &depth $1 ]
-	( a ) LIT "{ EQU SWP LIT "{ EQU ORA [ STH ADDr ]
-	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
-	( . ) STHkr LITr _&depth STRr
-	?{ POP2 #00 /<push-byte> !assembly/<set-default> }
-	DUP2 /<push-word>
-	#20 !/<push-byte>
-
-@macros/find-name ( name* -- <addr>* )
-	STH2
-	,&ptr LDR2 ;&mem
-	&>lf
-		EQU2k ?&fail
-		DUP2 STH2kr str/cmp ?{
-			str/cap str/cap !&>lf
-		&fail POP2 #ffff }
-	NIP2 POP2r JMP2r
-
-@macros/<push-word> ( t* -- )
-	&>wp
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push-byte>
-		INC2 !&>wp
-
-@macros/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k
-	( | check overflow )
-	DUP2 ;&memend LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Macros err/<token> }
-	,&ptr STR2
-	STA
-	JMP2r
-
-@macros/<write> ( t* macro* -- )
-	token/<new>
-	str/cap
-	&>wm
-		LDAk DUP ?{ POP POP2 POP2 JMP2r }
-		token/<push-byte>
-		INC2 !&>wm
 
 (
 @|Syms )
@@ -656,7 +659,7 @@
 		;dict/spacer err/<pstr>
 		[ LIT2 &ref $2 ] INC2k INC2 LDA2 #0003 ADD2 err/<pstr>
 		;dict/in /<pstr>
-		DUP2 #0006 ADD2 LDA2 err/<pstr>
+		DUP2 #0006 ADD2 LDA2 #0003 ADD2 err/<pstr>
 		LIT ": err/<pchr>
 		#0008 ADD2 LDA2 err/<pdec>
 		#0a err/<pchr>
@@ -716,15 +719,15 @@
 (
 @|Buffers )
 
+@lambda/mem $100
+
 @macros/mem ( name\0, value\0 )
 	$1000 &memend
 
-@lambda/mem $100
-
 @refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
-	$2200 &memend
+	$3000 &memend
 
-@syms/mem ( addr*, SymType, body\0 )
+@syms/mem ( addr*, SymType, name\0 )
 	$4800 &memend
 
 @rom/mem ( zeropage )
