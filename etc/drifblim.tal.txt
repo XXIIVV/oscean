@@ -132,7 +132,7 @@
 	( cap ) #0a token/<push-byte>
 	,&mode LDR2 ;asm-comment NEQ2 ?{
 		( ! ) ;dict/open ;dict/trail ;dict/Comment err/<generic> }
-	,&mode LDR2 ;asm-macro NEQ2 ?{
+	,&mode LDR2 ;macros/assemble NEQ2 ?{
 		( ! ) ;dict/open ;dict/trail ;dict/Macro err/<generic> }
 	.System/state DEI ?{
 		refs/<resolve-all>
@@ -154,8 +154,8 @@
 	JMP2r
 
 @assembly/<set-macro> ( -- )
-	;asm-macro ,&mode STR2
-	[ LIT2 00 _asm-macro/depth ] STR
+	;macros/assemble ,&mode STR2
+	depth/<reset>
 	JMP2r
 
 @asm-default ( t* -- )
@@ -176,18 +176,20 @@
 	#00 EQU ?assembly/<set-default>
 	JMP2r
 
-@asm-macro ( t* -- )
-	[ LITr &depth $1 ] LDA2k
-	( | nested lambdas )
-	[ LIT2 "} 00 ] NEQ2 ?{
-		[ LITr 01 ] SUBr STHkr ?{
-			#00 macros/<push-byte>
-			POP2 POPr !assembly/<set-default> } }
-	STHkr #00 EQU ?{ ;token/buf macros/<push-word>
-		#20 macros/<push-byte> }
-	LDA2 [ LIT2 "{ 00 ] NEQ2 ?{ INCr }
-	[ LITr _&depth ] STRr
+@depth/<reset> ( -- )
+	#00 ,&val STR
 	JMP2r
+
+@depth/incr ( -- )
+	,&val LDR INC ,&val STR
+	JMP2r
+
+@depth/decr ( -- )
+	[ LIT2 ff _&val ] LDR ADD ,&val STR
+	JMP2r
+
+@depth/get ( -- val )
+	[ LIT &val $1 ] JMP2r
 
 (
 @|Token )
@@ -388,6 +390,14 @@
 
 (
 @|Macros )
+
+@macros/assemble ( t* -- )
+	LDAk [ LIT "} ] NEQ ?{
+		depth/decr depth/get ?{ POP2 #00 /<push-byte> !assembly/<set-default> } }
+	depth/get #00 EQU ?{ DUP2 /<push-word>
+		#20 /<push-byte> }
+	LDA2 [ LIT "{ ] EQU SWP [ LIT "{ ] EQU ORA ?depth/incr
+	JMP2r
 
 @macros/<new> ( name* -- )
 	name/<validate>
@@ -602,9 +612,9 @@
 	( ! ) ;dict/too-far !err/<resolve>
 
 @refs/<record-scope> ( sym* -- )
-	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{
-		POP2 JMP2r }
-	;refs/scope STA2 JMP2r
+	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
+	;refs/scope STA2
+	JMP2r
 
 (
 @|Rom )
@@ -808,9 +818,9 @@
 @rom/mem ( zeropage )
 	$100
 	&output
-
 (
 @|Enums )
+
 
 |00 @SymType/empty $1 &used $1 &declared
 

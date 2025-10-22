@@ -26,7 +26,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Sep 20 "2025 $2
+	( date ) "22 20 "Oct 20 "2025 $2
 
 (
 @|src )
@@ -65,11 +65,10 @@
 
 @scope/new ( -- )
 	;&cmd .System/expansion DEO2
-	,&ptr LDR2 ;&buf SUB2 ,&length STR2
 	;&buf ,&ptr STR2
 	JMP2r
 
-	&cmd [ 00 &length $2 0000 =&buf 00 ]
+	&cmd [ 00 4000 0000 =&buf 00 ]
 
 @scope/put ( c -- )
 	#00 [ LIT2 &ptr =&buf ]
@@ -86,6 +85,7 @@
 
 @result/new ( -- )
 	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
 	JMP2r
 
 @result/<push> ( c -- )
@@ -94,7 +94,8 @@
 	JMP2r
 
 @result/rew ( -- )
-	,&ptr LDR2 #0001 SUB2 ,&ptr STR2
+	[ LIT2 00 _&ptr ] LDR2 #0001 SUB2 DUP2 ,&ptr STR2
+	STA
 	JMP2r
 
 @result/get-last ( -- c )
@@ -167,8 +168,8 @@
 	LDAk [ LIT "$ ] NEQ ?{ <emit-space> !&w }
 	&w ( -- )
 	DUP2 #0001 SUB2 LDA #20 NEQ ?{
-		LDAk #28 EQU ?handle-comment
-		LDAk #5b EQU ?handle-block
+		LDAk [ LIT "( ] EQU ?handle-comment
+		LDAk [ LIT "[ ] EQU ?handle-block
 		LDAk [ LIT "| ] EQU ?handle-padabs
 		LDAk [ LIT "$ ] EQU ?handle-padrel
 		LDAk [ LIT "& ] EQU ?handle-sublab
@@ -426,13 +427,11 @@
 		( tb lb <- ) result/get-last #09 NEQ ?{ result/rew }
 		[ LIT &lb $1 ] INCk ,&lb STR
 		#02 LTH ?result/<push>
+		&ignore ( c -- )
 		POP JMP2r }
 	result/<push>
 	[ LIT2 00 _&lb ] STR
 	JMP2r
-
-	&ignore ( c last -- )
-	POP JMP2r
 
 (
 @|stdlib )
