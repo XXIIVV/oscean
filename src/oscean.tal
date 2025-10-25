@@ -170,13 +170,40 @@
 %html/<str> ( addr* -- ) {
 	DUP2 str/scap-1 OVR2 SUB2 html/<length> }
 
-%html/<meta-og> ( content* property* -- ) {
-	;ascii/lt .File2/write DEO2
-	;tag/meta html/<str>
-	;attr/property html/<attribute>
-	;attr/content html/<attribute>
-	;ascii/slash .File2/write DEO2
-	;ascii/gt .File2/write DEO2 }
+%html/<lb> { ;dict/0a .File2/write DEO2 }
+
+%html/<ws> { ;dict/20 .File2/write DEO2 }
+
+@html/<diary> ( src* alt* -- )
+	;&a html/<str>
+	html/<str>
+	;&b html/<str>
+	html/<str>
+	;&c html/<str>
+	JMP2r
+
+	&a "<img 20 "alt=" $1
+	&b "" 20 "src="../media/diary/ $1
+	&c ".jpg"> $1
+
+@<link> ( str* -- )
+	;&a html/<str>
+	DUP2 <path>
+	;&b html/<str>
+	html/<str>
+	;&c html/<str>
+	JMP2r
+
+	&a "<a 20 "href=' $1
+	&b ".html'> $1
+	&c "</a> $1
+
+@<path> ( str* -- )
+	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
+	;&a .File2/write DEO2
+	INC2 LDAk ?<path>
+	POP2 JMP2r
+	&a $1
 
 (
 @|Build )
@@ -380,15 +407,21 @@
 	#0002 JMP2r
 
 @<write-opengraph> ( name* -- name* )
-	DUP2 ;og/title html/<meta-og>
-	DUP2 site-path-abs/set ;og/url html/<meta-og>
+	DUP2 ;og/title /<write>
+	DUP2 site-path-abs/set ;og/url /<write>
 	;term/diary LDAk ?{
-		POP2 ;&default-image ;og/image html/<meta-og>
+		POP2 ;path/default-image ;og/image /<write>
 		JMP2r }
-	diary-path-abs/get ;og/image html/<meta-og>
+	diary-path-abs/get ;og/image
+	( >> )
+	&<write> ( content* property* -- )
+	;ascii/lt .File2/write DEO2
+	;tag/meta html/<str>
+	;attr/property html/<attribute>
+	;attr/content html/<attribute>
+	;ascii/slash .File2/write DEO2
+	;ascii/gt .File2/write DEO2
 	JMP2r
-
-	&default-image "https://wiki.xxiivv.com/media/ "services/rss.jpg $1
 
 @<write-link> ( name* -- )
 	;&a html/<str>
@@ -415,62 +448,6 @@
 	#0a18 DEO
 	#010f DEO
 	BRK
-
-
-
-%<lb> { ;dict/0a .File2/write DEO2 }
-
-%<ws> { ;dict/20 .File2/write DEO2 }
-
-%<len> ( str* len* -- ) {
-	.File2/length DEO2
-	.File2/write DEO2
-	#0001 .File2/length DEO2 }
-
-%<str> ( str* -- ) {
-	DUP2 scap/ OVR2 SUB2 <len> }
-
-%<w> ( name* -- ) {
-	;ascii/lt .File2/write DEO2
-	<str>
-	;ascii/gt .File2/write DEO2 }
-
-%</w> ( name* -- ) {
-	;ascii/lt .File2/write DEO2
-	;ascii/slash .File2/write DEO2
-	<str>
-	;ascii/gt .File2/write DEO2 }
-
-@<img> ( src* alt* -- )
-	;&a <str>
-	<str>
-	;&b <str>
-	<str>
-	;&c <str>
-	JMP2r
-
-	&a "<img 20 "alt=" $1
-	&b "" 20 "src="../media/diary/ $1
-	&c ".jpg"> $1
-
-@<link> ( str* -- )
-	;&a <str>
-	DUP2 <path>
-	;&b <str>
-	<str>
-	;&c <str>
-	JMP2r
-
-	&a "<a 20 "href=' $1
-	&b ".html'> $1
-	&c "</a> $1
-
-@<path> ( str* -- )
-	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
-	;&a .File2/write DEO2
-	INC2 LDAk ?<path>
-	POP2 JMP2r
-	&a $1
 
 (
 @|link )
@@ -509,8 +486,8 @@
 				/has-html-ext ?{ /<print-err> }
 				;&res [ LIT2 20 "_ ] str/<swap-char>
 				;&map-path .File2/name DEO2
-				<str>
-				<lb>
+				html/<str>
+				html/<lb>
 				JMP2r } } }
 	POP2 POP2 JMP2r
 
@@ -529,9 +506,9 @@
 @lexicon/<build> ( -- )
 	;path/sitemap .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
-	;tag/ul <w>
+	;tag/ul html/<open>
 	lexicon/<parse>
-	;tag/ul </w>
+	;tag/ul html/<close>
 	JMP2r
 
 @lexicon/find ( name* -- term* )
@@ -572,16 +549,16 @@
 	( | take depth )
 	LDAk STH
 	( | name )
-	;tag/li <w>
+	;tag/li html/<open>
 	INC2 INC2 DUP2 <link>
-	;tag/li </w>
-	<lb>
+	;tag/li html/<close>
+	html/<lb>
 	str/cap
 	( | children )
 	LDAk STHkr INC NEQ ?{
-		;tag/ul <w>
+		;tag/ul html/<open>
 		<write-children-rec>
-		;tag/ul </w> }
+		;tag/ul html/<close> }
 	( | sibling )
 	LDAk STHkr EQU ?{ POPr JMP2r }
 	POPr !<write-children-rec>
@@ -662,10 +639,10 @@
 @diary/<build> ( -- )
 	;path/events .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
-	;header-txt <str>
-	;tag/p <w>
+	;header-txt html/<str>
+	;tag/p html/<open>
 	<parse-diary-pages>
-	;tag/p </w>
+	;tag/p html/<close>
 	JMP2r
 
 @log/is-unpict ( log* -- t )
@@ -693,8 +670,8 @@
 	DUP2 #0a00 str/<swap-char>
 	&>l
 		DUP2 DUP2 #000a ADD2 diary/set-path .File2/name DEO2
-		<str>
-		<lb>
+		html/<str>
+		html/<lb>
 		( split ) DUP2 #0900 str/<swap-char>
 		DUP2 diaries/<set>
 		log/is-unevent ?{ DUP2 <parse-event> }
@@ -707,22 +684,22 @@
 	( | add to events )
 	;path/events .File2/name DEO2
 	( year ) LDAk2 ;&last LDA2 EQU2 ?{
-		;tag/br <w>
+		;tag/br html/<open>
 		LDA2k ;&last STA2 }
 	( | date )
-	;tag/code <w>
-	DUP2 #0005 <len>
-	;tag/code </w>
-	<ws>
+	;tag/code html/<open>
+	DUP2 #0005 html/<length>
+	;tag/code html/<close>
+	html/<ws>
 	str/cap
 	( | term )
 	DUP2 <link>
-	;dict/spacer <str>
+	;dict/spacer html/<str>
 	str/cap
 	( | name )
-	<str>
-	;tag/br <w>
-	<lb>
+	html/<str>
+	;tag/br html/<open>
+	html/<lb>
 	JMP2r
 
 	&last "17 $1
@@ -735,16 +712,16 @@
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2 DUP2 ,&term STR2
 	str/cap ,&title STR2
-	;tag/figure <w>
+	;tag/figure html/<open>
 	( src ) [ LIT2 &pict $2 ]
-	( alt ) [ LIT2 &title $2 ] <img>
-	;tag/figcaption <w>
+	( alt ) [ LIT2 &title $2 ] html/<diary>
+	;tag/figcaption html/<open>
 	[ LIT2 &term $2 ] <link>
-	;dict/spacer <str>
-	,&title LDR2 <str>
-	;tag/figcaption </w>
-	;tag/figure </w>
-	<lb>
+	;dict/spacer html/<str>
+	,&title LDR2 html/<str>
+	;tag/figcaption html/<close>
+	;tag/figure html/<close>
+	html/<lb>
 	JMP2r
 
 @diaries/get ( id* -- mask )
@@ -982,6 +959,7 @@
 	&sitemap "src/htm/sitemap.htm $1
 	&events "src/htm/events.htm $1
 	&journal "src/htm/journal.htm $1
+	&default-image "https://wiki.xxiivv.com/media/ "services/rss.jpg $1
 	&meta-head "meta_head $1
 	&meta-header "meta_header $1
 	&meta-footer "meta_footer $1
