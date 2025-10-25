@@ -11,44 +11,7 @@
 |100
 
 @on-reset ( -> )
-	maeve oscean BRK
-
-(
-@|build )
-
-%log/get-rune ( log* -- log* rune ) {
-	DUP2 #0005 ADD2 LDA }
-
-%log/has-picture ( log* picture* -- flag ) {
-	SWP2 #0006 ADD2 str/cmp3 }
-
-%log/has-no-picture ( log* -- log* t ) {
-	DUP2 ;dict/no-picture log/has-picture }
-
-@diary/<load> ( name* -- )
-	/set-path .File/name DEO2
-	#1000 .File/length DEO2
-	;diary/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
-	DUP2 .File/read DEO2
-	#0a00 str/<swap-char>
-	.File/success DEI2 ,&length STR2
-	JMP2r
-
-@diary/find ( -- diary* )
-	;&buf
-	&>wf
-		log/has-no-picture ?{ JMP2r }
-		str/cap LDAk ?&>wf
-	POP2 #ffff JMP2r
-
-@diary/count ( -- count* )
-	[ LIT2r 0000 ] ;diary/buf
-	&>wc
-		log/has-no-picture ?{ INC2r }
-		str/cap LDAk ?&>wc
-	POP2 STH2r JMP2r
-
-
+	maeve BRK
 
 (
 @|Html )
@@ -138,11 +101,11 @@
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
-	DUP2 site-path-abs/set ;og/url /<write>
+	DUP2 path-abs-site/set ;og/url /<write>
 	;term/diary LDAk ?{
 		POP2 ;path/default-image ;og/image /<write>
 		JMP2r }
-	diary-path-abs/get ;og/image
+	path-abs-diary/get ;og/image
 	( >> )
 	&<write> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
@@ -167,6 +130,72 @@
 	&a "<a 20 "href=" $1
 
 (
+@|build )
+
+%log/get-rune ( log* -- log* rune ) {
+	DUP2 #0005 ADD2 LDA }
+
+%log/has-picture ( log* picture* -- flag ) {
+	SWP2 #0006 ADD2 str/cmp3 }
+
+%log/has-no-picture ( log* -- log* t ) {
+	DUP2 ;dict/no-picture log/has-picture }
+
+@diary/<load> ( name* -- )
+	path-tmp-log/set-path .File/name DEO2
+	#1000 .File/length DEO2
+	;diary/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
+	DUP2 .File/read DEO2
+	#0a00 str/<swap-char>
+	.File/success DEI2 ,&length STR2
+	JMP2r
+
+@diary/find ( -- diary* )
+	;&buf
+	&>wf
+		log/has-no-picture ?{ JMP2r }
+		str/cap LDAk ?&>wf
+	POP2 #ffff JMP2r
+
+@diary/count ( -- count* )
+	[ LIT2r 0000 ] ;diary/buf
+	&>wc
+		log/has-no-picture ?{ INC2r }
+		str/cap LDAk ?&>wc
+	POP2 STH2r JMP2r
+
+@diary/<build> ( -- )
+	;path/events .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	;header-txt html/<str>
+	;tag/p html/<open>
+	<parse-diary-pages>
+	;tag/p html/<close>
+	JMP2r
+
+@diaries/get ( id* -- mask )
+	( bit ) #01 OVR #07 AND #40 SFT SFT STH
+	( res ) #03 SFT2 ;&buf ADD2 LDA STHr AND JMP2r
+
+@diaries/<set> ( log* -- )
+	( | validate photo id )
+	#0006 ADD2 str/to-dec ORAk ?{ POP2 JMP2r }
+	DUP2 /get ?{
+		( bit ) #01 OVR #07 AND #40 SFT SFT STH
+		( res ) #03 SFT2 ;&buf ADD2 LDAk STHr ORA ROT ROT STA
+		JMP2r }
+	;dict/warn-duplicate str/<print>
+	dec/<print>
+	#0a18 DEO
+	JMP2r
+
+@diaries/next ( -- id* )
+	#0001
+	&>w
+		DUP2 /get ?{ JMP2r }
+		INC2 !&>w
+
+(
 @|Lexicon )
 
 %workarea/get-length ( -- buf* length* ) {
@@ -188,7 +217,7 @@
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>lp
 		INC2 INC2 DUP2 DUP2 ,&src STR2
-		htm-path/set workarea/get-length ROT2 <load-file>
+		path-src-htm/set workarea/get-length ROT2 <load-file>
 		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
 		&>ll
 			LDA2k [ LIT2 "hr ] NEQ2 ?{
@@ -305,11 +334,6 @@
 	;dict/available-txt str/<print>
 	diaries/next dec/<print>
 	#0a18 DEO
-	( | halt. )
-	#800f DEO
-	JMP2r
-
-@oscean ( -- )
 	( | initialize )
 	;path/lexicon .File/name DEO2
 	#2000 .File/length DEO2
@@ -324,7 +348,7 @@
 	JMP2r
 
 @<build-page> ( name* -- name* )
-	DUP2 site-path-rel/set .File2/name DEO2
+	DUP2 path-site/set .File2/name DEO2
 	( | cleanup )
 	#0000 ;term/cap mem/<clr>
 	DUP2 diary/<load>
@@ -484,7 +508,7 @@
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
 	;tag/figure html/<open>
-	DUP2 diary-path-rel/get OVR2 #000a ADD2 walk-seg STH2k html/<img>
+	DUP2 path-media-diary/get OVR2 #000a ADD2 walk-seg STH2k html/<img>
 	;tag/figcaption html/<open>
 	;term/name OVR2 #000a ADD2 str/seg ?{
 		DUP2 #000a ADD2 substr/set <write-link>
@@ -499,7 +523,7 @@
 	JMP2r
 
 @<build-include> ( path* -- )
-	htm-path/set DUP2 .File/name DEO2
+	path-src-htm/set DUP2 .File/name DEO2
 	#8000 .File/length DEO2
 	[ LITr 00 ] ;workarea/buf
 	&>s
@@ -514,9 +538,6 @@
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
 
-(
-@|helpers )
-
 @<load-file> ( addr* length* path* -- )
 	.File/name DEO2
 	DUP2 .File/length DEO2
@@ -524,30 +545,8 @@
 	.File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
 
-@warning/<print> ( name* msg* -- )
-	( msg ) str/<print>
-	( name ) str/<print>
-	#0a18 DEO
-	JMP2r
-
-@error/<print> ( name* msg* -> )
-	( msg ) str/<print>
-	( name ) str/<print>
-	#0a18 DEO
-	#010f DEO
-	BRK
-
 (
 @|diary )
-
-@diary/<build> ( -- )
-	;path/events .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	;header-txt html/<str>
-	;tag/p html/<open>
-	<parse-diary-pages>
-	;tag/p html/<close>
-	JMP2r
 
 @log/is-unpict ( log* -- t )
 	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
@@ -573,7 +572,7 @@
 @<parse-diary-page> ( to* from* -- )
 	DUP2 #0a00 str/<swap-char>
 	&>l
-		DUP2 DUP2 #000a ADD2 diary/set-path .File2/name DEO2
+		DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
 		html/<str>
 		html/<lb>
 		( split ) DUP2 #0900 str/<swap-char>
@@ -628,114 +627,6 @@
 	html/<lb>
 	JMP2r
 
-@diaries/get ( id* -- mask )
-	( bit ) #01 OVR #07 AND #40 SFT SFT STH
-	( res ) #03 SFT2 ;&buf ADD2 LDA STHr AND JMP2r
-
-@diaries/<set> ( log* -- )
-	( | validate photo id )
-	#0006 ADD2 str/to-dec ORAk ?{ POP2 JMP2r }
-	DUP2 /get ?{
-		( bit ) #01 OVR #07 AND #40 SFT SFT STH
-		( res ) #03 SFT2 ;&buf ADD2 LDAk STHr ORA ROT ROT STA
-		JMP2r }
-	;dict/warn-duplicate str/<print>
-	dec/<print>
-	#0a18 DEO
-	JMP2r
-
-@diaries/next ( -- id* )
-	#0001
-	&>w
-		DUP2 /get ?{ JMP2r }
-		INC2 !&>w
-
-@diary/set-path ( name* -- buf* )
-	;&resbuf ,&ptr STR2
-	;&res SWP2
-	&>w
-		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "tmp/log- &resbuf $30 ]
-
-@htm-path/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;ext/htm
-	( >> )
-
-@htm-path/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "src/htm/ &buf $30 ]
-
-@substr/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&buf SWP2
-	&>w
-		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-	&buf $30
-
-@diary-path-abs/get ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-
-	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
-
-@diary-path-rel/get ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-
-	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
-
-@site-path-abs/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;ext/html
-	( >> )
-
-@site-path-abs/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
-
-@site-path-rel/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;ext/html
-	( >> )
-
-@site-path-rel/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "site/ &buf $30 ]
-
 @path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&buf SWP2 /<push-str>
@@ -750,6 +641,82 @@
 		STA2
 		INC2 !&>w
 	&buf $30
+
+@path-abs-site/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;ext/html
+	( >> )
+
+@path-abs-site/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
+
+@path-tmp-log/set-path ( name* -- buf* )
+	;&resbuf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/log- &resbuf $30 ]
+
+@path-abs-diary/get ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+
+	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@path-media-diary/get ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+
+	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@path-site/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;ext/html
+	( >> )
+
+@path-site/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "site/ &buf $30 ]
+
+@path-src-htm/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;ext/htm
+	( >> )
+
+@path-src-htm/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "src/htm/ &buf $30 ]
 
 @incoming/<load> ( name* -- )
 	/set-path .File/name DEO2
@@ -771,6 +738,29 @@
 		INC2 !&>w
 
 	&res [ "tmp/map- &resbuf $30 ]
+
+@substr/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&buf SWP2
+	&>w
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+	&buf $30
+
+@warning/<print> ( name* msg* -- )
+	( msg ) str/<print>
+	( name ) str/<print>
+	#0a18 DEO
+	JMP2r
+
+@error/<print> ( name* msg* -> )
+	( msg ) str/<print>
+	( name ) str/<print>
+	#0a18 DEO
+	#010f DEO
+	BRK
 
 (
 @|Stdlib )
