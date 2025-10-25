@@ -534,7 +534,7 @@
 	JMP2r
 
 (
-@|diary )
+@|Diary )
 
 @log/is-unpict ( log* -- t )
 	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
@@ -615,6 +615,9 @@
 	html/<lb>
 	JMP2r
 
+(
+@|Buffers )
+
 @path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&buf SWP2 /<push-str>
@@ -645,30 +648,6 @@
 		INC2 !&>w
 
 	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
-
-@path-tmp-log/set-path ( name* -- buf* )
-	;&resbuf ,&ptr STR2
-	;&res SWP2
-	&>w
-		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "tmp/log- &resbuf $30 ]
-
-@path-tmp-map/set ( str* -- buf* str* )
-	;&resbuf ,&ptr STR2
-	&>w
-		LDAk DUP #1f GTH ?{ &end POP JMP2r }
-		DUP [ LIT ". ] EQU ?&end
-		DUP [ LIT "_ ] NEQ ?{ POP #20 }
-		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "tmp/map- &resbuf $30 ]
 
 @path-abs-diary/get ( diary* -- path* )
 	#0006 ADD2
@@ -718,6 +697,30 @@
 
 	&res [ "src/htm/ &buf $30 ]
 
+@path-tmp-log/set-path ( name* -- buf* )
+	;&resbuf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/log- &resbuf $30 ]
+
+@path-tmp-map/set ( str* -- buf* str* )
+	;&resbuf ,&ptr STR2
+	&>w
+		LDAk DUP #1f GTH ?{ &end POP JMP2r }
+		DUP [ LIT ". ] EQU ?&end
+		DUP [ LIT "_ ] NEQ ?{ POP #20 }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/map- &resbuf $30 ]
+
 @incoming/<load> ( name* -- )
 	/set-path .File/name DEO2
 	#1000 .File/length DEO2
@@ -749,6 +752,9 @@
 		INC2 !&>w
 	&buf $30
 
+(
+@|Stdlib )
+
 @warning/<print> ( name* msg* -- )
 	( msg ) str/<print>
 	( name ) str/<print>
@@ -761,9 +767,6 @@
 	#0a18 DEO
 	#010f DEO
 	BRK
-
-(
-@|Stdlib )
 
 @prev-nil ( addr* -- addr* )
 	&>w
