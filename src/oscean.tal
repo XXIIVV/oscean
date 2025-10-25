@@ -125,9 +125,6 @@
 	<str>
 	;ascii/gt .File2/write DEO2 }
 
-%workarea/get-length ( -- buf* length* ) {
-	;workarea/buf #0000 OVR2 SUB2 }
-
 @<link> ( str* -- )
 	;&a <str>
 	DUP2 <path>
@@ -452,72 +449,6 @@
 	#0a18 DEO
 	#010f DEO
 	BRK
-
-(
-@|buffers )
-
-@diary-path-abs/get ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-
-	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
-
-@diary-path-rel/get ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-
-	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
-
-@site-path-abs/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;dict/html-ext
-	( >> )
-
-@site-path-abs/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
-
-@site-path-rel/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;dict/html-ext
-	( >> )
-
-@site-path-rel/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "site/ &buf $30 ]
-
-@path/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&buf SWP2 /<push-str>
-	;dict/html-ext
-	( >> )
-
-@path/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-	&buf $30
 
 ~src/include.tal
 

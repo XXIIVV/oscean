@@ -1,3 +1,181 @@
+(
+@|link )
+
+%link/is-anchor ( path* -- path* t ) {
+	LDAk [ LIT "# ] EQU }
+
+%link/is-relative ( path* -- path* t ) {
+	LDAk [ LIT ". ] EQU }
+
+@link/is-external ( path* -- path* t )
+	LDA2k [ LIT2 "ht ] NEQ2 ?{
+		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
+	#00 JMP2r
+
+@link/has-html-ext ( str* -- t )
+	LDA2k [ LIT2 ".h ] NEQ2 ?{
+		INC2 INC2 LDA2k [ LIT2 "tm ] NEQ2 ?{
+			INC2 INC2 LDA [ LIT "l ] EQU JMP2r } }
+	POP2 #00 JMP2r
+
+@link/<print-err> ( src* link* -- src* link* )
+	#010f DEO
+	;dict/redlink str/<print>
+	;&res str/<print>
+	;dict/in str/<print>
+	DUP2 !str/<print-ln>
+
+@link/<parse> ( src* link* -- )
+	link/is-relative ?{
+		link/is-anchor ?{
+			link/is-external ?{
+				/set
+				( | handlers )
+				;&res lexicon/find INC2 ORA ?{ /<print-err> }
+				/has-html-ext ?{ /<print-err> }
+				;&res [ LIT2 20 "_ ] str/<swap-char>
+				;&map-path .File2/name DEO2
+				<str>
+				<lb>
+				JMP2r } } }
+	POP2 POP2 JMP2r
+
+@link/set ( str* -- buf* str* )
+	;&res ,&ptr STR2
+	&>w
+		LDAk DUP #1f GTH ?{ &end POP JMP2r }
+		DUP [ LIT ". ] EQU ?&end
+		DUP [ LIT "_ ] NEQ ?{ POP #20 }
+		#00 [ LIT2 &ptr =&res ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&map-path [ "tmp/map- &res $30 ]
+
+@lexicon/<build> ( -- )
+	;dict/sitemap-path .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	;dict/ul-tag <w>
+	lexicon/<parse>
+	;dict/ul-tag </w>
+	JMP2r
+
+@lexicon/find ( name* -- term* )
+	,&t STR2
+	;&buf
+	&>w
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] str/cmp ?{
+			str/cap LDAk ?&>w
+		POP2 #ffff }
+	JMP2r
+
+%workarea/get-length ( -- buf* length* ) {
+	;workarea/buf #0000 OVR2 SUB2 }
+
+@lexicon/<parse> ( -- )
+	;&buf
+	( load ) DUP2 #2000 ;dict/lexicon-path <load-file>
+	( swap ) DUP2 #0a00 str/<swap-char>
+	( range ) .File/success DEI2 ADD2k NIP2 SWP2
+	&>l
+		INC2 INC2 DUP2 DUP2 ,&src STR2
+		htm-path/set workarea/get-length ROT2 <load-file>
+		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
+		&>ll
+			LDA2k [ LIT2 "hr ] NEQ2 ?{
+				INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
+					[ LIT2 &src $2 ] OVR2 #0006 ADD2 link/<parse> } }
+			INC2 GTH2k ?&>ll
+		POP2 POP2
+		( next ) str/cap GTH2k ?&>l
+	POP2 POP2
+	( | sitemap )
+	;dict/sitemap-path .File2/name DEO2
+	;lexicon/buf <write-children-rec>
+	POP2 JMP2r
+
+@<write-children-rec> ( addr* -- next* )
+	( | take depth )
+	LDAk STH
+	( | name )
+	;dict/li-tag <w>
+	INC2 INC2 DUP2 <link>
+	;dict/li-tag </w>
+	<lb>
+	str/cap
+	( | children )
+	LDAk STHkr INC NEQ ?{
+		;dict/ul-tag <w>
+		<write-children-rec>
+		;dict/ul-tag </w> }
+	( | sibling )
+	LDAk STHkr EQU ?{ POPr JMP2r }
+	POPr !<write-children-rec>
+
+
+@diary-path-abs/get ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+
+	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@diary-path-rel/get ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+
+	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@site-path-abs/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;dict/html-ext
+	( >> )
+
+@site-path-abs/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
+
+@site-path-rel/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;dict/html-ext
+	( >> )
+
+@site-path-rel/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "site/ &buf $30 ]
+
+@path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&buf SWP2 /<push-str>
+	;dict/html-ext
+	( >> )
+
+@path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+	&buf $30
+
 @<load-file> ( addr* length* path* -- )
 	.File/name DEO2
 	DUP2 .File/length DEO2
