@@ -13,39 +13,6 @@
 @on-reset ( -> )
 	maeve oscean BRK
 
-@maeve ( | clear old copies )
-	;path/journal .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	( | setup output )
-	[ LIT2 01 -File2/append ] DEO
-	#0001 .File2/length DEO2
-	( | lexicon )
-	lexicon/<build>
-	diary/<build>
-	( | print next available id )
-	;dict/available-txt str/<print>
-	diaries/next dec/<print>
-	#0a18 DEO
-	( | halt. )
-	#800f DEO
-	JMP2r
-
-@oscean ( -- )
-	( | initialize )
-	;path/lexicon .File/name DEO2
-	#2000 .File/length DEO2
-	;lexicon/buf
-	( ) DUP2 .File/read DEO2
-	( ) DUP2 #0a00 str/<swap-char>
-	&>w
-		INC2 INC2 <init-page>
-		#0001 .File2/length DEO2
-		<build-page>
-		str/cap LDAk ?&>w
-	POP2
-	( Halt. ) #800f DEO
-	JMP2r
-
 (
 @|build )
 
@@ -57,23 +24,6 @@
 
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 ;dict/no-picture log/has-picture }
-
-@<init-page> ( name* -- name* )
-	DUP2 site-path-rel/set .File2/name DEO2
-	( | cleanup )
-	#0000 ;term/cap mem/<clr>
-	DUP2 diary/<load>
-	DUP2 incoming/<load>
-	( | verify orphans )
-	.File/success DEI2 ORA ?{ DUP2 ;err/orphan <print-warning> }
-	( | fill name )
-	DUP2 ;term/name str/<copy>
-	DUP2 find-parent ;term/parent str/<copy>
-	( | fill diary )
-	diary/find DUP2 #ffff EQU2 ?{
-		DUP2 ;term/diary str/<copy>
-		;term/diary [ LIT2 09 00 ] str/<swap-char> }
-	POP2 JMP2r
 
 @diary/<load> ( name* -- )
 	/set-path .File/name DEO2
@@ -98,26 +48,7 @@
 		str/cap LDAk ?&>wc
 	POP2 STH2r JMP2r
 
-@incoming/<load> ( name* -- )
-	/set-path .File/name DEO2
-	#1000 .File/length DEO2
-	;&buf DUP2 [ LIT2 &length $2 ] mem/<clr>
-	DUP2 .File/read DEO2
-	#0a00 str/<swap-char>
-	.File/success DEI2 ,&length STR2
-	JMP2r
 
-@incoming/set-path ( name* -- buf* )
-	;&resbuf ,&ptr STR2
-	;&res SWP2
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "tmp/map- &resbuf $30 ]
 
 (
 @|Html )
@@ -205,10 +136,210 @@
 	POP2 JMP2r
 	&a $1
 
+@<write-opengraph> ( name* -- name* )
+	DUP2 ;og/title /<write>
+	DUP2 site-path-abs/set ;og/url /<write>
+	;term/diary LDAk ?{
+		POP2 ;path/default-image ;og/image /<write>
+		JMP2r }
+	diary-path-abs/get ;og/image
+	( >> )
+	&<write> ( content* property* -- )
+	;ascii/lt .File2/write DEO2
+	;tag/meta html/<str>
+	;attr/property html/<attribute>
+	;attr/content html/<attribute>
+	;ascii/slash .File2/write DEO2
+	;ascii/gt .File2/write DEO2
+	JMP2r
+
+@<write-link> ( name* -- )
+	;&a html/<str>
+	DUP2 path/set html/<str>
+	;ascii/quote .File2/write DEO2
+	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;attr/class html/<attribute> }
+	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;attr/class html/<attribute> }
+	;ascii/gt .File2/write DEO2
+	html/<str>
+	;tag/a html/<close>
+	JMP2r
+
+	&a "<a 20 "href=" $1
+
+(
+@|Lexicon )
+
+%workarea/get-length ( -- buf* length* ) {
+	;workarea/buf #0000 OVR2 SUB2 }
+
+@lexicon/find ( name* -- term* )
+	,&t STR2
+	;&buf
+	&>w
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] str/cmp ?{
+			str/cap LDAk ?&>w
+		POP2 #ffff }
+	JMP2r
+
+@lexicon/<parse> ( -- )
+	;&buf
+	( load ) DUP2 #2000 ;path/lexicon <load-file>
+	( swap ) DUP2 #0a00 str/<swap-char>
+	( range ) .File/success DEI2 ADD2k NIP2 SWP2
+	&>lp
+		INC2 INC2 DUP2 DUP2 ,&src STR2
+		htm-path/set workarea/get-length ROT2 <load-file>
+		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
+		&>ll
+			LDA2k [ LIT2 "hr ] NEQ2 ?{
+				INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
+					[ LIT2 &src $2 ] OVR2 #0006 ADD2 link/<parse> } }
+			INC2 GTH2k ?&>ll
+		POP2 POP2
+		( next ) str/cap GTH2k ?&>lp
+	POP2 POP2
+	( | sitemap )
+	;path/sitemap .File2/name DEO2
+	;&buf /<write-children-rec>
+	POP2 JMP2r
+
+@lexicon/<write-children-rec> ( addr* -- next* )
+	( | take depth )
+	LDAk STH
+	( | name )
+	;tag/li html/<open>
+	INC2 INC2 DUP2 <link>
+	;tag/li html/<close>
+	html/<lb>
+	str/cap
+	( | children )
+	LDAk STHkr INC NEQ ?{
+		;tag/ul html/<open>
+		/<write-children-rec>
+		;tag/ul html/<close> }
+	( | sibling )
+	LDAk STHkr EQU ?{ POPr JMP2r }
+	POPr !/<write-children-rec>
+
+@lexicon/find-parent ( term* -- parent* )
+	DUP2 #0002 SUB2 LDA chr/hex ?{ JMP2r }
+	prev-nil INC2 LDAk chr/hex #01 SUB ,&depth STR
+	;&buf SWP2
+	&>lf
+		#0001 SUB2 prev-nil INC2k LDA chr/hex [ LIT &depth $1 ] NEQ ?{
+			NIP2 INC2 INC2 INC2 JMP2r }
+		LTH2k ?&>lf
+	#0002 JMP2r
+
+(
+@|Link )
+
+%link/is-anchor ( path* -- path* t ) {
+	LDAk [ LIT "# ] EQU }
+
+%link/is-relative ( path* -- path* t ) {
+	LDAk [ LIT ". ] EQU }
+
+@link/is-external ( path* -- path* t )
+	LDA2k [ LIT2 "ht ] NEQ2 ?{
+		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
+	#00 JMP2r
+
+@link/has-html-ext ( str* -- t )
+	LDA2k [ LIT2 ".h ] NEQ2 ?{
+		INC2 INC2 LDA2k [ LIT2 "tm ] NEQ2 ?{
+			INC2 INC2 LDA [ LIT "l ] EQU JMP2r } }
+	POP2 #00 JMP2r
+
+@link/<print-err> ( src* link* -- src* link* )
+	#010f DEO
+	;dict/redlink str/<print>
+	;&res str/<print>
+	;dict/in str/<print>
+	DUP2 !str/<print-ln>
+
+@link/<parse> ( src* link* -- )
+	link/is-relative ?{
+		link/is-anchor ?{
+			link/is-external ?{
+				/set
+				( | handlers )
+				;&res lexicon/find INC2 ORA ?{ /<print-err> }
+				/has-html-ext ?{ /<print-err> }
+				;&res [ LIT2 20 "_ ] str/<swap-char>
+				;&map-path .File2/name DEO2
+				html/<str>
+				html/<lb>
+				JMP2r } } }
+	POP2 POP2 JMP2r
+
+@link/set ( str* -- buf* str* )
+	;&res ,&ptr STR2
+	&>w
+		LDAk DUP #1f GTH ?{ &end POP JMP2r }
+		DUP [ LIT ". ] EQU ?&end
+		DUP [ LIT "_ ] NEQ ?{ POP #20 }
+		#00 [ LIT2 &ptr =&res ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&map-path [ "tmp/map- &res $30 ]
+
 (
 @|Build )
 
+@maeve ( | clear old copies )
+	;path/journal .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	( | setup output )
+	[ LIT2 01 -File2/append ] DEO
+	#0001 .File2/length DEO2
+	( | lexicon )
+	;path/sitemap .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	;tag/ul html/<open>
+	lexicon/<parse>
+	;tag/ul html/<close>
+	diary/<build>
+	( | print next available id )
+	;dict/available-txt str/<print>
+	diaries/next dec/<print>
+	#0a18 DEO
+	( | halt. )
+	#800f DEO
+	JMP2r
+
+@oscean ( -- )
+	( | initialize )
+	;path/lexicon .File/name DEO2
+	#2000 .File/length DEO2
+	;lexicon/buf
+	( ) DUP2 .File/read DEO2
+	( ) DUP2 #0a00 str/<swap-char>
+	&>w
+		INC2 INC2 <build-page>
+		str/cap LDAk ?&>w
+	POP2
+	( Halt. ) #800f DEO
+	JMP2r
+
 @<build-page> ( name* -- name* )
+	DUP2 site-path-rel/set .File2/name DEO2
+	( | cleanup )
+	#0000 ;term/cap mem/<clr>
+	DUP2 diary/<load>
+	DUP2 incoming/<load>
+	( | verify orphans )
+	.File/success DEI2 ORA ?{ DUP2 ;err/orphan warning/<print> }
+	( | fill name )
+	DUP2 ;term/name str/<copy>
+	DUP2 lexicon/find-parent ;term/parent str/<copy>
+	( | fill diary )
+	diary/find DUP2 #ffff EQU2 ?{
+		DUP2 ;term/diary str/<copy>
+		;term/diary [ LIT2 09 00 ] str/<swap-char> }
+	POP2 #0001 .File2/length DEO2
+	( | build )
 	;dict/doctype html/<str>
 	;tag/html html/<open>
 	;tag/head html/<open>
@@ -225,9 +356,9 @@
 	;tag/nav html/<open>
 	DUP2 #0002 SUB2 LDA chr/hex STHk #00 EQU ?{
 		STHkr #02 LTH ?{
-			DUP2 find-parent find-parent <build-children>
+			DUP2 lexicon/find-parent lexicon/find-parent <build-children>
 			POP2 }
-		DUP2 find-parent <build-children>
+		DUP2 lexicon/find-parent <build-children>
 		POP2 }
 	POPr <build-children>
 	;tag/nav html/<close>
@@ -262,7 +393,7 @@
 @<build-page-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
 	( ) DUP [ LIT ", ] NEQ ?{ POP !<build-module-album> }
-	diary/count #0002 LTH2 ?{ ;term/name ;err/hidden <print-warning> }
+	diary/count #0002 LTH2 ?{ ;term/name ;err/hidden warning/<print> }
 	( ) DUP [ LIT "; ] NEQ ?{ POP !<build-module-portal> }
 	( ) DUP [ LIT ". ] NEQ ?{ POP !<build-module-both> }
 	( ) [ LIT ": ] NEQ ?{ !<build-module-archive> }
@@ -378,7 +509,7 @@
 		( ) #0000 EQU2 ?{
 			DUP2 .File2/write DEO2
 			INCr !&>s }
-	POP2 STHr ?{ DUP2 ;err/source <print-error> }
+	POP2 STHr ?{ DUP2 ;err/source error/<print> }
 	POP2
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
@@ -386,252 +517,25 @@
 (
 @|helpers )
 
-@prev-nil ( addr* -- addr* )
-	&>w
-		LDAk ?{ JMP2r }
-		#0001 SUB2 !&>w
-
-@walk-seg ( str* -- next* )
-	&>w
-		INC2 LDAk #1f GTH ?&>w
-	INC2 JMP2r
-
-@find-parent ( term* -- parent* )
-	DUP2 #0002 SUB2 LDA chr/hex ?{ JMP2r }
-	prev-nil INC2 LDAk chr/hex #01 SUB ,&depth STR
-	;lexicon/buf SWP2
-	&>l
-		#0001 SUB2 prev-nil INC2k LDA chr/hex [ LIT &depth $1 ] NEQ ?{
-			NIP2 INC2 INC2 INC2 JMP2r }
-		LTH2k ?&>l
-	#0002 JMP2r
-
-@<write-opengraph> ( name* -- name* )
-	DUP2 ;og/title /<write>
-	DUP2 site-path-abs/set ;og/url /<write>
-	;term/diary LDAk ?{
-		POP2 ;path/default-image ;og/image /<write>
-		JMP2r }
-	diary-path-abs/get ;og/image
-	( >> )
-	&<write> ( content* property* -- )
-	;ascii/lt .File2/write DEO2
-	;tag/meta html/<str>
-	;attr/property html/<attribute>
-	;attr/content html/<attribute>
-	;ascii/slash .File2/write DEO2
-	;ascii/gt .File2/write DEO2
-	JMP2r
-
-@<write-link> ( name* -- )
-	;&a html/<str>
-	DUP2 path/set html/<str>
-	;ascii/quote .File2/write DEO2
-	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;attr/class html/<attribute> }
-	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;attr/class html/<attribute> }
-	;ascii/gt .File2/write DEO2
-	html/<str>
-	;tag/a html/<close>
-	JMP2r
-
-	&a "<a 20 "href=" $1
-
-@<print-warning> ( name* msg* -- )
-	( msg ) str/<print>
-	( name ) str/<print>
-	#0a18 DEO
-	JMP2r
-
-@<print-error> ( name* msg* -> )
-	( msg ) str/<print>
-	( name ) str/<print>
-	#0a18 DEO
-	#010f DEO
-	BRK
-
-(
-@|link )
-
-%link/is-anchor ( path* -- path* t ) {
-	LDAk [ LIT "# ] EQU }
-
-%link/is-relative ( path* -- path* t ) {
-	LDAk [ LIT ". ] EQU }
-
-@link/is-external ( path* -- path* t )
-	LDA2k [ LIT2 "ht ] NEQ2 ?{
-		INC2k INC2 LDA2 [ LIT2 "tp ] EQU2 JMP2r }
-	#00 JMP2r
-
-@link/has-html-ext ( str* -- t )
-	LDA2k [ LIT2 ".h ] NEQ2 ?{
-		INC2 INC2 LDA2k [ LIT2 "tm ] NEQ2 ?{
-			INC2 INC2 LDA [ LIT "l ] EQU JMP2r } }
-	POP2 #00 JMP2r
-
-@link/<print-err> ( src* link* -- src* link* )
-	#010f DEO
-	;dict/redlink str/<print>
-	;&res str/<print>
-	;dict/in str/<print>
-	DUP2 !str/<print-ln>
-
-@link/<parse> ( src* link* -- )
-	link/is-relative ?{
-		link/is-anchor ?{
-			link/is-external ?{
-				/set
-				( | handlers )
-				;&res lexicon/find INC2 ORA ?{ /<print-err> }
-				/has-html-ext ?{ /<print-err> }
-				;&res [ LIT2 20 "_ ] str/<swap-char>
-				;&map-path .File2/name DEO2
-				html/<str>
-				html/<lb>
-				JMP2r } } }
-	POP2 POP2 JMP2r
-
-@link/set ( str* -- buf* str* )
-	;&res ,&ptr STR2
-	&>w
-		LDAk DUP #1f GTH ?{ &end POP JMP2r }
-		DUP [ LIT ". ] EQU ?&end
-		DUP [ LIT "_ ] NEQ ?{ POP #20 }
-		#00 [ LIT2 &ptr =&res ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&map-path [ "tmp/map- &res $30 ]
-
-@lexicon/<build> ( -- )
-	;path/sitemap .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	;tag/ul html/<open>
-	lexicon/<parse>
-	;tag/ul html/<close>
-	JMP2r
-
-@lexicon/find ( name* -- term* )
-	,&t STR2
-	;&buf
-	&>w
-		INC2 INC2 DUP2 [ LIT2 &t $2 ] str/cmp ?{
-			str/cap LDAk ?&>w
-		POP2 #ffff }
-	JMP2r
-
-%workarea/get-length ( -- buf* length* ) {
-	;workarea/buf #0000 OVR2 SUB2 }
-
-@lexicon/<parse> ( -- )
-	;&buf
-	( load ) DUP2 #2000 ;path/lexicon <load-file>
-	( swap ) DUP2 #0a00 str/<swap-char>
-	( range ) .File/success DEI2 ADD2k NIP2 SWP2
-	&>l
-		INC2 INC2 DUP2 DUP2 ,&src STR2
-		htm-path/set workarea/get-length ROT2 <load-file>
-		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
-		&>ll
-			LDA2k [ LIT2 "hr ] NEQ2 ?{
-				INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
-					[ LIT2 &src $2 ] OVR2 #0006 ADD2 link/<parse> } }
-			INC2 GTH2k ?&>ll
-		POP2 POP2
-		( next ) str/cap GTH2k ?&>l
-	POP2 POP2
-	( | sitemap )
-	;path/sitemap .File2/name DEO2
-	;lexicon/buf <write-children-rec>
-	POP2 JMP2r
-
-@<write-children-rec> ( addr* -- next* )
-	( | take depth )
-	LDAk STH
-	( | name )
-	;tag/li html/<open>
-	INC2 INC2 DUP2 <link>
-	;tag/li html/<close>
-	html/<lb>
-	str/cap
-	( | children )
-	LDAk STHkr INC NEQ ?{
-		;tag/ul html/<open>
-		<write-children-rec>
-		;tag/ul html/<close> }
-	( | sibling )
-	LDAk STHkr EQU ?{ POPr JMP2r }
-	POPr !<write-children-rec>
-
-@diary-path-abs/get ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-
-	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
-
-@diary-path-rel/get ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-
-	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
-
-@site-path-abs/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;ext/html
-	( >> )
-
-@site-path-abs/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
-
-@site-path-rel/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&res SWP2 /<push-str>
-	;ext/html
-	( >> )
-
-@site-path-rel/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&res [ "site/ &buf $30 ]
-
-@path/set ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&buf SWP2 /<push-str>
-	;ext/html
-	( >> )
-
-@path/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-	&buf $30
-
 @<load-file> ( addr* length* path* -- )
 	.File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
 	.File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
+
+@warning/<print> ( name* msg* -- )
+	( msg ) str/<print>
+	( name ) str/<print>
+	#0a18 DEO
+	JMP2r
+
+@error/<print> ( name* msg* -> )
+	( msg ) str/<print>
+	( name ) str/<print>
+	#0a18 DEO
+	#010f DEO
+	BRK
 
 (
 @|diary )
@@ -784,8 +688,102 @@
 		INC2 !&>w
 	&buf $30
 
+@diary-path-abs/get ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+
+	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@diary-path-rel/get ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+
+	&buf "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
+@site-path-abs/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;ext/html
+	( >> )
+
+@site-path-abs/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
+
+@site-path-rel/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&res SWP2 /<push-str>
+	;ext/html
+	( >> )
+
+@site-path-rel/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "site/ &buf $30 ]
+
+@path/set ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&buf SWP2 /<push-str>
+	;ext/html
+	( >> )
+
+@path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+	&buf $30
+
+@incoming/<load> ( name* -- )
+	/set-path .File/name DEO2
+	#1000 .File/length DEO2
+	;&buf DUP2 [ LIT2 &length $2 ] mem/<clr>
+	DUP2 .File/read DEO2
+	#0a00 str/<swap-char>
+	.File/success DEI2 ,&length STR2
+	JMP2r
+
+@incoming/set-path ( name* -- buf* )
+	;&resbuf ,&ptr STR2
+	;&res SWP2
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/map- &resbuf $30 ]
+
 (
 @|Stdlib )
+
+@prev-nil ( addr* -- addr* )
+	&>w
+		LDAk ?{ JMP2r }
+		#0001 SUB2 !&>w
+
+@walk-seg ( str* -- next* )
+	&>w
+		INC2 LDAk #1f GTH ?&>w
+	INC2 JMP2r
 
 @str/cap ( str* -- end* )
 	&>wc
@@ -845,10 +843,6 @@
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
 
 @dec/<print> ( dec* -- )
 	#000a SWP2 [ LITr ff ]
