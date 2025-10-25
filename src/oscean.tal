@@ -283,7 +283,7 @@
 @link/<print-err> ( src* link* -- src* link* )
 	#010f DEO
 	;dict/redlink str/<print>
-	;&res str/<print>
+	;path-tmp-map/resbuf str/<print>
 	;dict/in str/<print>
 	DUP2 !str/<print-ln>
 
@@ -291,28 +291,16 @@
 	link/is-relative ?{
 		link/is-anchor ?{
 			link/is-external ?{
-				/set
+				path-tmp-map/set
 				( | handlers )
-				;&res lexicon/find INC2 ORA ?{ /<print-err> }
+				;path-tmp-map/resbuf lexicon/find INC2 ORA ?{ /<print-err> }
 				/has-html-ext ?{ /<print-err> }
-				;&res [ LIT2 20 "_ ] str/<swap-char>
-				;&map-path .File2/name DEO2
+				;path-tmp-map/resbuf [ LIT2 20 "_ ] str/<swap-char>
+				;path-tmp-map/res .File2/name DEO2
 				html/<str>
 				html/<lb>
 				JMP2r } } }
 	POP2 POP2 JMP2r
-
-@link/set ( str* -- buf* str* )
-	;&res ,&ptr STR2
-	&>w
-		LDAk DUP #1f GTH ?{ &end POP JMP2r }
-		DUP [ LIT ". ] EQU ?&end
-		DUP [ LIT "_ ] NEQ ?{ POP #20 }
-		#00 [ LIT2 &ptr =&res ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-
-	&map-path [ "tmp/map- &res $30 ]
 
 (
 @|Build )
@@ -669,6 +657,18 @@
 		INC2 !&>w
 
 	&res [ "tmp/log- &resbuf $30 ]
+
+@path-tmp-map/set ( str* -- buf* str* )
+	;&resbuf ,&ptr STR2
+	&>w
+		LDAk DUP #1f GTH ?{ &end POP JMP2r }
+		DUP [ LIT ". ] EQU ?&end
+		DUP [ LIT "_ ] NEQ ?{ POP #20 }
+		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+
+	&res [ "tmp/map- &resbuf $30 ]
 
 @path-abs-diary/get ( diary* -- path* )
 	#0006 ADD2
