@@ -4,24 +4,23 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom
+all: bin/oscean.rom bin/arvelie.rom bin/directory.rom
 
 clean:
 	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
 
 bal:
-	@ ${BAL} src/maeve.tal
 	@ ${BAL} src/oscean.tal
 
 lint:
 	@ ${LIN} src/oscean.tal
-	@ ${LIN} src/maeve.tal
 	@ ${LIN} src/arvelie.tal
 	@ ${LIN} src/directory.tal
 
 run: all
-	@ mkdir -p tmp && rm -f tmp/* && ${EMU} bin/maeve.rom
-	@ mkdir -p site && rm -f site/* && ${EMU} bin/oscean.rom
+	@ mkdir -p tmp && rm -f tmp/*
+	@ mkdir -p site && rm -f site/*
+	@ ${EMU} bin/oscean.rom
 	@ ${EMU} bin/directory.rom docs/
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
@@ -36,8 +35,6 @@ grab:
 	@ mkdir -p etc/solrela
 	@ cp -r ../solrela/index.html ../solrela/src/ ../solrela/media/ etc/solrela/
 
-bin/maeve.rom: src/maeve.tal
-	@ mkdir -p bin && ${ASM} src/maeve.tal bin/maeve.rom
 bin/oscean.rom: src/oscean.tal
 	@ ${ASM} src/oscean.tal bin/oscean.rom
 bin/arvelie.rom: src/arvelie.tal
