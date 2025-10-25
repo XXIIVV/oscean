@@ -17,7 +17,7 @@
 
 @oscean ( -- )
 	( | initialize )
-	;dict/lexicon-path .File/name DEO2
+	;path/lexicon .File/name DEO2
 	#2000 .File/length DEO2
 	;lexicon/buf
 	( ) DUP2 .File/read DEO2
@@ -131,7 +131,7 @@
 %html/<open-class> ( class* tag* -- ) {
 	;ascii/lt .File2/write DEO2
 	html/<str>
-	;dict/class-attr html/<attribute>
+	;attr/class html/<attribute>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<close> ( tag* -- ) {
@@ -148,8 +148,8 @@
 %html/<img> ( src* alt* -- ) {
 	;ascii/lt .File2/write DEO2
 	;tag/img html/<str>
-	;dict/alt-attr html/<attribute>
-	;dict/src-attr html/<attribute>
+	;attr/alt html/<attribute>
+	;attr/src html/<attribute>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<str> ( addr* -- ) {
@@ -158,8 +158,8 @@
 %html/<meta-og> ( content* property* -- ) {
 	;ascii/lt .File2/write DEO2
 	;tag/meta html/<str>
-	;dict/property-attr html/<attribute>
-	;dict/content-attr html/<attribute>
+	;attr/property html/<attribute>
+	;attr/content html/<attribute>
 	;ascii/slash .File2/write DEO2
 	;ascii/gt .File2/write DEO2 }
 
@@ -170,7 +170,7 @@
 	;dict/doctype html/<str>
 	;tag/html html/<open>
 	;tag/head html/<open>
-	;dict/meta-head-path <build-include>
+	;path/meta-head <build-include>
 	<write-opengraph>
 	;tag/title html/<open>
 	;dict/xxiivv-txt html/<str>
@@ -179,7 +179,7 @@
 	;tag/title html/<close>
 	;tag/head html/<close>
 	;tag/body html/<open>
-	;dict/meta-header-path <build-include>
+	;path/meta-header <build-include>
 	;tag/nav html/<open>
 	DUP2 #0002 SUB2 LDA chr/hex STHk #00 EQU ?{
 		STHkr #02 LTH ?{
@@ -197,7 +197,7 @@
 	<build-page-events>
 	<build-page-incoming>
 	;tag/main html/<close>
-	;dict/meta-footer-path <build-include>
+	;path/meta-footer <build-include>
 	;tag/body html/<close>
 	;tag/html html/<close>
 	JMP2r
@@ -365,12 +365,12 @@
 	#0002 JMP2r
 
 @<write-opengraph> ( name* -- name* )
-	DUP2 ;dict/og-title html/<meta-og>
-	DUP2 site-path-abs/set ;dict/og-url html/<meta-og>
+	DUP2 ;og/title html/<meta-og>
+	DUP2 site-path-abs/set ;og/url html/<meta-og>
 	;term/diary LDAk ?{
-		POP2 ;&default-image ;dict/og-image html/<meta-og>
+		POP2 ;&default-image ;og/image html/<meta-og>
 		JMP2r }
-	diary-path-abs/get ;dict/og-image html/<meta-og>
+	diary-path-abs/get ;og/image html/<meta-og>
 	JMP2r
 
 	&default-image "https://wiki.xxiivv.com/media/ "services/rss.jpg $1
@@ -379,8 +379,8 @@
 	;&a html/<str>
 	DUP2 path/set html/<str>
 	;ascii/quote .File2/write DEO2
-	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr html/<attribute> }
-	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr html/<attribute> }
+	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;attr/class html/<attribute> }
+	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;attr/class html/<attribute> }
 	;ascii/gt .File2/write DEO2
 	html/<str>
 	;tag/a html/<close>
@@ -403,7 +403,7 @@
 
 @maeve
 	( | clear old copies )
-	;dict/journal-path .File2/name DEO2
+	;path/journal .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	( | setup output )
 	[ LIT2 01 -File2/append ] DEO
@@ -528,7 +528,7 @@
 	&map-path [ "tmp/map- &res $30 ]
 
 @lexicon/<build> ( -- )
-	;dict/sitemap-path .File2/name DEO2
+	;path/sitemap .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	;tag/ul <w>
 	lexicon/<parse>
@@ -549,7 +549,7 @@
 
 @lexicon/<parse> ( -- )
 	;&buf
-	( load ) DUP2 #2000 ;dict/lexicon-path <load-file>
+	( load ) DUP2 #2000 ;path/lexicon <load-file>
 	( swap ) DUP2 #0a00 str/<swap-char>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>l
@@ -565,7 +565,7 @@
 		( next ) str/cap GTH2k ?&>l
 	POP2 POP2
 	( | sitemap )
-	;dict/sitemap-path .File2/name DEO2
+	;path/sitemap .File2/name DEO2
 	;lexicon/buf <write-children-rec>
 	POP2 JMP2r
 
@@ -662,7 +662,7 @@
 @|diary )
 
 @diary/<build> ( -- )
-	;dict/events-path .File2/name DEO2
+	;path/events .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	;header-txt <str>
 	;tag/p <w>
@@ -707,7 +707,7 @@
 
 @<parse-event> ( event* -- )
 	( | add to events )
-	;dict/events-path .File2/name DEO2
+	;path/events .File2/name DEO2
 	( year ) LDAk2 ;&last LDA2 EQU2 ?{
 		;tag/br <w>
 		LDA2k ;&last STA2 }
@@ -733,7 +733,7 @@
 	( | limit to 20 entries )
 	[ LIT2 &len $2 ] INC2k ,&len STR2
 	#0020 LTH2 ?{ POP2 JMP2r }
-	;dict/journal-path .File2/name DEO2
+	;path/journal .File2/name DEO2
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2 DUP2 ,&term STR2
 	str/cap ,&title STR2
@@ -951,6 +951,13 @@
 	3d27 6e6f 772e 6874 6d6c 273e 6e6f 773c
 	2f61 3e20 7061 6765 733c 2f70 3e0a 0a00 ]
 
+@ascii/space 20 &line 0a
+	&lt "<
+	&gt ">
+	&equal "=
+	&quote ""
+	&slash "/
+
 @tag/html "html $1
 	&head "head $1
 	&meta "meta $1
@@ -970,33 +977,37 @@
 	&figure "figure $1
 	&figcaption "figcaption $1
 
+@attr/class "class $1
+	&src "src $1
+	&alt "alt $1
+	&property "property $1
+	&content "content $1
+
+@og/title "og:title $1
+	&image "og:image $1
+	&url "og:url $1
+
 @err
 	&source "-- 20 "Source: 20 $1
 	&orphan "-- 20 "Orphan: 20 $1
 	&hidden "-- 20 "Hidden: 20 $1
 
-@dict/xxiivv-txt "XXIIVV $1
+@path/lexicon "src/tables/lexicon $1
+	&sitemap "src/htm/sitemap.htm $1
+	&events "src/htm/events.htm $1
+	&journal "src/htm/journal.htm $1
+	&meta-head "meta_head $1
+	&meta-header "meta_header $1
+	&meta-footer "meta_footer $1
 
-	&class-attr "class $1
-	&src-attr "src $1
-	&alt-attr "alt $1
-	&property-attr "property $1
-	&content-attr "content $1
-	&meta-head-path "meta_head $1
-	&meta-header-path "meta_header $1
-	&meta-footer-path "meta_footer $1
-	&lexicon-path "src/tables/lexicon $1
-	&sitemap-path "src/htm/sitemap.htm $1
-	&events-path "src/htm/events.htm $1
-	&journal-path "src/htm/journal.htm $1
+@dict/xxiivv-txt "XXIIVV $1
+	
 	&self-txt "self $1 &mdash-entity-txt 20 "&mdash; 20 $1
 	&parent-txt "parent $1
 	&html-ext ".html $1
 	&htm-ext ".htm $1
 	&doctype "<!DOCTYPE 20 "html> $1
-	&og-title "og:title $1
-	&og-image "og:image $1
-	&og-url "og:url $1
+	
 	&no-picture "000 $1
 	&incoming-txt "incoming: 20 $1
 	&right-txt "right $1
@@ -1017,12 +1028,7 @@
 	=diary-paths/3 =diary-paths/2
 	=diary-paths/1 =diary-paths/0 ] &end
 
-@ascii/space 20 &line 0a
-	&lt "<
-	&gt ">
-	&equal "=
-	&quote ""
-	&slash "/
+
 
 (
 @|memory )
