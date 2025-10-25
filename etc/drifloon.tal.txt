@@ -507,7 +507,7 @@
 	( ref* sym* ) INC2k INC2 LDA2
 	( ref* sym/addr* ) LDA2
 	( ref* sym/addr* ) INC2k ORA ?{
-		( ! ) ;dict/invalid !err/<resolve> }
+		( ! ) ;dict/invalid !err/<resolution> }
 	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
@@ -524,7 +524,7 @@
 
 @refs/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far !err/<resolve>
+	( ! ) ;dict/too-far !err/<resolution>
 
 @refs/<record-scope> ( sym* -- )
 	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
@@ -642,15 +642,10 @@
 		/<pstr>
 		;dict/spacer /<pstr>
 		;token/buf /<pstr>
-		;dict/in /<pstr>
-		;scope/buf /<pstr>
-		LIT ": err/<pchr>
-		;token/line LDA2 err/<pdec>
-		#0a err/<pchr>
-		JMP2r }
+		;token/line LDA2 ;scope/buf !/<print-location> }
 	POP2 POP2 JMP2r
 
-@err/<resolve> ( adj* -- )
+@err/<resolution> ( adj* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
 		;dict/Reference err/<pstr>
@@ -658,13 +653,16 @@
 		err/<pstr>
 		;dict/spacer err/<pstr>
 		[ LIT2 &ref $2 ] INC2k INC2 LDA2 #0003 ADD2 err/<pstr>
-		;dict/in /<pstr>
-		DUP2 #0006 ADD2 LDA2 #0003 ADD2 err/<pstr>
-		LIT ": err/<pchr>
-		#0008 ADD2 LDA2 err/<pdec>
-		#0a err/<pchr>
-		JMP2r }
+		DUP2 #0008 ADD2 LDA2 SWP2 #0006 ADD2 LDA2 #0003 ADD2 !/<print-location> }
 	POP2 JMP2r
+
+@err/<print-location> ( line* scope* -- )
+	;dict/in /<pstr>
+	err/<pstr>
+	LIT ": err/<pchr>
+	err/<pdec>
+	#0a err/<pchr>
+	JMP2r
 
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
