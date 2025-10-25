@@ -102,6 +102,63 @@
 (
 @|Html )
 
+%<lb> { ;dict/0a .File2/write DEO2 }
+
+%<ws> { ;dict/20 .File2/write DEO2 }
+
+%<str> ( str* -- ) {
+	DUP2 scap/ OVR2 SUB2 <len> }
+
+%<len> ( str* len* -- ) {
+	.File2/length DEO2
+	.File2/write DEO2
+	#0001 .File2/length DEO2 }
+
+%<w> ( name* -- ) {
+	;ascii/lt .File2/write DEO2
+	<str>
+	;ascii/gt .File2/write DEO2 }
+
+%</w> ( name* -- ) {
+	;ascii/lt .File2/write DEO2
+	;ascii/slash .File2/write DEO2
+	<str>
+	;ascii/gt .File2/write DEO2 }
+
+%workarea/get-length ( -- buf* length* ) {
+	;workarea/buf #0000 OVR2 SUB2 }
+
+@<link> ( str* -- )
+	;&a <str>
+	DUP2 <path>
+	;&b <str>
+	<str>
+	;&c <str>
+	JMP2r
+
+	&a "<a 20 "href=' $1
+	&b ".html'> $1
+	&c "</a> $1
+
+@<path> ( str* -- )
+	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
+	;&a .File2/write DEO2
+	INC2 LDAk ?<path>
+	POP2 JMP2r
+	&a $1
+
+@<img> ( src* alt* -- )
+	;&a <str>
+	<str>
+	;&b <str>
+	<str>
+	;&c <str>
+	JMP2r
+
+	&a "<img 20 "alt=" $1
+	&b "" 20 "src="../media/diary/ $1
+	&c ".jpg"> $1
+
 %html/<length> ( src* length* -- ) {
 	.File2/length DEO2
 	.File2/write DEO2
