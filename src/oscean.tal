@@ -55,6 +55,13 @@
 		STZ2
 		INC2 !&>wd
 
+@workarea/load-file ( path* -- to* from* )
+	.File/name DEO2
+	#0000 ;&buf SUB2 .File/length DEO2
+	;&buf .File/read DEO2
+	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
+	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
+
 (
 @|Html )
 
@@ -385,29 +392,33 @@
 	;tag/head html/<close>
 	;tag/body html/<open>
 	;path/meta-header <build-include>
-	;tag/nav html/<open>
-	DUP2 #0002 SUB2 LDA chr/hex STHk #00 EQU ?{
-		STHkr #02 LTH ?{
-			DUP2 lexicon/find-parent lexicon/find-parent <build-children>
-			POP2 }
-		DUP2 lexicon/find-parent <build-children>
-		POP2 }
-	POPr <build-children>
-	;tag/nav html/<close>
+	page/<build-nav>
 	;ascii/line .File2/write DEO2
 	;tag/main html/<open>
 	;term/diary #01 html/<photo>
 	DUP2 <build-include>
-	<build-page-module>
-	<build-page-events>
-	<build-page-incoming>
+	page/<build-module>
+	page/<build-events>
+	page/<build-incoming>
 	;tag/main html/<close>
 	;path/meta-footer <build-include>
 	;tag/body html/<close>
 	;tag/html html/<close>
 	JMP2r
 
-@<build-children> ( name* -- name* )
+@page/<build-nav> ( name* -- name* )
+	;tag/nav html/<open>
+	DUP2 #0002 SUB2 LDA chr/hex STHk #00 EQU ?{
+		STHkr #02 LTH ?{
+			DUP2 lexicon/find-parent lexicon/find-parent /<build-children>
+			POP2 }
+		DUP2 lexicon/find-parent /<build-children>
+		POP2 }
+	POPr /<build-children>
+	;tag/nav html/<close>
+	JMP2r
+
+	&<build-children> ( name* -- name* )
 	;tag/ul html/<open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
@@ -422,96 +433,93 @@
 	POP2 POPr ;tag/ul html/<close>
 	JMP2r
 
-@<build-page-module> ( term* -- term* )
-	DUP2 #0001 SUB2 LDA
-	( ) DUP [ LIT ", ] NEQ ?{ POP !<build-module-album> }
-	diary/count #0002 LTH2 ?{ ;term/name ;err/hidden warning/<print> }
-	( ) DUP [ LIT "; ] NEQ ?{ POP !<build-module-portal> }
-	( ) DUP [ LIT ". ] NEQ ?{ POP !<build-module-both> }
-	( ) [ LIT ": ] NEQ ?{ !<build-module-archive> }
-	JMP2r
-
-@<build-page-events> ( name* -- name* )
+@page/<build-events> ( name* -- name* )
 	;tag/ul html/<open>
 	;diary/buf
-	&>w
+	&>wbe
 		log/get-rune [ LIT "+ ] NEQ ?{
 			;tag/li html/<open>
-			DUP2 <build-module-event>
+			DUP2
+			( clip bound ) DUP2 #0005 ADD2 STH2
+			( clip start ) #00 STH2kr STA
+			( clip wrap ) ;tag/code html/<auto>
+			( clip restore ) [ LIT "+ ] STH2r STA
+			;dict/mdash-entity-txt html/<str>
+			( event name ) DUP2 #000a ADD2 str/walk html/<str>
 			;tag/li html/<close> }
-		str/cap LDAk ?&>w
+		str/cap LDAk ?&>wbe
 	POP2 ;tag/ul html/<close>
 	JMP2r
 
-@<build-page-incoming> ( -- )
+@page/<build-incoming> ( -- )
 	;incoming/buf LDAk ?{ POP2 JMP2r }
 	;tag/p html/<open>
 	;dict/incoming-txt ;tag/b html/<auto>
 	[ LIT2r =&null ]
-	&>w
+	&>wbi
 		DUP2 STH2kr str/cmp ?{
 			DUP2 html/<local>
 			;ascii/space .File2/write DEO2
 			POP2r STH2k }
-		str/cap LDAk ?&>w
+		str/cap LDAk ?&>wbi
 	POP2 POP2r ;tag/p html/<close>
 	JMP2r
 	&null ffff
 
-@<build-module-album> ( name* -- name* )
+@page/<build-module> ( term* -- term* )
+	DUP2 #0001 SUB2 LDA
+	( ) DUP [ LIT ", ] NEQ ?{ POP !module/<build-album> }
+	diary/count #0002 LTH2 ?{ ;term/name ;err/hidden warning/<print> }
+	( ) DUP [ LIT "; ] NEQ ?{ POP !module/<build-portal> }
+	( ) DUP [ LIT ". ] NEQ ?{ POP !module/<build-both> }
+	( ) [ LIT ": ] NEQ ?{ !module/<build-archive> }
+	JMP2r
+
+@module/<build-album> ( name* -- name* )
 	;diary/buf
-	&>w
+	&>wba
 		log/has-no-picture ?{
 			DUP2 ;term/pict log/has-picture ?{ DUP2 #01 html/<photo> } }
-		str/cap LDAk ?&>w
+		str/cap LDAk ?&>wba
 	POP2 JMP2r
 
-@<build-module-portal> ( -- )
+@module/<build-portal> ( -- )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
-	&>w
-		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
+	&>wbp
+		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end1
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
-		INC2 INC2 str/cap LDAk ?&>w
-	&end ( name* . depth -- )
+		INC2 INC2 str/cap LDAk ?&>wbp
+	&end1 ( name* . depth -- )
 	POP2 POPr
 	( restore diary ) DUP2 !diary/<load>
 
-@<build-module-archive> ( name* -- name* )
+@module/<build-archive> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
-	&>w
-		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
+	&>wbr
+		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end2
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
-		INC2 INC2 str/cap LDAk ?&>w
-	&end ( name* . depth -- )
+		INC2 INC2 str/cap LDAk ?&>wbr
+	&end2 ( name* . depth -- )
 	POP2 POPr JMP2r
 
-@<build-module-both> ( name* -- name* )
+@module/<build-both> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
-	&>w
-		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
+	&>wbb
+		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end3
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
-		INC2 INC2 str/cap LDAk ?&>w
-	&end ( name* . depth -- )
+		INC2 INC2 str/cap LDAk ?&>wbb
+	&end3 ( name* . depth -- )
 	POP2 POPr JMP2r
-
-@<build-module-event> ( diary* -- )
-	( clip bound ) DUP2 #0005 ADD2 STH2
-	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;tag/code html/<auto>
-	( clip restore ) [ LIT "+ ] STH2r STA
-	;dict/mdash-entity-txt html/<str>
-	( event name ) DUP2 #000a ADD2 str/walk html/<str>
-	JMP2r
 
 @<build-include> ( path* -- )
 	path-src-htm/set DUP2 .File/name DEO2
@@ -528,13 +536,6 @@
 	POP2
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
-
-@workarea/load-file ( path* -- to* from* )
-	.File/name DEO2
-	#0000 ;&buf SUB2 .File/length DEO2
-	;&buf .File/read DEO2
-	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
-	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
 
 @incoming/<load> ( name* -- )
 	path-tmp-map/set-path2 .File/name DEO2
