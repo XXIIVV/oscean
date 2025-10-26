@@ -93,6 +93,22 @@
 	;tag/a html/<close>
 	JMP2r
 
+@html/<photo> ( diary* -- )
+	DUP2 #0006 ADD2 ,&pict STR2
+	#000a ADD2 DUP2 ,&term STR2
+	str/cap ,&title STR2
+	;tag/figure html/<open>
+	( src ) [ LIT2 &pict $2 ]
+	( alt ) [ LIT2 &title $2 ] html/<img-diary>
+	;tag/figcaption html/<open>
+	[ LIT2 &term $2 ] html/<link>
+	;dict/spacer html/<str>
+	,&title LDR2 html/<str>
+	;tag/figcaption html/<close>
+	;tag/figure html/<close>
+	html/<lb>
+	JMP2r
+
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
 	DUP2 path-abs-site/set ;og/url /<write>
@@ -593,21 +609,7 @@
 @journal/<write> ( photo* -- )
 	[ LIT2 &len $2 ] INC2k ,&len STR2
 	( max 0x20 ) #0020 LTH2 ?{ POP2 JMP2r }
-	;path/journal .File2/name DEO2
-	DUP2 #0006 ADD2 ,&pict STR2
-	#000a ADD2 DUP2 ,&term STR2
-	str/cap ,&title STR2
-	;tag/figure html/<open>
-	( src ) [ LIT2 &pict $2 ]
-	( alt ) [ LIT2 &title $2 ] html/<img-diary>
-	;tag/figcaption html/<open>
-	[ LIT2 &term $2 ] html/<link>
-	;dict/spacer html/<str>
-	,&title LDR2 html/<str>
-	;tag/figcaption html/<close>
-	;tag/figure html/<close>
-	html/<lb>
-	JMP2r
+	;path/journal .File2/name DEO2 !html/<photo>
 
 (
 @|Buffers )
