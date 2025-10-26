@@ -93,9 +93,14 @@
 	;tag/a html/<close>
 	JMP2r
 
+%html/<date> ( log* -- ) {
+	;dict/right-txt ;tag/span html/<open-class>
+	#0005 html/<length>
+	;tag/span html/<close> }
+
 @html/<photo> ( diary* -- )
 	DUP2 #0006 ADD2 ,&pict STR2
-	#000a ADD2 DUP2 ,&term STR2
+	DUP2 #000a ADD2 DUP2 ,&term STR2
 	str/cap ,&title STR2
 	;tag/figure html/<open>
 	( src ) [ LIT2 &pict $2 ]
@@ -104,6 +109,7 @@
 	[ LIT2 &term $2 ] html/<link>
 	;dict/spacer html/<str>
 	,&title LDR2 html/<str>
+	html/<date>
 	;tag/figcaption html/<close>
 	;tag/figure html/<close>
 	html/<lb>
@@ -506,9 +512,7 @@
 		DUP2 #000a ADD2 substr/set html/<local>
 		;dict/mdash-entity-txt html/<str> }
 	STH2r html/<str>
-	;dict/right-txt ;tag/span html/<open-class>
-	#0005 html/<length>
-	;tag/span html/<close>
+	html/<date>
 	;tag/figcaption html/<close>
 	;tag/figure html/<close>
 	;ascii/line .File2/write DEO2
@@ -622,7 +626,7 @@
 
 @path/<push-str> ( str* -- )
 	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
 		/<push>
 		INC2 !&>w
 
