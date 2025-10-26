@@ -70,17 +70,27 @@
 	&b "" 20 "src="../media/diary/ $1
 	&c ".jpg"> $1
 
-@<link> ( str* -- )
-	;&a html/<str>
+@html/<link> ( str* -- )
+	;&l-a html/<str>
 	DUP2 path/set html/<str>
-	;&b html/<str>
+	;ascii/quote .File2/write DEO2
+	;ascii/gt .File2/write DEO2
 	html/<str>
-	;&c html/<str>
+	;tag/a html/<close>
 	JMP2r
 
-	&a "<a 20 "href=' $1
-	&b "'> $1
-	&c "</a> $1
+	&l-a "<a 20 "href=" $1
+
+@html/<local> ( name* -- )
+	;&l-a html/<str>
+	DUP2 path/set html/<str>
+	;ascii/quote .File2/write DEO2
+	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;attr/class html/<attribute> }
+	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;attr/class html/<attribute> }
+	;ascii/gt .File2/write DEO2
+	html/<str>
+	;tag/a html/<close>
+	JMP2r
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
@@ -98,19 +108,6 @@
 	;ascii/slash .File2/write DEO2
 	;ascii/gt .File2/write DEO2
 	JMP2r
-
-@<write-link> ( name* -- )
-	;&a html/<str>
-	DUP2 path/set html/<str>
-	;ascii/quote .File2/write DEO2
-	DUP2 ;term/name str/cmp #00 EQU ?{ ;dict/self-txt ;attr/class html/<attribute> }
-	DUP2 ;term/parent str/cmp #00 EQU ?{ ;dict/parent-txt ;attr/class html/<attribute> }
-	;ascii/gt .File2/write DEO2
-	html/<str>
-	;tag/a html/<close>
-	JMP2r
-
-	&a "<a 20 "href=" $1
 
 (
 @|build )
@@ -227,7 +224,7 @@
 	LDAk STH
 	( | name )
 	;tag/li html/<open>
-	INC2 INC2 DUP2 <link>
+	INC2 INC2 DUP2 html/<link>
 	;tag/li html/<close>
 	html/<lb>
 	str/cap
@@ -384,7 +381,7 @@
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			;tag/li html/<open>
-			INC2k INC2 <write-link>
+			INC2k INC2 html/<local>
 			;tag/li html/<close> }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
@@ -419,7 +416,7 @@
 	[ LIT2r =&null ]
 	&>w
 		DUP2 STH2kr str/cmp ?{
-			DUP2 <write-link>
+			DUP2 html/<local>
 			;ascii/space .File2/write DEO2
 			POP2r STH2k }
 		str/cap LDAk ?&>w
@@ -489,7 +486,7 @@
 	( alt ) OVR2 #000a ADD2 str/walk STH2k html/<img-diary>
 	;tag/figcaption html/<open>
 	;term/name OVR2 #000a ADD2 str/seg ?{
-		DUP2 #000a ADD2 substr/set <write-link>
+		DUP2 #000a ADD2 substr/set html/<local>
 		;dict/mdash-entity-txt html/<str> }
 	STH2r html/<str>
 	;dict/right-txt ;tag/span html/<open-class>
@@ -563,7 +560,7 @@
 	html/<ws>
 	str/cap
 	( | term )
-	DUP2 <link>
+	DUP2 html/<link>
 	;dict/spacer html/<str>
 	str/cap
 	( | name )
@@ -593,7 +590,7 @@
 	( src ) [ LIT2 &pict $2 ]
 	( alt ) [ LIT2 &title $2 ] html/<img-diary>
 	;tag/figcaption html/<open>
-	[ LIT2 &term $2 ] <link>
+	[ LIT2 &term $2 ] html/<link>
 	;dict/spacer html/<str>
 	,&title LDR2 html/<str>
 	;tag/figcaption html/<close>
