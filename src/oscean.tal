@@ -521,6 +521,16 @@
 	.File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
 
+@incoming/<load> ( name* -- )
+	path-tmp-map/set-path2 .File/name DEO2
+	#1000 .File/length DEO2
+	;&buf
+	( wipe ) DUP2 [ LIT2 &length $2 ] mem/<clr>
+	( read ) DUP2 .File/read DEO2
+	( swap ) #0a00 str/<swap-char>
+	.File/success DEI2 ,&length STR2
+	JMP2r
+
 (
 @|Diary )
 
@@ -696,30 +706,22 @@
 		LDAk DUP #1f GTH ?{ &end POP JMP2r }
 		DUP [ LIT ". ] EQU ?&end
 		DUP [ LIT "_ ] NEQ ?{ POP #20 }
-		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
-		STA2
+		/<push>
 		INC2 !&>w
 
-	&res [ "tmp/map- &resbuf $30 ]
-
-@incoming/<load> ( name* -- )
-	/set-path .File/name DEO2
-	#1000 .File/length DEO2
-	;&buf DUP2 [ LIT2 &length $2 ] mem/<clr>
-	DUP2 .File/read DEO2
-	#0a00 str/<swap-char>
-	.File/success DEI2 ,&length STR2
-	JMP2r
-
-@incoming/set-path ( name* -- buf* )
+@path-tmp-map/set-path2 ( name* -- buf* )
 	;&resbuf ,&ptr STR2
 	;&res SWP2
-	&>w
+	&>w2
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP #20 NEQ ?{ POP LIT "_ }
-		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
+		/<push>
+		INC2 !&>w2
+
+@path-tmp-map/<push> ( c -- )
+	#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
 
 	&res [ "tmp/map- &resbuf $30 ]
 
