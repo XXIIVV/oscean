@@ -55,13 +55,6 @@
 		STZ2
 		INC2 !&>wd
 
-@workarea/load-file ( path* -- to* from* )
-	.File/name DEO2
-	#0000 ;&buf SUB2 .File/length DEO2
-	;&buf .File/read DEO2
-	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
-	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
-
 (
 @|Html )
 
@@ -142,7 +135,7 @@
 	( | caption )
 	;tag/figcaption html/<open>
 	STHr ?{
-		DUP2 substr/set html/<link>
+		DUP2 substr/make html/<link>
 		;dict/spacer html/<str> }
 	str/next html/<str>
 	;dict/right-txt ;tag/span html/<open-class>
@@ -158,7 +151,7 @@
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
-	DUP2 path-abs-site/set ;og/url /<write>
+	DUP2 path-abs-site/make ;og/url /<write>
 	;term/diary LDAk ?{
 		POP2 ;path/default-image ;og/image /<write>
 		JMP2r }
@@ -226,7 +219,7 @@
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&>l-pages
-		LDA2k workarea/load-file
+		LDA2k workarea/make
 		( uncap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
 			log/parse GTH2k ?&>l-logs
@@ -292,7 +285,7 @@
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>lp
 		INC2 INC2 DUP2 DUP2 ,&src STR2
-		path-src-htm/set workarea/load-file
+		path-src-htm/make workarea/make
 		&>ll
 			LDA2k [ LIT2 "hr ] NEQ2 ?{
 				INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
@@ -361,7 +354,7 @@
 	link/is-relative ?{
 		link/is-anchor ?{
 			link/is-external ?{
-				path-tmp-map/set
+				path-tmp-map/make
 				( | handlers )
 				;path-tmp-map/resbuf lexicon/find INC2 ORA ?{ /<print-err> }
 				/has-html-ext ?{ /<print-err> }
@@ -376,7 +369,7 @@
 @|Build )
 
 @page/build ( name* -- name* )
-	DUP2 path-site/set .File2/name DEO2
+	DUP2 path-site/make .File2/name DEO2
 	( | cleanup )
 	term/<clear>
 	DUP2 diary/<load>
@@ -402,14 +395,14 @@
 	;tag/head html/<close>
 	;tag/body html/<open>
 	;path/meta-header <build-include>
-	page/<build-nav>
+	/<build-nav>
 	;ascii/line .File2/write DEO2
 	;tag/main html/<open>
 	;term/diary #01 html/<photo>
 	DUP2 <build-include>
-	page/<build-module>
-	page/<build-events>
-	page/<build-incoming>
+	/<build-module>
+	/<build-events>
+	/<build-incoming>
 	;tag/main html/<close>
 	;path/meta-footer <build-include>
 	;tag/body html/<close>
@@ -530,7 +523,7 @@
 	POP2 POPr JMP2r
 
 @<build-include> ( path* -- )
-	path-src-htm/set DUP2 .File/name DEO2
+	path-src-htm/make DUP2 .File/name DEO2
 	#8000 .File/length DEO2
 	[ LITr 00 ] ;workarea/buf
 	&>s
@@ -563,32 +556,30 @@
 	html/<lb>
 	DUP2 #0900 str/<swap-char>
 	DUP2 diaries/<use>
-	log/is-unevent ?{ DUP2 <parse-event> }
+	log/is-unevent ?{
+		DUP2
+		( | add to events )
+		;path/events .File2/name DEO2
+		( year ) LDAk2 ;&last LDA2 EQU2 ?{
+			;tag/br html/<open>
+			LDA2k ;&last STA2 }
+		( | date )
+		;tag/code html/<open>
+		DUP2 #0005 html/<length>
+		;tag/code html/<close>
+		html/<ws>
+		str/cap
+		( | term )
+		DUP2 html/<link>
+		;dict/spacer html/<str>
+		str/cap
+		( | name )
+		html/<str>
+		;tag/br html/<open>
+		html/<lb> }
 	log/is-ignored ?{
 		DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
 	str/cap str/cap !str/cap
-
-@<parse-event> ( event* -- )
-	( | add to events )
-	;path/events .File2/name DEO2
-	( year ) LDAk2 ;&last LDA2 EQU2 ?{
-		;tag/br html/<open>
-		LDA2k ;&last STA2 }
-	( | date )
-	;tag/code html/<open>
-	DUP2 #0005 html/<length>
-	;tag/code html/<close>
-	html/<ws>
-	str/cap
-	( | term )
-	DUP2 html/<link>
-	;dict/spacer html/<str>
-	str/cap
-	( | name )
-	html/<str>
-	;tag/br html/<open>
-	html/<lb>
-	JMP2r
 
 	&last "17 $1
 
@@ -625,6 +616,13 @@
 (
 @|Buffers )
 
+@workarea/make ( path* -- to* from* )
+	.File/name DEO2
+	#0000 ;&buf SUB2 .File/length DEO2
+	;&buf .File/read DEO2
+	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
+	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
+
 @path/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&buf SWP2 /<push-str>
@@ -643,7 +641,7 @@
 	STA2
 	JMP2r
 
-@path-abs-site/set ( name* -- buf* )
+@path-abs-site/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&res SWP2 /<push-str>
 	;ext/html
@@ -667,7 +665,7 @@
 
 	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
 
-@path-site/set ( name* -- buf* )
+@path-site/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&res SWP2 /<push-str>
 	;ext/html
@@ -683,7 +681,7 @@
 
 	&res [ "site/ &buf $30 ]
 
-@path-src-htm/set ( name* -- buf* )
+@path-src-htm/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&res SWP2 /<push-str>
 	;ext/htm
@@ -711,7 +709,7 @@
 
 	&res [ "tmp/log- &resbuf $30 ]
 
-@path-tmp-map/set ( str* -- buf* str* )
+@path-tmp-map/make ( str* -- buf* str* )
 	;&resbuf ,&ptr STR2
 	&>w
 		LDAk DUP #1f GTH ?{ &end POP JMP2r }
@@ -736,7 +734,7 @@
 
 	&res [ "tmp/map- &resbuf $30 ]
 
-@substr/set ( name* -- buf* )
+@substr/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&buf SWP2
 	&>w
