@@ -12,7 +12,12 @@
 |100
 
 @on-reset ( -> )
-	maeve #010e DEO
+	journal/<delete>
+	sitemap/<delete>
+	sitemap/<build>
+	diary/<build>
+	maeve diaries/<print-available>
+	#010e DEO
 	BRK
 
 @term/<clear> ( -- )
@@ -26,7 +31,7 @@
 	[ LIT2 -&name _&name-ptr ] STR
 	&>wn
 		LDAk DUP ?{ POP POP2 JMP2r }
-		#00 [ LIT &name-ptr -&name ] INCk ,&name-ptr STR
+		[ LIT2 00 &name-ptr -&name ] INCk ,&name-ptr STR
 		STZ2
 		INC2 !&>wn
 
@@ -34,7 +39,7 @@
 	[ LIT2 -&parent _&parent-ptr ] STR
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
-		#00 [ LIT &parent-ptr -&parent ] INCk ,&parent-ptr STR
+		[ LIT2 00 &parent-ptr -&parent ] INCk ,&parent-ptr STR
 		STZ2
 		INC2 !&>wp
 
@@ -43,7 +48,7 @@
 	[ LIT2 -&diary _&diary-ptr ] STR
 	&>wd
 		LDAk DUP ?{ POP POP2 JMP2r }
-		#00 [ LIT &diary-ptr -&diary ] INCk ,&diary-ptr STR
+		[ LIT2 00 &diary-ptr -&diary ] INCk ,&diary-ptr STR
 		STZ2
 		INC2 !&>wd
 
@@ -173,11 +178,15 @@
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 ;dict/no-picture log/has-picture }
 
+@diary/<clear> ( -- )
+	;&buf [ LIT2 &length $2 ] mem/<clr>
+	JMP2r
+
 @diary/<load> ( name* -- )
+	/<clear>
 	path-tmp-log/set-path .File/name DEO2
 	#1000 .File/length DEO2
-	;diary/buf DUP2 [ LIT2 &length $2 ] mem/<clr>
-	DUP2 .File/read DEO2
+	;&buf DUP2 .File/read DEO2
 	#0a00 str/<swap-char>
 	.File/success DEI2 ,&length STR2
 	JMP2r
@@ -190,7 +199,7 @@
 	POP2 #ffff JMP2r
 
 @diary/count ( -- count* )
-	[ LIT2r 0000 ] ;diary/buf
+	[ LIT2r 0000 ] ;&buf
 	&>wc
 		log/has-no-picture ?{ INC2r }
 		str/cap LDAk ?&>wc
@@ -234,8 +243,22 @@
 		DUP2 /get ?{ JMP2r }
 		INC2 !&>w
 
+@diaries/<print-available> ( -- )
+	;dict/available-txt str/<print>
+	/next dec/<print>
+	#0a18 DEO
+	JMP2r
+
 (
 @|Lexicon )
+
+@lexicon/<load> ( -- )
+	;path/lexicon .File/name DEO2
+	#2000 .File/length DEO2
+	;lexicon/buf
+	( ) DUP2 .File/read DEO2
+	( ) #0a00 str/<swap-char>
+	JMP2r
 
 @lexicon/find ( name* -- term* )
 	,&t STR2
@@ -262,11 +285,7 @@
 			INC2 GTH2k ?&>ll
 		POP2 POP2
 		( next ) str/cap GTH2k ?&>lp
-	POP2 POP2
-	( | sitemap )
-	;path/sitemap .File2/name DEO2
-	;&buf /<write-children-rec>
-	POP2 JMP2r
+	POP2 POP2 JMP2r
 
 @lexicon/<write-children-rec> ( addr* -- next* )
 	( | take depth )
@@ -342,27 +361,8 @@
 @|Build )
 
 @maeve ( | clear old copies )
-	journal/<delete>
-	( | setup output )
-	[ LIT2 01 -File2/append ] DEO
-	#0001 .File2/length DEO2
-	( | lexicon )
-	;path/sitemap .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	;tag/ul html/<open>
-	lexicon/<parse>
-	;tag/ul html/<close>
-	diary/<build>
-	( | print next available id )
-	;dict/available-txt str/<print>
-	diaries/next dec/<print>
-	#0a18 DEO
-	( | initialize )
-	;path/lexicon .File/name DEO2
-	#2000 .File/length DEO2
+	lexicon/<load>
 	;lexicon/buf
-	( ) DUP2 .File/read DEO2
-	( ) DUP2 #0a00 str/<swap-char>
 	&>w
 		INC2 INC2 <build-page>
 		str/cap LDAk ?&>w
@@ -581,7 +581,7 @@
 		DUP2 diaries/<set>
 		log/is-unevent ?{ DUP2 <parse-event> }
 		log/is-ignored ?{
-			DUP2 log/is-unpict ?{ DUP2 journal/<write> } }
+			DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
 		( eol ) str/cap str/cap str/cap GTH2k ?&>l
 	POP2 POP2 JMP2r
 
@@ -612,12 +612,28 @@
 (
 @|Journal )
 
+@sitemap/<delete> ( -- )
+	;path/sitemap .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	JMP2r
+
+@sitemap/<build> ( -- )
+	[ LIT2 01 -File2/append ] DEO
+	#0001 .File2/length DEO2
+	( | lexicon )
+	;tag/ul html/<open>
+	lexicon/<parse>
+	;path/sitemap .File2/name DEO2
+	;lexicon/buf lexicon/<write-children-rec>
+	POP2 ;tag/ul html/<close>
+	JMP2r
+
 @journal/<delete> ( -- )
 	;path/journal .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	JMP2r
 
-@journal/<write> ( photo* -- )
+@journal/<write-log> ( photo* -- )
 	[ LIT2 &len $2 ] INC2k ,&len STR2
 	( max 0x20 ) #0020 LTH2 ?{ POP2 JMP2r }
 	;path/journal .File2/name DEO2
