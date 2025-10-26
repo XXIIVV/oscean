@@ -178,12 +178,8 @@
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 ;dict/no-picture log/has-picture }
 
-@diary/<clear> ( -- )
-	;&buf [ LIT2 &length $2 ] mem/<clr>
-	JMP2r
-
 @diary/<load> ( name* -- )
-	/<clear>
+	;&buf [ LIT2 &length $2 ] mem/<clr>
 	path-tmp-log/set-path .File/name DEO2
 	#1000 .File/length DEO2
 	;&buf DUP2 .File/read DEO2
@@ -544,10 +540,9 @@
 	path-tmp-map/set-path2 .File/name DEO2
 	#1000 .File/length DEO2
 	;&buf
-	( wipe ) DUP2 [ LIT2 &length $2 ] mem/<clr>
 	( read ) DUP2 .File/read DEO2
 	( swap ) #0a00 str/<swap-char>
-	.File/success DEI2 ,&length STR2
+	#0000 ;&buf .File/success DEI2 ADD2 STA2
 	JMP2r
 
 (
