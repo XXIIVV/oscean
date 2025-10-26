@@ -214,9 +214,7 @@
 	;diary-path-pages/end ;diary-path-pages
 	&>l
 		LDA2k workarea/<load-file>
-		#0000
-		( to* from* ) ;workarea/buf .File/success DEI2 ADD2
-		( cap ) STA2k NIP2 ;workarea/buf <parse-diary-page>
+		<parse-diary-page>
 		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 ;tag/p html/<close>
 	JMP2r
@@ -565,8 +563,10 @@
 %log/is-unevent ( log* -- log* t ) {
 	DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ }
 
-@<parse-diary-page> ( to* from* -- )
-	DUP2 #0a00 str/<swap-char>
+@<parse-diary-page> ( -- )
+	( to* ) ;workarea/buf .File/success DEI2 ADD2
+	( from* ) ;workarea/buf
+	( uncap ) DUP2 #0a00 str/<swap-char>
 	&>l
 		DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
 		html/<str>
