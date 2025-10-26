@@ -213,8 +213,7 @@
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&>l
-		LDA2k workarea/<load-file>
-		<parse-diary-page>
+		LDA2k <parse-diary-page>
 		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 ;tag/p html/<close>
 	JMP2r
@@ -278,8 +277,7 @@
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>lp
 		INC2 INC2 DUP2 DUP2 ,&src STR2
-		path-src-htm/set workarea/<load-file>
-		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
+		path-src-htm/set workarea/load-file
 		&>ll
 			LDA2k [ LIT2 "hr ] NEQ2 ?{
 				INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
@@ -533,12 +531,12 @@
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
 
-@workarea/<load-file> ( path* -- )
+@workarea/load-file ( path* -- to* from* )
 	.File/name DEO2
 	#0000 ;&buf SUB2 .File/length DEO2
 	;&buf .File/read DEO2
 	#0000 ;&buf .File/success DEI2 ADD2 STA2
-	JMP2r
+	( output ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
 
 @incoming/<load> ( name* -- )
 	path-tmp-map/set-path2 .File/name DEO2
@@ -563,10 +561,9 @@
 %log/is-unevent ( log* -- log* t ) {
 	DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ }
 
-@<parse-diary-page> ( -- )
-	( to* ) ;workarea/buf .File/success DEI2 ADD2
-	( from* ) ;workarea/buf
-	( uncap ) DUP2 #0a00 str/<swap-char>
+@<parse-diary-page> ( diary* -- )
+	workarea/load-file
+	( uncap ) ;workarea/buf #0a00 str/<swap-char>
 	&>l
 		DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
 		html/<str>
