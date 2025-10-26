@@ -12,11 +12,14 @@
 |100
 
 @on-reset ( -> )
+	#800f DEO
 	journal/<delete>
 	sitemap/<delete>
+	lexicon/<load>
 	sitemap/<build>
 	diary/<build>
-	maeve diaries/<print-available>
+	lexicon/<build>
+	diaries/<print-available>
 	#010e DEO
 	BRK
 
@@ -166,9 +169,6 @@
 (
 @|build )
 
-%workarea/get-length ( -- buf* length* ) {
-	;workarea/buf #0000 OVR2 SUB2 }
-
 %log/get-rune ( log* -- log* rune ) {
 	DUP2 #0005 ADD2 LDA }
 
@@ -213,7 +213,7 @@
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&>l
-		LDA2k workarea/get-length ROT2 <load-file>
+		LDA2k ;workarea/buf #0000 OVR2 SUB2 ROT2 <load-file>
 		#0000
 		( to* from* ) ;workarea/buf .File/success DEI2 ADD2
 		( cap ) STA2k NIP2 ;workarea/buf <parse-diary-page>
@@ -255,10 +255,16 @@
 @lexicon/<load> ( -- )
 	;path/lexicon .File/name DEO2
 	#2000 .File/length DEO2
-	;lexicon/buf
+	;&buf
 	( ) DUP2 .File/read DEO2
 	( ) #0a00 str/<swap-char>
 	JMP2r
+
+@lexicon/<build> ( -- )
+	;&buf
+	&>wb
+		INC2 INC2 page/build str/cap LDAk ?&>wb
+	POP2 JMP2r
 
 @lexicon/find ( name* -- term* )
 	,&t STR2
@@ -271,12 +277,10 @@
 
 @lexicon/<parse> ( -- )
 	;&buf
-	( load ) DUP2 #2000 ;path/lexicon <load-file>
-	( swap ) DUP2 #0a00 str/<swap-char>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>lp
 		INC2 INC2 DUP2 DUP2 ,&src STR2
-		path-src-htm/set workarea/get-length ROT2 <load-file>
+		path-src-htm/set ;workarea/buf #0000 OVR2 SUB2 ROT2 <load-file>
 		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
 		&>ll
 			LDA2k [ LIT2 "hr ] NEQ2 ?{
@@ -360,17 +364,7 @@
 (
 @|Build )
 
-@maeve ( | clear old copies )
-	lexicon/<load>
-	;lexicon/buf
-	&>w
-		INC2 INC2 <build-page>
-		str/cap LDAk ?&>w
-	POP2
-	( Halt. ) #800f DEO
-	JMP2r
-
-@<build-page> ( name* -- name* )
+@page/build ( name* -- name* )
 	DUP2 path-site/set .File2/name DEO2
 	( | cleanup )
 	term/<clear>
