@@ -213,7 +213,7 @@
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&>l
-		LDA2k ;workarea/buf #0000 OVR2 SUB2 ROT2 <load-file>
+		LDA2k workarea/<load-file>
 		#0000
 		( to* from* ) ;workarea/buf .File/success DEI2 ADD2
 		( cap ) STA2k NIP2 ;workarea/buf <parse-diary-page>
@@ -280,7 +280,7 @@
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>lp
 		INC2 INC2 DUP2 DUP2 ,&src STR2
-		path-src-htm/set ;workarea/buf #0000 OVR2 SUB2 ROT2 <load-file>
+		path-src-htm/set workarea/<load-file>
 		;workarea/buf .File/success DEI2 ADD2k NIP2 SWP2
 		&>ll
 			LDA2k [ LIT2 "hr ] NEQ2 ?{
@@ -535,9 +535,9 @@
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
 
-@<load-file> ( addr* length* path* -- )
+@workarea/<load-file> ( path* -- )
 	.File/name DEO2
-	DUP2 .File/length DEO2
+	;&buf #0000 OVR2 SUB2 DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
 	.File/success DEI2 NEQ2 ?{ .File/name DEI2 !str/<print-ln> }
 	JMP2r
