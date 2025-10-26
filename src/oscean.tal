@@ -12,7 +12,8 @@
 |100
 
 @on-reset ( -> )
-	maeve #010e DEO BRK
+	maeve #010e DEO
+	BRK
 
 @term/<clear> ( -- )
 	.&cap .&name
@@ -22,12 +23,20 @@
 	POP2 JMP2r
 
 @term/<set-name> ( name* -- )
-	.&name ,&ptr STR
-	&>w
+	.&name ,&name-ptr STR
+	&>wn
 		LDAk DUP ?{ POP POP2 JMP2r }
-		#00 [ LIT &ptr -&name ] INCk ,&ptr STR
+		#00 [ LIT &name-ptr -&name ] INCk ,&name-ptr STR
 		STZ2
-		INC2 !&>w
+		INC2 !&>wn
+
+@term/<set-parent> ( name* -- )
+	.&parent ,&parent-ptr STR
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#00 [ LIT &parent-ptr -&parent ] INCk ,&parent-ptr STR
+		STZ2
+		INC2 !&>wp
 
 (
 @|Html )
@@ -362,7 +371,7 @@
 	.File/success DEI2 ORA ?{ DUP2 ;err/orphan warning/<print> }
 	( | fill name )
 	DUP2 term/<set-name>
-	DUP2 lexicon/find-parent ;term/parent str/<copy>
+	DUP2 lexicon/find-parent term/<set-parent>
 	( | fill diary )
 	diary/find DUP2 #ffff EQU2 ?{
 		DUP2 ;term/diary str/<copy>
