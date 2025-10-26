@@ -108,11 +108,11 @@
 	;tag/figure html/<open>
 	( | photo )
 	( img ) DUP2 #0006 ADD2
-	( alt ) OVR2 #000a ADD2 str/cap html/<img-diary>
+	( alt ) OVR2 #000a ADD2 str/next html/<img-diary>
 	( | caption )
 	;tag/figcaption html/<open>
-	( name ) DUP2 #000a ADD2 str/cap
-	( term ) OVR2 #000a ADD2 html/<caption>
+	( name ) DUP2 #000a ADD2 str/next
+	( term ) OVR2 #000a ADD2 substr/set html/<caption>
 	;tag/figcaption html/<close>
 	;tag/figure html/<close>
 	html/<lb>
@@ -507,6 +507,7 @@
 
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
+	!html/<photo>
 	;tag/figure html/<open>
 	( img ) DUP2 #0006 ADD2
 	( alt ) OVR2 #000a ADD2 str/walk STH2k html/<img-diary>
@@ -771,6 +772,11 @@
 	&>wh
 		LDAk ?{ JMP2r }
 		#0001 SUB2 !&>wh
+
+@str/next ( str* -- next* )
+	&>wn
+		LDAk #20 LTH ?{ INC2 !&>wn }
+	INC2 JMP2r
 
 @str/walk ( str* -- next* )
 	&>ww
