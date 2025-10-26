@@ -6,7 +6,7 @@
 
 |000
 
-	@path/buf $30 &cap $1
+	@path/buf $30
 	@term/name $16 &parent $16 &diary $6 &pict $4 &cap
 
 |100
@@ -81,20 +81,22 @@
 	;tag/a html/<close>
 	JMP2r
 
-@html/<photo> ( diary* -- )
-	LDAk ?{ POP2 JMP2r }
+@html/<photo> ( diary* self -- )
+	STH
+	LDAk ?{ POP2 POPr JMP2r }
 	;tag/figure html/<open>
 	( | photo )
 	;&a html/<str>
-	DUP2 #000a ADD2 str/next html/<str>
+	DUP2 #000a ADD2 DUP2 str/next html/<str>
 	;&b html/<str>
-	DUP2 #0006 ADD2 #0003 html/<length>
+	OVR2 #0006 ADD2 #0003 html/<length>
 	;&c html/<str>
 	( | caption )
 	;tag/figcaption html/<open>
-	DUP2 #000a ADD2 substr/set html/<link>
-	;dict/spacer html/<str>
-	DUP2 #000a ADD2 str/next html/<str>
+	STHr ?{
+		DUP2 substr/set html/<link>
+		;dict/spacer html/<str> }
+	str/next html/<str>
 	;dict/right-txt ;tag/span html/<open-class>
 	#0005 html/<length>
 	;tag/span html/<close>
@@ -376,7 +378,7 @@
 	;tag/nav html/<close>
 	;ascii/line .File2/write DEO2
 	;tag/main html/<open>
-	;term/diary html/<photo>
+	;term/diary #01 html/<photo>
 	DUP2 <build-include>
 	<build-page-module>
 	<build-page-events>
@@ -442,7 +444,7 @@
 	;diary/buf
 	&>w
 		log/has-no-picture ?{
-			DUP2 ;term/pict log/has-picture ?{ DUP2 html/<photo> } }
+			DUP2 ;term/pict log/has-picture ?{ DUP2 #00 html/<photo> } }
 		str/cap LDAk ?&>w
 	POP2 JMP2r
 
@@ -453,7 +455,7 @@
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
-			diary/find DUP2 #ffff EQU2 ?{ DUP2 html/<photo> }
+			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
@@ -477,7 +479,7 @@
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
-			diary/find DUP2 #ffff EQU2 ?{ DUP2 html/<photo> }
+			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
 		INC2 INC2 str/cap LDAk ?&>w
@@ -588,7 +590,8 @@
 @journal/<write> ( photo* -- )
 	[ LIT2 &len $2 ] INC2k ,&len STR2
 	( max 0x20 ) #0020 LTH2 ?{ POP2 JMP2r }
-	;path/journal .File2/name DEO2 !html/<photo>
+	;path/journal .File2/name DEO2
+	#00 !html/<photo>
 
 (
 @|Buffers )
