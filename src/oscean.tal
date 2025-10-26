@@ -212,9 +212,12 @@
 	;tag/p html/<open>
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
-	&>l
-		LDA2k <parse-diary-page>
-		INC2 INC2 GTH2k ?&>l
+	&>l-pages
+		LDA2k workarea/load-file
+		( uncap ) ;workarea/buf #0a00 str/<swap-char>
+		&>l-logs
+			log/parse GTH2k ?&>l-logs
+		POP2 POP2 INC2 INC2 GTH2k ?&>l-pages
 	POP2 POP2 ;tag/p html/<close>
 	JMP2r
 
@@ -222,7 +225,7 @@
 	( bit ) #01 OVR #07 AND #40 SFT SFT STH
 	( res ) #03 SFT2 ;&buf ADD2 LDA STHr AND JMP2r
 
-@diaries/<set> ( log* -- )
+@diaries/<use> ( log* -- )
 	( | validate photo id )
 	#0006 ADD2 str/to-dec ORAk ?{ POP2 JMP2r }
 	DUP2 /get ?{
@@ -254,8 +257,7 @@
 	#2000 .File/length DEO2
 	;&buf
 	( ) DUP2 .File/read DEO2
-	( ) #0a00 str/<swap-char>
-	JMP2r
+	( ) #0a00 !str/<swap-char>
 
 @lexicon/<build> ( -- )
 	;&buf
@@ -561,20 +563,16 @@
 %log/is-unevent ( log* -- log* t ) {
 	DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ }
 
-@<parse-diary-page> ( diary* -- )
-	workarea/load-file
-	( uncap ) ;workarea/buf #0a00 str/<swap-char>
-	&>l
-		DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
-		html/<str>
-		html/<lb>
-		( split ) DUP2 #0900 str/<swap-char>
-		DUP2 diaries/<set>
-		log/is-unevent ?{ DUP2 <parse-event> }
-		log/is-ignored ?{
-			DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
-		( eol ) str/cap str/cap str/cap GTH2k ?&>l
-	POP2 POP2 JMP2r
+@log/parse ( log* -- next* )
+	DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
+	html/<str>
+	html/<lb>
+	DUP2 #0900 str/<swap-char>
+	DUP2 diaries/<use>
+	log/is-unevent ?{ DUP2 <parse-event> }
+	log/is-ignored ?{
+		DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
+	str/cap str/cap !str/cap
 
 @<parse-event> ( event* -- )
 	( | add to events )
