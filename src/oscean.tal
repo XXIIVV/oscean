@@ -185,6 +185,16 @@
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 ;dict/no-picture log/has-picture }
 
+@log/is-unpict ( log* -- t )
+	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
+	INC2 INC2 LDA [ LIT "0 ] EQU JMP2r
+
+%log/is-ignored ( log* -- log* t ) {
+	log/get-rune [ LIT ". ] EQU }
+
+%log/is-unevent ( log* -- log* t ) {
+	log/get-rune [ LIT "+ ] NEQ }
+
 @diary/<load> ( name* -- )
 	;&buf [ LIT2 &length $2 ] mem/<clr>
 	path-tmp-log/set-path .File/name DEO2
@@ -437,15 +447,13 @@
 	;tag/ul html/<open>
 	;diary/buf
 	&>wbe
-		log/get-rune [ LIT "+ ] NEQ ?{
+		log/is-unevent ?{
 			;tag/li html/<open>
-			DUP2
-			( clip bound ) DUP2 #0005 ADD2 STH2
-			( clip start ) #00 STH2kr STA
-			( clip wrap ) ;tag/code html/<auto>
-			( clip restore ) [ LIT "+ ] STH2r STA
+			;tag/code html/<open>
+			( date ) DUP2 #0005 html/<length>
+			;tag/code html/<close>
 			;dict/mdash-entity-txt html/<str>
-			( event name ) DUP2 #000a ADD2 str/walk html/<str>
+			( name ) DUP2 #000a ADD2 str/walk html/<str>
 			;tag/li html/<close> }
 		str/cap LDAk ?&>wbe
 	POP2 ;tag/ul html/<close>
@@ -548,16 +556,6 @@
 
 (
 @|Diary )
-
-@log/is-unpict ( log* -- t )
-	#0006 ADD2 LDA2k [ LIT2 "00 ] EQU2 ?{ POP2 #00 JMP2r }
-	INC2 INC2 LDA [ LIT "0 ] EQU JMP2r
-
-%log/is-ignored ( log* -- log* t ) {
-	DUP2 #0005 ADD2 LDA [ LIT ". ] EQU }
-
-%log/is-unevent ( log* -- log* t ) {
-	DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ }
 
 @log/parse ( log* -- next* )
 	DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
