@@ -28,16 +28,13 @@
 	.File2/write DEO2
 	#0001 .File2/length DEO2 }
 
-%html/<quoted> ( str* -- ) {
-	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
-	html/<str>
-	DEO2r }
-
 %html/<attribute> ( body* attr* -- ) {
 	;ascii/space .File2/write DEO2
 	html/<str>
 	;ascii/equal .File2/write DEO2
-	html/<quoted> }
+	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
+	html/<str>
+	DEO2r }
 
 %html/<open> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
@@ -61,13 +58,6 @@
 	SWP2 html/<str>
 	html/<close> }
 
-%html/<img> ( src* alt* -- ) {
-	;ascii/lt .File2/write DEO2
-	;tag/img html/<str>
-	;attr/alt html/<attribute>
-	;attr/src html/<attribute>
-	;ascii/gt .File2/write DEO2 }
-
 @html/<img-diary> ( src* alt* -- )
 	;&a html/<str>
 	html/<str>
@@ -82,7 +72,21 @@
 
 @<link> ( str* -- )
 	;&a html/<str>
-	DUP2 <path>
+
+
+	DUP2 path/set str/<print>
+	#0a18 DEO
+	path/get-length #1a DEO2
+	#0a18 DEO
+
+
+	DUP2
+	&>w
+		LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&d STR
+		;&d .File2/write DEO2
+		INC2 LDAk ?&>w
+	POP2 
+
 	;&b html/<str>
 	html/<str>
 	;&c html/<str>
@@ -90,14 +94,7 @@
 
 	&a "<a 20 "href=' $1
 	&b ".html'> $1
-	&c "</a> $1
-
-@<path> ( str* -- )
-	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] ,&a STR
-	;&a .File2/write DEO2
-	INC2 LDAk ?<path>
-	POP2 JMP2r
-	&a $1
+	&c "</a> $1 &d $1
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
@@ -620,6 +617,9 @@
 
 (
 @|Buffers )
+
+@path/get-length ( -- length* )
+	,&ptr LDR2 ;&buf SUB2 JMP2r
 
 @path/set ( name* -- buf* )
 	;&buf ,&ptr STR2
