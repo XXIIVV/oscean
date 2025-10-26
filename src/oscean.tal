@@ -248,8 +248,7 @@
 				html/<str>
 				;tag/br html/<open>
 				html/<lb> }
-			log/is-ignored ?{
-				DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
+			journal/<write-log>
 			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 INC2 INC2 GTH2k ?&>l-pages
 	POP2 POP2 ;tag/p html/<close>
@@ -601,11 +600,14 @@
 	[ LIT2 01 -File2/delete ] DEO
 	JMP2r
 
-@journal/<write-log> ( photo* -- )
-	[ LIT2 &len $2 ] INC2k ,&len STR2
-	( max 0x20 ) #0020 LTH2 ?{ POP2 JMP2r }
-	;path/journal .File2/name DEO2
-	#00 !html/<photo>
+@journal/<write-log> ( log* -- log* )
+	log/is-ignored ?{
+		DUP2 log/is-unpict ?{
+			[ LIT2 &len $1 20 ] GTH ?{
+				,&len LDR INC ,&len STR
+				;path/journal .File2/name DEO2
+				DUP2 #00 !html/<photo> } } }
+	JMP2r
 
 (
 @|Buffers )
