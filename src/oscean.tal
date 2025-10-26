@@ -155,7 +155,7 @@
 	;term/diary LDAk ?{
 		POP2 ;path/default-image ;og/image /<write>
 		JMP2r }
-	path-abs-diary/get ;og/image
+	path-abs-diary/make ;og/image
 	( >> )
 	&<write> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
@@ -190,7 +190,7 @@
 
 @diary/<load> ( name* -- )
 	;&buf [ LIT2 &length $2 ] mem/<clr>
-	path-tmp-log/set-path .File/name DEO2
+	path-tmp-log/make .File/name DEO2
 	#1000 .File/length DEO2
 	;&buf DUP2 .File/read DEO2
 	#0a00 str/<swap-char>
@@ -222,10 +222,40 @@
 		LDA2k workarea/make
 		( uncap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
-			log/parse GTH2k ?&>l-logs
+			DUP2 DUP2 #000a ADD2 path-tmp-log/make .File2/name DEO2
+			html/<str>
+			html/<lb>
+			DUP2 #0900 str/<swap-char>
+			DUP2 diaries/<use>
+			log/is-unevent ?{
+				DUP2
+				( | add to events )
+				;path/events .File2/name DEO2
+				( year ) LDAk2 ;&last LDA2 EQU2 ?{
+					;tag/br html/<open>
+					LDA2k ;&last STA2 }
+				( | date )
+				;tag/code html/<open>
+				DUP2 #0005 html/<length>
+				;tag/code html/<close>
+				html/<ws>
+				str/cap
+				( | term )
+				DUP2 html/<link>
+				;dict/spacer html/<str>
+				str/cap
+				( | name )
+				html/<str>
+				;tag/br html/<open>
+				html/<lb> }
+			log/is-ignored ?{
+				DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
+			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 INC2 INC2 GTH2k ?&>l-pages
 	POP2 POP2 ;tag/p html/<close>
 	JMP2r
+
+	&last "17 $1
 
 @diaries/get ( id* -- mask )
 	( bit ) #01 OVR #07 AND #40 SFT SFT STH
@@ -548,42 +578,6 @@
 	JMP2r
 
 (
-@|Diary )
-
-@log/parse ( log* -- next* )
-	DUP2 DUP2 #000a ADD2 path-tmp-log/set-path .File2/name DEO2
-	html/<str>
-	html/<lb>
-	DUP2 #0900 str/<swap-char>
-	DUP2 diaries/<use>
-	log/is-unevent ?{
-		DUP2
-		( | add to events )
-		;path/events .File2/name DEO2
-		( year ) LDAk2 ;&last LDA2 EQU2 ?{
-			;tag/br html/<open>
-			LDA2k ;&last STA2 }
-		( | date )
-		;tag/code html/<open>
-		DUP2 #0005 html/<length>
-		;tag/code html/<close>
-		html/<ws>
-		str/cap
-		( | term )
-		DUP2 html/<link>
-		;dict/spacer html/<str>
-		str/cap
-		( | name )
-		html/<str>
-		;tag/br html/<open>
-		html/<lb> }
-	log/is-ignored ?{
-		DUP2 log/is-unpict ?{ DUP2 journal/<write-log> } }
-	str/cap str/cap !str/cap
-
-	&last "17 $1
-
-(
 @|Journal )
 
 @sitemap/<delete> ( -- )
@@ -616,6 +610,16 @@
 (
 @|Buffers )
 
+@substr/make ( name* -- buf* )
+	;&buf ,&ptr STR2
+	;&buf SWP2
+	&>w
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !&>w
+	&buf $30
+
 @workarea/make ( path* -- to* from* )
 	.File/name DEO2
 	#0000 ;&buf SUB2 .File/length DEO2
@@ -627,27 +631,19 @@
 	;&buf ,&ptr STR2
 	;&buf SWP2 /<push-str>
 	;ext/html
-	( >> )
-
-@path/<push-str> ( str* -- )
+	&<push-str> ( str* -- )
 	&>w
 		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
-		/<push>
+		DUP #20 NEQ ?{ POP LIT "_ }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
 		INC2 !&>w
-
-@path/<push> ( c -- )
-	DUP #20 NEQ ?{ POP LIT "_ }
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
 
 @path-abs-site/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&res SWP2 /<push-str>
 	;ext/html
-	( >> )
-
-@path-abs-site/<push-str> ( str* -- )
+	&<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP #20 NEQ ?{ POP LIT "_ }
@@ -657,7 +653,7 @@
 
 	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
 
-@path-abs-diary/get ( diary* -- path* )
+@path-abs-diary/make ( diary* -- path* )
 	#0006 ADD2
 	( > x00 ) LDAk ,&bufa STR
 	( > 0xx ) INC2 LDA2 ,&bufb STR2
@@ -669,9 +665,7 @@
 	;&buf ,&ptr STR2
 	;&res SWP2 /<push-str>
 	;ext/html
-	( >> )
-
-@path-site/<push-str> ( str* -- )
+	&<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP #20 NEQ ?{ POP LIT "_ }
@@ -685,9 +679,7 @@
 	;&buf ,&ptr STR2
 	;&res SWP2 /<push-str>
 	;ext/htm
-	( >> )
-
-@path-src-htm/<push-str> ( str* -- )
+	&<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP #20 NEQ ?{ POP LIT "_ }
@@ -697,7 +689,7 @@
 
 	&res [ "src/htm/ &buf $30 ]
 
-@path-tmp-log/set-path ( name* -- buf* )
+@path-tmp-log/make ( name* -- buf* )
 	;&resbuf ,&ptr STR2
 	;&res SWP2
 	&>w
@@ -733,16 +725,6 @@
 	JMP2r
 
 	&res [ "tmp/map- &resbuf $30 ]
-
-@substr/make ( name* -- buf* )
-	;&buf ,&ptr STR2
-	;&buf SWP2
-	&>w
-		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !&>w
-	&buf $30
 
 (
 @|Stdlib )
