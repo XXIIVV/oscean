@@ -62,7 +62,7 @@
 	;ascii/gt .File2/write DEO2 }
 
 %html/<str> ( addr* -- ) {
-	DUP2 str/scap-1 OVR2 SUB2 html/<length> }
+	DUP2 str/tail OVR2 SUB2 html/<length> }
 
 %html/<lb> { ;dict/0a .File2/write DEO2 }
 
@@ -132,6 +132,9 @@
 (
 @|build )
 
+%workarea/get-length ( -- buf* length* ) {
+	;workarea/buf #0000 OVR2 SUB2 }
+
 %log/get-rune ( log* -- log* rune ) {
 	DUP2 #0005 ADD2 LDA }
 
@@ -169,8 +172,15 @@
 	[ LIT2 01 -File2/delete ] DEO
 	;header-txt html/<str>
 	;tag/p html/<open>
-	<parse-diary-pages>
-	;tag/p html/<close>
+	#4000 .File/length DEO2
+	;diary-path-pages/end ;diary-path-pages
+	&>l
+		LDA2k workarea/get-length ROT2 <load-file>
+		#0000
+		( to* from* ) ;workarea/buf .File/success DEI2 ADD2
+		( cap ) STA2k NIP2 ;workarea/buf <parse-diary-page>
+		INC2 INC2 GTH2k ?&>l
+	POP2 POP2 ;tag/p html/<close>
 	JMP2r
 
 @diaries/get ( id* -- mask )
@@ -197,9 +207,6 @@
 
 (
 @|Lexicon )
-
-%workarea/get-length ( -- buf* length* ) {
-	;workarea/buf #0000 OVR2 SUB2 }
 
 @lexicon/find ( name* -- term* )
 	,&t STR2
@@ -545,17 +552,6 @@
 %log/is-unevent ( log* -- log* t ) {
 	DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ }
 
-@<parse-diary-pages> ( -- )
-	#4000 .File/length DEO2
-	;diary-path-pages/end ;diary-path-pages
-	&>l
-		LDA2k workarea/get-length ROT2 <load-file>
-		#0000
-		( to* from* ) ;workarea/buf .File/success DEI2 ADD2
-		( cap ) STA2k NIP2 ;workarea/buf <parse-diary-page>
-		INC2 INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
 @<parse-diary-page> ( to* from* -- )
 	DUP2 #0a00 str/<swap-char>
 	&>l
@@ -796,7 +792,7 @@
 		LDAk ?{ INC2 JMP2r }
 		INC2 !&>wc
 
-@str/scap-1 ( str* -- end* )
+@str/tail ( str* -- end* )
 	&>w2
 		LDAk ?{ JMP2r }
 		INC2 !&>w2
