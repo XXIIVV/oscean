@@ -59,18 +59,6 @@
 	SWP2 html/<str>
 	html/<close> }
 
-@html/<img-diary> ( src* alt* -- )
-	;&a html/<str>
-	html/<str>
-	;&b html/<str>
-	#0003 html/<length>
-	;&c html/<str>
-	JMP2r
-
-	&a "<img 20 "alt=" $1
-	&b "" 20 "src="../media/diary/ $1
-	&c ".jpg"> $1
-
 @html/<link> ( str* -- )
 	;&l-a html/<str>
 	DUP2 path/make html/<str>
@@ -98,25 +86,30 @@
 	#0005 html/<length>
 	;tag/span html/<close> }
 
-%html/<caption> ( date* name* term* -- ) {
-	html/<link>
-	;dict/spacer html/<str>
-	html/<str>
-	html/<date> }
-
 @html/<photo> ( diary* -- )
+	LDAk ?{ POP2 JMP2r }
 	;tag/figure html/<open>
 	( | photo )
 	( img ) DUP2 #0006 ADD2
-	( alt ) OVR2 #000a ADD2 str/next html/<img-diary>
+	( alt ) OVR2 #000a ADD2 str/next ;&a html/<str>
+	html/<str>
+	;&b html/<str>
+	#0003 html/<length>
+	;&c html/<str>
 	( | caption )
 	;tag/figcaption html/<open>
 	( name ) DUP2 #000a ADD2 str/next
-	( term ) OVR2 #000a ADD2 substr/set html/<caption>
+	( term ) OVR2 #000a ADD2 substr/set html/<link>
+	;dict/spacer html/<str>
+	html/<str>
+	html/<date>
 	;tag/figcaption html/<close>
 	;tag/figure html/<close>
-	html/<lb>
 	JMP2r
+
+	&a "<img 20 "alt=" $1
+	&b "" 20 "src="../media/diary/ $1
+	&c ".jpg"> $1
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
@@ -388,7 +381,7 @@
 	;tag/nav html/<close>
 	;ascii/line .File2/write DEO2
 	;tag/main html/<open>
-	;term/diary <build-module-photo>
+	;term/diary html/<photo>
 	DUP2 <build-include>
 	<build-page-module>
 	<build-page-events>
@@ -454,7 +447,7 @@
 	;diary/buf
 	&>w
 		log/has-no-picture ?{
-			DUP2 ;term/pict log/has-picture ?{ DUP2 <build-module-photo> } }
+			DUP2 ;term/pict log/has-picture ?{ DUP2 html/<photo> } }
 		str/cap LDAk ?&>w
 	POP2 JMP2r
 
@@ -465,7 +458,7 @@
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
-			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
+			diary/find DUP2 #ffff EQU2 ?{ DUP2 html/<photo> }
 			POP2 }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end ( name* . depth -- )
@@ -489,7 +482,7 @@
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
-			diary/find DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
+			diary/find DUP2 #ffff EQU2 ?{ DUP2 html/<photo> }
 			POP2 }
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
 		INC2 INC2 str/cap LDAk ?&>w
@@ -503,23 +496,6 @@
 	( clip restore ) [ LIT "+ ] STH2r STA
 	;dict/mdash-entity-txt html/<str>
 	( event name ) DUP2 #000a ADD2 str/walk html/<str>
-	JMP2r
-
-@<build-module-photo> ( diary* -- )
-	LDAk ?{ POP2 JMP2r }
-	!html/<photo>
-	;tag/figure html/<open>
-	( img ) DUP2 #0006 ADD2
-	( alt ) OVR2 #000a ADD2 str/walk STH2k html/<img-diary>
-	;tag/figcaption html/<open>
-	;term/name OVR2 #000a ADD2 str/seg ?{
-		DUP2 #000a ADD2 substr/set html/<local>
-		;dict/mdash-entity-txt html/<str> }
-	STH2r html/<str>
-	html/<date>
-	;tag/figcaption html/<close>
-	;tag/figure html/<close>
-	;ascii/line .File2/write DEO2
 	JMP2r
 
 @<build-include> ( path* -- )
