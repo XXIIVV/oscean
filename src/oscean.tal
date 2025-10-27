@@ -223,34 +223,12 @@
 			html/<lb>
 			DUP2 #0900 str/<swap-char>
 			DUP2 diaries/<use>
-			log/is-unevent ?{
-				DUP2
-				( | add to events )
-				;path/events .File2/name DEO2
-				( year ) LDAk2 ;&last LDA2 EQU2 ?{
-					;tag/br html/<open>
-					LDA2k ;&last STA2 }
-				( | date )
-				;tag/code html/<open>
-				DUP2 #0005 html/<length>
-				;tag/code html/<close>
-				html/<ws>
-				str/cap
-				( | term )
-				DUP2 html/<link>
-				;dict/spacer html/<str>
-				str/cap
-				( | name )
-				html/<str>
-				;tag/br html/<open>
-				html/<lb> }
+			log/is-unevent ?{ events/<push> }
 			journal/<write-log>
 			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 INC2 INC2 GTH2k ?&>l-pages
 	POP2 POP2 ;tag/p html/<close>
 	JMP2r
-
-	&last "17 $1
 
 @diaries/get ( id* -- mask )
 	( bit ) #01 OVR #07 AND #40 SFT SFT STH
@@ -604,6 +582,31 @@
 				;path/journal .File2/name DEO2
 				DUP2 #00 !html/<photo> } } }
 	JMP2r
+
+@events/<push> ( log* -- log* )
+	DUP2
+	( | add to events )
+	;path/events .File2/name DEO2
+	( year ) LDAk2 ;&last LDA2 EQU2 ?{
+		;tag/br html/<open>
+		LDA2k ;&last STA2 }
+	( | date )
+	;tag/code html/<open>
+	DUP2 #0005 html/<length>
+	;tag/code html/<close>
+	html/<ws>
+	str/cap
+	( | term )
+	DUP2 html/<link>
+	;dict/spacer html/<str>
+	str/cap
+	( | name )
+	html/<str>
+	;tag/br html/<open>
+	html/<lb>
+	JMP2r
+
+	&last "17 $1
 
 (
 @|Buffers )
