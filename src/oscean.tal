@@ -167,7 +167,7 @@
 	;term/diary LDAk ?{
 		POP2 ;path/default-image ;og/image /<write>
 		JMP2r }
-	path-abs-diary/make ;path/abs-diary ;og/image
+	substr3/make ;path/abs-diary ;og/image
 	( >> )
 	&<write-abs> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
@@ -627,6 +627,20 @@
 (
 @|Buffers )
 
+@workarea/make ( path* -- to* from* )
+	.File/name DEO2
+	#0000 ;&buf SUB2 .File/length DEO2
+	;&buf .File/read DEO2
+	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
+	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
+
+@substr3/make ( diary* -- path* )
+	#0006 ADD2
+	( > x00 ) LDAk ,&bufa STR
+	( > 0xx ) INC2 LDA2 ,&bufb STR2
+	;&buf JMP2r
+	&buf &bufa $1 &bufb $2 ".jpg $1
+
 @substr/make ( name* -- buf* )
 	;&buf ,&ptr STR2
 	;&buf SWP2
@@ -636,13 +650,6 @@
 		STA2
 		INC2 !&>w
 	&buf $30
-
-@workarea/make ( path* -- to* from* )
-	.File/name DEO2
-	#0000 ;&buf SUB2 .File/length DEO2
-	;&buf .File/read DEO2
-	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
-	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
 
 @path/make ( name* -- buf* )
 	;&buf ,&ptr STR2
@@ -655,13 +662,6 @@
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
 		INC2 !&>w
-
-@path-abs-diary/make ( diary* -- path* )
-	#0006 ADD2
-	( > x00 ) LDAk ,&bufa STR
-	( > 0xx ) INC2 LDA2 ,&bufb STR2
-	;&buf JMP2r
-	&buf &bufa $1 &bufb $2 ".jpg $1
 
 @path-site/make ( name* -- buf* )
 	;&buf ,&ptr STR2
