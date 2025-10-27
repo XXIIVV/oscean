@@ -4,32 +4,23 @@ This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [
 
 ## Build
 
-The `oscean.rom` file can be assembled with [uxnasm](https://git.sr.ht/~rabbits/uxn) or [drifblim](https://git.sr.ht/~rabbits/drifblim).
-
-### Maeve
-
-```sh
-mkdir tmp
-uxnasm src/maeve.tal bin/maeve.rom # build pre-processor
-```
-
-Maeve is the pre-processor, it generates temporary files for oscean to populate the wiki with. The files are as follow:
-
-* `entry-log`, contains all the diary logs for that entry.
-* `entry-map`, contains all the incoming links for that entry.
-
-### Oscean
+The `oscean.rom` file can be assembled with [drifblim](https://git.sr.ht/~rabbits/drifblim).
 
 ```sh
 uxnasm src/oscean.tal bin/oscean.rom # build wiki engine
 ```
+
+The pre-processor step generates temporary files for oscean to populate the wiki
+with.
+
+* `entry-log`, contains all the diary logs for that entry.
+* `entry-map`, contains all the incoming links for that entry.
 
 The rom does not have a graphical interface, but can be used with the [uxncli](https://git.sr.ht/~rabbits/uxn11/tree/main/item/src/uxncli.c) emulator:
 
 ### Run
 
 ```sh
-uxncli bin/maeve.rom
 uxncli bin/oscean.rom
 ```
 
