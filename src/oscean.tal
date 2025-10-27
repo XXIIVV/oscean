@@ -3,6 +3,9 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|1000 @diary/buflen
+|1000 @incoming/buflen
+|2000 @lexicon/buflen
 
 |000
 
@@ -187,7 +190,7 @@
 @diary/<load> ( name* -- )
 	;&buf [ LIT2 &length $2 ] mem/<clr>
 	path-tmp-log/make .File/name DEO2
-	#1000 .File/length DEO2
+	;&buflen .File/length DEO2
 	;&buf DUP2 .File/read DEO2
 	#0a00 str/<swap-char>
 	.File/success DEI2 ,&length STR2
@@ -263,7 +266,7 @@
 
 @lexicon/<load> ( -- )
 	;path/lexicon .File/name DEO2
-	#2000 .File/length DEO2
+	;&buflen .File/length DEO2
 	;&buf
 	( ) DUP2 .File/read DEO2
 	( ) #0a00 !str/<swap-char>
@@ -543,7 +546,7 @@
 
 @incoming/<load> ( name* -- )
 	path-tmp-map/set-path2 .File/name DEO2
-	#1000 .File/length DEO2
+	;&buflen .File/length DEO2
 	;&buf
 	( read ) DUP2 .File/read DEO2
 	( swap ) #0a00 str/<swap-char>
@@ -940,11 +943,11 @@
 
 @diaries/buf $100
 
-@lexicon/buf $2000
+@lexicon/buf $&buflen
 
-@diary/buf $1000
+@diary/buf $&buflen
 
-@incoming/buf $1000
+@incoming/buf $&buflen
 
 @workarea/buf
 
