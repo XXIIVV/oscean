@@ -81,6 +81,15 @@
 	html/<str>
 	DEO2r }
 
+%html/<attribute-prefix> ( body* attr* -- ) {
+	;ascii/space .File2/write DEO2
+	html/<str>
+	;ascii/equal .File2/write DEO2
+	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
+	html/<str>
+	html/<str>
+	DEO2r }
+
 %html/<open> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
 	html/<str>
@@ -154,12 +163,21 @@
 
 @<write-opengraph> ( name* -- name* )
 	DUP2 ;og/title /<write>
-	DUP2 path-abs-site/make ;og/url /<write>
+	DUP2 path-abs-site/make ;path/abs-site ;og/url /<write-abs>
 	;term/diary LDAk ?{
 		POP2 ;path/default-image ;og/image /<write>
 		JMP2r }
-	path-abs-diary/make ;og/image
+	path-abs-diary/make ;path/abs-diary ;og/image
 	( >> )
+	&<write-abs> ( content* property* -- )
+	;ascii/lt .File2/write DEO2
+	;tag/meta html/<str>
+	;attr/property html/<attribute>
+	;attr/content html/<attribute-prefix>
+	;ascii/slash .File2/write DEO2
+	;ascii/gt .File2/write DEO2
+	JMP2r
+
 	&<write> ( content* property* -- )
 	;ascii/lt .File2/write DEO2
 	;tag/meta html/<str>
@@ -650,15 +668,14 @@
 		STA2
 		INC2 !&>w
 
-	&res [ "https://wiki.xxiivv.com/site/ &buf $30 ]
+	&res [ &buf $30 ]
 
 @path-abs-diary/make ( diary* -- path* )
 	#0006 ADD2
 	( > x00 ) LDAk ,&bufa STR
 	( > 0xx ) INC2 LDA2 ,&bufb STR2
 	;&buf JMP2r
-
-	&buf "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
+	&buf &bufa $1 &bufb $2 ".jpg $1
 
 @path-site/make ( name* -- buf* )
 	;&buf ,&ptr STR2
@@ -911,6 +928,8 @@
 	&meta-head "meta_head $1
 	&meta-header "meta_header $1
 	&meta-footer "meta_footer $1
+	&abs-site "https://wiki.xxiivv.com/site/ $1
+	&abs-diary "https://wiki.xxiivv.com/media/diary/ $1
 
 @diary-paths
 	&3 "src/tables/diary/15-19.tsv $1
