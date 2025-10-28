@@ -11,10 +11,10 @@ hello world`,
 /*
 @|Add */
 
-"add": `a+b::=+bb
-(+::=(
+"add": `a+b::=aa+
++=?::=
 ::=
-(aaa+bbbbb)`,
+aaa+bbbbb=?`,
 
 /*
 @|Roll */
