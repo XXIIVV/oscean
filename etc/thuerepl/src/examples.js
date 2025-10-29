@@ -19,14 +19,15 @@ aaa+bbbbb=?`,
 /*
 @|Roll */
 
-"roll": `<roll>::=1
-<roll>::=2
-<roll>::=3
-<roll>::=4
-<roll>::=5
-<roll>::=6
+"roll": `%text,::=~You rolled: 
+%dice::=~1.
+%dice::=~2.
+%dice::=~3.
+%dice::=~4.
+%dice::=~5.
+%dice::=~6.
 ::=
-You rolled <roll>.`,
+%%text,dice`,
 
 /*
 @|Hexbin */
@@ -85,7 +86,7 @@ cvcvc*cvcvc0000110001101110-0110111011001100`,
 "sierpinski": `#::=
 X::=~_
 Y::=~*
-Z::=~\n
+Z::=~\\n
 _.::=._X
 _*::=*_Y
 ._|::=.Z-|
@@ -100,3 +101,5 @@ _*::=*_Y
 @_*...............................|`
 
 }
+
+/* This is a littlekludgy. */
