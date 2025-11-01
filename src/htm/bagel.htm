@@ -1,0 +1,102 @@
+<h2>Gödel's bag, Gödel's bag, <br />Gödel's bag.</h2>
+
+<p><b>Bägel</b> is a programming language where
+functions return multisets(bags) and compose by multiplication. Every item is
+a bag of factors and every function a multiplicative transformation. Think <a
+href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or
+<a href='lisp.html'>Lisp</a> where cons cells are unordered lists.</p>
+
+<q>In this mirror world, order does not matter, only presence and reduction.</q>
+
+<h3>Primitives</h3>
+
+<p>Parentheses denotes a bag, which may contain other bags.</p>
+<pre>
+()         <i>; Empty[1], identity</i>
+(2)        <i>; 2</i>
+(2 ())     <i>; 2</i>
+(2 (2 3))  <i>; 12</i>
+</pre>
+
+<p>The order of items in a bag does not matter.</p>
+<pre>
+((2 3) 2)  <i>; 12</i>
+(3 (2 ())) <i>; 6</i>
+</pre>
+
+<p>Items in a bag are fractions that can invert or remove factors.</p>
+<pre>
+(125 1/5)  <i>; 5^3 * 1/5 = 5^2</i>
+(2 3/2)    <i>; 2 * 3/2 = 3</i>
+(5 1/5)    <i>; ()</i>
+</pre>
+
+<p>The <b>intersection operator</b> <code>(% a b c..)</code> returns the gcd of all arguments.</p>
+<pre>
+(% 6 15)   <i>; 2 * [3] % [3] * 5 = 3</i>
+(% (6) 7)  <i>; 2 * 3 % 7 = Empty[1]</i>
+(% 6 (2))  <i>; 2 * 3 % 3 = 2</i>
+</pre>
+
+<p>The <b>conditional operator</b> <code>(? cond a b)</code> returns <i>a</i> when bag is not Empty[1], otherwise <i>b</i>.</p>
+<pre>
+(? ()
+	(print "Not Empty")
+	(print "Empty"))
+
+(? (% (2 3 7 7) (7 7))
+	(print "bag contains twice 7")
+	(print "bag does not contain twice 7"))
+</pre>
+
+<p>The <b>anonymous function</b> <code>(λ arguments body)</code> binds argument names to items. Functions always return bags.</p>
+<pre>
+((λ (a b) a) 2 18)      <i>; 2</i>
+((λ (a b) b) 2 (2 3^2)) <i>; 18</i>
+</pre>
+
+<p>The <b>named function</b> <code>(name λ arguments body)</code> allow reuse and enables recursion.</p>
+<pre>
+(<b>double</b> λ (a) (a a))
+
+(double 2)              <i>; 4</i>
+</pre>
+
+<p>Example: If a contains 3, remove it, put a 2 instead and repeat, otherwise stop.</p>
+<pre>
+(<b>merge</b> λ (a)
+   (? (% a 3)
+      (merge (a 2/3)) <i>; remove one 3, add one 2</i>
+      a))
+
+(merge (2^2 3^3))     <i>; 2^5 = 32</i>
+</pre>
+
+<h3>Factorial</h3>
+
+<pre>
+(<b>fact</b> λ (n acc)
+   (? (% n 2)
+      (fact (n 1/2) (acc n))
+      acc))
+
+(fact (2^3) 1) <i>; 2^8 = 256</i>
+</pre>
+
+<h3>FizzBuzz</h3>
+<pre>
+(<b>fizzbuzz</b> λ (num acc)
+	(? (% num 2^100)
+		(? (% acc (2^3 3^5))
+			(fizzbuzz (num 2) (acc 1/2^3 1/3^5) (print "FizzBuzz"))
+			(? (% acc 2^3)
+				(fizzbuzz (num 2) (acc 1/2^3 3) (print "Fizz"))
+				(? (% acc 3^5)
+					(fizzbuzz (num 2) (acc 2 1/3^5) (print "Buzz"))
+					(fizzbuzz (num 2) (acc 2 3) (print num)))))
+		())) <i>; end recursion when num contains 2^100</i>
+
+(fizzbuzz 1 1)
+</pre>
+
+
