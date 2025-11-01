@@ -48,12 +48,12 @@ lists.</p>
 
 <h3>Primitives</h3>
 
-<p>Parentheses denotes a bag, which may contain other bags.</p>
+<p>Parentheses denotes a bag, which may contain items or other bags.</p>
 <pre>
-()         <i>; Empty[1], identity</i>
-(2)        <i>; 2</i>
-(2 ())     <i>; 2</i>
-(2 (2 3))  <i>; 12</i>
+()        <i>; Empty[1], identity</i>
+(2)       <i>; 2</i>
+(2 ())    <i>; 2</i>
+(2 (2 3)) <i>; 12</i>
 </pre>
 
 <p>The order of items in a bag does not matter.</p>
@@ -64,19 +64,20 @@ lists.</p>
 
 <p>Items in a bag are fractions that can invert or remove factors.</p>
 <pre>
-(125 1/5)  <i>; 5^3 * 1/5 = 5^2</i>
-(2 3/2)    <i>; 2 * 3/2 = 3</i>
-(5 1/5)    <i>; ()</i>
+(125 1/5) <i>; 5^3 * 1/5 = 5^2</i>
+(2 3/2)   <i>; 2 * 3/2 = 3</i>
+(5 1/5)   <i>; ()</i>
 </pre>
 
-<p>The <b>intersection operator</b> <code>(% a b c..)</code> returns the gcd of all arguments.</p>
+<p>The <b>intersection operator</b> <code>(% a b c..)</code> returns the <a href='primes.html#gcd'>GCD</a> of all arguments.</p>
 <pre>
-(% 6 15)   <i>; 2 * [3] % [3] * 5 = 3</i>
-(% (6) 7)  <i>; 2 * 3 % 7 = Empty[1]</i>
-(% 6 (2))  <i>; 2 * 3 % 3 = 2</i>
+(% 6 15)    <i>; 2 * [3] % [3] * 5 = 3</i>
+(% 6 7)     <i>; 2 * 3 % 7 = Empty[1]</i>
+(2 (% 6 2)) <i>; 2 * (2 * 3 % 3) = 2^2</i>
 </pre>
 
-<p>The <b>conditional operator</b> <code>(? cond a b)</code> returns <i>a</i> when bag is not Empty[1], otherwise <i>b</i>.</p>
+<p>The <b>conditional operator</b> <code>(? bag a b)</code> returns
+the <i>a</i> when the bag is not Empty[1], otherwise it returns <i>b</i>.</p>
 <pre>
 (? ()
 	(print "Not Empty")
@@ -87,22 +88,24 @@ lists.</p>
 	(print "bag does not contain twice 7"))
 </pre>
 
-<p>The <b>anonymous function</b> <code>(λ arguments body)</code> binds names to
-bags. Functions always return bags.</p>
+<p>The <b>anonymous function</b> <code>(λ args body)</code> binds names to
+bags within its scope. Functions always return bags.</p>
 
 <pre>
-((λ (a b) a) 2 18)      <i>; 2</i>
-((λ (a b) b) 2 (2 3^2)) <i>; 18</i>
+((λ (x y) x) 2 18)      <i>; 2</i>
+((λ (x y) y) 2 (2 3^2)) <i>; 18</i>
 </pre>
 
-<p>The <b>named function</b> <code>(name λ arguments body)</code> allows reuse and enables recursion.</p>
+<p>The <b>named function</b> <code>(name λ args body)</code> allows reuse and
+enables recursion.</p>
 <pre>
 (<b>double</b> λ (a) (a a))
 
 (double 2)              <i>; 4</i>
 </pre>
 
-<p>For example, if a contains 3, remove it, put a 2 instead and repeat, otherwise stop.</p>
+<p>For example, if <i>a</i> contains 3, remove it, put a 2 instead and repeat,
+otherwise stop.</p>
 <pre>
 (<b>merge</b> λ (a)
    (? (% a 3)
