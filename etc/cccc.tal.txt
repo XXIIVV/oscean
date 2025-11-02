@@ -11,10 +11,10 @@
 
 |000
 
-	@mode &dec $1 &dot $1 &mute $1
-	@sel &d &dx $1 &dy $1
-	@input &num $2 &den $2
-	@length $2
+	@sel/d &dx $1 &dy $1
+	@input/num $2 &den $2
+	@stack/length $2
+	@note/mute $1
 
 |100
 
@@ -44,7 +44,10 @@
 	( name ) "CCCC 0a
 	( details ) "A 20 "Desktop 20 "Calculator 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Mar 20 "2025 $2
+	( date ) "2 20 "Nov 20 "2025 $2
+
+%MOD2 ( a* b* -- res* ) {
+	DIV2k MUL2 SUB2 }
 
 (
 @|vectors )
@@ -59,17 +62,23 @@
 		BRK }
 	( | button handlers )
 	SWP DUP #10 NEQ ?{
-		( up ) POP2 .sel/dx LDZ .sel/dy LDZ #01 SUB set-sel BRK }
+		( u ) POP2 .sel/dx LDZ .sel/dy LDZ #01 SUB sel/<set>
+		BRK }
 	DUP #20 NEQ ?{
-		( down ) POP2 .sel/dx LDZ .sel/dy LDZ INC set-sel BRK }
+		( d ) POP2 .sel/dx LDZ .sel/dy LDZ INC sel/<set>
+		BRK }
 	DUP #40 NEQ ?{
-		( left ) POP2 .sel/dx LDZ #01 SUB .sel/dy LDZ set-sel BRK }
+		( l ) POP2 .sel/dx LDZ #01 SUB .sel/dy LDZ sel/<set>
+		BRK }
 	DUP #80 NEQ ?{
-		( right ) POP2 .sel/dx LDZ INC .sel/dy LDZ set-sel BRK }
+		( r ) POP2 .sel/dx LDZ INC .sel/dy LDZ sel/<set>
+		BRK }
 	DUP #02 NEQ ?{
-		( A ) POP2 press-sel BRK }
+		( A ) POP2 sel/<press>
+		BRK }
 	DUP #08 NEQ ?{
-		( B ) POP2 erase BRK }
+		( B ) POP2 input/<erase>
+		BRK }
 	POP
 	( keys ) listen BRK
 
@@ -77,7 +86,7 @@
 	( delay ) [ LIT &f 00 ] INCk ,&f STR
 	#03 AND #00 EQU [ JMP BRK ]
 	( find buttons ) ;buttons/end ;buttons
-	&>l ( -- )
+	&>l
 		#0008 ADD2 LDAk #00 EQU ?{
 			( decr time ) DUP2 LDAk #01 SUB ROT ROT STA
 			( release button ) LDAk ?{
@@ -109,7 +118,7 @@
 	POP2 .Mouse/x DEI2 #0070 SUB2 #0070 LTH2 ?{ JMP2r }
 	#0001
 	( shift ) #000f .Mouse/x DEI2 #0070 SUB2 #0005 DIV2 DUP2 #0005 DIV2 SUB2 SUB2 #40 SFT NIP
-	( mask ) SFT2 .input LDZ2 EOR2 .input STZ2 !<draw-display>
+	( mask ) SFT2 .input/num LDZ2 EOR2 .input/num STZ2 !display/<draw>
 
 @on-mouse/touch-fncpad ( x/3 y -> )
 	#01 SFT SWP #06 MUL ADD #00 SWP DUP ADD ;fncpad ADD2 LDA2 JMP2
@@ -120,182 +129,13 @@
 @on-mouse/touch-modpad ( x/3 y -> )
 	#03 DIV SWP #06 SUB #20 SFT ADD #00 SWP DUP ADD ;modpad ADD2 LDA2 JMP2
 
-(
-@|main )
-
 @listen ( c -- )
 	STHk #00 EQU ?{
 		;keys/end ;keys
-		&>l ( -- )
+		&>l
 			LDAk STHkr NEQ ?{ INC2k LDA2 JSR2 !&end }
 			INC2 INC2 INC2 GTH2k ?&>l &end POP2 POP2 }
 	POPr JMP2r
-
-@eval ( -- )
-	;buttons/push press-button .input LDZ2 #0001 push #0000 .input STZ2 !<draw-display>
-
-@append ( val -- )
-	#00 SWP .input LDZ2 #00 #0a10 .mode/dec LDZ [ JMP SWP POP ] MUL2 ADD2 .input STZ2 !<draw-input>
-
-@erase ( -- )
-	( clamp ) .input LDZ2 ORA ?{
-		;buttons/pop press-button .length LDZ2 ORA #01 [ JCN JMP2r ] pop POP2 .input/num STZ2 !<draw-display> }
-	.input LDZ2 #00 #0a10 .mode/dec LDZ [ JMP SWP POP ] DIV2 .input STZ2 !<draw-display>
-
-@clear ( -- )
-	;buttons/clr press-button #0000 .length STZ2
-	#0000 .input STZ2 !<draw-display>
-
-@toggle-mode ( -- )
-	;buttons/mode press-button .mode/dec LDZk INC #01 AND SWP STZ
-	.mode/dot LDZk .mode/dec LDZ #00 EQU ADD #01 AND SWP STZ
-	<draw-display> !header/<draw>
-
-@set-dec ( -- )
-	[ LIT2 01 -mode/dec ] STZ
-	<draw-display> !header/<draw>
-
-@set-hex ( -- )
-	[ LIT2 00 -mode/dec ] STZ
-	<draw-display> !header/<draw>
-
-@set-sel ( x y -- )
-	#00 ;fill-icn <draw-sel>
-	( store new sel ) #03 AND .sel/dy STZ
-	#07 AND .sel/dx STZ
-	#81 ;dpad-chr !<draw-sel>
-
-@press-sel ( -- )
-	[ LIT2 00 -sel/d ] LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 INC2 INC2 LDA2 JMP2
-
-@gcd ( num* den* -- d* )
-	ORAk ?{ POP2 JMP2r }
-	SWP2 OVR2
-	( MOD2 ) [ DIV2k MUL2 SUB2 ] !gcd
-
-@push ( num* den* -- )
-	OVR2 #0000 EQU2 ?{
-		ORAk #00 EQU ?{
-			( reduce ) OVR2 OVR2 gcd STH2k DIV2 SWP2 STH2r DIV2
-			( store ) .length LDZ2 #20 SFT2 ;memory ADD2 STH2k STA2
-			STH2r INC2 INC2 STA2
-			( inc ) .length LDZ2k INC2 ROT STZ2
-			JMP2r } }
-	POP2 POP2 JMP2r
-
-@pop ( -- num* den* )
-	( dec ) .length LDZ2k #0001 SUB2 ROT STZ2
-	.length LDZ2 #20 SFT2 ;memory ADD2 LDA2k SWP2 INC2 INC2 LDA2 JMP2r
-
-(
-@|operations )
-
-@dup ( -- )
-	;buttons/dup press-button eval .length LDZ2 #0000 EQU2 ?{
-		pop OVR2 OVR2 push push <draw-display> }
-	JMP2r
-
-@swp ( -- )
-	;buttons/swp press-button eval .length LDZ2 #0002 LTH2 ?{
-		pop pop ROT2 STH2
-		ROT2 STH2r push push <draw-display> }
-	JMP2r
-
-@vid ( -- )
-	;buttons/vid press-button eval .length LDZ2 #0000 EQU2 ?{
-		.length LDZ2 #20 SFT2 #0002 SUB2 ;memory ADD2 LDA2 #0001 EQU2 ?{
-			pop SWP2 #0001 push #0001 push <draw-display> } }
-	JMP2r
-
-@inv ( -- )
-	;buttons/inv press-button eval .length LDZ2 #0000 EQU2 ?{ pop SWP2 push <draw-display> }
-	JMP2r
-
-@do-add ( -- )
-	;buttons/add press-button eval .length LDZ2 #0002 LTH2 ?{
-		pop ,&bd STR2
-		,&bn STR2
-		pop ,&ad STR2
-		,&an STR2
-		[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2 [ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 ADD2 ,&ad LDR2 ,&bd LDR2 MUL2 push <draw-display> }
-	JMP2r
-
-@do-sub ( -- )
-	;buttons/sub press-button eval .length LDZ2 #0002 LTH2 ?&skip
-	pop ,&bd STR2
-	,&bn STR2
-	pop ,&ad STR2
-	,&an STR2
-	[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2 [ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 SUB2 ,&ad LDR2 ,&bd LDR2 MUL2 push <draw-display> &skip JMP2r
-
-@do-mul ( -- )
-	;buttons/mul press-button eval .length LDZ2 #0002 LTH2 ?{
-		pop ,&bd STR2
-		,&bn STR2
-		pop ,&ad STR2
-		,&an STR2
-		[ LIT2 &an $2 ] [ LIT2 &bn $2 ] MUL2 [ LIT2 &ad $2 ] [ LIT2 &bd $2 ] MUL2 push <draw-display> }
-	JMP2r
-
-@do-div ( -- )
-	;buttons/div press-button eval .length LDZ2 #0002 LTH2 ?{
-		pop ,&bd STR2
-		,&bn STR2
-		pop ,&ad STR2
-		,&an STR2
-		[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2 [ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 push <draw-display> }
-	JMP2r
-
-@do-and ( -- )
-	;buttons/and press-button eval .length LDZ2 #0002 LTH2 ?{
-		pop ,&bd STR2
-		,&bn STR2
-		pop ,&ad STR2
-		,&an STR2
-		[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2 [ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 AND2 ,&ad LDR2 ,&bd LDR2 MUL2 push <draw-display> }
-	JMP2r
-
-@do-ora ( -- )
-	;buttons/ora press-button eval .length LDZ2 #0002 LTH2 ?{
-		pop ,&bd STR2
-		,&bn STR2
-		pop ,&ad STR2
-		,&an STR2
-		[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2 [ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 ORA2 ,&ad LDR2 ,&bd LDR2 MUL2 push <draw-display> }
-	JMP2r
-
-@do-sfl ( -- )
-	;buttons/sfl press-button eval .length LDZ2 #0000 EQU2 ?{
-		pop SWP2 DUP2 ADD2 SWP2 push <draw-display> }
-	JMP2r
-
-@do-sfr ( -- )
-	;buttons/sfr press-button eval .length LDZ2 #0000 EQU2 ?{
-		pop SWP2 #01 SFT2 SWP2 push <draw-display> }
-	JMP2r
-
-@put ( -- )
-	&0 #000b ;buttons/0 !press-number
-	&1 #010c ;buttons/1 !press-number
-	&2 #020e ;buttons/2 !press-number
-	&3 #0310 ;buttons/3 !press-number
-	&4 #0411 ;buttons/4 !press-number
-	&5 #0513 ;buttons/5 !press-number
-	&6 #0615 ;buttons/6 !press-number
-	&7 #0717 ;buttons/7 !press-number
-	&8 #0818 ;buttons/8 !press-number
-	&9 #091a ;buttons/9 !press-number
-	&a #0a09 ;buttons/a !press-number
-	&b #0b07 ;buttons/b !press-number
-	&c #0c21 ;buttons/c !press-number
-	&d #0d1f ;buttons/d !press-number
-	&e #0e1d ;buttons/e !press-number
-	&f #0f1c ;buttons/f !press-number
-
-@press-number ( value note button* -- )
-	press-button play-note
-	( ignore hex keys in dec mode ) DUP #09 GTH .mode/dec LDZ AND ?{ !append }
-	POP JMP2r
 
 @press-button ( button* -- )
 	( set timer ) DUP2 #0008 ADD2 #04 ROT ROT STA
@@ -307,72 +147,32 @@
 	INC2 INC2 LDA2k
 	( icon ) SWP2 INC2 INC2 LDA2 STHr ROT ROT JMP2
 
-@play-note ( pitch -- )
-	.mode/mute LDZ ?{
-		DUP #18 ADD .Audio0/pitch DEO }
-	POP JMP2r
-
 (
-@|drawing )
+@|Drawing )
 
 @<redraw-all> ( -- )
 	( >> )
 
 @<redraw> ( -- )
-	#04 ;buttons/ctl <draw-pad>
-	#08 ;buttons/mod <draw-pad>
-	#04 ;buttons/wst <draw-pad>
-	#10 ;buttons/num <draw-pad>
-	header/<draw>
-	<draw-display> !<draw-input>
+	#04 ;buttons/ctl pad/<draw>
+	#08 ;buttons/mod pad/<draw>
+	#04 ;buttons/wst pad/<draw>
+	#10 ;buttons/num pad/<draw>
+	header/<draw> !display/<draw>
 
-@<draw-display> ( -- )
+@display/<draw> ( -- )
 	#0001 .Screen/x DEO2
 	#0013 .Screen/y DEO2
 	#01e4 ;fill-icn #f1 <draw-times>
 	#0001 .Screen/x DEO2
 	#0076 .Screen/y DEO2
 	#00e4 ;dotted-icn #01 <draw-times>
-	#0a ;draw-num/color STA
-	#0600
-	&>l ( -- )
-		#00 OVR INC .length LDZ2 GTH2 ?{
-			#0010 .Screen/x DEO2
-			#00 OVR #40 SFT2 #0066 SWP2 SUB2 .Screen/y DEO2
-			#00 OVR INC .length LDZ2 SWP2 SUB2 #20 SFT2 ;memory ADD2 <draw-fraction>
-			INC GTHk ?&>l }
-	POP2
-	( >> )
+	stack/<draw> !input/<draw>
 
-@<draw-input> ( -- )
-	#0010 .Screen/x DEO2
-	#007e .Screen/y DEO2
-	#04 ;draw-num/color STA
-	;input <draw-fraction>
-	( | arrow )
-	[ LIT2 00 -Screen/auto ] DEO
-	#0000 .Screen/x DEO2
-	#0082 .Screen/y DEO2
-	;arrow-icn .Screen/addr DEO2
-	[ LIT2 00 -Screen/sprite ] DEO
-	( | binary )
-	[ LIT2 00 -Screen/auto ] DEO
-	#0070 .Screen/x DEO2
-	#0082 .Screen/y DEO2
-	#1000
-	&>l ( -- )
-		#0f OVR SUB .input LDZ2 ROT SFT2 #0001 AND2 #30 SFT2 ;bin-icn ADD2 .Screen/addr DEO2
-		[ LIT2 07 -Screen/sprite ] DEO
-		.Screen/x DEI2k #0005 ADD2 ROT DEO2
-		INCk #03 AND ?{
-			.Screen/x DEI2k #0005 ADD2 ROT DEO2 }
-		INC GTHk ?&>l
-	POP2 JMP2r
-
-@<draw-pad> ( length sprites* -- )
+@pad/<draw> ( length sprites* -- )
 	STH2
 	#00
-	&>l ( -- )
+	&>l
 		#00 OVR #0009 MUL2 STH2kr ADD2 #00 press-button/release INC GTHk ?&>l
 	POP2 POP2r JMP2r
 
@@ -399,7 +199,7 @@
 	;button/down-chr ;button/up-chr STHkr [ JMP SWP2 POP2 ] STH2k .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEO
 	( body ) #0400
-	&>l ( -- )
+	&>l
 		STH2kr #0030 ADD2 .Screen/addr DEO2
 		[ LIT2 81 -Screen/sprite ] DEO
 		INC GTHk ?&>l
@@ -439,122 +239,17 @@
 	[ LIT2 05 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@<draw-fraction> ( addr* -- )
-	[ LIT2 01 -Screen/auto ] DEO
-	LDA2k SWP2 INC2 INC2 LDA2 DUP2 #0001 EQU2 ?&whole
-	GTH2k ?&mixed
-	&proper ( num* den* -- )
-	.mode/dot LDZ ?&proper-dot
-	SWP2 draw-value draw-slash !draw-value
-
-	&proper-dot ( num* den* -- )
-	#00 draw-num draw-dot SWP2 #03e8 #1000 .mode/dec LDZ [ JMP SWP2 POP2 ] MUL2 SWP2 DIV2 !draw-value
-
-	&mixed ( num* den* -- )
-	.mode/dot LDZ ?&mixed-dot
-	DIV2k draw-value draw-quote STH2k
-	( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r !&proper
-
-	&mixed-dot ( num* den* -- )
-	DIV2k draw-value draw-dot STH2k
-	( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r SWP2 #03e8 #1000 .mode/dec LDZ [ JMP SWP2 POP2 ] MUL2 SWP2 DIV2 !draw-value
-
-	&whole ( num* den* -- )
-	POP2
-
-@draw-value ( short* -- )
-	ORAk ?{ POP2 #00 !draw-num }
-	.mode/dec LDZ ?draw-dec
-	( | draw hex )
-	#00 ,&z STR
-	/parse /parse /parse /parse POP2 JMP2r
-	&parse OVR #04 SFT DUP [ LIT &z $1 ] EQU ?&skip
-	#ff ,&z STR
-	DUP draw-num &skip POP #40 SFT2 JMP2r
-
-@draw-dec ( short* -- )
-	#00 ,&z STR
-	#2710 /parse #03e8 /parse #0064 /parse #000a /parse NIP &emit DUP [ LIT &z $1 ] EQU ?&skip
-	#ff ,&z STR
-	DUP draw-num &skip POP JMP2r
-	&parse DIV2k DUP /emit MUL2 SUB2 JMP2r
-
-@hex-char ( hex -- char )
-	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
-
-@draw-num ( num -- )
-	#00 SWP #50 SFT2 ;num-icns ADD2 .Screen/addr DEO2
-	[ LIT2 16 -Screen/auto ] DEOk DEO
-	[ LIT2 &color 01 -Screen/sprite ] DEOk DEO
-	.Screen/y DEI2k #0010 SUB2 ROT DEO2
-	.Screen/x DEI2k #000d ADD2 ROT DEO2
-	JMP2r
-
-@draw-dot ( -- )
-	;dot-icns !<draw-type>
-
-@draw-quote ( -- )
-	;quote-icns !<draw-type>
-
-@draw-slash ( -- )
-	;slash-icns
-	( >> )
-
-@<draw-type> ( addr* -- )
-	.Screen/addr DEO2
-	.Screen/x DEI2k INC2 INC2 INC2 ROT DEO2
-	[ LIT2 15 -Screen/auto ] DEOk DEO
-	[ LIT2 04 -Screen/sprite ] DEO
-	JMP2r
-
-@<draw-sel> ( color addr* -- )
-	[ LIT2 00 -Screen/auto ] DEO
-	.Screen/addr DEO2
-	#00 .sel/d LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 LDA2 LDA2k #0008 ADD2 .Screen/x DEO2
-	INC2 INC2 LDA2 #0002 SUB2 .Screen/y DEO2
-	#40 ADD .Screen/sprite DEO
-	JMP2r
-
-@<draw-times-addr> ( color times addr* auto -- )
-	.Screen/auto DEO
-	,&addr STR2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		[ LIT2 &addr $2 ] .Screen/addr DEO2
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
-
-@<draw-times> ( color times addr* auto -- )
-	.Screen/auto DEO
-	.Screen/addr DEO2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
-
-(
-@|printing )
-
 @print ( -- )
-	.length LDZ2 ORA ?{
-		;empty-txt print-str #0a18 DEO
+	stack/not-empty ?{
+		;dict/empty print-str #0a18 DEO
 		JMP2r }
-	.length LDZ2 #0001 SUB2 #20 SFT2 ;memory ADD2
+	.stack/length LDZ2 #0001 SUB2 #20 SFT2 ;memory ADD2
 	( | print fraction )
 	LDA2k SWP2 INC2 INC2 LDA2 DUP2 #0001 EQU2 ?&whole
-	GTH2k ?&mixed
-	&proper ( num* den* -- )
+	( | proper fraction )
 	SWP2 print-value LIT "/ #18 DEO
 	print-value #0a18 DEO
 	JMP2r
-
-	&mixed ( num* den* -- )
-	DIV2k print-value STH2k
-	( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r LIT "' #18 DEO !&proper
 
 	&whole ( num* den* -- )
 	POP2 print-value #0a18 DEO
@@ -564,20 +259,22 @@
 	ORAk ?{
 		LIT "0 #18 DEO
 		JMP2r }
-	.mode/dec LDZ ?print-dec
+	mode/is-dec ?print-dec
 
 @print-hex ( short* -- )
-	#00 ,&z STR
+	[ LIT2 00 _&z ] STR
 	/parse /parse /parse /parse POP2 JMP2r
-	&parse OVR #04 SFT DUP [ LIT &z $1 ] EQU ?&skip
-	#ff ,&z STR
-	DUP hex-char #18 DEO &skip POP #40 SFT2 JMP2r
+	&parse OVR #04 SFT DUP [ LIT &z $1 ] EQU ?{
+		[ LIT2 ff _&z ] STR
+		DUP #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO }
+	POP #40 SFT2 JMP2r
 
 @print-dec ( short* -- )
-	#00 ,&z STR
-	#2710 /parse #03e8 /parse #0064 /parse #000a /parse NIP &emit DUP [ LIT &z $1 ] EQU ?&skip
-	#ff ,&z STR
-	DUP #30 ADD #18 DEO &skip POP JMP2r
+	[ LIT2 00 _&z ] STR
+	#2710 /parse #03e8 /parse #0064 /parse #000a /parse NIP &emit DUP [ LIT &z $1 ] EQU ?{
+		[ LIT2 ff _&z ] STR
+		DUP #30 ADD #18 DEO }
+	POP JMP2r
 	&parse DIV2k DUP /emit MUL2 SUB2 JMP2r
 
 @print-str ( str* -- )
@@ -586,18 +283,370 @@
 	POP2 JMP2r
 
 (
-@|ecosystem )
+@|Input )
 
-@snarf/<paste> ( -- )
-	;&snarf-txt .File/name DEO2
-	#0001 .File/length DEO2
-	&>s ( -- )
-		;&buf .File/read DEO2
-		[ LIT2 00 -File/success-lb ] DEI EQU ?{
-			[ LIT &buf 20 ] listen !&>s }
+@input/<eval> ( -- )
+	;buttons/push press-button .&num LDZ2 #0001 stack/<push>
+	#0000 .&num STZ2 !display/<draw>
+
+@input/<append> ( val -- )
+	#00 SWP .&num LDZ2 #00 #0a10 mode/is-dec [ JMP SWP POP ] MUL2 ADD2 .&num STZ2 !/<draw>
+
+@input/<erase> ( -- )
+	.&num LDZ2 ORA ?{
+		;buttons/pop press-button .stack/length LDZ2 ORA #01 [ JCN JMP2r ] stack/pop POP2 .&num STZ2 !display/<draw> }
+	.&num LDZ2 #00 #0a10 mode/is-dec [ JMP SWP POP ] DIV2 .&num STZ2 !display/<draw>
+
+@input/<clear> ( -- )
+	;buttons/clr press-button stack/<clear>
+	#0000 .&num STZ2 !display/<draw>
+
+@input/<draw> ( -- )
+	#0010 .Screen/x DEO2
+	#007e .Screen/y DEO2
+	#04 ;digit/color STA
+	;&num LDA2 number/<draw>
+	( | arrow )
+	[ LIT2 00 -Screen/auto ] DEO
+	#0000 .Screen/x DEO2
+	#0082 .Screen/y DEO2
+	;arrow-icn .Screen/addr DEO2
+	[ LIT2 00 -Screen/sprite ] DEO
+	( | binary )
+	[ LIT2 00 -Screen/auto ] DEO
+	#0070 .Screen/x DEO2
+	#0082 .Screen/y DEO2
+	#1000
+	&>l
+		#0f OVR SUB .&num LDZ2 ROT SFT2 #0001 AND2 #30 SFT2 ;bin-icn ADD2 .Screen/addr DEO2
+		[ LIT2 07 -Screen/sprite ] DEO
+		.Screen/x DEI2k #0005 ADD2 ROT DEO2
+		INCk #03 AND ?{
+			.Screen/x DEI2k #0005 ADD2 ROT DEO2 }
+		INC GTHk ?&>l
+	POP2 JMP2r
+
+@fraction/<draw> ( addr* -- )
+	[ LIT2 01 -Screen/auto ] DEO
+	LDA2k SWP2 INC2 INC2 LDA2 DUP2 #0001 EQU2 ?/<draw-whole>
+	mode/is-dot ?/<draw-proper-dot>
+	( | proper fraction )
+	SWP2 number/<draw-auto>
+	digit/<draw-slash> !number/<draw-auto>
+
+@fraction/<draw-proper-dot> ( num* den* -- )
+	#00 digit/<draw-num>
+	digit/<draw-dot>
+	SWP2 #03e8 #1000 mode/is-dec [ JMP SWP2 POP2 ] MUL2 SWP2 DIV2 !number/<draw>
+
+@fraction/<draw-whole> ( num* den* -- )
+	POP2 !number/<draw-auto>
+
+@number/<draw-auto> ( short* -- )
+	mode/is-exp ?/<draw-factors>
+	( >> )
+
+@number/<draw> ( short* -- )
+	mode/is-dec ?/<draw-dec>
+	!/<draw-hex>
+
+@number/<draw-hex> ( short* -- )
+	ORAk ?{ POP2 #00 !digit/<draw-num> }
+	[ LIT2 00 _&zh ] STR
+	/parse-hex /parse-hex /parse-hex /parse-hex POP2 JMP2r
+	&parse-hex OVR #04 SFT DUP [ LIT &zh $1 ] EQU ?{
+		[ LIT2 ff _&zh ] STR
+		DUP digit/<draw-num> }
+	POP #40 SFT2 JMP2r
+
+@number/<draw-dec> ( short* -- )
+	ORAk ?{ POP2 #00 !digit/<draw-num> }
+	[ LIT2 00 _&zd ] STR
+	#2710 /parse-dec #03e8 /parse-dec #0064 /parse-dec #000a /parse-dec NIP
+	&emit ( -- )
+	DUP [ LIT &zd $1 ] EQU ?{
+		[ LIT2 ff _&zd ] STR
+		DUP digit/<draw-num> }
+	POP JMP2r
+	&parse-dec DIV2k DUP /emit MUL2 SUB2 JMP2r
+
+@number/<draw-factors> ( short* -- )
+	( count ) [ LIT2r 0000 ]
+	( value ) [ LIT2r 0002 ]
+	&>w
+		DUP2 STH2kr DIV2k MUL2 SUB2 ORA ?{
+			( count+1 ) SWP2r INC2r SWP2r
+			( apply ) STH2kr DIV2 DUP2 #0001 NEQ2 ?&>w
+		POP2 STH2r STH2r SWP2 !/<draw-factor> }
+	( print ) STH2r STH2r OVR2 /<draw-factor>
+	( reset ) INC2 [ LIT2r 0000 ] STH2 !&>w
+
+@number/<draw-factor> ( count* value* -- )
+	OVR2 #0000 EQU2 ?{
+		OVR2 #0002 LTH2 ?{ /<draw>
+			digit/<draw-caret>
+			/<draw> !digit/<draw-space> }
+		/<draw>
+		POP2 !digit/<draw-space> }
+	POP2 POP2 JMP2r
+
+@digit/<draw-num> ( num -- )
+	#00 SWP #50 SFT2 ;num-icns ADD2 .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEOk DEO
+	[ LIT2 &color 01 -Screen/sprite ] DEOk DEO
+	.Screen/y DEI2k #0010 SUB2 ROT DEO2
+	.Screen/x DEI2k #000d ADD2 ROT DEO2
 	JMP2r
 
-	&snarf-txt ".snarf $1
+@digit/<draw-space> ( -- )
+	.Screen/x DEI2k #000d ADD2 ROT DEO2
+	JMP2r
+
+@digit/<draw-caret> ( -- )
+	;caret-icn !/<draw-type>
+
+@digit/<draw-dot> ( -- )
+	;dot-icns !/<draw-type>
+
+@digit/<draw-slash> ( -- )
+	;slash-icns
+	( >> )
+
+@digit/<draw-type> ( addr* -- )
+	.Screen/addr DEO2
+	.Screen/x DEI2k INC2 INC2 INC2 ROT DEO2
+	[ LIT2 15 -Screen/auto ] DEOk DEO
+	[ LIT2 04 -Screen/sprite ] DEO
+	JMP2r
+
+(
+@|Mode[] )
+
+@mode/is-dot ( -- b )
+	[ LIT2 02 _&value ] LDR AND JMP2r
+
+@mode/is-exp ( -- b )
+	[ LIT2 04 _&value ] LDR AND JMP2r
+
+@mode/is-dec ( -- b )
+	[ LIT2 01 _&value ] LDR AND JMP2r
+
+@mode/<toggle> ( -- )
+	[ LIT2 07 &value $1 ] INC AND ,&value STR
+	display/<draw>
+	header/<draw>
+	;buttons/mode !press-button
+
+@mode/<set-dec> ( -- )
+	[ LIT2 01 _&value ] LDR ORA ,&value STR
+	display/<draw> !header/<draw>
+
+@mode/<set-hex> ( -- )
+	[ LIT2 fe _&value ] LDR AND ,&value STR
+	display/<draw> !header/<draw>
+
+@mode/get-name ( -- )
+	[ LIT2 00 _&value ] LDR DUP ADD ;&lut ADD2 LDA2 JMP2r
+
+@mode/lut [
+	=dict/calc-hex =dict/calc-dec
+	=dict/calc-hexd =dict/calc-decd
+	=dict/calc-hexe =dict/calc-dece
+	=dict/calc-hexde =dict/calc-decde ]
+
+(
+@|Note )
+
+@note/<play> ( pitch -- )
+	.&mute LDZ ?{
+		DUP #18 ADD .Audio0/pitch DEO }
+	POP JMP2r
+
+(
+@|Selection )
+
+@sel/<press> ( -- )
+	[ LIT2 00 -&d ] LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 INC2 INC2 LDA2 JMP2
+
+@sel/<set> ( x y -- )
+	#00 ;fill-icn /<draw>
+	( store ) #03 AND .&dy STZ
+	#07 AND .&dx STZ
+	#81 ;dpad-chr
+	( >> )
+
+@sel/<draw> ( color addr* -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	.Screen/addr DEO2
+	#00 .&d LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 LDA2 LDA2k #0008 ADD2 .Screen/x DEO2
+	INC2 INC2 LDA2 #0002 SUB2 .Screen/y DEO2
+	#40 ADD .Screen/sprite DEO
+	JMP2r
+
+(
+@|Stack )
+
+@stack/<clear> ( -- )
+	#0000 .&length STZ2
+	JMP2r
+
+@stack/is-lt2 ( -- t )
+	.&length LDZ2 #0002 LTH2 JMP2r
+
+@stack/is-empty ( -- t )
+	.&length LDZ2 #0000 EQU2 JMP2r
+
+@stack/not-empty ( -- t )
+	.&length LDZ2 ORA JMP2r
+
+@stack/<push> ( num* den* -- )
+	OVR2 #0000 EQU2 ?{
+		ORAk #00 EQU ?{
+			( reduce ) OVR2 OVR2 gcd STH2k DIV2 SWP2 STH2r DIV2
+			( store ) .&length LDZ2 #20 SFT2 ;memory ADD2 STH2k STA2
+			STH2r INC2 INC2 STA2
+			( inc ) .&length LDZ2k INC2 ROT STZ2
+			JMP2r } }
+	POP2 POP2 JMP2r
+
+@stack/pop ( -- num* den* )
+	( dec ) .&length LDZ2k #0001 SUB2 ROT STZ2
+	.&length LDZ2 #20 SFT2 ;memory ADD2 LDA2k SWP2 INC2 INC2 LDA2 JMP2r
+
+@stack/dup ( -- )
+	;buttons/dup press-button input/<eval>
+	/is-empty ?{
+		/pop OVR2 OVR2 /<push>
+		/<push> !display/<draw> }
+	JMP2r
+
+@stack/swp ( -- )
+	;buttons/swp press-button input/<eval>
+	/is-lt2 ?{
+		/pop /pop ROT2 STH2
+		ROT2 STH2r /<push>
+		/<push> !display/<draw> }
+	JMP2r
+
+@stack/vid ( -- )
+	;buttons/vid press-button input/<eval>
+	/is-empty ?{
+		.&length LDZ2 #20 SFT2 #0002 SUB2 ;memory ADD2 LDA2 #0001 EQU2 ?{
+			/pop SWP2 #0001 /<push>
+			#0001 /<push>
+			display/<draw> } }
+	JMP2r
+
+@stack/inv ( -- )
+	;buttons/inv press-button input/<eval>
+	/is-empty ?{ /pop SWP2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/<draw> ( -- )
+	#0a ;digit/color STA
+	#0600
+	&>l
+		#00 OVR INC .&length LDZ2 GTH2 ?{
+			#0010 .Screen/x DEO2
+			#00 OVR #40 SFT2 #0066 SWP2 SUB2 .Screen/y DEO2
+			#00 OVR INC .&length LDZ2 SWP2 SUB2 #20 SFT2 ;memory ADD2 fraction/<draw>
+			INC GTHk ?&>l }
+	POP2 JMP2r
+
+@stack/add ( -- )
+	;buttons/add press-button input/<eval>
+	/is-lt2 ?{
+		/pop ,&bd1 STR2
+		,&bn1 STR2
+		/pop ,&ad1 STR2
+		,&an1 STR2
+		[ LIT2 &an1 $2 ] [ LIT2 &bd1 $2 ] MUL2 [ LIT2 &ad1 $2 ] [ LIT2 &bn1 $2 ] MUL2 ADD2 ,&ad1 LDR2 ,&bd1 LDR2 MUL2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/sub ( -- )
+	;buttons/sub press-button input/<eval>
+	/is-lt2 ?{
+		/pop ,&bd2 STR2
+		,&bn2 STR2
+		/pop ,&ad2 STR2
+		,&an2 STR2
+		[ LIT2 &an2 $2 ] [ LIT2 &bd2 $2 ] MUL2 [ LIT2 &ad2 $2 ] [ LIT2 &bn2 $2 ] MUL2 SUB2 ,&ad2 LDR2 ,&bd2 LDR2 MUL2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/mul ( -- )
+	;buttons/mul press-button input/<eval>
+	/is-lt2 ?{
+		/pop ,&bd3 STR2
+		,&bn3 STR2
+		/pop ,&ad3 STR2
+		,&an3 STR2
+		[ LIT2 &an3 $2 ] [ LIT2 &bn3 $2 ] MUL2 [ LIT2 &ad3 $2 ] [ LIT2 &bd3 $2 ] MUL2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/div ( -- )
+	;buttons/div press-button input/<eval>
+	/is-lt2 ?{
+		/pop ,&bd4 STR2
+		,&bn4 STR2
+		/pop ,&ad4 STR2
+		,&an4 STR2
+		[ LIT2 &an4 $2 ] [ LIT2 &bd4 $2 ] MUL2 [ LIT2 &ad4 $2 ] [ LIT2 &bn4 $2 ] MUL2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/and ( -- )
+	;buttons/and press-button input/<eval>
+	/is-lt2 ?{
+		/pop ,&bd5 STR2
+		,&bn5 STR2
+		/pop ,&ad5 STR2
+		,&an5 STR2
+		[ LIT2 &an5 $2 ] [ LIT2 &bd5 $2 ] MUL2 [ LIT2 &ad5 $2 ] [ LIT2 &bn5 $2 ] MUL2 AND2 ,&ad5 LDR2 ,&bd5 LDR2 MUL2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/ora ( -- )
+	;buttons/ora press-button input/<eval>
+	/is-lt2 ?{
+		/pop ,&bd6 STR2
+		,&bn6 STR2
+		/pop ,&ad6 STR2
+		,&an6 STR2
+		[ LIT2 &an6 $2 ] [ LIT2 &bd6 $2 ] MUL2 [ LIT2 &ad6 $2 ] [ LIT2 &bn6 $2 ] MUL2 ORA2 ,&ad6 LDR2 ,&bd6 LDR2 MUL2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/sfl ( -- )
+	;buttons/sfl press-button input/<eval>
+	/is-empty ?{
+		/pop SWP2 DUP2 ADD2 SWP2 /<push> !display/<draw> }
+	JMP2r
+
+@stack/sfr ( -- )
+	;buttons/sfr press-button input/<eval>
+	/is-empty ?{
+		/pop SWP2 #01 SFT2 SWP2 /<push> !display/<draw> }
+	JMP2r
+
+@put/0 #000b ;buttons/0 !/<press>
+	&1 #010c ;buttons/1 !/<press>
+	&2 #020e ;buttons/2 !/<press>
+	&3 #0310 ;buttons/3 !/<press>
+	&4 #0411 ;buttons/4 !/<press>
+	&5 #0513 ;buttons/5 !/<press>
+	&6 #0615 ;buttons/6 !/<press>
+	&7 #0717 ;buttons/7 !/<press>
+	&8 #0818 ;buttons/8 !/<press>
+	&9 #091a ;buttons/9 !/<press>
+	&a #0a09 ;buttons/a !/<press>
+	&b #0b07 ;buttons/b !/<press>
+	&c #0c21 ;buttons/c !/<press>
+	&d #0d1f ;buttons/d !/<press>
+	&e #0e1d ;buttons/e !/<press>
+	&f #0f1c ;buttons/f !/<press>
+
+@put/<press> ( value note button* -- )
+	press-button note/<play>
+	( | ignore hex keys in dec mode )
+	DUP #09 GTH mode/is-dec AND ?{ !input/<append> }
+	POP JMP2r
 
 (
 @|window )
@@ -665,27 +714,24 @@
 	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
 	#0001 .Screen/y DEO2
 	#09 ;chicago/color STA
-	.mode LDZ2
-	( | handlers )
-	DUP2 #0000 NEQ2 ?{ POP2 ;dict/calc-hexd-txt !chicago/<draw-center> }
-	DUP2 #0001 NEQ2 ?{ POP2 ;dict/calc-hex-txt !chicago/<draw-center> }
-	DUP2 #0100 NEQ2 ?{ POP2 ;dict/calc-decd-txt !chicago/<draw-center> }
-	POP2 ;dict/calc-dec-txt !chicago/<draw-center>
+	mode/get-name !chicago/<draw-center>
 
 (
 @|chicago )
 
 @chicago/get-str-width ( text* -- width* )
 	[ LITr 00 ]
-	&>ww ( -- )
+	&>ww
 		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
 		( > ) ADDr INC2 LDAk ?&>ww
 	POP2 #00 STHr JMP2r
 
 @chicago/<draw-center> ( text* color -- )
-	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 #0008 SUB2 .Screen/x DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	&>ws ( -- )
+	#20 chicago/<draw-char>
+	#20 chicago/<draw-char>
+	&>ws
 		LDAk #1f GTH ?{ POP2 JMP2r }
 		LDAk /<draw-char>
 		INC2 !&>ws
@@ -726,7 +772,7 @@
 	JMP2r
 
 (
-@|theme )
+@|Stdlib )
 
 @theme/<reset> ( -- )
 	#f0a8 #f0ec #f0b9
@@ -749,29 +795,54 @@
 
 	&path ".theme $1
 
-(
-@|stdlib )
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+@snarf/<paste> ( -- )
+	;&snarf-txt .File/name DEO2
+	#0001 .File/length DEO2
+	&>s
+		;&buf .File/read DEO2
+		[ LIT2 00 -File/success-lb ] DEI EQU ?{
+			[ LIT &buf 20 ] listen !&>s }
 	JMP2r
 
+	&snarf-txt ".snarf $1
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@<draw-times> ( color times addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@gcd ( num* den* -- d* )
+	ORAk ?{ POP2 JMP2r }
+	SWP2 OVR2 MOD2 !gcd
+
 (
-@|etc )
+@|Locals )
 
-@empty-txt "Empty 20 "Stack $1
-
-@dict/calc-hex-txt 20 20 "Hexadecimal $1
-
-@dict/calc-hexd-txt 20 20 "Hexadecimal(f) $1
-
-@dict/calc-dec-txt 20 20 "Decimal $1
-
-@dict/calc-decd-txt 20 20 "Decimal(f) $1
+@dict/empty "Empty 20 "Stack $1
+	&calc-hex "Hex $1
+	&calc-hexd "Hex 20 "Dot $1
+	&calc-dec "Dec $1
+	&calc-decd "Dec 20 "Dot $1
+	&calc-hexe "Hex 20 "Factors $1
+	&calc-hexde "Hex 20 "Dot 20 "Factors $1
+	&calc-dece "Dec 20 "Factors $1
+	&calc-decde "Dec 20 "Dot 20 "Factors $1
 
 
 
@@ -779,8 +850,8 @@
 @|LUTs )
 
 @fncpad
-	=clear =swp =dup =erase =erase =erase
-	=toggle-mode =inv =vid =eval =eval =eval
+	=input/<clear> =stack/swp =stack/dup =input/<erase> =input/<erase> =input/<erase>
+	=mode/<toggle> =stack/inv =stack/vid =input/<eval> =input/<eval> =input/<eval>
 
 @numpad
 	=put/7 =put/8 =put/9 =put/f
@@ -789,60 +860,60 @@
 	=put/0 =put/a =put/b =put/c
 
 @modpad
-	=do-mul =do-div =do-add =do-sub
-	=do-and =do-ora =do-sfl =do-sfr
+	=stack/mul =stack/div =stack/add =stack/sub
+	=stack/and =stack/ora =stack/sfl =stack/sfr
 
 @keys
-	"~ =clear 09 =toggle-mode "? =inv "@ =vid
-	"+ =do-add "- =do-sub "* =do-mul "/ =do-div
-	"& =do-and "| =do-ora "< =do-sfl "> =do-sfr
-	20 =eval 08 =erase "% =swp "" =dup
+	"~ =input/<clear> 09 =mode/<toggle> "? =stack/inv "@ =stack/vid
+	"+ =stack/add "- =stack/sub "* =stack/mul "/ =stack/div
+	"& =stack/and "| =stack/ora "< =stack/sfl "> =stack/sfr
+	20 =input/<eval> 08 =input/<erase> "% =stack/swp "" =stack/dup
 	"7 =put/7 "8 =put/8 "9 =put/9 "f =put/f
 	"4 =put/4 "5 =put/5 "6 =put/6 "e =put/e
 	"1 =put/1 "2 =put/2 "3 =put/3 "d =put/d
 	"0 =put/0 "a =put/a "b =put/b "c =put/c
-	0d =eval
-	0a =eval
-	"! =erase
+	0d =input/<eval>
+	0a =input/<eval>
+	"! =input/<erase>
 	". =print
-	1b =clear
-	"# =set-hex
-	"$ =set-dec
+	1b =input/<clear>
+	"# =mode/<set-hex>
+	"$ =mode/<set-dec>
 	&end
 
 @layout [
-	=buttons/clr =clear
-	=buttons/mode =toggle-mode
+	=buttons/clr =input/<clear>
+	=buttons/mode =mode/<toggle>
 	=buttons/7 =put/7
 	=buttons/8 =put/8
 	=buttons/9 =put/9
 	=buttons/f =put/f
-	=buttons/mul =do-mul
-	=buttons/and =do-and
-	=buttons/swp =swp
-	=buttons/inv =inv
+	=buttons/mul =stack/mul
+	=buttons/and =stack/and
+	=buttons/swp =stack/swp
+	=buttons/inv =stack/inv
 	=buttons/4 =put/4
 	=buttons/5 =put/5
 	=buttons/6 =put/6
 	=buttons/e =put/e
-	=buttons/div =do-div
-	=buttons/ora =do-ora
-	=buttons/dup =dup
-	=buttons/vid =vid
+	=buttons/div =stack/div
+	=buttons/ora =stack/ora
+	=buttons/dup =stack/dup
+	=buttons/vid =stack/vid
 	=buttons/1 =put/1
 	=buttons/2 =put/2
 	=buttons/3 =put/3
 	=buttons/d =put/d
-	=buttons/add =do-add
-	=buttons/sfl =do-sfl
-	=buttons/pop =erase
-	=buttons/push =eval
+	=buttons/add =stack/add
+	=buttons/sfl =stack/sfl
+	=buttons/pop =input/<erase>
+	=buttons/push =input/<eval>
 	=buttons/0 =put/0
 	=buttons/a =put/a
 	=buttons/b =put/b
 	=buttons/c =put/b
-	=buttons/sub =do-sub
-	=buttons/sfr =do-sfr ]
+	=buttons/sub =stack/sub
+	=buttons/sfr =stack/sfr ]
 
 @buttons ( x* y* icon* size* state )
 	&ctl
@@ -889,10 +960,10 @@
 @fill-icn [ ffff ffff ffff ffff ]
 @dotted-icn [ 0000 0055 0000 0000 ]
 @bin-icn [ 6090 9090 9090 9060 60f0 f0f0 f0f0 f060 ]
+@caret-icn [ 0000 0018 3c66 4200 0000 0000 0000 0000 ]
 @arrow-icn [ 80c0 e0f0 f0e0 c080 ]
 
-@header
-	&bg-chr [
+@header/bg-chr [
 	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
 	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
 	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
@@ -958,20 +1029,17 @@
 	ffff ffff ff00 ff00 ffff ffff ff00 0000
 	fefe fefe fa04 f800 fcfc fcfc f800 0000 ]
 
-@ctl-icns
-&clr [ 0000 183c 3c18 0000 ]
+@ctl-icns/clr [ 0000 183c 3c18 0000 ]
 &mode [ 0000 007f fe00 0000 ]
 &inv [ 006c 6666 6666 3600 ]
 &vid [ 0033 6666 6666 cc00 ]
 
-@wst-icns
-&push [ 0018 3c7e 1818 1800 ]
+@wst-icns/push [ 0018 3c7e 1818 1800 ]
 &pop [ 0018 1818 7e3c 1800 ]
 &swp [ 007c 7e02 407e 3e00 ]
 &dup [ 003c 6666 6666 6c00 ]
 
-@mod-icns
-	&and
+@mod-icns/and
 	0000 000f 1f18 180f 0000 00e0 e000 00f8
 	0f18 181f 0f00 0000 f860 60e0 e000 0000
 	&ora
@@ -1052,12 +1120,8 @@
 @dot-icns [
 	0000 0000 0000 0000 0000 0018 1800 0000 ]
 
-@quote-icns [
-	0000 0018 1818 0800 0000 0000 0000 0000 ]
-
 @dpad-chr [
 	0000 ff81 8142 2418 0000 007e 7e3c 1800 ]
-
 
 @tone [
 	8eae b5b9 c0ce dbdc cdb6 a295 8b80 7364
