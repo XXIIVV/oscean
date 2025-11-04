@@ -42,9 +42,10 @@ bag left after the reduction is the output of a program.</p>
 
 <p>Items in a bag are written as fractions that can add or remove factors.</p>
 <pre>
-(125 1/5) <i>; 5^3 * 1/5 = 5^2</i>
-(2 3/2)   <i>; 2 * 3/2 = 3</i>
-(5 1/5)   <i>; ()</i>
+(125 1/5)             <i>; 5^3 * 1/5 = 5^2</i>
+(2 3/2)               <i>; 2 * 3/2 = 3</i>
+(5 1/5)               <i>; ()</i>
+fizz/2^3 buzz/3^5 2^4 <i>; 2 fizz buzz/3^5</i>
 </pre>
 
 <p>The <b>intersection operator</b> <code>(% a b c..)</code> returns the <a href='primes.html#gcd'>GCD</a> of all arguments.</p>
@@ -62,34 +63,27 @@ bag left after the reduction is the output of a program.</p>
 (% x (x 5/11)) <i>; if !x11 then x, otherwise ()</i>
 </pre>
 
-<p>The <b>anonymous function</b> <code>(λ fn)</code> applies the same transformation until it stabilizes, in other words, until no more reduction can occur.</p>
+<p>The <b>function operator</b> <code>(λ fn)</code> tries to apply a transformation until it stabilizes, in other words, until no more reduction can occur.</p>
 
 <pre>
-((λ 3/2) 16)      <i>; 81</i>
-((λ 5/6) 2^4 3^3) <i>; 2 5^3</i>
+(λ 3/2 (2 2))       <i>; (2 3), (3 3).</i>
+(λ 5/3 (3 3 3 7))   <i>; (3 3 5 7), (3 5 5 7), (5 5 5 7).</i>
+(% 2 (λ 1/2 2^5))   <i>; 2 for odd, () for even.</i>
 </pre>
 
+<p>For example, to count until 5, a fraction containing the boundary of the iteration can halt the transformation.</p>
+<pre>
+(λ 2/1 3/2^5)
+</pre>
+<pre style='margin-top:-29px'>
+(λ 2/1 3/2^4)
+(λ 2/1 3/2^3)
+(λ 2/1 3/2^2)
+(λ 2/1 3/2^1)
+3
+</pre>
 
 <!--
-<p>Everything below this line is experimental and in flux.. The plan is to find a way to recursively apply a fraction while it is possible, for example so that (4 3/2) would apply 3/2 for both values in r2 so that it yields 9. If you have an elegant idea for this, get in touch!</p>
-
-<h3>Processes</h3>
-
-<p>Unreduced bags prefixed with either %, λ or ?, temporarily impose order in otherwise unordered lists, for example, the lambda notation expects bags in a certain order to bind scope variables. After reduction, the result collapses back into a multiset. Order is contextual and only present in unreduced bags.</p>
-
-<p>The <b>conditional operator</b> <code>(? bag a b)</code> returns
-the <i>a</i> when the bag is not Empty[1], otherwise it returns <i>b</i>.</p>
-<pre>
-(? ()
-	("Not Empty")
-	("Empty"))
-
-(? (% (2 3 7 7) (7 7))
-	("bag contains twice 7")
-	("bag does not contain twice 7"))
-</pre>
-
-
 
 <h3>Factorial</h3>
 
