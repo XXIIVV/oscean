@@ -1,7 +1,7 @@
 ( Left )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
@@ -63,7 +63,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "30 20 "Jun 20 "2025 $1 02
+	( date ) "7 20 "Nov 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -82,7 +82,8 @@
 	( - ) 05 "V =snarf/paste-binary =dict/paste-binary
 	( - ) 01 "x =snarf/<cut> =dict/cut
 	( - ) 00 08 =erase =dict/erase
-	( - ) 00 7f =delete =dict/delete }
+	( - ) 00 7f =delete =dict/delete
+	( - ) 01 "k =request/capture =dict/request }
 	={ =dict/go
 	( - ) 01 "/ =path/pop-folder =dict/directory
 	( - ) 01 0d =path/push-selection =dict/selection }
@@ -1128,7 +1129,7 @@
 	JMP2r
 
 @file/<build> ( -- )
-	;path/buf <pstr>
+	;path/buf str/<print>
 	#0a18 DEO
 	JMP2r
 
@@ -1535,6 +1536,11 @@
 		DUP2 <cut-char-at> !sel/<set-a> }
 	sel/erase !sel/<reset>
 
+@request/capture ( -- )
+	search/capture ;search/buf .Console/addr DEO2
+	[ LIT2 02 -Console/mode ] DEO
+	[ LIT2 01 -Console/exec ] DEO !search/<reset>
+
 @<cut-char-at> ( addr* -- )
 	#0001 <msfl>
 	#ffff !textarea/<mod-length>
@@ -1654,6 +1660,7 @@
 	&tab "Tab $1
 	&untab "Untab $1
 	&select "Select $1
+	&request "Request $1
 	&all "All $1
 	&word "Word $1
 	&symbol "Symbol $1
@@ -1989,18 +1996,10 @@
 	JMP2r
 	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
 
-@<phex> ( short* -- )
-	SWP <phex>/b
-	&b ( byte -- )
-	DUP #04 SFT <phex>/c
-	&c ( byte -- )
-	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-	JMP2r
-
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 LDAk ?<pstr>
-	POP2 JMP2r
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 (
 @|assets )
