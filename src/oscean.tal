@@ -204,6 +204,9 @@
 %log/is-unevent ( log* -- log* t ) {
 	log/get-rune [ LIT "+ ] NEQ }
 
+%log/is-valid ( log* -- log* t ) {
+	DUP2 #000a ADD2 lexicon/find #ffff NEQ2 }
+
 @diary/<load> ( name* -- )
 	;&buf [ LIT2 &length $2 ] mem/<clr>
 	path-tmp-log/make .File/name DEO2
@@ -244,6 +247,8 @@
 			DUP2 #0900 str/<swap-char>
 			DUP2 diaries/<use>
 			log/is-unevent ?{ events/<push> }
+			log/is-valid ?{
+				DUP2 #000a ADD2 ;warnings/unknown warning/<print> }
 			journal/<write-log>
 			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 INC2 INC2 GTH2k ?&>l-pages
@@ -261,7 +266,7 @@
 		( bit ) #01 OVR #07 AND #40 SFT SFT STH
 		( res ) #03 SFT2 ;&buf ADD2 LDAk STHr ORA ROT ROT STA
 		JMP2r }
-	;dict/warn-duplicate str/<print>
+	;warnings/duplicate warning/<print>
 	dec/<print>
 	#0a18 DEO
 	JMP2r
@@ -398,7 +403,7 @@
 	DUP2 diary/<load>
 	DUP2 incoming/<load>
 	( | verify orphans )
-	.File/success DEI2 ORA ?{ DUP2 ;err/orphan warning/<print> }
+	.File/success DEI2 ORA ?{ DUP2 ;warnings/orphan warning/<print> }
 	( | fill name )
 	DUP2 term/<set-name>
 	DUP2 lexicon/find-parent term/<set-parent>
@@ -493,7 +498,7 @@
 @page/<build-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
 	( ) DUP [ LIT ", ] NEQ ?{ POP !module/<build-album> }
-	diary/count #0002 LTH2 ?{ ;term/name ;err/hidden warning/<print> }
+	diary/count #0002 LTH2 ?{ ;term/name ;warnings/hidden warning/<print> }
 	( ) DUP [ LIT "; ] NEQ ?{ POP !module/<build-portal> }
 	( ) DUP [ LIT ". ] NEQ ?{ POP !module/<build-both> }
 	( ) [ LIT ": ] NEQ ?{ !module/<build-archive> }
@@ -556,7 +561,7 @@
 		( ) #0000 EQU2 ?{
 			DUP2 .File2/write DEO2
 			INCr !&>s }
-	POP2 STHr ?{ DUP2 ;err/source error/<print> }
+	POP2 STHr ?{ DUP2 ;warnings/source error/<print> }
 	POP2
 	( restore ) #0001 .File2/length DEO2
 	JMP2r
@@ -737,12 +742,16 @@
 @|Stdlib )
 
 @warning/<print> ( name* msg* -- )
+	LIT2 "- 18 DEOk DEO
+	#2018 DEO
 	( msg ) str/<print>
 	( name ) str/<print>
 	#0a18 DEO
 	JMP2r
 
 @error/<print> ( name* msg* -> )
+	LIT2 "- 18 DEOk DEO
+	#2018 DEO
 	( msg ) str/<print>
 	( name ) str/<print>
 	#0a18 DEO
@@ -907,9 +916,11 @@
 @ext/html ".html $1
 	&htm ".htm $1
 
-@err/source "-- 20 "Source: 20 $1
-	&orphan "-- 20 "Orphan: 20 $1
-	&hidden "-- 20 "Hidden: 20 $1
+@warnings/source "Source: 20 $1
+	&orphan "Orphan: 20 $1
+	&hidden "Hidden: 20 $1
+	&duplicate "Duplicate 20 "diary: 20 $1
+	&unknown "Unknown 20 "diary: 20 $1
 
 @path/lexicon "src/tables/lexicon $1
 	&sitemap "src/htm/sitemap.htm $1
@@ -939,9 +950,7 @@
 	&no-picture "000 $1
 	&incoming-txt "incoming: 20 $1
 	&right-txt "right $1 &spacer 20 "&mdash; 20 $1
-	&available-txt ".. 20 "Available 20 "diary: 20 $1
-	&warn-duplicate "-- 20 "Duplicate 20 "diary: 20 $1
-	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1 &in 20 "in 20 $1
+	&available-txt ".. 20 "Available 20 "diary: 20 $1 &in 20 "in 20 $1
 	&err-overflow "!! 20 "Overflow: 20 $1
 	&err-redlink "!! 20 "Redlink: 20 $1
 
