@@ -13,16 +13,16 @@
 |000
 
 	@selection $1 &track $1 &scroll $1
-	@path/buf $2 &null $80
 	@lines &folders $1 &tracks $1
 	@playing $1
 	@paused $1
-	@prefix &folders $1 &tracks $1
+	@prefix/folders $1 &tracks $1
 	@secfrom $2
 	@secto $2
 	@secprog $2
-	@frames &a $2 &b $2
+	@frames/a $2 &b $2
 	@controls/repeat $1 &shuffle $1
+	@path/buf $2 &null $80
 
 |100
 
@@ -69,7 +69,11 @@
 	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU }
 
 %is-mp3 ( line* -- line*f ) {
-	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext scmp3 }
+	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext str/cmp3 }
+
+@is-mp3-ext ( str* -- str* t )
+	LDA2k [ LIT2 ".m ] EQU2 ?{ #00 JMP2r }
+	INC2k INC2 LDA2 [ LIT2 "p3 ] EQU2 JMP2r
 
 %MOD2 ( n* mod* -- n* ) {
 	DIV2k MUL2 SUB2 }
@@ -79,7 +83,7 @@
 
 @on-console ( -> )
 	[ LIT2 01 -Console/type ] DEI EQU ?{ BRK }
-	[ LIT2 0a -Console/read ] DEI EQUk ?{ message/<append>
+	[ LIT2 0a -Console/read ] DEI EQUk ?{ message/<push>
 		POP BRK }
 	POP2 message/<parse>
 	BRK
@@ -95,6 +99,7 @@
 	cursor/<update>
 	( | route events )
 	.Mouse/y DEI2
+	( within window ) DUP2 #8000 LTH2 ?{ POP2 BRK }
 	( > ) [ LIT2 00 -playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?&player }
 	( | on list )
 	<y-id>
@@ -158,28 +163,28 @@
 @|message )
 
 @message/<parse> ( -- )
-	#00 /<append>
+	#00 /<push>
 	( | parse line )
 	;&buf LDAk [ LIT "@ ] EQU ?{ POP2 JMP2r }
 	INC2 LDAk
 	( | route )
 	DUP [ LIT "F ] EQU ?handle-frame
 	DUP [ LIT "S ] EQU ?handle-status
-	DUP [ LIT "I ] EQU ?handle-id3
+	DUP [ LIT "I ] EQU ?id3/<handle>
 	DUP [ LIT "P ] EQU ?handle-pause
 	DUP [ LIT "R ] EQU ?handle-revision
 	DUP [ LIT "J ] EQU ?handle-jump
 	POP
 	( | not-handled )
-	<perr>
+	err/<print>
 	#0a19 DEO
 	( >> )
 
 @message/<new> ( -- )
-	( reset ) ;&buf ,&ptr STR2
+	;&buf ,&ptr STR2
 	JMP2r
 
-@message/<append> ( c -- )
+@message/<push> ( c -- )
 	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA
 	JMP2r
@@ -205,23 +210,23 @@
 
 @<seek-prev> ( -- )
 	.secfrom LDZ2 #000a LTH2 ?<skip-prev>
-	;dict/jump-cmd <pstr>
-	.secprog LDZ2 pos-to-seconds #000a SUB2 <pdec>
+	;dict/jump-cmd str/<print>
+	.secprog LDZ2 pos-to-seconds #000a SUB2 dec/<print>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
 
 @<seek-next> ( -- )
 	.secto LDZ2 #000a LTH2 ?<skip-next>
-	;dict/jump-cmd <pstr>
-	.secprog LDZ2 pos-to-seconds #000a ADD2 <pdec>
+	;dict/jump-cmd str/<print>
+	.secprog LDZ2 pos-to-seconds #000a ADD2 dec/<print>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
 
 @<seek> ( x* -- )
-	;dict/jump-cmd <pstr>
-	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 <pdec>
+	;dict/jump-cmd str/<print>
+	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 dec/<print>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
@@ -231,16 +236,16 @@
 	[ LIT2 01 -playing ] STZ
 	<fit-window>
 	( | request )
-	;dict/load-cmd <pstr>
-	;path/buf <pstr>
-	<pstr>/
+	;dict/load-cmd str/<print>
+	;path/buf str/<print>
+	str/<print>
 	#0a18 DEO
 	JMP2r
 
 @<send-pause> ( -- )
 	.playing LDZ ?{ JMP2r }
 	[ LIT2 02 -paused ] LDZ ORA .paused STZ
-	;dict/pause-cmd <pstr> !controls/<draw-play>
+	;dict/pause-cmd str/<print> !controls/<draw-play>
 
 @<move> ( mod -- )
 	.selection LDZ ADD
@@ -278,7 +283,7 @@
 	( > ) [ LIT2 00 -selection/scroll ] STZ
 	( > ) [ LIT2 00 -selection ] STZ
 	#ff ;<select>/last STA
-	path/<push> !<refresh-dir>
+	path/<push-str> !<refresh-dir>
 
 @<escape> ( -- )
 	;path/null LDA ?{ JMP2r }
@@ -288,19 +293,19 @@
 	path/pop !<refresh-dir>
 
 @<find-any> ( letter -- )
-	( case insensitive ) cflc STH
+	( case insensitive ) chr/lc STH
 	( | folders )
 	.lines/folders LDZ #00
-	&>folders ( -- )
+	&>folders
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 LDA cflc STHkr NEQ ?{ POPr NIP !<select> }
+		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 LDA chr/lc STHkr NEQ ?{ POPr NIP !<select> }
 		INC GTHk ?&>folders
 	POP2
 	( | tracks )
 	.lines/tracks LDZ #00
-	&>tracks ( -- )
+	&>tracks
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 LDA cflc STHkr NEQ ?{
+		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 LDA chr/lc STHkr NEQ ?{
 			POPr NIP .lines/folders LDZ ADD !<select> }
 		INC GTHk ?&>tracks
 	POP2 POPr JMP2r
@@ -340,17 +345,6 @@
 	<draw-title-scroll>
 	progress/<draw>
 	chicago/<draw-timestamp> !message/<new>
-
-@handle-id3 ( buf* char -- )
-	POP [ LIT ". ] find-next INC2 LDA2k
-	( | parse lines )
-	DUP2 [ LIT2 "ti ] NEQ2 ?{
-		OVR2 [ LIT ": ] find-next INC2 ;id3/title <scpy> }
-	DUP2 [ LIT2 "ar ] NEQ2 ?{
-		OVR2 [ LIT ": ] find-next INC2 ;id3/artist <scpy> }
-	DUP2 [ LIT2 "al ] NEQ2 ?{
-		OVR2 [ LIT ": ] find-next INC2 ;id3/album <scpy> }
-	POP2 POP2 !message/<new>
 
 @handle-pause ( buf* char -- )
 	POP INC2 INC2 LDA
@@ -423,21 +417,21 @@
 
 @str-lth ( a* b* -- a>b )
 	STH2
-	&>loop ( -- )
+	&>loop
 		LDAk LDAkr STHr SUBk ?{
 			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
 	NIP2 LTH POP2r JMP2r
 
 @str-len ( a* -- len )
 	[ LITr 00 ]
-	&>loop ( -- )
+	&>loop
 		LDAk ?{ POP2 STHr JMP2r }
 		INCr next-glyph !&>loop
 
 @str-prefix ( a* b* -- len )
 	STH2
 	DUP2 ,&a0 STR2
-	&>loop ( -- )
+	&>loop
 		LDAk LDAkr STHr NEQk ?{
 			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
 	POP2 POP2r [ LIT2 &a0 $2 ] SUB2 NIP JMP2r
@@ -460,10 +454,10 @@
 
 @sort-files ( first* last* -- )
 	SWP2
-	&>loop ( -- )
+	&>loop
 		GTH2k ?{ POP2 POP2 JMP2r }
 		OVR2 OVR2 STH2k #0080 ADD2
-		&>loop2 ( -- )
+		&>loop2
 			LTH2k ?&done
 			DUP2 STH2kr str-lth ?&replace
 			!{
@@ -475,10 +469,10 @@
 
 @swap-tracks ( src* dst* -- )
 	EQU2k ?{
-		DUP2 ;tmp <scpy>
+		DUP2 ;tmp/buf <scpy>
 		OVR2 STH2
 		<scpy>
-		;tmp STH2r !<scpy> }
+		;tmp/buf STH2r !<scpy> }
 	POP2 POP2 JMP2r
 
 @common-folder-prefix ( -- len )
@@ -494,7 +488,7 @@
 	SWP2 DUP2k str-len STH
 	,&s0 STR2
 	#0080 ADD2
-	&>loop ( -- )
+	&>loop
 		GTH2k ?{ POP2 POP2 STHr JMP2r }
 		DUP2 [ LIT2 &s0 $2 ] str-prefix STHr min STH
 		#0080 ADD2 !&>loop
@@ -514,41 +508,25 @@
 
 @find-next ( buf* c -- index* )
 	,&t STR
-	&>loop ( -- )
+	&>loop
 		LDAk [ LIT &t $1 ] EQU ?{ INC2 !&>loop }
 	JMP2r
 
 @parse-dec ( buf* -- end* res* )
 	[ LIT2r 000a ] [ LIT2r 0000 ]
-	&>loop ( -- )
+	&>loop
 		LDAk [ LIT "0 ] SUB DUP #09 GTH ?{
 			OVR2r MUL2r [ LITr 00 ] STH
 			ADD2r INC2 !&>loop }
 	POP STH2r POP2r JMP2r
 
 @<tags-autofill> ( file* -- )
-	;dict/no-album ;id3/album <scpy>
+	;dict/no-album id3/<set-album>
 	( | find spacer )
-	DUP2 find-spacer INC2 ORA ?{
-		;id3/title <scpy>
-		( | remove ext )
-		;id3/title scap #0004 SUB2 INC2k ;dict/mp3-ext scmp3
-		( ) #00 EQU ?{ STH2k #00 STH2r STA }
-		POP2 ;dict/no-artist ;id3/artist !<scpy> }
+	DUP2 find-spacer INC2 ORA ?{ id3/<set-title>
+		;dict/no-artist id3/<set-artist> }
 	( | copy artist )
-	[ LIT2r =id3/artist ]
-	&>artist ( -- )
-		LDA2k [ LIT2 20 "- ] EQU2 ?{
-			LDAk #00 STH2kr INC2r STA2
-			INC2 LDAk ?&>artist }
-	POP2r INC2 INC2 INC2
-	( | copy title )
-	[ LIT2r =id3/title ]
-	&>title ( -- )
-		LDA2k [ LIT2 ".m ] EQU2 ?{
-			LDAk #00 STH2kr INC2r STA2
-			INC2 LDAk ?&>title }
-	POP2r POP2 JMP2r
+	id3/set-artist INC2 INC2 INC2 !id3/<set-title>
 
 @find-spacer ( file* -- <file>* )
 	LDA2k [ LIT2 20 "- ] NEQ2 ?{ JMP2r }
@@ -559,26 +537,74 @@
 @|path )
 
 @path/<set> ( path* -- )
-	;path/buf !<scpy>
+	[ LIT2 -&buf _&ptr ] STR
+	( >> )
 
-@path/<push> ( subpath* -- )
-	;path/buf scap/ !<scpy>
+@path/<push-str> ( subpath* -- )
+	&>wpu
+		LDAk DUP ?{ POP POP2 JMP2r }
+		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		STZ2
+		INC2 !&>wpu
 
 @path/pop ( -- )
-	;path/buf scap/ #0001 SUB2
-	&>w ( -- )
-		;path/null LDA ?{ POP2 JMP2r }
-		#0001 SUB2 LDAk [ LIT "/ ] NEQ ?{
-			LITr 00 STH2
-			INC2r STAr
-			JMP2r }
-		!&>w
+	/nest INC #00 OVR STZ
+	,&ptr STR
+	JMP2r
+
+@path/nest ( -- addr )
+	[ LIT2 -&buf _&ptr ] LDR #01 SUB
+	&>rew
+		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?&>rew }
+	NIP JMP2r
 
 @path/get-location ( -- str* )
-	;path/buf ;path/buf scap/ #0001 SUB2
-	&>wg ( -- )
-		#0001 SUB2 LDAk [ LIT "/ ] EQU ?{ NEQ2k ?&>wg }
-	NIP2 INC2 JMP2r
+	#00 !path/nest
+
+(
+@|ID3 )
+
+@id3/<handle> ( buf* char -- )
+	POP [ LIT ". ] find-next INC2 LDA2k
+	( | parse lines )
+	DUP2 [ LIT2 "ti ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 /<set-title> }
+	DUP2 [ LIT2 "ar ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 /<set-artist> }
+	DUP2 [ LIT2 "al ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 /<set-album> }
+	POP2 POP2 !message/<new>
+
+@id3/<set-title> ( title* -- )
+	[ LIT2r =&title ]
+	&>wti
+		is-mp3-ext ?&end
+		LDAk DUP ?{
+			POP &end POP2 POP2r JMP2r }
+		#00 STH2kr STA2
+		INC2r INC2 !&>wti
+
+@id3/<set-artist> ( artist* -- )
+	[ LIT2r =&artist ]
+	&>war
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		#00 STH2kr STA2
+		INC2r INC2 !&>war
+
+@id3/set-artist ( str* -- cap* )
+	[ LIT2r =&artist ]
+	&>war2
+		LDA2k [ LIT2 20 "- ] EQU2 ?{
+			LDAk #00 STH2kr INC2r STA2
+			INC2 LDAk ?&>war2 }
+	POP2r JMP2r
+
+@id3/<set-album> ( album* -- )
+	[ LIT2r =&album ]
+	&>wal
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		#00 STH2kr STA2
+		INC2r INC2 !&>wal
 
 (
 @|drawing )
@@ -608,7 +634,7 @@
 	.lines/tracks LDZ #00 NEQk ?{ POP2 JMP2r }
 	.selection/scroll LDZ .lines/folders LDZ LTH ?{
 		.selection/scroll LDZ .lines/folders LDZ SUB ADD }
-	&>l ( -- )
+	&>l
 		#00 <draw-background>
 		[ LITr 05 ]
 		( | playing )
@@ -643,7 +669,7 @@
 	,&addr STR2
 	SWP STH
 	[ LITr -Screen/sprite ]
-	&>l ( -- )
+	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
 		INC DUP ?&>l
@@ -654,7 +680,7 @@
 	#0008 .Screen/x DEO2
 	.lines/folders LDZ #00 NEQk ?{ POP2 JMP2r }
 	.selection/scroll LDZ ADD GTHk ?{ POP2 JMP2r }
-	&>l ( -- )
+	&>l
 		( | background )
 		[ LITr 01 ] #00 <draw-background>
 		( | selected )
@@ -814,7 +840,7 @@
 	[ LIT2 81 -Screen/sprite ] DEO
 	( | cap middle )
 	#e3
-	&>t ( -- )
+	&>t
 		;&middle-chr .Screen/addr DEO2
 		[ LIT2 81 -Screen/sprite ] DEO
 		INC DUP ?&>t
@@ -826,7 +852,7 @@
 	#0008 .Screen/x DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	#0000
-	&>l ( -- )
+	&>l
 		DUP2 #0004 ADD2 .Screen/x DEO2
 		;&fill-icn .Screen/addr DEO2
 		[ LIT2 0a -Screen/sprite ] DEOk DEO
@@ -875,7 +901,7 @@
 @next-nth-glyph ( offset* text* -- text* )
 	STH2
 	DUP2r #0000 EQU2k ?{
-		&>l ( -- )
+		&>l
 			STH2r next-glyph LDAk ?{ POP2 STH2kr }
 			STH2
 			INC2 GTH2k ?&>l }
@@ -895,10 +921,67 @@
 	#81fe ;&bg-chr #15 !<draw-times-addr>
 
 (
+@|stdlib )
+
+@chr/lc ( c -- lowercase )
+	DUP #41 SUB #1a GTH ?{ #20 ADD }
+	JMP2r
+
+@scap ( str* -- end* )
+	INC2 LDAk ?scap
+	JMP2r
+
+@str/cmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@<scpy> ( src* dst* -: )
+	STH2
+	&>w
+		( src* `dst* -- ) LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&>w
+	POP2 POP2r JMP2r
+
+@lcap ( str* -- next-line* )
+	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
+	JMP2r
+
+@<lcpy> ( src* dst* -- )
+	STH2
+	&w ( -- )
+	LDAk #1f GTH ?{
+		POP2 #00 STH2r STA
+		JMP2r }
+	LDAk #00 STH2kr STA2
+	INC2r INC2 !&w
+
+@dec/<print> ( short* -- )
+	#000a SWP2 [ LITr ff ]
+	&>get
+		SWP2k MOD2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD #18 DEO !&>put
+
+@str/<print> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>w
+
+@err/<print> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#19 DEO
+		INC2 !&>w
+
+(
 @|assets )
 
-@dict
-	&home-path "./ $1
+@dict/home-path "./ $1
 	&mp3-ext "mp3 $1
 	&empty "(empty) $1
 	&mpg-cmd "mpg123 20 "-R $1
@@ -1081,7 +1164,7 @@
 			/<draw-utf8>
 			POP2 JMP2r }
 		( | trim mp3 )
-		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext scmp3 ?&end }
+		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext str/cmp3 ?&end }
 		/<draw-utf8>
 		next-glyph LDAk ?&>wsc &end POP2 JMP2r
 
@@ -1166,76 +1249,11 @@
 	( > ) DUP2 #01 SFT2 EOR2 EOR2
 	( > ) ,&y STR2k POP JMP2r
 
-(
-@|stdlib )
-
-@cflc ( c -- lowercase )
-	DUP #41 SUB #1a GTH ?{ #20 ADD }
-	JMP2r
-
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
-
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@<scpy> ( src* dst* -: )
-	STH2
-	&>w ( src* `dst* -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>w
-	POP2 POP2r JMP2r
-
-@lcap ( str* -- next-line* )
-	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
-	JMP2r
-
-@<lcpy> ( src* dst* -- )
-	STH2
-	&w ( -- )
-	LDAk #1f GTH ?{
-		POP2 #00 STH2r STA
-		JMP2r }
-	LDAk #00 STH2kr STA2
-	INC2r INC2 !&w
-
-@<pdec> ( short* -- )
-	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k MOD2 STH
-		POP OVR2 DIV2 ORAk ?&>get
-	POP2 POP2
-	&>put ( -- )
-		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
-
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
-
-@<perr> ( str* -- )
-	LDAk #19 DEO
-	INC2 & LDAk ?<perr>
-	POP2 JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
-	JMP2r
-
 
 
 ( assets )
 
-@header
-	&bg-chr [
+@header/bg-chr [
 	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
 	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
 	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
@@ -2352,11 +2370,11 @@
 	0000 0000 0000 0000 0000 3333 0000 0000
 	0000 0000 0000 0000 0000 3030 0000 0000 ]
 
-@message &buf $200
+@message/buf $200
 
-@id3 &title $100 &artist $100 &album $100
+@id3/title $100 &artist $100 &album $100
 
-@tmp $81
+@tmp/buf $81
 
-@mem &dir $2000 &folders $3000 &tracks
+@mem/dir $2000 &folders $3000 &tracks
 
