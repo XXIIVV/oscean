@@ -26,12 +26,11 @@ function Uxn (emu)
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
 	const ram = new Uint8Array(0x10000)
-	const wst = new Stack(this, "WST")
-	const rst = new Stack(this, "RST")
+	const stk = [new Stack(this, "WST"), new Stack(this, "RST")]
 
 	this.dev = new Uint8Array(0x100)
-	this.get_wst = () => { return wst }
-	this.get_rst = () => { return rst }
+	this.get_wst = () => { return stk[0] }
+	this.get_rst = () => { return stk[1] }
 	
 	/* Microcode */
 
@@ -62,11 +61,11 @@ function Uxn (emu)
 		switch(ins) {
 		case 0x20:/*JCI*/ if(Po1()) Jmi(); else pc += 2; return;
 		case 0x40:/*Jmi*/ Jmi(); return;
-		case 0x60:/*JSI*/ rst.PU2(pc + 2); Jmi(); return;
-		case 0xa0:/*LI2*/ wst.PU1(ram[pc++]);
-		case 0x80:/*LIT*/ wst.PU1(ram[pc++]); return;
-		case 0xe0:/*LIr*/ rst.PU1(ram[pc++]);
-		case 0xc0:/*L2r*/ rst.PU1(ram[pc++]); return;
+		case 0x60:/*JSI*/ stk[1].PU2(pc + 2); Jmi(); return;
+		case 0xa0:/*LI2*/ stk[0].PU1(ram[pc++]);
+		case 0x80:/*LIT*/ stk[0].PU1(ram[pc++]); return;
+		case 0xe0:/*LIr*/ stk[1].PU1(ram[pc++]);
+		case 0xc0:/*L2r*/ stk[1].PU1(ram[pc++]); return;
 		}
 	}
 	
@@ -105,8 +104,8 @@ function Uxn (emu)
 	this.step = () => {
 		const ins = ram[pc++]
 		m2 = ins & 0x20, mr = ins & 0x40, mk = ins & 0x80
-		if(mr) src = rst, dst = wst
-		else   src = wst, dst = rst
+		if(mr) src = stk[1], dst = stk[0]
+		else   src = stk[0], dst = stk[1]
 		if(mk) src.keep()
 		lut[ins & 0x1f](ins)
 		return ins
