@@ -188,19 +188,36 @@ POP2 BRK
   with methods accessible via sublabels. )
 
 @on-reset ( -> )
-    #08 #04 point/set-pos       ( Call set-pos method of point object )
-    point/get-y                 ( Call get-y method )
-    BRK
+  ;dict/a obj/set
+  ;dict/b obj/join
+  obj/emit
+  BRK
 
-@point                          ( Define object )
-    &set-pos ( x y -- )         ( Create method )
-        ,&y STR ,&x STR JMP2r   ( Save values to local members )
-    &get-pos ( -- x y )
-        /get-x !/get-y          ( Call local methods with the / rune )
-    &get-x ( -- x )
-        [ LIT &x $1 ] JMP2r     ( Allocate local memory for variables )
-    &get-y ( -- x )
-        [ LIT &y $1 ] JMP2r`,
+@obj/set ( -- )
+  ;&buf ,&ptr STR2
+  ( >> )
+
+@obj/join ( str* -- )
+  &>w
+    LDAk DUP ?{ POP POP2 JMP2r }
+    /push INC2 !&>w
+
+@obj/emit ( -- )
+  ,&ptr LDR2 ;&buf
+  &>l
+    NEQ2k ?{ POP2 POP2 JMP2r }
+    LDAk #18 DEO INC2 !&>l
+
+@obj/push ( c -- )
+  #00 [ LIT2 &ptr =&buf ]
+  DUP2 ;&cap NEQ2 ?{ ( handle overflow ) }
+  INC2k ,&ptr STR2
+	STA2 JMP2r
+
+@dict/a "foo $1
+  &b "bar $1
+
+@obj/buf $40 &cap`,
 
 /*
 @|10.Debugging */
