@@ -93,7 +93,7 @@ function step() {
 		status(1, "Restart", "Done")
 		return;
 	}
-	wst_el.innerHTML = emulator.uxn.wst.print()
+	wst_el.innerHTML = emulator.uxn.get_wst().print()
 	status(0, "Finish", make_opcode(opc))
 }
 
