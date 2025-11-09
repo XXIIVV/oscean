@@ -21,7 +21,7 @@ function Stack(u, name)
 
 function Uxn (emu)
 {
-	let a, b, pc, src, dst, m2, mr, mk;
+	let a, b, pc, m2, mr, mk;
 	const x = new Uint8Array(2);
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
@@ -33,22 +33,22 @@ function Uxn (emu)
 	this.get_rst = () => { return stk[1] }
 	
 	/* Microcode */
-
-	function Sig(val) { return val >= 0x80 ? val - 256 : val }
+	
+	function Sig(n) { return n >= 0x80 ? n - 256 : n }
 	function Jmp(i) { if(m2) pc = i & 0xffff; else pc = (pc + Sig(i)) & 0xffff; }
 	function Jmi() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
-	function Po1() { return src.PO1() }
-	function Po2() { return src.PO2() }
+	function Po1() { return stk[mr].PO1() }
+	function Po2() { return stk[mr].PO2() }
 	function Pox() { return m2 ? Po2() : Po1() }
-	function Pu1(x) { src.PU1(x) }
-	function Pux(x) { if(m2) src.PU2(x); else Pu1(x) }
+	function Pu1(x) { stk[mr].PU1(x) }
+	function Pux(x) { if(m2) stk[mr].PU2(x); else Pu1(x) }
 	function Get(o) { if(m2) o[1] = Po1(); o[0] = Po1() }
 	function Put(i) { Pu1(i[0]); if(m2) Pu1(i[1]) }
 	function Dei(i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); Put(o) }
 	function Deo(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
 	function Pek(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; Put(o) }
 	function Pok(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
-	function Rec() { if(mk) src.recover() }
+	function Rec() { if(mk) stk[mr].recover() }
 
 	/* Opcodes */
 
@@ -83,8 +83,8 @@ function Uxn (emu)
 	function LTH(ins) { a=Pox(), b=Pox(), Rec(); Pu1(b < a); }
 	function JMP(ins) { a=Pox(), Rec(); Jmp(a); }
 	function JCN(ins) { a=Pox(), b=Po1(), Rec(); if(b) Jmp(a); }
-	function JSR(ins) { a=Pox(), Rec(); dst.PU2(pc), Jmp(a); }
-	function STH(ins) { Get(x), Rec(); dst.PU1(x[0]); if(m2) dst.PU1(x[1]); }
+	function JSR(ins) { a=Pox(), Rec(); stk[mr^1].PU2(pc), Jmp(a); }
+	function STH(ins) { Get(x), Rec(); stk[mr^1].PU1(x[0]); if(m2) stk[mr^1].PU1(x[1]); }
 	function LDZ(ins) { a=Po1(), Rec(); Pek(a, x, 0xff); }
 	function STZ(ins) { a=Po1(), Get(y), Rec(); Pok(a, y, 0xff); }
 	function LDR(ins) { a=Po1(), Rec(); Pek(pc + Sig(a), x, 0xffff); }
@@ -102,12 +102,22 @@ function Uxn (emu)
 	function EOR(ins) { a=Pox(), b=Pox(), Rec(); Pux(b ^ a); }
 	function SFT(ins) { a=Po1(), b=Pox(), Rec(); Pux(b >> (a & 0xf) << (a >> 4)); }
 
+	this.init = () => {
+		pc = 0x100
+	}
+	
+	this.eval = (at) => {
+		let steps = 0x8000000
+		pc = at;
+		while(steps-- && this.step());
+	}
+	
 	this.step = () => {
 		const ins = ram[pc++]
-		m2 = ins & 0x20, mr = ins & 0x40, mk = ins & 0x80
-		if(mr) src = stk[1], dst = stk[0]
-		else   src = stk[0], dst = stk[1]
-		if(mk) src.keep()
+		m2 = ins & 0x20
+		mr = ins >> 6 & 1
+		mk = ins & 0x80
+		if(mk) stk[mr].keep()
 		lut[ins & 0x1f](ins)
 		return ins
 	}
@@ -117,15 +127,4 @@ function Uxn (emu)
 			ram[0x100 + i] = program[i]
 		return this
 	}
-
-	this.init = () => {
-		pc = 0x100
-	}
-
-	this.eval = (at) => {
-		let steps = 0x8000000
-		pc = at;
-		while(steps-- && this.step());
-	}
-
 }
