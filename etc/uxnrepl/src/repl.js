@@ -71,7 +71,7 @@ function run() {
 	term_el.innerHTML += emulator.console.stdout_body
 	if(emulator.console.stdout_body)
 		term_el.scrollTop = term_el.scrollHeight;
-	wst_el.innerHTML = emulator.uxn.wst.print()
+	wst_el.innerHTML = emulator.uxn.get_wst().print()
 	status(1, "Restart", "Step")
 }
 

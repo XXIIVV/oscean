@@ -21,80 +21,90 @@ function Stack(u, name)
 
 function Uxn (emu)
 {
-	let a, b, pc, src, dst, m2, mk;
+	let a, b, pc, src, dst, m2, mr, mk;
 	const x = new Uint8Array(2);
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
 	const ram = new Uint8Array(0x10000)
+	const wst = new Stack(this, "WST")
+	const rst = new Stack(this, "RST")
 
 	this.dev = new Uint8Array(0x100)
-	this.wst = new Stack(this, "WST")
-	this.rst = new Stack(this, "RST")
-
+	this.get_wst = () => { return wst }
+	this.get_rst = () => { return rst }
+	
 	/* Microcode */
 
-	function JMP(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
-	function JMI() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
-	function POx() { return m2 ? src.PO2() : src.PO1() }
-	function PUx(x) { if(m2) src.PU2(x); else src.PU1(x) }
-	function GET(o) { if(m2) o[1] = src.PO1(); o[0] = src.PO1() }
-	function PUT(i) { src.PU1(i[0]); if(m2) src.PU1(i[1]) }
-	function DEI(i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); PUT(o) }
-	function DEO(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
-	function PEK(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; PUT(o) }
-	function POK(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
+	function Jmp(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
+	function Jmi() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
+	function Pox() { return m2 ? src.PO2() : src.PO1() }
+	function Pux(x) { if(m2) src.PU2(x); else src.PU1(x) }
+	function Get(o) { if(m2) o[1] = src.PO1(); o[0] = src.PO1() }
+	function Put(i) { src.PU1(i[0]); if(m2) src.PU1(i[1]) }
+	function Dei(i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); Put(o) }
+	function Deo(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
+	function Pek(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; Put(o) }
+	function Pok(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
+
+	/* Opcodes */
+
+	const lut = [
+		IMM, INC, POP, NIP, SWP, ROT, DUP, OVR,
+		EQU, NEQ, GTH, LTH, JMP, JCN, JSR, STH,
+		LDZ, STZ, LDR, STR, LDA, STA, DEI, DEO,
+		ADD, SUB, MUL, DIV, AND, ORA, EOR, SFT]
+		
+	function IMM(ins) {
+		switch(ins) {
+		case 0x20:/*JCI*/ if(src.PO1()) Jmi(); else pc += 2; return;
+		case 0x40:/*Jmi*/ Jmi(); return;
+		case 0x60:/*JSI*/ rst.PU2(pc + 2); Jmi(); return;
+		case 0xa0:/*LI2*/ wst.PU1(ram[pc++]);
+		case 0x80:/*LIT*/ wst.PU1(ram[pc++]); return;
+		case 0xe0:/*LIr*/ rst.PU1(ram[pc++]);
+		case 0xc0:/*L2r*/ rst.PU1(ram[pc++]); return;
+		}
+	}
+	
+	function INC(inc) { a=Pox(), src.k(mk); Pux(a + 1); }
+	function POP(ins) { Pox(), src.k(mk); }
+	function NIP(ins) { Get(x), Pox(), src.k(mk); Put(x); }
+	function SWP(ins) { Get(x), Get(y), src.k(mk); Put(x), Put(y); }
+	function ROT(ins) { Get(x), Get(y), Get(z), src.k(mk); Put(y), Put(x), Put(z); }
+	function DUP(ins) { Get(x), src.k(mk); Put(x), Put(x); }
+	function OVR(ins) { Get(x), Get(y), src.k(mk); Put(y), Put(x), Put(y); }
+	function EQU(ins) { a=Pox(), b=Pox(), src.k(mk); src.PU1(b == a); }
+	function NEQ(ins) { a=Pox(), b=Pox(), src.k(mk); src.PU1(b != a); }
+	function GTH(ins) { a=Pox(), b=Pox(), src.k(mk); src.PU1(b > a); }
+	function LTH(ins) { a=Pox(), b=Pox(), src.k(mk); src.PU1(b < a); }
+	function JMP(ins) { a=Pox(), src.k(mk); Jmp(a); }
+	function JCN(ins) { a=Pox(), b=src.PO1(), src.k(mk); if(b) Jmp(a); }
+	function JSR(ins) { a=Pox(), src.k(mk); dst.PU2(pc), Jmp(a); }
+	function STH(ins) { Get(x), src.k(mk); dst.PU1(x[0]); if(m2) dst.PU1(x[1]); }
+	function LDZ(ins) { a=src.PO1(), src.k(mk); Pek(a, x, 0xff); }
+	function STZ(ins) { a=src.PO1(), Get(y), src.k(mk); Pok(a, y, 0xff); }
+	function LDR(ins) { a=src.PO1(), src.k(mk); Pek(pc + sig(a), x, 0xffff); }
+	function STR(ins) { a=src.PO1(), Get(y), src.k(mk); Pok(pc + sig(a), y, 0xffff); }
+	function LDA(ins) { a=src.PO2(), src.k(mk); Pek(a, x, 0xffff); }
+	function STA(ins) { a=src.PO2(), Get(y), src.k(mk); Pok(a, y, 0xffff); }
+	function DEI(ins) { a=src.PO1(), src.k(mk); Dei(a, x); }
+	function DEO(ins) { a=src.PO1(), Get(y), src.k(mk); Deo(a, y); }
+	function ADD(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(b + a); }
+	function SUB(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(b - a); }
+	function MUL(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(b * a); }
+	function DIV(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(a ? b / a : 0); }
+	function AND(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(b & a); }
+	function ORA(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(b | a); }
+	function EOR(ins) { a=Pox(), b=Pox(), src.k(mk); Pux(b ^ a); }
+	function SFT(ins) { a=src.PO1(), b=Pox(), src.k(mk); Pux(b >> (a & 0xf) << (a >> 4)); }
 
 	this.step = () => {
 		const ins = ram[pc++]
-		m2 = ins & 0x20
-		mk = ins & 0x80
-		if(ins & 0x40) src = this.rst, dst = this.wst
-		else           src = this.wst, dst = this.rst
+		m2 = ins & 0x20, mr = ins & 0x40, mk = ins & 0x80
+		if(mr) src = rst, dst = wst
+		else   src = wst, dst = rst
 		if(mk) src.keep()
-		switch(ins & 0x1f) {
-		case 0x00:
-		switch(ins) {
-		case 0x00:/*BRK*/ return 0;
-		case 0x20:/*JCI*/ if(src.PO1()) JMI(); else pc += 2; break;
-		case 0x40:/*JMI*/ JMI(); break;
-		case 0x60:/*JSI*/ this.rst.PU2(pc + 2); JMI(); break;
-		case 0xa0:/*LI2*/ this.wst.PU1(ram[pc++]);
-		case 0x80:/*LIT*/ this.wst.PU1(ram[pc++]); break;
-		case 0xe0:/*LIr*/ this.rst.PU1(ram[pc++]);
-		case 0xc0:/*L2r*/ this.rst.PU1(ram[pc++]); break;
-		} break;
-		case 0x01:/*INC*/ a=POx(), src.k(mk); PUx(a + 1); break;
-		case 0x02:/*POP*/ POx(), src.k(mk); break;
-		case 0x03:/*NIP*/ GET(x), POx(), src.k(mk); PUT(x); break;
-		case 0x04:/*SWP*/ GET(x), GET(y), src.k(mk); PUT(x), PUT(y); break;
-		case 0x05:/*ROT*/ GET(x), GET(y), GET(z), src.k(mk); PUT(y), PUT(x), PUT(z); break;
-		case 0x06:/*DUP*/ GET(x), src.k(mk); PUT(x), PUT(x); break;
-		case 0x07:/*OVR*/ GET(x), GET(y), src.k(mk); PUT(y), PUT(x), PUT(y); break;
-		case 0x08:/*EQU*/ a=POx(), b=POx(), src.k(mk); src.PU1(b == a); break;
-		case 0x09:/*NEQ*/ a=POx(), b=POx(), src.k(mk); src.PU1(b != a); break;
-		case 0x0a:/*GTH*/ a=POx(), b=POx(), src.k(mk); src.PU1(b > a); break;
-		case 0x0b:/*LTH*/ a=POx(), b=POx(), src.k(mk); src.PU1(b < a); break;
-		case 0x0c:/*JMP*/ a=POx(), src.k(mk); JMP(a); break;
-		case 0x0d:/*JCN*/ a=POx(), b=src.PO1(), src.k(mk); if(b) JMP(a); break;
-		case 0x0e:/*JSR*/ a=POx(), src.k(mk); dst.PU2(pc), JMP(a); break;
-		case 0x0f:/*STH*/ GET(x), src.k(mk); dst.PU1(x[0]); if(m2) dst.PU1(x[1]); break;
-		case 0x10:/*LDZ*/ a=src.PO1(), src.k(mk); PEK(a, x, 0xff); break;
-		case 0x11:/*STZ*/ a=src.PO1(), GET(y), src.k(mk); POK(a, y, 0xff); break;
-		case 0x12:/*LDR*/ a=src.PO1(), src.k(mk); PEK(pc + sig(a), x, 0xffff); break;
-		case 0x13:/*STR*/ a=src.PO1(), GET(y), src.k(mk); POK(pc + sig(a), y, 0xffff); break;
-		case 0x14:/*LDA*/ a=src.PO2(), src.k(mk); PEK(a, x, 0xffff); break;
-		case 0x15:/*STA*/ a=src.PO2(), GET(y), src.k(mk); POK(a, y, 0xffff); break;
-		case 0x16:/*DEI*/ a=src.PO1(), src.k(mk); DEI(a, x); break;
-		case 0x17:/*DEO*/ a=src.PO1(), GET(y), src.k(mk); DEO(a, y); break;
-		case 0x18:/*ADD*/ a=POx(), b=POx(), src.k(mk); PUx(b + a); break;
-		case 0x19:/*SUB*/ a=POx(), b=POx(), src.k(mk); PUx(b - a); break;
-		case 0x1a:/*MUL*/ a=POx(), b=POx(), src.k(mk); PUx(b * a); break;
-		case 0x1b:/*DIV*/ a=POx(), b=POx(), src.k(mk); PUx(a ? b / a : 0); break;
-		case 0x1c:/*AND*/ a=POx(), b=POx(), src.k(mk); PUx(b & a); break;
-		case 0x1d:/*ORA*/ a=POx(), b=POx(), src.k(mk); PUx(b | a); break;
-		case 0x1e:/*EOR*/ a=POx(), b=POx(), src.k(mk); PUx(b ^ a); break;
-		case 0x1f:/*SFT*/ a=src.PO1(), b=POx(), src.k(mk); PUx(b >> (a & 0xf) << (a >> 4)); break;
-		}
+		lut[ins & 0x1f](ins)
 		return ins
 	}
 

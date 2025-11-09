@@ -7,9 +7,9 @@ function System(emu)
 
 	this.dei = (port) => {
 		if(port == 0x04)
-			return emu.uxn.wst.ptr
+			return emu.uxn.get_wst().ptr
 		else if(port == 0x05)
-			return emu.uxn.rst.ptr
+			return emu.uxn.get_rst().ptr
 		else
 			return emu.uxn.dev[port]
 	}
@@ -20,7 +20,7 @@ function System(emu)
 		else if(port == 0x06 || port == 0x07)
 			this.meta = (emu.uxn.dev[0x06] << 8) | emu.uxn.dev[0x07]
 		else if(port == 0x0e)
-			emu.console.write_string(`${emu.uxn.wst.print()}\n${emu.uxn.rst.print()}`)
+			emu.console.write_string(`${emu.uxn.get_wst().print()}\n${emu.uxn.get_rst().print()}`)
 		else if(port == 0x0f)
 			console.log("Evaluation ended.")
 		else
