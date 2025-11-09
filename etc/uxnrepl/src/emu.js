@@ -78,8 +78,6 @@ function DateTime(emu)
 			case 0xc6: return now.getSeconds();
 			case 0xc8: return doty() >> 8;
 			case 0xc9: return doty() & 0xff;
-			// TODO dst
-			// case 0xca https://stackoverflow.com/a/56429156
 		}
 		return 1;
 	}

@@ -17,8 +17,6 @@ const opcodes = [
 	"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
 	"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
 	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"]
-	
-document.body.className = "active"
 
 function assemble(query, program) {
 	let emu_asm = new Emu()
@@ -131,6 +129,8 @@ function dump() {
 
 // Editor
 
+document.body.className = "active"
+
 run_el.addEventListener("click", run)
 step_el.addEventListener("click", step)
 save_el.addEventListener("click", save)
@@ -155,3 +155,12 @@ examples_el.addEventListener('change', (e) => {
 	term_el.innerHTML = `Press <b>Run</b> to evaluate.`
 	status(1, "Run", "Step")
 }, true);
+
+// Populate dropdown
+
+Object.keys(examples).forEach(item => {
+	const option = document.createElement('option');
+	option.value = item;
+	option.textContent = item;
+	examples_el.appendChild(option);
+})

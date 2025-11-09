@@ -4,7 +4,7 @@ let examples = {
 /*
 @|0.Hello-World */
 
-"0_tal": `( This is a comment, and is ignored by the assembler.
+"0. Hello World": `( This is a comment, and is ignored by the assembler.
   Click the Run button to evaluate the program.
   Select the next example with the dropdown. )
 
@@ -24,7 +24,7 @@ let examples = {
 /*
 @|1.Stack */
 
-"1_tal": `( The Uxn virtual machine has a working stack of 256 bytes.
+"1. Stack": `( The Uxn virtual machine has a working stack of 256 bytes.
   A byte is a value between the hexadecimal numbers 00 and ff. )
 
 #0a          ( Push 0a byte to the stack )
@@ -43,7 +43,7 @@ NIP POP      ( Nip the 0b byte, pop the 0a byte )
 /*
 @|2.Literals */
 
-"2_tal": `( A literal is a number to be pushed to the stack,
+"2. Numbers": `( A literal is a number to be pushed to the stack,
   Uxntal supports various ways of creating literal bytes. )
 
     80 12  ( A number will be interpreted as an opcode )
@@ -64,7 +64,7 @@ LIT2 "i 18 DEO  ( Push the letter i, send to Console/write )`,
 /*
 @|3.Functions */
 
-"3_tal": `( Function labels are followed by a comment that explains
+"3. Functions": `( Function labels are followed by a comment that explains
   the expected transformation, in the format: before -- after )
 
 #12 double  ( Apply the "double" function on the number 12 )
@@ -83,7 +83,7 @@ BRK         ( Halt program with a BRK )
 /*
 @|4.Variables */
 
-"4_tal": `( The program location can be moved to create labels of different values,
+"4. Variables": `( The program location can be moved to create labels of different values,
   but must always be returned to 100, which is where all Uxn programs begin. )
 
 |000               ( Move program location to Zero-page )
@@ -102,7 +102,7 @@ BRK         ( Halt program with a BRK )
 /*
 @|5.If/Else */
 
-"5_tal": `( Immediate conditional jumps in Uxntal is done
+"5. If/else": `( Immediate conditional jumps in Uxntal is done
   by checking if the top of the stack is not zero. )
 
 #80           ( Push a value on stack )
@@ -121,7 +121,7 @@ BRK         ( Halt program with a BRK )
 /*
 @|6.Loop */
 
-"6_tal": `( Basic loops are done by pushing a limit and an iterator
+"6. Loop": `( Basic loops are done by pushing a limit and an iterator
   and comparing the bounds against the iterator each cycle )
 
 #08                  ( Push limit )
@@ -140,7 +140,7 @@ BRK                  ( Halt. )
 /*
 @|7.Enums&Structs */
 
-"7_tal": `( Programs can utilize up to ff00 of memory,
+"7. Enums & Structs": `( Programs can utilize up to ff00 of memory,
   the program location is where the program data is written in memory. )
 
 |1234 ( Move program location to 1234 )
@@ -162,7 +162,7 @@ $10   ( Move program location by 10, to 1244 )
 /*
 @|8.Macros */
 
-"8_tal": `( A macro is an inline function, but it must be created before. )
+"8. Macros": `( A macro is an inline function, but it must be created before. )
 
 %MOD ( num div -- res ) { DIVk MUL SUB }
 %EMIT ( num ) { LIT "0 ADD #18 DEO }
@@ -184,7 +184,7 @@ POP2 BRK
 /*
 @|9.Objects */
 
-"9_tal": `( Uxntal objects are statically allocated data-structures
+"9. Objects": `( Uxntal objects are statically allocated data-structures
   with methods accessible via sublabels. )
 
 @on-reset ( -> )
@@ -222,7 +222,7 @@ POP2 BRK
 /*
 @|10.Debugging */
 
-"10_tal": `( The stack states can be printed at any point during
+"10. Debugging": `( The stack states can be printed at any point during
   evaluation using the System/debug port. The depth of each stack
   can be polled for error handling. )
 
@@ -240,3 +240,4 @@ POP2 BRK
     }
      LIT2 "0 -Console/write DEO     ( Print failure )`
 }
+
