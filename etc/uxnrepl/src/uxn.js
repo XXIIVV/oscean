@@ -9,7 +9,7 @@ function Stack(u, name)
 	this.PU1 = (val) => { ram[ptr++ & 0xff] = val }
 	this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
 	this.keep = () => { ptrk = ptr }
-	this.k = (t) => { if(t) ptr = ptrk }
+	this.recover = () => { ptr = ptrk }
 	this.print = () => {
 		let res = `${name} `
 		for(let i = ptr - 8; i != ptr; i++) {
@@ -34,7 +34,8 @@ function Uxn (emu)
 	
 	/* Microcode */
 
-	function Jmp(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
+	function Sig(val) { return val >= 0x80 ? val - 256 : val }
+	function Jmp(i) { if(m2) pc = i & 0xffff; else pc = (pc + Sig(i)) & 0xffff; }
 	function Jmi() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
 	function Po1() { return src.PO1() }
 	function Po2() { return src.PO2() }
@@ -47,7 +48,7 @@ function Uxn (emu)
 	function Deo(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
 	function Pek(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; Put(o) }
 	function Pok(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
-	function Rec() { src.k(mk) }
+	function Rec() { if(mk) src.recover() }
 
 	/* Opcodes */
 
@@ -86,8 +87,8 @@ function Uxn (emu)
 	function STH(ins) { Get(x), Rec(); dst.PU1(x[0]); if(m2) dst.PU1(x[1]); }
 	function LDZ(ins) { a=Po1(), Rec(); Pek(a, x, 0xff); }
 	function STZ(ins) { a=Po1(), Get(y), Rec(); Pok(a, y, 0xff); }
-	function LDR(ins) { a=Po1(), Rec(); Pek(pc + sig(a), x, 0xffff); }
-	function STR(ins) { a=Po1(), Get(y), Rec(); Pok(pc + sig(a), y, 0xffff); }
+	function LDR(ins) { a=Po1(), Rec(); Pek(pc + Sig(a), x, 0xffff); }
+	function STR(ins) { a=Po1(), Get(y), Rec(); Pok(pc + Sig(a), y, 0xffff); }
 	function LDA(ins) { a=Po2(), Rec(); Pek(a, x, 0xffff); }
 	function STA(ins) { a=Po2(), Get(y), Rec(); Pok(a, y, 0xffff); }
 	function DEI(ins) { a=Po1(), Rec(); Dei(a, x); }
@@ -127,7 +128,4 @@ function Uxn (emu)
 		while(steps-- && this.step());
 	}
 
-	function sig(val) {
-		return val >= 0x80 ? val - 256 : val
-	}
 }
