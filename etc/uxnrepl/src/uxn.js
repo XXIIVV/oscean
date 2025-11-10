@@ -1,23 +1,5 @@
 'use strict'
 
-function Stack(u, name)
-{
-	const ram = new Uint8Array(0x100)
-
-	this.ptr = 0
-	this.PO1 = () => { return ram[--this.ptr & 0xff] }
-	this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
-	this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
-	this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
-	this.print = () => {
-		let res = `${name} `
-		for(let i = this.ptr - 8; i != this.ptr; i++) {
-			res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
-			res += ((i + 1) & 0xff) ? ' ' : '|'
-		}
-		return res; }
-}
-
 function Uxn (emu)
 {
 	let a, b, pc, m2, mr, mk, pk;
@@ -31,22 +13,45 @@ function Uxn (emu)
 	this.get_wst = () => { return stk[0] }
 	this.get_rst = () => { return stk[1] }
 	
+	function Stack(u, name)
+	{
+		const ram = new Uint8Array(0x100)
+		this.ptr = 0
+		this.PO1 = () => { return ram[--this.ptr & 0xff] }
+		this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
+		this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
+		this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
+		this.print = () => {
+			let res = `${name} `
+			for(let i = this.ptr - 8; i != this.ptr; i++) {
+				res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
+				res += ((i + 1) & 0xff) ? ' ' : '|'
+			}
+			return res; }
+	}
+	
 	/* Microcode */
 	
 	function Sig(n) { return n >= 0x80 ? n - 256 : n }
 	function Jmp(i) { if(m2) pc = i & 0xffff; else pc = (pc + Sig(i)) & 0xffff; }
 	function Jmi() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
+	
 	function Po1() { return stk[mr].PO1() }
 	function Po2() { return stk[mr].PO2() }
 	function Pox() { return m2 ? Po2() : Po1() }
+	
 	function Pu1(x) { stk[mr].PU1(x) }
+	function Pu2(x) { stk[mr].PU2(x) }
 	function Pux(x) { if(m2) stk[mr].PU2(x); else Pu1(x) }
+	
 	function Get(o) { if(m2) o[1] = Po1(); o[0] = Po1() }
 	function Put(i) { Pu1(i[0]); if(m2) Pu1(i[1]) }
+	
 	function Dei(i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); Put(o) }
 	function Deo(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
 	function Pek(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; Put(o) }
 	function Pok(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
+	
 	function Rec() { if(mk) stk[mr].ptr = pk }
 
 	/* Opcodes */
@@ -61,11 +66,11 @@ function Uxn (emu)
 		switch(ins) {
 		case 0x20:/*JCI*/ if(Po1()) Jmi(); else pc += 2; return;
 		case 0x40:/*Jmi*/ Jmi(); return;
-		case 0x60:/*JSI*/ stk[1].PU2(pc + 2); Jmi(); return;
-		case 0xa0:/*LI2*/ stk[0].PU1(ram[pc++]);
-		case 0x80:/*LIT*/ stk[0].PU1(ram[pc++]); return;
-		case 0xe0:/*LIr*/ stk[1].PU1(ram[pc++]);
-		case 0xc0:/*L2r*/ stk[1].PU1(ram[pc++]); return;
+		case 0x60:/*JSI*/ Pu2(pc + 2); Jmi(); return;
+		case 0xa0:/*LI2*/ Pu1(ram[pc++]);
+		case 0x80:/*LIT*/ Pu1(ram[pc++]); return;
+		case 0xe0:/*LIr*/ Pu1(ram[pc++]);
+		case 0xc0:/*L2r*/ Pu1(ram[pc++]); return;
 		}
 	}
 	

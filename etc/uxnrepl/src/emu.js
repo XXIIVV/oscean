@@ -6,12 +6,7 @@ function System(emu)
 	this.meta = 0
 
 	this.dei = (port) => {
-		if(port == 0x04)
-			return emu.uxn.get_wst().ptr
-		else if(port == 0x05)
-			return emu.uxn.get_rst().ptr
-		else
-			return emu.uxn.dev[port]
+		return emu.uxn.dev[port]
 	}
 
 	this.deo = (port, val) => {
