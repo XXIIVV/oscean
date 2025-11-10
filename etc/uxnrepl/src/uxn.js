@@ -3,13 +3,12 @@
 function Stack(u, name)
 {
 	const ram = new Uint8Array(0x100)
-	let ptrk = 0
+
 	this.ptr = 0
 	this.PO1 = () => { return ram[--this.ptr & 0xff] }
 	this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
 	this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
 	this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
-	this.recover = () => { this.ptr = ptrk }
 	this.print = () => {
 		let res = `${name} `
 		for(let i = this.ptr - 8; i != this.ptr; i++) {
