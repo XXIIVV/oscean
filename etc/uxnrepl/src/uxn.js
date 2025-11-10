@@ -3,16 +3,16 @@
 function Stack(u, name)
 {
 	const ram = new Uint8Array(0x100)
-	let ptr = 0, ptrk = 0
-	this.PO1 = () => { return ram[--ptr & 0xff] }
+	let ptrk = 0
+	this.ptr = 0
+	this.PO1 = () => { return ram[--this.ptr & 0xff] }
 	this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
-	this.PU1 = (val) => { ram[ptr++ & 0xff] = val }
+	this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
 	this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
-	this.keep = () => { ptrk = ptr }
-	this.recover = () => { ptr = ptrk }
+	this.recover = () => { this.ptr = ptrk }
 	this.print = () => {
 		let res = `${name} `
-		for(let i = ptr - 8; i != ptr; i++) {
+		for(let i = this.ptr - 8; i != this.ptr; i++) {
 			res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
 			res += ((i + 1) & 0xff) ? ' ' : '|'
 		}
@@ -21,7 +21,7 @@ function Stack(u, name)
 
 function Uxn (emu)
 {
-	let a, b, pc, m2, mr, mk;
+	let a, b, pc, m2, mr, mk, pk;
 	const x = new Uint8Array(2);
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
@@ -48,7 +48,7 @@ function Uxn (emu)
 	function Deo(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
 	function Pek(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; Put(o) }
 	function Pok(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
-	function Rec() { if(mk) stk[mr].recover() }
+	function Rec() { if(mk) stk[mr].ptr = pk }
 
 	/* Opcodes */
 
@@ -117,7 +117,7 @@ function Uxn (emu)
 		m2 = ins & 0x20
 		mr = ins >> 6 & 1
 		mk = ins & 0x80
-		if(mk) stk[mr].keep()
+		pk = stk[mr].ptr
 		lut[ins & 0x1f](ins)
 		return ins
 	}
