@@ -26,7 +26,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Oct 20 "2025 $2
+	( date ) "10 20 "Nov 20 "2025 $2
 
 (
 @|src )
@@ -94,7 +94,7 @@
 	JMP2r
 
 @result/rew ( -- )
-	[ LIT2 00 _&ptr ] LDR2 #0001 SUB2 DUP2 ,&ptr STR2
+	#00 ,&ptr LDR2 #0001 SUB2 DUP2 ,&ptr STR2
 	STA
 	JMP2r
 
@@ -290,11 +290,12 @@
 @|utils )
 
 @is-breaking ( str* -- bool )
+	LDAk [ LIT "; ] EQU ?&ignore
+	LDAk [ LIT "= ] EQU ?&ignore
+	LDAk [ LIT "" ] EQU ?&ignore
 	DUP2 wcap/ INC2 LDA [ LIT "! ] EQU ?&ignore
 	DUP2 wcap/ INC2 LDA [ LIT "} ] EQU ?&ignore
 	DUP2 wcap/ INC2 LDA #00 EQU ?&ignore
-	LDAk [ LIT "" ] EQU ?&ignore
-	LDAk [ LIT "= ] EQU ?&ignore
 	DUP2 wcap/ INC2 LDA [ LIT "& ] EQU ?&ignore
 	LDAk [ LIT "< ] EQU ?&pass
 	DUP2 wcap/ #0002 SUB2 LDA2 [ LIT "> ] EQU SWP [ LIT "> ] EQU ORA ?&pass
@@ -427,11 +428,13 @@
 		( tb lb <- ) result/get-last #09 NEQ ?{ result/rew }
 		[ LIT &lb $1 ] INCk ,&lb STR
 		#02 LTH ?result/<push>
-		&ignore ( c -- )
 		POP JMP2r }
 	result/<push>
 	[ LIT2 00 _&lb ] STR
 	JMP2r
+
+	&ignore ( c last -- )
+	POP JMP2r
 
 (
 @|stdlib )

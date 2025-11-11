@@ -6,6 +6,7 @@
 |000
 
 	@src/buf $3f &cap $1
+	@mode/dict $1
 
 |100
 
@@ -74,6 +75,16 @@
 		POP2 }
 	#ffff JMP2r
 
+@sym/is-txt ( ext* -- t )
+	DUP2 str/cap #0004 SUB2
+	( a ) LDA2k [ LIT2 "-t ] EQU2 STH
+	( b ) INC2 INC2 LDA2 [ LIT2 "xt ] EQU2 STHr AND JMP2r
+
+@sym/is-dict ( sym* -- sym* )
+	LDA2k [ LIT2 "di ] NEQ2 ?{
+		INC2k INC2 LDA2 [ LIT2 "ct ] EQU2 JMP2r }
+	!/is-txt
+
 (
 @|print )
 
@@ -88,17 +99,15 @@
 @<print-line> ( addr* -- addr* )
 	( ) DUP2 ;rom/buf SUB2
 	( ) DUP2 #0100 ADD2 sym/find DUP2 #ffff EQU2 ?{
+		sym/is-dict .mode/dict STZ
 		#0a18 DEO
 		[ LIT2 "@ 18 ] DEO
 		DUP2 str/<print>
 		#0a18 DEO }
-	POP2
-	( ) <print-address>
-	<print-opcode>
-	#0a18 DEO
+	POP2 print-address print-content #0a18 DEO
 	JMP2r
 
-@<print-address> ( addr* -- )
+@print-address ( addr* -- )
 	[ LIT2 "| 18 ] DEO
 	#0100 ADD2 hex/<print>
 	#03 !<print-pad>
@@ -123,11 +132,12 @@
 	#2018 DEO
 	JMP2r
 
-@<print-opcode> ( addr* -- addr* )
+@print-content ( addr* -- addr* )
+	.mode/dict LDZ ?<print-ascii>
 	LDAk ?{
 		<print-1-byte>
 		<c>
-		;opcodes/brk str/<print>
+		;dict/brk str/<print>
 		</c>
 		JMP2r }
 	LDAk #9f AND ?{ <print-3-byte> !<print-imm> }
@@ -135,7 +145,7 @@
 	LDAk DUP #a0 NEQ SWP #e0 NEQ AND ?{ <print-3-byte> !<print-lit2> }
 	<print-1-byte>
 	<c>
-	LDAk #1f AND #00 SWP #20 SFT2 ;opcodes ADD2 str/<print>
+	LDAk #1f AND #00 SWP #20 SFT2 ;dict/opcodes ADD2 str/<print>
 	LDAk <print-mode>
 	</c>
 	JMP2r
@@ -176,7 +186,7 @@
 		</c>
 		JMP2r }
 	( | rst )
-	;opcodes str/<print>
+	;dict/opcodes str/<print>
 	[ LIT2 "r 18 ] DEO
 	#2018 DEO
 	INC2 LDAk hex/<print-byte>
@@ -195,7 +205,7 @@
 		( | wst, hex )
 		[ LIT2 "# 18 ] DEO !&hex }
 	( | rst )
-	;opcodes str/<print>
+	;dict/opcodes str/<print>
 	LDAk #80 EOR <print-mode>
 	#2018 DEO
 	( | rst, label )
@@ -208,6 +218,19 @@
 	&end ( addr* -- addr* )
 	</c>
 	INC2 JMP2r
+
+@<print-ascii> ( addr* -- addr* )
+	<print-1-byte>
+	<c>
+	LDAk <print-char>
+	</c>
+	JMP2r
+
+@<print-char> ( byte -- )
+	DUP #20 LTH ?{ #18 DEO
+		JMP2r }
+	POP [ LIT2 "_ 18 ] DEO
+	JMP2r
 
 @<print-pad> ( count -- )
 	#00
@@ -260,12 +283,13 @@
 @|assets )
 
 @meta $1
-	( name ) "Uxndis 0a
+	&body-txt "Uxndis 0a
 	( desc ) "Uxntal 20 "Disassembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "9 20 "Nov 20 "2025 $2
 
-@opcodes [
+@dict/usage "usage: 20 "uxndis.rom 20 "input.rom 0a $1
+	&opcodes [
 	"LIT 00 "INC 00 "POP 00 "NIP 00
 	"SWP 00 "ROT 00 "DUP 00 "OVR 00
 	"EQU 00 "NEQ 00 "GTH 00 "LTH 00
@@ -275,8 +299,6 @@
 	"ADD 00 "SUB 00 "MUL 00 "DIV 00
 	"AND 00 "ORA 00 "EOR 00 "SFT 00
 	&brk "BRK 00 ]
-
-@dict/usage "usage: 20 "uxndis.rom 20 "input.rom 0a $1
 
 @rom/buf $8000
 

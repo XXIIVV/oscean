@@ -129,7 +129,7 @@
 	#20 !/<push-byte>
 
 @macros/<push-word> ( t* -- )
-	;/<push-byte> !each
+	;/<push-byte> !hof/<each>
 
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
@@ -151,7 +151,7 @@
 
 @macros/<write> ( t* macro* -- )
 	NIP2 token/<new>
-	str/cap ;token/<push-byte> !each
+	str/cap ;token/<push-byte> !hof/<each>
 
 (
 @|Token )
@@ -198,7 +198,7 @@
 @scope/make-name ( name* -- scope/label* )
 	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
-	;&buf SWP2 ;/<push-byte> !each
+	;&buf SWP2 ;/<push-byte> !hof/<each>
 
 (
 @|Runes )
@@ -370,8 +370,8 @@
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	name/<validate>
-	;/<push-byte>
-	each #00
+	;/<push-byte> hof/<each>
+	#00
 	( >> )
 
 @syms/<push-byte> ( byte -- )
@@ -528,7 +528,7 @@
 @|Rom )
 
 @rom/<write-str> ( str* -- )
-	;/<write-byte> !each
+	;/<write-byte> !hof/<each>
 
 @rom/<write-opcode> ( str* -- )
 	opcodes/parse !/<write-byte>
@@ -579,7 +579,7 @@
 (
 @|Stdlib )
 
-@each ( data* fn* -- )
+@hof/<each> ( data* byte-fn* -- )
 	STH2
 	&>w
 		LDAk DUP ?{ POP POP2 POP2r JMP2r }
@@ -674,7 +674,7 @@
 	POP2 POP2 POP2 JMP2r
 
 @err/<print> ( str* -- )
-	;/<emit> !each
+	;/<emit> !hof/<each>
 
 @err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
