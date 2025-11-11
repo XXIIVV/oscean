@@ -27,10 +27,10 @@
 	JMP2r
 
 @rom/<emit> ( -- )
-	;dict/assembled err/<pstr>
-	;dict/in err/<pstr>
+	;dict/assembled err/<print>
+	;dict/in err/<print>
 	;head/length LDA2 DUP2 #0100 SUB2 err/<pdec>
-	;dict/bytes err/<pstr>
+	;dict/bytes err/<print>
 	( | write )
 	;rom/mem ADD2 ;rom/output
 	&>l
@@ -41,15 +41,14 @@
 @runes/concat ( t* -- )
 	POP2 JMP2r
 
-%err/<pchr> ( c -- ) {
-	#19 DEO }
+@err/<emit> ( c -- )
+	#19 DEO JMP2r
 
 @meta $1
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "8 20 "Nov 20 "2025 $2
-
 
 
 
@@ -83,7 +82,8 @@
 	( opc ) opcodes/is-opcode ?rom/<write-opcode>
 	LDZk runes/find INC2k ORA ?{
 		POP2
-		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
+		( mac ) DUP2 macros/find-name INC2k ORA ?macros/<write>
+		POP2
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
@@ -125,24 +125,11 @@
 	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
 	( . ) STHkr LITr _&depth STRr
 	?{ POP2 #00 /<push-byte> !standard/<latch> }
-	DUP2 /<push-word>
+	/<push-word>
 	#20 !/<push-byte>
 
-@macros/find-name ( name* -- <addr>* )
-	STH2
-	,&ptr LDR2 ;&mem
-	&>lf
-		EQU2k ?&fail
-		DUP2 STH2kr str/cmp ?{
-			str/cap str/cap !&>lf
-		&fail POP2 #ffff }
-	NIP2 POP2r JMP2r
-
 @macros/<push-word> ( t* -- )
-	&>wp
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push-byte>
-		INC2 !&>wp
+	;/<push-byte> !each
 
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
@@ -153,13 +140,18 @@
 	STA
 	JMP2r
 
+@macros/find-name ( name* -- <addr>* )
+	STH2
+	,&ptr LDR2 ;&mem
+	&>lf
+		DUP2 STH2kr str/cmp ?{
+			str/cap str/cap GTH2k ?&>lf
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
 @macros/<write> ( t* macro* -- )
-	token/<new>
-	str/cap
-	&>wm
-		LDAk DUP ?{ POP POP2 POP2 JMP2r }
-		token/<push-byte>
-		INC2 !&>wm
+	NIP2 token/<new>
+	str/cap ;token/<push-byte> !each
 
 (
 @|Token )
@@ -206,10 +198,7 @@
 @scope/make-name ( name* -- scope/label* )
 	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
-	&>wl
-		LDAk DUP ?{ POP POP2 ;&buf JMP2r }
-		/<push-byte>
-		INC2 !&>wl
+	;&buf SWP2 ;/<push-byte> !each
 
 (
 @|Runes )
@@ -368,49 +357,21 @@
 
 @syms/<new> ( name* -- )
 	DUP2 /find-name INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared head/get ;&ptr LDA2 refs/<record-scope> !/<push-sym> }
+		POP2 ;&ptr LDA2 refs/<record-scope>
+		.SymType/declared head/get !/<push-sym> }
 	( | name* sym* -- )
-	DUP2 refs/<record-scope>
-	INC2k INC2 LDA .SymType/declared AND ?{
-		( addr* ) head/get OVR2 STA2
-		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
-		( name* ) POP2 JMP2r }
-	POP2 POP2
+	NIP2 DUP2 refs/<record-scope>
+	/is-declared ?{ head/get OVR2 STA2 !/<declare> }
+	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !err/<token>
-
-@syms/find-name ( name* -- <sym>* )
-	STH2
-	;&ptr LDA2 ;&mem
-	&>lfn
-		DUP2 #0003 ADD2 STH2kr str/cmp ?{
-			/next GTH2k ?&>lfn
-		POP2 #ffff }
-	NIP2 POP2r JMP2r
-
-@syms/find-alloc ( name* -- <addr>* )
-	DUP2 /find-name INC2k ORA ?{
-		( null* -> ptr* ) POP2 ,&ptr LDR2
-		( alloc ) OVR2 .SymType/used #ffff /<push-sym> }
-	NIP2 JMP2r
-
-@syms/find-addr ( name* -- <addr>* )
-	str/is-hex ?str/hex
-	name/unpack /find-name INC2k ORA ?{
-		( ! ) ;dict/invalid ;dict/Symbol err/<token> }
-	( mark as used ) INC2k LDA2k #01 ORA SWP2 STA2
-	( return addr ) LDA2 JMP2r
 
 @syms/<push-sym> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	name/<validate>
-	( >> )
-
-@syms/<push-string> ( word* -- )
-	LDAk /<push-byte>
-	INC2 LDAk ?&<push-string>
-	LDA
+	;/<push-byte>
+	each #00
 	( >> )
 
 @syms/<push-byte> ( byte -- )
@@ -422,35 +383,69 @@
 	STA
 	JMP2r
 
+@syms/find-name ( name* -- <sym>* )
+	STH2
+	,&ptr LDR2 ;&mem
+	&>lfn
+		DUP2 #0003 ADD2 STH2kr str/cmp ?{
+			#0003 ADD2 str/cap GTH2k ?&>lfn
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@syms/find-alloc ( name* -- <addr>* )
+	DUP2 /find-name INC2k ORA ?{
+		( null* .. next* ) POP2 ,&ptr LDR2
+		( alloc ) SWP2 .SymType/used #ffff !/<push-sym> }
+	NIP2 JMP2r
+
+@syms/find-addr ( name* -- <addr>* )
+	str/is-hex ?str/hex
+	name/unpack /find-name /is-defined ?{
+		( ! ) ;dict/invalid ;dict/Symbol err/<token> }
+	/use LDA2 JMP2r
+
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
 	&>ls
 		EQU2k ?{
-			INC2k INC2 LDA .SymType/used AND ?{
+			/is-used ?{
 				LDA2k #0100 EQU2 ?{
 					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-						;dict/unused err/<pstr>
-						DUP2 err/<pstr>
-						#0a err/<pchr> }
+						;dict/unused err/<print>
+						DUP2 err/<print>
+						#0a err/<emit> }
 					POP2 } }
-			/next !&>ls }
+			#0003 ADD2 str/cap !&>ls }
 	POP2 POP2 !rom/<emit>
-
-@syms/next ( sym* -- next* )
-	#0003 ADD2 !str/cap
 
 @syms/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
 	( ! ) ;dict/too-far ;dict/Symbol !err/<token>
+
+@syms/is-defined ( sym* -- sym* t )
+	INC2k ORA ?{ #00 JMP2r }
+	( >> )
+
+@syms/is-declared ( sym* -- sym* t )
+	INC2k INC2 LDA .SymType/declared AND JMP2r
+
+@syms/is-used ( sym* -- sym* t )
+	INC2k INC2 LDA .SymType/used AND JMP2r
+
+@syms/use ( sym* -- sym* )
+	INC2k INC2 STH2k LDA .SymType/used ORA STH2r STA
+	JMP2r
+
+@syms/<declare> ( sym* -- )
+	INC2 INC2 STH2k LDA .SymType/declared ORA STH2r STA
+	JMP2r
 
 (
 @|References )
 
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
-	name/unpack syms/find-alloc
-	( | check if declared )
-	INC2k INC2 STH2k LDA .SymType/declared AND ?{
+	name/unpack syms/find-alloc syms/is-declared ?{
 		DUP2 head/get
 		( addr* ) /<push-short>
 		( symbol* ) /<push-short>
@@ -458,8 +453,7 @@
 		( scope* ) [ LIT2 &scope $2 ] /<push-short>
 		( line* ) ;token/line LDA2 /<push-short> }
 	( | mark as used )
-	LDAkr STHr .SymType/used ORA STH2r STA
-	LDA2 JMP2r
+	syms/use LDA2 JMP2r
 
 @refs/<push-short> ( value* -- )
 	SWP /<push-byte>
@@ -534,9 +528,7 @@
 @|Rom )
 
 @rom/<write-str> ( str* -- )
-	LDAk /<write-byte>
-	INC2 LDAk ?&<write-str>
-	POP2 JMP2r
+	;/<write-byte> !each
 
 @rom/<write-opcode> ( str* -- )
 	opcodes/parse !/<write-byte>
@@ -587,6 +579,12 @@
 (
 @|Stdlib )
 
+@each ( data* fn* -- )
+	STH2
+	&>w
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		STH2kr JSR2 INC2 !&>w
+
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
 		SUB [ LIT "a ] ADD JMP2r }
@@ -636,50 +634,47 @@
 @err/<token> ( adj* topic* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
-		/<pstr>
-		#20 err/<pchr>
-		/<pstr>
-		;dict/spacer /<pstr>
-		;token/buf /<pstr>
+		/<print>
+		#20 /<emit>
+		/<print>
+		;dict/spacer /<print>
+		;token/buf /<print>
 		;token/line LDA2 ;scope/buf !/<print-location> }
 	POP2 POP2 JMP2r
 
 @err/<resolution> ( adj* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
-		;dict/Reference err/<pstr>
-		#20 err/<pchr>
-		err/<pstr>
-		;dict/spacer err/<pstr>
-		[ LIT2 &ref $2 ] INC2k INC2 LDA2 #0003 ADD2 err/<pstr>
+		;dict/Reference /<print>
+		#20 /<emit>
+		/<print>
+		;dict/spacer /<print>
+		[ LIT2 &ref $2 ] INC2k INC2 LDA2 #0003 ADD2 /<print>
 		DUP2 #0008 ADD2 LDA2 SWP2 #0006 ADD2 LDA2 #0003 ADD2 !/<print-location> }
 	POP2 JMP2r
 
 @err/<print-location> ( line* scope* -- )
-	;dict/in /<pstr>
-	err/<pstr>
-	LIT ": err/<pchr>
-	err/<pdec>
-	#0a err/<pchr>
+	;dict/in /<print>
+	/<print>
+	LIT ": /<emit>
+	/<pdec>
+	#0a /<emit>
 	JMP2r
 
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
-		/<pstr>
-		#20 err/<pchr>
-		SWP2 /<pstr>
-		;dict/spacer /<pstr>
-		/<pstr>
-		#0a err/<pchr>
+		/<print>
+		#20 /<emit>
+		SWP2 /<print>
+		;dict/spacer /<print>
+		/<print>
+		#0a /<emit>
 		JMP2r }
 	POP2 POP2 POP2 JMP2r
 
-@err/<pstr> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		err/<pchr>
-		INC2 !&>w
+@err/<print> ( str* -- )
+	;/<emit> !each
 
 @err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
@@ -687,7 +682,7 @@
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
 	&>write
-		NIP #30 ADD err/<pchr>
+		NIP #30 ADD /<emit>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
