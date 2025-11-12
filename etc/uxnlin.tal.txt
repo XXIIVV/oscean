@@ -37,7 +37,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Aug 20 "2025 $2
+	( date ) "11 20 "Nov 20 "2025 $2
 
 (
 @|core )
@@ -47,7 +47,7 @@
 	;src .File/name DEO2
 	#0001 .File/length DEO2
 	;&c .File/read
-	&>s ( -- )
+	&>s
 		DEO2k .File/succ-lb DEI ?{ POP2 POP !<print-summary> }
 		[ LIT &c $1 ] walk !&>s
 
@@ -80,7 +80,7 @@
 	( new scope ) DUP2 is-scope #00 EQU ?{ INC2k ;scope <scpy> }
 	( include ) LDA [ LIT "~ ] EQU ?include
 	;rules2/end ;rules2
-	&>loop2 ( -- )
+	&>loop2
 		( a ) DUP2 ;token/last scmp-wild STH
 		scap/ INC2
 		( b ) DUP2 ;token scmp-wild STH
@@ -89,7 +89,7 @@
 	POP2 POP2
 	( | 3 elements )
 	;rules3/end ;rules3
-	&>loop3 ( -- )
+	&>loop3
 		( a ) DUP2 ;token/last2 scmp-wild STH
 		scap/ INC2
 		( b ) DUP2 ;token/last scmp-wild STH
@@ -182,7 +182,7 @@
 	DUP2 ;opcodes/brk scmp3 ?&on-found
 	,&t STR2
 	#2000
-	&>l ( -- )
+	&>l
 		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?&on-found
 		INC GTHk ?&>l
 	POP2 #00 JMP2r
@@ -196,7 +196,7 @@
 @scmp-lut ( a* b* -- flag )
 	SWP2 ,&t STR2
 	;dictionaries/end ;dictionaries
-	&>l ( -- )
+	&>l
 		LDA2k [ LIT2 &t $2 ] scmp ?&dict-match
 		#0004 ADD2 GTH2k ?&>l
 	,&t LDR2 <pstr>
@@ -306,7 +306,7 @@
 
 @scmp-star ( a* b* -- f )
 	STH2
-	&>l ( -- )
+	&>l
 		LDAk [ LIT "* ] EQU ?&pass
 		LDAkr [ LITr "* ] EQUr STHr ?&pass
 		LDAk LDAkr STHr ANDk #00 EQU ?&e
@@ -322,22 +322,18 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&>l ( -- )
+	&>l
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
 @<sclr> ( str* -- )
-	#00 ROT ROT
-	&w ( -- )
-	STAk INC2 LDAk ?&w
+	#00 ROT ROT &w STAk INC2 LDAk ?&w
 	STA
 	JMP2r
 
 @<scpy> ( src* dst* -- )
-	STH2
-	&w ( -- )
-	LDAk #00 STH2kr STA2
+	STH2 &w LDAk #00 STH2kr STA2
 	INC2r INC2 LDAk ?&w
 	POP2 POP2r JMP2r
 
@@ -348,17 +344,17 @@
 
 @afnd ( array* target* -- <index>* )
 	STH2
-	&>w ( -- )
+	&>w
 		DUP2 STH2kr scmp ?&end
 		scap/ INC2 LDAk ?&>w
 	POP2 #ffff &end POP2r JMP2r
 
 @<pdec> ( short* -- )
 	[ LIT2r ff00 ]
-	&>read ( -- )
+	&>read
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
-	&>write ( -- )
+	&>write
 		NIP #30 ADD #18 DEO
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
@@ -488,7 +484,7 @@
 @hop "Hop $1 ( jci over jmi )
 @nested "Nested $1 ( nested square brackets )
 @cmporder "Static-order $1 ( postfix static )
-@rune "Incompatible 20 "runes $1 
+@rune "Incompatible 20 "runes $1
 
 (
 @|specifics )
@@ -577,6 +573,9 @@
 	@ldr0equ "LDR 20 "#00 20 "EQU $1
 	@sthsth "STH 20 "STH $1
 	@sthrsthr "STHr 20 "STHr $1
+	@bitora "ORA2 20 "ORA $1
+	@bitand "AND2 20 "AND $1
+	@biteor "EOR2 20 "EOR $1
 
 (
 @|rules )
@@ -890,4 +889,8 @@
 	"{%} $1 "} $1 "JMP* $1 =tailcall
 	"{%} $1 "@ $1 "JMP* $1 =tailcall
 	"{%} $1 "& $1 "JMP* $1 =tailcall
+	( bitwise )
+	"ORA $1 "ORA $1 "ORA $1 =bitora
+	"AND $1 "AND $1 "AND $1 =bitand
+	"EOR $1 "EOR $1 "EOR $1 =biteor
 	&end
