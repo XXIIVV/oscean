@@ -12,24 +12,31 @@
 <nav><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html">utilities</a></li><li><a href="libraries.html" class="parent">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="snarf.html" class="self">snarf</a></li><li><a href="symbols.html">symbols</a></li><li><a href="metadata.html">metadata</a></li><li><a href="manifest.html">manifest</a></li><li><a href="indental.html">indental</a></li><li><a href="tablatal.html">tablatal</a></li></ul><ul></ul></nav>
 <main><figure><img alt="Because snarf is what it does" src="../media/diary/054.jpg"><figcaption>Because snarf is what it does<span class="right">15O01</span></figcaption></figure><h2>Snarf files are the clipboard standard for Varvara software.</h2>
 
-<p>A <code>.snarf</code> file contains a clipboard buffer, programs will handle clipboard operations by writing to that external invisible file. You can see support coverage <a href='roms.html'>here</a>.</p>
+<p>A <code>.snarf</code> file contains a clipboard buffer, programs will handle clipboard operations by writing to that external invisible file. You can see support coverage <a href='roms.html'>here</a>. To quickly write to the snarf file before pasting:</p>
+
+<pre>
+cat > .snarf
+</pre>
 
 <p>The <b>cut</b> operation deletes the selected text from the screen and puts it in the snarf buffer, <b>snarf</b> copies the selected text to the buffer without deleting it, <b>paste</b> replaces the selected text with the contents of the buffer.</p>
 
 <pre>
-( snarf )
+|0100 @snarf/length
 
-@snarf-txt ".snarf $1
+@snarf/copy ( data* length* -- )
+	;&path .File/name DEO2
+	.File/length DEO2
+	.File/write DEO2
+	JMP2r
 
-@edit-copy ( -- )
+@snarf/paste ( addr* -- length* )
+	;&path .File/name DEO2
+	;&length .File/length DEO2
+	;&buf .File/read DEO2
+	.File/success DEI2
+	JMP2r
 
-	;snarf-txt .File/name DEO2
-	#0100 .File/length DEO2
-	;buffer .File/write DEO2
-
-JMP2r
-
-@buffer $100
+&buf $&length
 </pre>
 
 <q>Snarf is the term for Copy on the <a href='plan9.html'>Plan9</a> operating system. The operation is not to copy but to snarf. It's called snarf because snarf is what it does. There is no design document.</q>
