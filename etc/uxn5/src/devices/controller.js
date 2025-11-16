@@ -71,7 +71,7 @@ function Controller(emu)
 		case 16: // Shift
 			mask = 0x04;
 			break;
-		case 27: // Escape
+		case 36: // Up
 			mask = 0x08;
 			break;
 		case 38: // Up
@@ -90,22 +90,22 @@ function Controller(emu)
 		let charCode = 0;
 		if (event.type == "keydown") {
 			this.state |= mask;
-			if (event.key.length == 1) {
+			if (event.key == "Escape")
+				charCode = 0x1b
+			if (event.key.length == 1)
 				charCode = event.key.charCodeAt(0);
-			} else if (mask == 0 && event.keyCode < 20) {
-				charCode = event.keyCode;
-			}
-			emu.uxn.dev[0x83] = charCode;
+			else if (mask == 0 && event.keyCode < 20)
+				charCode = event.keyCode
+			emu.uxn.dev[0x83] = charCode
 		} else
 			this.state &= ~mask;
 		emu.uxn.dev[0x82] = this.state;
 		if(mask || event.type == "keydown")
 			emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
 		if(event.type == "keydown")
-			emu.uxn.dev[0x83] = 0;
-		if(document.activeElement != emu.console.input_el && event.key != 'v' && event.key != 'V') {
-			event.preventDefault();
-		}
+			emu.uxn.dev[0x83] = 0
+		if(document.activeElement != emu.console.input_el && event.key != 'v' && event.key != 'V')
+			event.preventDefault()
 	}
 
 	this.on_paste = (e) => {

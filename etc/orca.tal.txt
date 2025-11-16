@@ -1,7 +1,7 @@
 ( Orca )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console/vector $2 &read $1 &pad $5 &write $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
@@ -13,10 +13,10 @@
 
 |10 @Types/lock-default
 |12 @Types/lock-lut
-|1c @Types/lock-right
-|1d @Types/lock-output
+|10 @Types/lock-right
+|16 @Types/lock-output
 |01 @Types/pl
-|08 @Types/op
+|07 @Types/op
 |0a @Types/io
 |04 @Styles/selected
 |80 @Row/width
@@ -39,9 +39,9 @@
 	( | meta )
 	;meta #06 DEO2
 	( | theme )
-	#0f64 .System/r DEO2
-	#0fd4 .System/g DEO2
-	#0fb4 .System/b DEO2
+	#0f76 .System/r DEO2
+	#0fe6 .System/g DEO2
+	#0fc6 .System/b DEO2
 	theme/<load>
 	random/<init>
 	( | resize )
@@ -71,6 +71,7 @@
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	;timer/on-play .Screen/vector DEO2
+	.Console/type DEI ?{ BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
 
@@ -78,7 +79,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "30 20 "Aug 20 "2025 00 01
+	( date ) "16 20 "Nov 20 "2025 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -201,6 +202,9 @@
 (
 @|Macros )
 
+%MOD ( a b -- res ) {
+	DIVk MUL SUB }
+
 %ciuc ( char -- bool ) {
 	LIT "A SUB #1a LTH }
 
@@ -211,7 +215,7 @@
 	#00 SWP ;chrb36/lut ADD2 LDA }
 
 %b36chr ( b36 -- char ) {
-	#24 [ DIVk MUL SUB ] #00 SWP ;b36clc ADD2 LDA }
+	#24 MOD #00 SWP ;b36clc ADD2 LDA }
 
 %chrmid ( char -- midi ) {
 	DUP chrb36 SWP ciuc #24 MUL ADD #00 SWP ;midi/lut ADD2 LDA }
@@ -439,7 +443,7 @@
 		( y ) DUP2 #000f AND2 #40 SFT2 .grid/y1 LDZ2 ADD2 #0020 ADD2 .Screen/y DEO2
 		.Screen/y DEI2 .grid/y2 LDZ2 #0030 SUB2 GTH2 ?{
 			DUP2k ADD2 ;&lut ADD2 LDA2
-			( glyph ) LDAk #0c font/<draw-char-color>
+			( glyph ) LDAk #03 font/<draw-char-color>
 			( space ) ;Screen/sprite DEO
 			( text ) INC2 #01 font/<draw-str> }
 		INC2 GTH2k ?&>l
@@ -620,6 +624,7 @@
 	types/<reset>
 	variables/<reset>
 	src/<reset>
+	timer/<reset>
 	( | default speed )
 	#0b timer/<set> !<step>
 
@@ -627,6 +632,7 @@
 	#0000 ;src/buf file/<inject>
 	src/<init>
 	grid/<reqdraw>
+	timer/<reset>
 	#00 !src/<force-change>
 
 @file/<inject> ( x y path* -- )
@@ -670,7 +676,7 @@
 	LIT ". !select/<fill>
 
 @edit/<copy> ( -- )
-	;&buf ,&ptr STR2
+	;&buf DUP2 ,&ptr STR2
 	.select/y2 LDZ INC .select/y1 LDZ
 	&>ver
 		STHk .select/x2 LDZ INC .select/x1 LDZ
@@ -680,7 +686,12 @@
 		POP2 POPr
 		( linebreak ) #0a /<push>
 		INC GTHk ?&>ver
-	POP2 JMP2r
+	POP2
+	( | write snarf )
+	;dict/snarf .File/name DEO2
+	,&ptr LDR2 OVR2 SUB2 .File/length DEO2
+	.File/write DEO2
+	JMP2r
 
 @edit/<push> ( c -- )
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
@@ -734,6 +745,10 @@
 @timer/<step> ( -- )
 	;&on-pause .Screen/vector DEO2
 	<step> !/widget/<draw>
+
+@timer/<reset> ( -- )
+	#0000 .&frame STZ2
+	JMP2r
 
 @timer/<decr> #ff !/<mod>
 
@@ -908,6 +923,11 @@
 	[ LIT2 &x $2 ] DUP2 #50 SFT2 EOR2 DUP2 #03 SFT2 EOR2 [ LIT2 &y $2 ] DUP2 ,&x STR2
 	DUP2 #01 SFT2 EOR2 EOR2 ,&y STR2k POP JMP2r
 
+@random/from-range ( a b -- num )
+	EQUk ?{
+		OVR SUB random/generate ADD SWP INC MOD ADD JMP2r }
+	POP JMP2r
+
 (
 @|Theme )
 
@@ -950,6 +970,7 @@
 	&play "Play $1
 	&select "Select $1
 	&guide "Ctrl+h 20 "to 20 "toggle 20 "guide. $1
+	&snarf ".snarf $1
 
 
 
@@ -1177,10 +1198,7 @@
 	STH2k .Types/op STH2kr types/<set>
 	( a-min ) ports/get-left1-val
 	( b-max ) STH2kr ports/get-right1-case ,&case STR
-		( min1 ) DUP #00 EQU ADD
-	( mod ) OVR SUB random/generate ADD SWP ( min1 ) DUP #00 EQU ADD
-	( MOD ) [ DIVk MUL SUB ] ADD
-
+	( sort ) LTHk JMP SWP random/from-range
 	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
 
 @op-s "S "Moves 20 "southward 20 "or 20 "bangs $1
