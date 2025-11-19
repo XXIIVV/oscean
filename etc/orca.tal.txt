@@ -79,7 +79,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "16 20 "Nov 20 "2025 00 01
+	( date ) "18 20 "Nov 20 "2025 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -249,13 +249,15 @@
 	JSR2 POP2 BRK
 
 @on-button-arrow ( button key -> )
-	POP DUP DUP #0f AND ,&mod STR
-	#04 SFT #00 OVR #03 AND ;&vec ADD2 LDA ,&y STR
-	#02 SFT #00 SWP #03 AND ;&vec ADD2 LDA ,&x STR
-	[ LIT2 &x $1 &y $1 ] [ LIT &mod $1 ] select/<mod>
-	#0f AND .Controller/button DEO
+	POP STHk #f0 AND button-mod STHr #0f AND select/<mod>
 	BRK
-	&vec 00 ff 01 00
+
+@button-mod ( button -- button x y )
+	DUP #10 NEQ ?{ #00ff JMP2r }
+	DUP #20 NEQ ?{ #0001 JMP2r }
+	DUP #40 NEQ ?{ #ff00 JMP2r }
+	DUP #80 NEQ ?{ #0100 JMP2r }
+	#0000 JMP2r
 
 @on-mouse ( -> )
 	#41 cursor/<update>
