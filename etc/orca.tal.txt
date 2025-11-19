@@ -71,7 +71,8 @@
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	;timer/on-play .Screen/vector DEO2
-	.Console/type DEI ?{ BRK }
+	.Console/type DEI ?{ ;grid/on-console .Console/vector DEO2
+		BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
 
@@ -79,7 +80,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "18 20 "Nov 20 "2025 00 01
+	( date ) "19 20 "Nov 20 "2025 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -125,7 +126,9 @@
 
 @src/on-console ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP file/<reopen>
+	( ) DUP #20 GTH ?{
+		POP file/<reopen>
+		;grid/on-console .Console/vector DEO2
 		BRK }
 	/<push>
 	BRK
@@ -277,6 +280,7 @@
 		DUP #01 NEQ ?{ timer/<toggle> }
 		POP2 BRK }
 	get-pos select/<from>
+	insert/<set-anchor>
 	BRK
 
 @on-mouse/drag ( mouse* -> )
@@ -328,6 +332,10 @@
 
 %grid/<set> ( cell addr* -- ) {
 	;grid/buf ADD2 STA }
+
+@grid/on-console ( -> )
+	.Console/read DEI insert/<append-char>
+	BRK
 
 @<step> ( -- )
 	types/<reset>
@@ -787,21 +795,24 @@
 	ADD STHr }
 
 @select/<mod> ( x y mod -- )
-	DUP #04 NEQ ?{
-		POP
-		( | scale )
-		/validate-to ?{ POP2 JMP2r }
-		.&to LDZ2 add-pos !/<to> }
-	#01 NEQ ?{
-		( | drag )
-		/validate-from ?{ POP2 JMP2r }
-		/validate-to ?{ POP2 JMP2r }
-		edit/<cut>
-		STH2k .&from LDZ2 add-pos STH2r .&to LDZ2 add-pos /<range> !edit/<paste> }
-	( | move )
+	DUP #04 EQU ?/<size>
+	#01 EQU ?/<drag>
+	/<move> !insert/<set-anchor>
+
+@select/<move> ( x y -- )
 	/validate-from ?{ POP2 JMP2r }
 	/validate-to ?{ POP2 JMP2r }
 	STH2k .&from LDZ2 add-pos STH2r .&to LDZ2 add-pos !/<range>
+
+@select/<drag> ( x y mod -- )
+	/validate-from ?{ POP2 JMP2r }
+	/validate-to ?{ POP2 JMP2r }
+	edit/<cut>
+	STH2k .&from LDZ2 add-pos STH2r .&to LDZ2 add-pos /<range> !edit/<paste>
+
+@select/<size> ( x y mod -- )
+	POP /validate-to ?{ POP2 JMP2r }
+	.&to LDZ2 add-pos !/<to>
 
 @select/validate-from ( x y -- x y bool )
 	DUP .&y1 LDZ #ff00 NEQ2 STH
@@ -872,27 +883,37 @@
 	POP2 !font/<draw-short>
 
 @insert/<toggle> ( -- )
-	.select/to LDZ2 INC ,&anchor STR2
+	select/<reset>
+	/<set-anchor>
 	;on-button ;&on-button .Controller/vector DEI2 ;&on-button EQU2 [ JMP SWP2 POP2 ] .Controller/vector DEO2 !select/widget/<draw>
 
 @insert/on-button ( -> )
-	.Controller/key DEI [ #00 ] EQUk NIP ?&end
-	[ #1b ] NEQk NIP ?{ /<toggle>
-		POP BRK }
-	[ #0d ] NEQk NIP ?{
-		[ LIT2 &anchor $2 ] INC2k ,&anchor STR2
-		select/<from>
-		POP BRK }
-	[ #20 ] NEQk NIP ?{
-		#0100 #00 select/<mod>
-		POP BRK }
-	[ #08 ] NEQk NIP ?{
-		#ff00 #00 select/<mod>
+	.Controller/key DEI /<append-char>
+	BRK
+
+@insert/<set-anchor> ( -- )
+	.select/to LDZ2 INC ,&anchor STR2
+	JMP2r
+
+@insert/<linebreak> ( -- )
+	[ LIT2 &anchor $2 ] INC2k ,&anchor STR2 !select/<from>
+
+@insert/<append-char> ( char -- )
+	DUP ?{ POP JMP2r }
+	DUP #08 NEQ ?{
+		#ff00 select/<move>
 		LIT ". select/<fill>
-		POP BRK }
-	DUP #7e GTH ?{
-		DUP select/<fill>
-		#0100 #00 select/<mod> } &end POP BRK
+		POP JMP2r }
+	DUP #0a NEQ ?{ /<linebreak>
+		POP JMP2r }
+	DUP #0d NEQ ?{ /<linebreak>
+		POP JMP2r }
+	DUP #1b NEQ ?{ /<toggle>
+		POP JMP2r }
+	DUP #20 NEQ ?{ #0100 select/<move>
+		POP JMP2r }
+	select/<fill>
+	#0100 !select/<move>
 
 (
 @|Cursor )
