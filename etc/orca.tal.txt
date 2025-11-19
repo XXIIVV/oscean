@@ -51,26 +51,26 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	( | cache positions )
 	.grid/x1 LDZ2
-	( ) DUP2 #0078 ADD2 ;src/x STA2
-	( ) DUP2 ;select/widget/x STA2
-	( ) DUP2 #0030 ADD2 ;timer/widget/x STA2
-	( ) #0060 ADD2 ;draw-speed/x STA2
+	( ) DUP2 #0058 ADD2 ;src/x STA2
+	( ) DUP2 ;select/x STA2
+	( ) DUP2 #0030 ADD2 ;timer/x STA2
 	.grid/x2 LDZ2
 	( ) #0040 SUB2 ;voices/x STA2
 	.grid/y2 LDZ2 #0008 ADD2
-	( ) DUP2 ;select/widget/y STA2
-	( ) DUP2 ;timer/widget/y STA2
-	( ) DUP2 ;draw-speed/y STA2
+	( ) DUP2 ;select/y STA2
+	( ) DUP2 ;timer/y STA2
 	( ) DUP2 ;src/y STA2
 	( ) ;voices/y STA2
 	( | Unlock )
 	file/<new>
 	help/<toggle>
-	select/widget/<draw>
+	select/<draw-widget>
+	voices/<draw>
 	( | vectors )
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	;timer/on-play .Screen/vector DEO2
+	timer/<draw-speed>
 	.Console/type DEI ?{ ;grid/on-console .Console/vector DEO2
 		BRK }
 	;src/on-console .Console/vector DEO2
@@ -97,8 +97,8 @@
 	( - ) 01 "/ =edit/<toggle-comment> =dict
 	( - ) 00 08 =edit/<erase> =dict }
 	={ =dict/play
-	( - ) 01 ", =timer/<decr> =dict
-	( - ) 01 ". =timer/<incr> =dict
+	( - ) 01 ", =timer/<incr> =dict
+	( - ) 01 ". =timer/<decr> =dict
 	( - ) 00 20 =timer/<toggle> =dict
 	( - ) 00 0d =timer/<step> =dict }
 	={ =dict/view
@@ -167,7 +167,7 @@
 	DUP ,&last STR
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
-	;&buf #02 font/<draw-str>
+	;&buf #01 font/<draw-str>
 	?{ !/<fill> }
 	[ LIT2 "* 02 ] font/<draw-char-color>
 	( >> )
@@ -207,6 +207,9 @@
 
 %MOD ( a b -- res ) {
 	DIVk MUL SUB }
+
+%POP? ( a b -- a/b ) {
+	[ JMP SWP ] POP }
 
 %ciuc ( char -- bool ) {
 	LIT "A SUB #1a LTH }
@@ -252,8 +255,8 @@
 	JSR2 POP2 BRK
 
 @on-button-arrow ( button key -> )
-	POP STHk #f0 AND button-mod STHr #0f AND select/<mod>
-	BRK
+	POP STHk #f0 AND button-mod STHr select/<mod>
+	POP BRK
 
 @button-mod ( button -- button x y )
 	DUP #10 NEQ ?{ #00ff JMP2r }
@@ -356,7 +359,7 @@
 	POP2
 	( | end )
 	grid/<reqdraw>
-	timer/widget/<draw>
+	timer/<draw-widget>
 	.timer/frame LDZ2 INC2 .timer/frame STZ2
 	[ LIT2 00 -timer/beat ] STZ !voices/<update>
 
@@ -487,8 +490,8 @@
 @voices/next ( -- voice )
 	[ LIT2 -&cap -&buf ]
 	&>ln
-		LDZk #00 EQU ?&end
-		#04 ADD GTHk ?&>ln &end NIP JMP2r
+		LDZk #00 EQU ?{ #04 ADD GTHk ?&>ln }
+	NIP JMP2r
 
 @voices/count ( -- count )
 	LITr 00 [ LIT2 -&cap -&buf ]
@@ -530,27 +533,16 @@
 @voices/<draw> ( -- )
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
-	#02 ;font/color STA
+	#01 ;font/color STA
 	/count STH
 	#0800
 	&>wd
-		INCk STHkr GTH [ LIT2 "-+ ] ROT [ JMP SWP POP ] font/<draw-char>
+		INCk STHkr GTH [ LIT2 ".| ] ROT POP? font/<draw-char>
 		INC GTHk ?&>wd
 	POP2 POPr JMP2r
 
 (
 @|Font )
-
-@font/<draw-short> ( short* -- )
-	SWP /<draw-byte>
-	( >> )
-
-@font/<draw-byte> ( byte -- )
-	DUP #04 SFT /<draw-hex>
-	( >> )
-
-@font/<draw-hex> ( byte -- )
-	#0f AND DUP #09 GTH #07 MUL ADD #30 ADD !/<draw-char>
 
 @font/<draw-char-color> ( char color -- )
 	,&color STR
@@ -567,6 +559,18 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<draw-char>
 		INC2 !&>while
+
+@font/<draw-dec> ( short* -- )
+	DUP2 #0064 DIV2 /<print-digit>
+	( >> )
+
+@font/<draw-dec-small> ( short* -- )
+	DUP2 #000a DIV2 /<print-digit>
+	( >> )
+
+@font/<print-digit> ( value* -- )
+	#000a DIV2k MUL2 SUB2 LIT "0 ADD /<draw-char>
+	POP JMP2r
 
 (
 @|ports )
@@ -636,7 +640,7 @@
 	src/<reset>
 	timer/<reset>
 	( | default speed )
-	#0b timer/<set> !<step>
+	#0f timer/<set> !<step>
 
 @file/<reopen> ( -- )
 	#0000 ;src/buf file/<inject>
@@ -724,7 +728,7 @@
 @edit/<toggle-comment> ( -- )
 	[ LIT2 "#. ]
 	( get cell ) .select/from LDZ2 get-addr grid/get
-	( toggle ) [ LIT "# ] NEQ [ JMP SWP POP ] ,&c STR
+	( toggle ) [ LIT "# ] NEQ POP? ,&c STR
 	( | apply )
 	.select/y2 LDZ INC .select/y1 LDZ
 	&>l
@@ -739,53 +743,55 @@
 
 @timer/on-play ( -> )
 	( on beat ) .timer LDZ2 NEQ ?{ <step> }
-	( inc beat ) .timer/beat LDZk INC SWP STZ
+	( inc beat ) .&beat LDZk INC SWP STZ
 	( >> )
 
 @timer/on-pause ( -> )
-	[ LIT2 01 &f $1 ] INCk ,&f STR
-	AND ?{ grid/<try-draw> }
+	grid/<try-draw>
 	BRK
 
 @timer/<toggle> ( -- )
-	.Screen/vector DEI2 ;&on-play EQU2 ?{ ;&on-play .Screen/vector DEO2
-		JMP2r }
-	;&on-pause .Screen/vector DEO2 !/widget/<draw>
+	.Screen/vector DEI2 ;&on-play EQU2 ?{ ;&on-play .Screen/vector DEO2 !/<draw-speed> }
+	;&on-pause .Screen/vector DEO2
+	/<draw-widget> !/<draw-speed>
 
 @timer/<step> ( -- )
 	;&on-pause .Screen/vector DEO2
-	<step> !/widget/<draw>
+	<step> !/<draw-widget>
 
 @timer/<reset> ( -- )
 	#0000 .&frame STZ2
 	JMP2r
 
-@timer/<decr> #ff !/<mod>
+@timer/<decr> ( -- )
+	.&speed LDZ #04 GTH ?{ JMP2r }
+	#ff !/<mod>
 
-@timer/<incr> #01 !/<mod>
+@timer/<incr> ( -- )
+	.&speed LDZ #3c LTH ?{ JMP2r }
+	#01 !/<mod>
 
 @timer/<mod> ( mod -- )
 	.&speed LDZ ADD
 	( >> )
 
 @timer/<set> ( speed -- )
-	#1f AND #04 GTHk [ JMP SWP POP ] .&speed STZ
-	[ LIT2 00 -&beat ] STZ !draw-speed
+	.&speed STZ
+	[ LIT2 00 -&beat ] STZ !/<draw-speed>
 
-@timer/widget/<draw> ( -- )
-	[ LIT2 &widget/x $2 ] .Screen/x DEO2
-	[ LIT2 &widget/y $2 ] .Screen/y DEO2
-	( | icon )
-	;beat-icn .Screen/addr DEO2
-	[ LIT2 01 -&frame-lb ] LDZ AND DUP ADD INC .Screen/sprite DEO
-	( | text )
-	.Screen/vector DEI2 ;&on-play NEQ2 #02 ADD ;font/color STA
-	.&frame LDZ2 !font/<draw-short>
+@timer/<draw-speed> ( -- )
+	,&x LDR2 #0008 ADD2 .Screen/x DEO2
+	,&y LDR2 .Screen/y DEO2
+	.Screen/vector DEI2 ;&on-play NEQ2 INC ;font/color STA
+	#0e10 ;&speed LDZ DIV2 !font/<draw-dec>
 
-@draw-speed ( -- )
+@timer/<draw-widget> ( -- )
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
-	.timer/speed LDZ !font/<draw-byte>
+	( | icon )
+	;beat-icn .Screen/addr DEO2
+	[ LIT2 01 -&frame-lb ] LDZ AND INC .Screen/sprite DEO
+	JMP2r
 
 (
 @|Select )
@@ -795,7 +801,7 @@
 	ADD STHr }
 
 @select/<mod> ( x y mod -- )
-	DUP #04 EQU ?/<size>
+	#0f AND DUP #04 EQU ?/<size>
 	#01 EQU ?/<drag>
 	/<move> !insert/<set-anchor>
 
@@ -854,7 +860,7 @@
 	.&to STZ2
 	.&from STZ2
 	[ LIT2 00 -help ] STZ
-	grid/<reqdraw> !select/widget/<draw>
+	grid/<reqdraw> !select/<draw-widget>
 
 @select/<fill> ( char -- )
 	DUP ?{ POP JMP2r }
@@ -869,23 +875,24 @@
 		POP2 POPr INC GTHk ?&>ver
 	POP2 grid/<reqdraw> !src/<change>
 
-@select/widget/<draw> ( -- )
-	[ LIT2 &widget/x $2 ] .Screen/x DEO2
-	[ LIT2 &widget/y $2 ] .Screen/y DEO2
+@select/<draw-widget> ( -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
 	( | icon )
 	#00 .Controller/vector DEI2 ;insert/on-button EQU2 STHk
-	( get addr ) #40 SFT2 ;select/icns ADD2 .Screen/addr DEO2
-	( draw ) INCr INCr DUPr [ LITr -Screen/sprite ] DEOr
+	( get addr ) #40 SFT2 ;&icns ADD2 .Screen/addr DEO2
+	( draw ) INCr DUPr [ LITr -Screen/sprite ] DEOr
 	( set color ) [ LIT2r =font/color ] STAr
 	( | draw size )
 	.select/from LDZ2 .select/to LDZ2 EQU2k ?{ SWP2 SUB2 DUP2 }
 	( | value )
-	POP2 !font/<draw-short>
+	POP2 #00 ROT font/<draw-dec-small>
+	#00 SWP !font/<draw-dec-small>
 
 @insert/<toggle> ( -- )
 	select/<reset>
 	/<set-anchor>
-	;on-button ;&on-button .Controller/vector DEI2 ;&on-button EQU2 [ JMP SWP2 POP2 ] .Controller/vector DEO2 !select/widget/<draw>
+	;on-button ;&on-button .Controller/vector DEI2 ;&on-button EQU2 [ JMP SWP2 POP2 ] .Controller/vector DEO2 !select/<draw-widget>
 
 @insert/on-button ( -> )
 	.Controller/key DEI /<append-char>
@@ -1343,7 +1350,7 @@
 	LIT ". ROT ROT
 	grid/<set> JMP2r
 
-@op-comment "# "Comments 20 "a 20 "line $1
+@op-comment "# "Comments 20 "line $1
 	&*
 	STH2k
 	( set itself )
@@ -1359,11 +1366,11 @@
 	POP2 POP2
 	JMP2r
 
-@op-midi ": "Send 20 "a 20 "midi 20 "note $1
+@op-midi ": "Sends 20 "midi 20 "bytes $1
 	&*
 	INC2k STH2k
 	( channel ) ports/get-right-val ,&chn STR
-	( octave ) INC2r STH2kr ports/get-right-val #0c MUL
+	( octave ) INC2r STH2kr ports/get-right-val INC #0c MUL
 	( note ) INC2r STH2kr ports/get-right-raw chrmid ADD ,&pitch STR
 	( velocity ) INC2r STH2kr ports/get-right-raw chrvel ,&vel STR
 	( length ) INC2r STH2r ports/get-right-val INC ,&len STR
@@ -1372,7 +1379,7 @@
 	.Types/io ROT ROT types/<set>
 	[ LIT2 &chn $1 &pitch $1 ] [ LIT2 &len $1 &vel $1 ] !voices/<add>
 
-@op-pitch "; "Send 20 "a 20 "raw 20 "pitch 20 "byte $1
+@op-pitch "; "Sends 20 "pitch 20 "byte $1
 	&*
 	STH2k
 	( octave ) ports/get-right1-val
@@ -1380,10 +1387,10 @@
 	( has note ) DUP LIT ". NEQ ?&has-note [ POP2 POP2r JMP2r ] &has-note
 	( has bang ) get-bang ?&is-bang [ POP2 POP2r JMP2r ] &is-bang
 	( animate ) .Types/io STH2r types/<set>
-	( get note ) chrmid SWP [ #0c MUL ] ADD .Console/write DEO
+	( get note ) chrmid SWP INC #0c MUL ADD .Console/write DEO
 	JMP2r
 
-@op-byte "/ "Send 20 "raw 20 "hexadecimal 20 "byte $1
+@op-byte "/ "Sends 20 "hexadecimal 20 "byte $1
 	&*
 	STH2k
 	( hn ) ports/get-right1-val
@@ -1393,13 +1400,13 @@
 	#0f AND SWP #0f AND #40 SFT ADD .Console/write DEO
 	JMP2r
 
-@op-string "$ "Send 20 "string $1
+@op-string "" "Sends 20 "string 20 "bytes $1
 	&*
 	STH2k text/<set>
 	get-bang ?{ POP2r JMP2r }
 	.Types/io STH2r types/<set> !text/<send>
 
-@op-self "$ "Load 20 "orca 20 "file $1
+@op-self "$ "Loads 20 "orca 20 "file $1
 	&*
 	STH2k text/<set>
 	get-bang ?{ POP2r JMP2r }
@@ -1420,8 +1427,8 @@
 	=op-i =op-j =op-k =op-l =op-m =op-n =op-o =op-p
 	=op-q =op-r =op-s =op-t =op-u =op-v =op-w =op-x
 	=op-y =op-z
-	=op-bang =op-comment
-	=op-midi =op-pitch =op-byte =op-string =op-self ]
+	=op-comment =op-self
+	=op-midi =op-pitch =op-byte =op-string  ]
 
 @midi/lut [
 	( lc )
@@ -1597,7 +1604,7 @@
 @|spritesheet )
 
 @select/icns [
-	0000 c682 0000 0000 0000 82c6 0000 0000
+	0000 0018 1818 187e 1818 1818 0000 0000
 	0000 6618 1818 1818 1818 1866 0000 0000 ]
 @beat-icn [
 	0000 0000 0038 7c7c 7c38 0000 0000 0000 ]
@@ -1698,7 +1705,7 @@ $200
 0000 0000 00c6 c6c6 c6c6 c67e 060c f800
 0000 0000 00fe cc18 3060 c6fe 0000 0000
 0000 0e18 1818 7018 1818 180e 0000 0000
-0000 1818 1818 0018 1818 1818 0000 0000
+0000 1818 1818 1818 1818 1818 0000 0000
 0000 7018 1818 0e18 1818 1870 0000 0000
 0000 76dc 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
