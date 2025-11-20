@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <portmidi.h>
+#include <porttime.h>
+
+typedef unsigned char Uint8;
+
+PmStream *midi;
+
+static int
+error(char *name)
+{
+	fprintf(stderr, "Error: %s\n", name);
+	return 0;
+}
+
+static void
+start(void)
+{
+	int n, i = 0;
+	Uint8 c, msg[3];
+	while((n = read(0, &c, 1)) > 0) {
+		msg[i % 3] = c;
+		fflush(stdout);
+		i++;
+		if(i % 3 == 0)
+			Pm_WriteShort(midi, Pt_Time(), Pm_Message(0x90 + msg[0], msg[1], msg[2]));
+	}
+}
+
+static void
+select_device(Uint8 device)
+{
+	Uint8 i, id = device % Pm_CountDevices();
+	Pm_OpenOutput(&midi, id, NULL, 128, 0, NULL, 1);
+	for(i = 0; i < Pm_CountDevices(); ++i)
+		printf("#%d -> %s%s\n", i, Pm_GetDeviceInfo(i)->name, i == device ? "[x]" : "[ ]");
+}
+
+int
+main(int argc, char *argv[])
+{
+	Uint8 device = argc <= 1 ? 0 : atoi(argv[1]);
+	Pm_Initialize();
+	if(Pm_CountDevices() < 1 || device > Pm_CountDevices() - 1)
+		return error("Midi device not found.");
+	select_device(device);
+	start();
+	return 0;
+}
