@@ -9,17 +9,14 @@
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 (
-@|enums )
+@|Enums )
 
 |10 @Types/lock-default
 |12 @Types/lock-lut
-|10 @Types/lock-right
 |16 @Types/lock-output
 |01 @Types/pl
 |07 @Types/op
-|0a @Types/io
 |04 @Styles/selected
-|80 @Row/width
 
 |000
 
@@ -86,6 +83,7 @@
 @manifest/dat ( . )
 	={ =dict/orca
 	( - ) 01 "n =file/<new> =dict
+	( - ) 01 0d =file/<open> =dict
 	( - ) 01 "o =file/<reopen> =dict
 	( - ) 01 "s =file/<save> =dict
 	( - ) 01 "q =file/<exit> =dict }
@@ -122,7 +120,130 @@
 	POP2 #ffff JMP2r
 
 (
-@|src )
+@|Macros )
+
+%grid/get ( addr* -- cell ) {
+	;grid/buf ADD2 LDA }
+
+%grid/<set> ( cell addr* -- ) {
+	;grid/buf ADD2 STA }
+
+%MOD ( a b -- res ) {
+	DIVk MUL SUB }
+
+%MOD2 ( a* b* -- res* ) {
+	DIV2k MUL2 SUB2 }
+
+%MIN1 ( a -- a ) {
+	DUP #00 EQU ADD }
+
+%POP? ( a b bool -- a/b ) {
+	[ JMP SWP ] POP }
+
+%ciuc ( char -- bool ) {
+	LIT "A SUB #1a LTH }
+
+%cilc ( char -- bool ) {
+	LIT "a SUB #1a LTH }
+
+%chrb36 ( char -- b36 ) {
+	#00 SWP ;chr/b36 ADD2 LDA }
+
+%b36chr ( value -- res ) {
+	#00 SWP #24 MOD ;b36/chr ADD2 LDA }
+
+%chrmid ( char -- midi ) {
+	DUP chrb36 SWP ciuc #24 MUL ADD #00 SWP ;midi/lut ADD2 LDA }
+
+%below ( addr* -- next-row* ) {
+	;grid/width LDZ ADD2 }
+
+%above ( addr* -- prev-row* ) {
+	;grid/width LDZ SUB2 }
+
+%get-row ( row -- addr* ) {
+	#00 SWP ;grid/width LDZ MUL2 }
+
+%get-addr ( x y -- addr* ) {
+	get-row ROT #00 SWP ADD2 }
+
+(
+@|Ports )
+
+%types/set-op ( addr* -- addr* ) {
+	LITr -Types/op STH2k LIT2r =types/buf ADD2r STAr }
+
+%types/set-pl ( addr* -- addr* ) {
+	LITr -Types/pl STH2k LIT2r =types/buf ADD2r STAr }
+
+%types/<set-op> ( addr* -- ) {
+	LITr -Types/op STH2
+	LIT2r =types/buf ADD2r STAr }
+
+%types/<set-pl> ( addr* -- ) {
+	LITr -Types/pl STH2
+	LIT2r =types/buf ADD2r STAr }
+
+%types/lock-lut ( addr* -- addr* ) {
+	LITr -Types/lock-lut STH2k LIT2r =types/buf ADD2r STAr }
+
+%types/lock-default ( addr* -- addr* ) {
+	LITr -Types/lock-default STH2k LIT2r =types/buf ADD2r STAr }
+
+%types/lock-output ( addr* -- addr* ) {
+	LITr -Types/lock-output STH2k LIT2r =types/buf ADD2r STAr }
+
+%types/<lock-lut> ( addr* -- ) {
+	LITr -Types/lock-lut STH2
+	LIT2r =types/buf ADD2r STAr }
+
+%ports/w ( addr* -- value ) {
+	types/set-pl grid/get }
+
+%ports/w1 ( addr* -- value ) {
+	#0001 SUB2 ports/w }
+
+%ports/w-val ( addr* -- value ) {
+	ports/w chrb36 }
+
+%ports/w1-val ( addr* -- value ) {
+	#0001 SUB2 ports/w-val }
+
+%ports/e-val ( addr* -- value ) {
+	ports/e chrb36 }
+
+%ports/e1-val ( addr* -- value ) {
+	INC2 ports/e-val }
+
+%ports/e ( addr* -- value ) {
+	types/lock-default grid/get }
+
+%ports/e1 ( addr* -- value ) {
+	INC2 ports/e }
+
+%ports/e1-case ( addr* case -- value ) {
+	ports/e1 DUP chrb36 SWP ciuc }
+
+%ports/<e> ( value addr* -- ) {
+	types/lock-default grid/<set> }
+
+%ports/<set-output> ( value addr* -- ) {
+	types/lock-output grid/<set> }
+
+%ports/<set-bang> ( addr* -- ) {
+	LIT "* ROT ROT ports/<set-output> }
+
+%ports/s ( addr* -- value ) {
+	below grid/get }
+
+%ports/<s> ( value addr* -- ) {
+	below ports/<set-output> }
+
+%ports/<s-bang> ( bool . addr* -- ) {
+	[ LIT2 "*. ] ROT POP? STH2r ports/<s> }
+
+(
+@|Src )
 
 @src/on-console ( -> )
 	.Console/read DEI
@@ -160,7 +281,7 @@
 	( >> )
 
 @src/<set-change> ( value -- )
-	DUP [ LIT &last 00 ] NEQ ?{ POP JMP2r }
+	DUP LIT &last 00 NEQ ?{ POP JMP2r }
 	( >> )
 
 @src/<force-change> ( value -- )
@@ -179,70 +300,19 @@
 		INC DUP ?&>lf
 	POP JMP2r
 
-@src/default-path "untitled.orca $1
+@src/<capture> ( to* from* -- )
+	( validate ) SUB2k #0003 LTH2 ?{
+		/<init>
+		&>l
+			DUP2 grid/get /<push>
+			INC2 GTH2k ?&>l
+		#00 /<force-change> }
+	POP2 POP2 JMP2r
 
-@text/<set> ( addr* -- )
-	;&buf ,&ptr STR2
-	&>w
-		INC2 DUP2 ;grid/buf ADD2 LDA2 LIT2 ".. EQU2 ?{
-			DUP2 ports/get-right-raw DUP /<push>
-			?&>w }
-	POP2 #00
-	( >> )
-
-@text/<push> ( c -- )
-	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA
-	JMP2r
-
-@text/<send> ( -- )
-	;&buf
-	&>ws
-		LDAk DUP ?{ POP POP2 JMP2r }
-		#18 DEO
-		INC2 !&>ws
+@src/default-path "lobby.orca $1
 
 (
-@|Macros )
-
-%MOD ( a b -- res ) {
-	DIVk MUL SUB }
-
-%POP? ( a b -- a/b ) {
-	[ JMP SWP ] POP }
-
-%ciuc ( char -- bool ) {
-	LIT "A SUB #1a LTH }
-
-%cilc ( char -- bool ) {
-	LIT "a SUB #1a LTH }
-
-%chrb36 ( char -- b36 ) {
-	#00 SWP ;chrb36/lut ADD2 LDA }
-
-%b36chr ( b36 -- char ) {
-	#24 MOD #00 SWP ;b36clc ADD2 LDA }
-
-%chrmid ( char -- midi ) {
-	DUP chrb36 SWP ciuc #24 MUL ADD #00 SWP ;midi/lut ADD2 LDA }
-
-%set-case ( value case -- raw ) {
-	SWP b36chr DUP #60 GTH ROT AND #50 SFT SUB }
-
-%below ( addr* -- next-row* ) {
-	;Row/width ADD2 }
-
-%above ( addr* -- prev-row* ) {
-	;Row/width SUB2 }
-
-%get-row ( row* -- addr* ) {
-	;Row/width MUL2 }
-
-%get-addr ( x y -- addr* ) {
-	#00 SWP get-row ROT #00 SWP ADD2 }
-
-(
-@|vectors )
+@|Vectors )
 
 @on-button ( -> )
 	.Controller/button DEI2
@@ -267,7 +337,7 @@
 
 @on-mouse ( -> )
 	#41 cursor/<update>
-	[ LIT &last $1 ] .Mouse/state DEI DUP ,&last STR
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
 	( | handlers )
 	DUP2 #0001 EQU2 ?/down
 	DUP2 #0101 EQU2 ?/drag
@@ -300,41 +370,27 @@
 %types/get ( addr* -- cell ) {
 	;types/buf ADD2 LDA }
 
-%types/<set> ( type addr* -- ) {
-	;types/buf ADD2 STA }
-
 @types/<reset> ( -- )
-	.grid/height LDZ #00
-	&>ver
-		( row ) [ LITr 00 ] STHk [ LIT2r =Row/width ] MUL2r
-		( ) .grid/width LDZ #00
-		&>hor
-			#0000 STH2kr ;types/buf ADD2 STA2
-			INC2r INC2r INC INC GTHk ?&>hor
-		POP2 POP2r INC GTHk ?&>ver
-	POP2 JMP2r
+	;grid/width LDZ ;grid/height LDZ MUL2 ,&len STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+
+	&mmu [ 00 &len $2 0000 =&buf 00 ]
 
 @variables/<reset> ( -- )
-	;&buf DUP2 #0024 ADD2 SWP2
-	&>l
-		[ LIT2 ".. ] OVR2 STA2
-		INC2 INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
+	;&mmu .System/expansion DEO2
+	JMP2r
 
-%variables/get ( var -- value ) {
-	.variables/buf ADD LDZ }
+	&mmu [ 00 0024 0000 =&buf ". ]
 
-%variables/<set> ( var -- value ) {
-	.variables/buf ADD STZ }
+%variables/get ( chr -- value ) {
+	chrb36 .variables/buf ADD LDZ }
+
+%variables/<set> ( chr -- value ) {
+	chrb36 .variables/buf ADD STZ }
 
 (
 @|Grid )
-
-%grid/get ( addr* -- cell ) {
-	;grid/buf ADD2 LDA }
-
-%grid/<set> ( cell addr* -- ) {
-	;grid/buf ADD2 STA }
 
 @grid/on-console ( -> )
 	.Console/read DEI insert/<append-char>
@@ -347,11 +403,11 @@
 	( | reset head )
 	&>ver
 		DUP .head/y STZ
-		( row ) [ LITr 00 ] STHk [ LIT2r =Row/width ] MUL2r
+		( row ) LITr 00 STHk [ LIT2r =grid/width ] LDZr MUL2r
 		( ) .grid/width LDZ #00
 		&>hor
 			DUP .head/x STZ
-			DUP2r [ LITr -head/addr ] STZ2r
+			DUP2r LITr -head/addr STZ2r
 			STH2kr types/get #f0 AND ?{
 				STH2kr #00 STH2kr grid/get DUP ADD ;library/lut ADD2 LDA2 JSR2 }
 			INC2r INC GTHk ?&>hor
@@ -365,46 +421,42 @@
 
 @grid/<fit> ( -- )
 	( | x )
-	#0010 .grid/x1 STZ2
+	#0010 .&x1 STZ2
 	.Screen/width DEI2
-	( ) DUP2 #03 SFT2 NIP #04 SUB .grid/width STZ
-	( ) #01 SFT2 .grid/width LDZ #01 SFT #00 SWP #30 SFT2 ADD2 #0004 ADD2 .grid/x2 STZ2
+	( ) DUP2 #03 SFT2 NIP #04 SUB .&width STZ
+	( ) #01 SFT2 .&width LDZ #01 SFT #00 SWP #30 SFT2 ADD2 #0004 ADD2 .&x2 STZ2
 	( | y )
-	#0010 .grid/y1 STZ2
+	#0010 .&y1 STZ2
 	.Screen/height DEI2
-	( ) DUP2 #04 SFT2 NIP #03 SUB .grid/height STZ
-	( ) #01 SFT2 .grid/height LDZ #01 SFT #00 SWP #40 SFT2 ADD2 .grid/y2 STZ2
+	( ) DUP2 #04 SFT2 NIP #03 SUB .&height STZ
+	( ) #01 SFT2 .&height LDZ #01 SFT #00 SWP #40 SFT2 ADD2 .&y2 STZ2
 	( | length )
-	;grid/height LDZ ;grid/width LDZ
-	( ) MUL2 .grid/length STZ2
+	;&height LDZ ;&width LDZ
+	( ) MUL2 .&length STZ2
 	JMP2r
 
 @grid/<reset> ( -- )
-	.grid/height LDZ #00
-	&>res-ver
-		( row ) [ LITr 00 ] STHk [ LIT2r =Row/width ] MUL2r
-		( ) .grid/width LDZ #00
-		&>res-hor
-			[ LIT2 ".. ] STH2kr ;grid/buf ADD2 STA2
-			INC2r INC2r INC INC GTHk ?&>res-hor
-		POP2 POP2r INC GTHk ?&>res-ver
-	POP2 JMP2r
+	;grid/width LDZ ;grid/height LDZ MUL2 ,&len STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+
+	&mmu [ 00 &len $2 0000 =&buf ". ]
 
 @grid/<reqdraw> ( -- )
 	[ LIT2 01 _&req ] STR
 	JMP2r
 
 @grid/<try-draw> ( -- )
-	[ LIT &req $1 ] ?{ JMP2r }
+	LIT &req $1 ?{ JMP2r }
 	[ LIT2 00 _&req ] STR
 	( | draw )
 	.select/to LDZ2 get-addr grid/get ;&highlight STA
-	.grid/height LDZ #00
+	.&height LDZ #00
 	&>ver
-		( row ) [ LITr 00 ] STHk [ LIT2r =Row/width ] MUL2r
-		( x ) .grid/x1 LDZ2 .Screen/x DEO2
-		( y ) #00 OVR #40 SFT2 .grid/y1 LDZ2 ADD2 .Screen/y DEO2
-		.grid/width LDZ #00
+		( row ) LITr 00 STHk [ LIT2r =grid/width ] LDZr MUL2r
+		( x ) .&x1 LDZ2 .Screen/x DEO2
+		( y ) #00 OVR #40 SFT2 .&y1 LDZ2 ADD2 .Screen/y DEO2
+		.&width LDZ #00
 		&>hor
 			( +bound x y ) ROTk STH2kr /<draw-cell>
 			( -bound ) POP INC2r INC GTHk ?&>hor
@@ -423,7 +475,7 @@
 
 @grid/<draw-cell-lowercase> ( x y value . type -- )
 	#00 OVR #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
-	[ LIT &highlight $1 ] NEQ DUP ADD INC .Screen/sprite DEO
+	LIT &highlight $1 NEQ DUP ADD INC .Screen/sprite DEO
 	POP2 POPr JMP2r
 
 @grid/<draw-cell-grid> ( x y value . type -- )
@@ -467,16 +519,16 @@
 	;dict/guide #02 !font/<draw-str>
 
 @get-bang ( -- bang )
-	.head/addr LDZ2 ;grid/buf ADD2 STH2k
-	( left ) #0001 SUB2 LDA LIT "* EQU ?&bang
-	( top ) STH2kr above LDA LIT "* EQU ?&bang
-	( right ) STH2kr INC2 LDA LIT "* EQU ?&bang
-	( bottom ) STH2kr below LDA LIT "* EQU ?&bang
+	.head/addr LDZ2 ;grid/buf ADD2
+	( l ) STH2k #0001 SUB2 LDA LIT "* EQU ?&bang
+	( t ) STH2kr above LDA LIT "* EQU ?&bang
+	( r ) STH2kr INC2 LDA LIT "* EQU ?&bang
+	( b ) STH2kr below LDA LIT "* EQU ?&bang
 	POP2r #00 JMP2r
 	&bang POP2r #01 JMP2r
 
 (
-@|voices ) ( len vel chn note )
+@|Voices ) ( len vel chn note )
 
 @voices/find ( chn pitch -- <voice> )
 	,&t STR2
@@ -520,7 +572,7 @@
 
 @voices/<update> ( -- )
 	#1000
-	( record changes ) [ LITr 00 ]
+	( record changes ) LITr 00
 	&>lu
 		DUP #20 SFT .&buf ADD LDZk #00 EQU ?{
 			( decrement ) LDZk #01 SUB OVR STZ
@@ -573,64 +625,6 @@
 	POP JMP2r
 
 (
-@|ports )
-
-@ports/get-right1-val ( addr* -- value )
-	INC2
-	( >> )
-
-@ports/get-right-val ( addr* -- value )
-	ports/get-right-raw chrb36 JMP2r
-
-@ports/get-left1-val ( addr* -- value )
-	#0001 SUB2
-	( >> )
-
-@ports/get-left-val ( addr* -- value )
-	ports/get-left-raw chrb36 JMP2r
-
-@ports/get-left1-raw ( addr* -- value )
-	#0001 SUB2
-	( >> )
-
-@ports/get-left-raw ( addr* -- value )
-	( type ) STH2k .Types/pl STH2r types/<set>
-	grid/get JMP2r
-
-@ports/get-right1-case ( addr* -- value case )
-	ports/get-right1-raw DUP chrb36 SWP ciuc JMP2r
-
-@ports/get-right1-raw ( addr* -- value )
-	INC2
-	( >> )
-
-@ports/get-right-raw ( addr* -- value )
-	STH2k
-	( type ) .Types/lock-right STH2r types/<set>
-	grid/get JMP2r
-
-@ports/<set-output-below> ( value addr* -- )
-	below
-	( >> )
-
-@ports/<set-output> ( value addr* -- )
-	STH2k
-	( type ) .Types/lock-output STH2r types/<set>
-	grid/<set>
-	JMP2r
-
-@ports/<set-raw> ( value addr* -- )
-	STH2k
-	( type ) .Types/lock-default STH2r types/<set>
-	grid/<set>
-	JMP2r
-
-@ports/<set-lock> ( addr* -- )
-	STH2
-	( type ) .Types/lock-lut STH2r types/<set>
-	JMP2r
-
-(
 @|File )
 
 @file/<new> ( -- )
@@ -641,6 +635,13 @@
 	timer/<reset>
 	( | default speed )
 	#0f timer/<set> !<step>
+
+@file/<open> ( -- )
+	( b ) .select/x2 LDZ .select/y1 LDZ get-addr INC2
+	( a ) .select/from LDZ2 get-addr src/<capture>
+	grid/<reset>
+	types/<reset>
+	#0000 ;src/buf file/<inject> !select/<reset>
 
 @file/<reopen> ( -- )
 	#0000 ;src/buf file/<inject>
@@ -658,7 +659,7 @@
 		.File/success-lb DEI ?{ POP2r JMP2r }
 		[ LIT2 0a &b $1 ] NEQk ?{
 			( pop chars ) POP2
-			( reset x ) NIPr [ LITr &anchor-x $1 ] SWPr
+			( reset x ) NIPr LITr &anchor-x $1 SWPr
 			( incr y ) INCr !&>stream }
 	STH2kr get-addr grid/<set>
 	[ LIT2r 0100 ] ADD2r POP !&>stream
@@ -718,7 +719,7 @@
 	&>lp
 		GTH2k ?{ POP2 POP2 POP2r !grid/<reqdraw> }
 		LDAk DUP #0a NEQ ?{
-			( linebreak ) POP NIPr [ LITr &anchor 00 ] SWPr INCr INC2 !&>lp }
+			( linebreak ) POP NIPr LITr &anchor 00 SWPr INCr INC2 !&>lp }
 	( insert ) STH2kr get-addr grid/<set>
 	( move ) LIT2r 0100 ADD2r INC2 !&>lp
 
@@ -728,11 +729,11 @@
 @edit/<toggle-comment> ( -- )
 	[ LIT2 "#. ]
 	( get cell ) .select/from LDZ2 get-addr grid/get
-	( toggle ) [ LIT "# ] NEQ POP? ,&c STR
+	( toggle ) LIT "# NEQ POP? ,&c STR
 	( | apply )
 	.select/y2 LDZ INC .select/y1 LDZ
 	&>l
-		STHk [ LIT &c $1 ]
+		STHk LIT &c $1
 		( l ) DUP .select/x1 LDZ STHkr get-addr grid/<set>
 		( r ) .select/x2 LDZ STHr get-addr grid/<set>
 		INC GTHk ?&>l
@@ -870,7 +871,7 @@
 	&>ver
 		STHk .&x2 LDZ INC .&x1 LDZ
 		&>hor
-			[ LIT &c $1 ] OVR STHkr get-addr grid/<set>
+			LIT &c $1 OVR STHkr get-addr grid/<set>
 			INC GTHk ?&>hor
 		POP2 POPr INC GTHk ?&>ver
 	POP2 grid/<reqdraw> !src/<change>
@@ -921,6 +922,27 @@
 		POP JMP2r }
 	select/<fill>
 	#0100 !select/<move>
+
+@text/<set> ( addr* -- )
+	;&buf ,&ptr STR2
+	&>w
+		INC2 DUP2 ;grid/buf ADD2 LDA2 LIT2 ".. EQU2 ?{
+			DUP2 ports/e DUP /<push>
+			?&>w }
+	POP2 #00
+	( >> )
+
+@text/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@text/<send> ( -- )
+	;&buf
+	&>ws
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>ws
 
 (
 @|Cursor )
@@ -977,13 +999,18 @@
 	&path ".theme $1
 
 (
-@|stdlib )
+@|Stdlib )
 
-@chrvel ( char -- vel )
-	DUP LIT "0 EQU ?&silence
-	chrb36 #03 MUL DUP ?&has-vel
-	POP #7f &has-vel JMP2r
-	&silence POP #00 JMP2r
+@chr/capitalize ( num case -- )
+	?{ b36chr JMP2r }
+	DUP #09 GTH ?{ b36chr JMP2r }
+	b36chr #20 SUB JMP2r
+
+@chr/vel ( char -- vel )
+	DUP LIT "0 EQU ?{
+		chrb36 #03 MUL DUP ?{ POP #7f }
+		JMP2r }
+	POP #00 JMP2r
 
 @lerp ( rate target val -- val )
 	DUP2 GTHk [ JMP SWP SUB ] STH
@@ -992,6 +1019,14 @@
 	GTHk ?&no-below
 	NIP STHr SUB JMP2r
 	&no-below NIP STHr ADD JMP2r
+
+@move ( from* to* -- )
+	DUP2 grid/get LIT ". EQU ?{ POP2 ports/<set-bang>
+		JMP2r }
+	STH2
+	DUP2 grid/get STH2r ports/<e>
+	LIT ". ROT ROT ports/<e>
+	JMP2r
 
 @dict
 	&orca "Orca $1
@@ -1004,418 +1039,405 @@
 
 
 
-(
-@|operators )
+( Operators )
 
 @op-a "A "Outputs 20 "sum 20 "of 20 "inputs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( a ) ports/get-left1-val
-	( b ) STH2kr ports/get-right1-case ,&case STR
-	( res ) ADD
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( a ) ports/w1-val
+	( b ) STH2kr ports/e1-case ,&case STR
+	( res ) ADD [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 @op-b "B "Outputs 20 "difference 20 "of 20 "inputs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( a ) ports/get-left1-val
-	( b ) STH2kr ports/get-right1-case ,&case STR
-	( res ) SUB DUP #80 LTH ?{ #24 SWP SUB }
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( a ) ports/w1-val
+	( b ) STH2kr ports/e1-case ,&case STR
+	( sort ) GTHk [ JMP SWP ]
+	( res ) SUB [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 @op-c "C "Outputs 20 "modulo 20 "of 20 "frame $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2
-	.Types/op STH2kr types/<set>
+	&* ( addr* -- )
+	types/set-op STH2
 	.timer/frame LDZ2
-	#00 ( rate* ) STH2kr ports/get-left1-val ( min1* ) EQUk ADD DIV2
-	#00 ( mod* ) STH2kr ports/get-right1-case ,&case STR ( min1* ) EQUk ADD
-	( mod2 ) [ DIV2k MUL2 SUB2 ]
-	( res ) NIP
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	( rate* ) #00 STH2kr ports/w1-val EQUk ADD DIV2
+	( mod* ) #00 STH2kr ports/e1-case ,&case STR
+	EQUk ADD
+	( res ) MOD2 NIP [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 @op-d "D "Bangs 20 "on 20 "modulo 20 "of 20 "frame $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2
-	.Types/op STH2kr types/<set>
+	&* ( addr* -- )
+	types/set-op STH2
 	.timer/frame LDZ2
-	#00 ( rate* ) STH2kr ports/get-left1-val ( min1* ) EQUk ADD
-	#00 ( mod* ) STH2kr ports/get-right1-val ( min1* ) EQUk ADD
-	( mod2 ) MUL2 [ DIV2k MUL2 SUB2 ] #0000 EQU2
-	( bang ) [ LIT2 "*. ] ROT [ JMP SWP POP ]
-	STH2r !ports/<set-output-below>
+	( rate* ) #00 STH2kr ports/w1-val EQUk ADD
+	( mod* ) #00 STH2kr ports/e1-val EQUk ADD
+	( res ) MUL2 MOD2 #0000 EQU2 ports/<s-bang>
+	JMP2r
 
 @op-e "E "Moves 20 "eastward 20 "or 20 "bangs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	grid/get ,&self STR
-	( wall ) .head/x LDZ INC .grid/width LDZ EQU ?&collide
-	( cell ) STH2kr INC2 grid/get LIT ". NEQ ?&collide
-	( write new ) [ LIT &self $1 ] STH2kr INC2 ports/<set-raw>
-	( erase old ) LIT ". STH2r !ports/<set-raw>
-	&collide
-		LIT "* STH2r !ports/<set-output>
+	&* ( addr* -- )
+	.head/x LDZ INC .grid/width LDZ EQU ?{ INC2k !move }
+	ports/<set-bang>
+	JMP2r
 
 @op-f "F "Bangs 20 "if 20 "inputs 20 "are 20 "equal $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( a ) ports/get-left1-raw
-	( b ) STH2kr ports/get-right1-raw
-	( bang ) EQU [ LIT2 "*. ] ROT [ JMP SWP POP ]
-	STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( a ) ports/w1
+	( b ) STH2kr ports/e1
+	( res ) EQU ports/<s-bang>
+	JMP2r
 
 @op-g "G "Writes 20 "operands 20 "with 20 "offset $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( x ) STH2kr #0003 SUB2 ports/get-left-val
-		( load ) #00 SWP ADD2
-	( y ) STH2kr #0002 SUB2 ports/get-left-val
-		( load ) #00 SWP INC2 get-row ADD2
-	,&save STR2
-	( len ) STH2kr ports/get-left1-val ( min1 ) DUP #00 EQU ADD
-	#00
+	&* ( addr* -- )
+	types/set-op STH2k
+	( x ) STH2kr #0003 SUB2 ports/w-val
+	( load ) #00 SWP ADD2
+	( y ) STH2kr #0002 SUB2 ports/w-val
+	( load ) INC get-row ADD2 ,&save STR2
+	( len ) STH2kr ports/w1-val MIN1 #00
 	&>l
-		( load ) #00 OVR STH2kr INC2 ADD2 ports/get-right-raw
+		( load ) #00 OVR STH2kr INC2 ADD2 ports/e
 		( save ) OVR #00 SWP [ LIT2 &save $2 ] ADD2 ports/<set-output>
 		INC GTHk ?&>l
-	POP2
-	POP2r
-	JMP2r
+	POP2 POP2r JMP2r
 
 @op-h "H "Holds 20 "southward 20 "operand $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( cell ) below grid/get
-	STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( res ) ports/s STH2r ports/<s>
+	JMP2r
 
 @op-i "I "Increments 20 "southward 20 "operand $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( step ) ports/get-left1-val
-	( mod ) STH2kr ports/get-right1-case ,&case STR
-		( min1 ) DUP #00 EQU ADD
-	( res ) SWP STH2kr below grid/get chrb36 ADD SWP
-	( MOD ) [ DIVk MUL SUB ]
-
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( step ) ports/w1-val
+	( mod ) STH2kr ports/e1-case ,&case STR
+	MIN1 SWP STH2kr ports/s chrb36 ADD
+	( res ) SWP MOD [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 @op-j "J "Outputs 20 "northward 20 "operand $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( get above ) above ports/get-left-raw
+	&* ( addr* -- )
+	types/set-op STH2k
+	( get above ) above ports/w
 	( ignore cable ) DUP [ LIT "J ] NEQ ?{ POP POP2r JMP2r }
-	( skip down )
-	STH2r
+	( skip down ) STH2r
 	&>w
-		below DUP2 grid/get chrb36 #13 EQU
-		?&>w
-
-	!ports/<set-output>
+		below DUP2 grid/get chrb36 #13 EQU ?&>w
+	ports/<set-output>
+	JMP2r
 
 @op-k "K "Reads 20 "multiple 20 "variables $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	ports/get-left1-val #00
+	&* ( addr* -- )
+	types/set-op STH2k ports/w1-val #00
 	&>l
-		#00 OVR STH2kr INC2 ADD2 STH2k ports/get-right-raw
-		DUP LIT ". EQU ?{
-			( load ) DUP chrb36 variables/get
-			( save ) STH2kr ports/<set-output-below>
-			}
-		POP
-		POP2r
-		INC GTHk ?&>l
-	POP2
-	POP2r
-
-	JMP2r
+		#00 OVR STH2kr INC2 ADD2 STH2k ports/e DUP LIT ". EQU ?{
+			( load ) DUP variables/get
+			( save ) STH2kr ports/<s> }
+		POP POP2r INC GTHk ?&>l
+	POP2 POP2r JMP2r
 
 @op-l "L "Outputs 20 "smallest 20 "of 20 "inputs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( a ) ports/get-left1-val
-	( b ) STH2kr ports/get-right1-case ,&case STR
-	( res ) [ LTHk JMP SWP POP ]
-
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( a ) ports/w1-val
+	( b ) STH2kr ports/e1-case ,&case STR
+	( res ) LTHk POP? [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 @op-m "M "Outputs 20 "product 20 "of 20 "inputs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( a ) ports/get-left1-val
-	( b ) STH2kr ports/get-right1-case ,&case STR
-	( res ) MUL
-
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( a ) ports/w1-val
+	( b ) STH2kr ports/e1-case ,&case STR
+	( res ) MUL [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 @op-n "N "Moves 20 "Northward 20 "or 20 "bangs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	grid/get ,&self STR
-	( wall ) .head/y LDZ #01 SUB #ff EQU ?&collide
-	( cell ) STH2kr above grid/get LIT ". NEQ ?&collide
-	( write new ) [ LIT &self $1 ] STH2kr above ports/<set-raw>
-	( erase old ) LIT ". STH2r !ports/<set-raw>
-	&collide
-
-	LIT "* STH2r !ports/<set-output>
+	&* ( addr* -- )
+	;head/y LDZ EQU ?{ DUP2 above !move }
+	ports/<set-bang>
+	JMP2r
 
 @op-o "O "Reads 20 "operand 20 "with 20 "offset $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( x ) STH2kr #0002 SUB2 ports/get-left-val INC #00 SWP ADD2
-	( y ) STH2kr ports/get-left1-val #00 SWP get-row ADD2
-	( val ) ports/get-right-raw
-
-	STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( x ) STH2kr #0002 SUB2 ports/w-val INC #00 SWP ADD2
+	( y ) STH2kr ports/w1-val get-row ADD2
+	( val ) ports/e STH2r ports/<s>
+	JMP2r
 
 @op-p "P "Writes 20 "eastward 20 "operand $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( key ) #0002 SUB2 ports/get-left-val
-	( len ) STH2kr ports/get-left1-val ( min1 ) DUP #00 EQU ADD
-	#00
+	&* ( addr* -- )
+	types/set-op STH2k
+	( key ) #0002 SUB2 ports/w-val
+	( len ) STH2kr ports/w1-val MIN1 #00
 	&>l
-		#00 OVR STH2kr below ADD2 ports/<set-lock>
+		#00 OVR STH2kr below ADD2 types/<lock-lut>
 		INC GTHk ?&>l
 	POP
-	( read ) STH2kr ports/get-right1-raw
-	ROT ROT
-	( MOD ) [ DIVk MUL SUB ] #00 SWP STH2r below ADD2
-
-	!ports/<set-output>
+	( read ) STH2kr ports/e1 ROT ROT MOD #00 SWP STH2r below ADD2 ports/<set-output>
+	JMP2r
 
 @op-q "Q "Reads 20 "operands 20 "with 20 "offset $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( x ) STH2kr #0003 SUB2 ports/get-left-val
-		( load ) #00 SWP INC2 ADD2
-	( y ) STH2kr #0002 SUB2 ports/get-left-val
-		( load ) #00 SWP get-row ADD2
-	,&load STR2
-	( len ) STH2kr ports/get-left1-val ( min1 ) DUP #00 EQU ADD
-		( save ) #00 OVR STH2kr below SWP2 SUB2 INC2 ,&save STR2
+	&* ( addr* -- )
+	types/set-op STH2k
+	( x ) STH2kr #0003 SUB2 ports/w-val
+	( load ) #00 SWP INC2 ADD2
+	( y ) STH2kr #0002 SUB2 ports/w-val
+	( load ) get-row ADD2 ,&load STR2
+	( len ) STH2kr ports/w1-val MIN1
+	( save ) #00 OVR STH2kr below SWP2 SUB2 INC2 ,&save STR2
 	#00
 	&>l
-		( load ) #00 OVR [ LIT2 &load $2 ] ADD2 ports/get-right-raw
+		( load ) #00 OVR [ LIT2 &load $2 ] ADD2 ports/e
 		( save ) OVR #00 SWP [ LIT2 &save $2 ] ADD2 ports/<set-output>
 		INC GTHk ?&>l
-	POP2
-	POP2r
-
-	JMP2r
+	POP2 POP2r JMP2r
 
 @op-r "R "Outputs 20 "random 20 "value $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( a-min ) ports/get-left1-val
-	( b-max ) STH2kr ports/get-right1-case ,&case STR
-	( sort ) LTHk JMP SWP random/from-range
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
-
-@op-s "S "Moves 20 "southward 20 "or 20 "bangs $1
-	&lc get-bang ?&* POP2 JMP2r &*
-
-	STH2k .Types/op STH2kr types/<set>
-	grid/get ,&self STR
-	( wall ) .head/y LDZ INC .grid/height LDZ EQU ?&collide
-	( cell ) STH2kr below grid/get LIT ". NEQ ?&collide
-	( write new ) [ LIT &self $1 ] STH2kr below ports/<set-raw>
-	( erase old ) LIT ". STH2r !ports/<set-raw>
-	&collide
-
-	LIT "* STH2r !ports/<set-output>
-
-@op-t "T "Reads 20 "eastward 20 "operand $1
-	&lc get-bang ?&* POP2 JMP2r &*
-
-	STH2k .Types/op STH2kr types/<set>
-	( key ) #0002 SUB2 ports/get-left-val
-	( len ) STH2kr ports/get-left1-val ( min1 ) DUP #00 EQU ADD
-	#00
-	&>l
-		#00 OVR STH2kr INC2 ADD2 ports/<set-lock>
-		INC GTHk ?&>l
-	POP
-	( read )
-	( MOD ) [ DIVk MUL SUB ] #00 SWP STH2kr INC2 ADD2 ports/get-right-raw
-
-	STH2r !ports/<set-output-below>
-
-@op-u "U "Bangs 20 "on 20 "Euclidean 20 "rhythm $1
-	&lc get-bang ?&* POP2 JMP2r &*
-
-	STH2k .Types/op STH2kr types/<set>
-	( step ) ports/get-left1-val
-	( max ) STH2kr ports/get-right1-val ( min1 ) DUP #00 EQU ADD STH2
-	( frame ADD max SUB 1 ) .timer/frame LDZ2 #00 STHkr ADD2 #0001 SUB2
-	( MUL step ) OVRr #00 STHr MUL2
-	( % max ) #00 STHkr
-	( mod2 ) [ DIV2k MUL2 SUB2 ]
-	( ADD step ) SWPr #00 STHr ADD2
-	( bucket GTH= max ) #00 STHr LTH2 #01 NEQ
-	( bang if equal ) #fc MUL LIT ". ADD
-
-	STH2r !ports/<set-output-below>
-
-@op-v "V "Reads 20 "and 20 "writes 20 "variable $1
-	&lc get-bang ?&* POP2 JMP2r &*
-
-	STH2k .Types/op STH2kr types/<set>
-	( key ) ports/get-left1-raw
-	( val ) STH2kr ports/get-right1-raw
-	DUP LIT ". EQU ?&idle
-	OVR LIT ". EQU ?&load
-	( save )
-		SWP chrb36 variables/<set> POP2r JMP2r
-	&load
-		NIP chrb36 variables/get STH2r below !ports/<set-output>
-	&idle
-		POP2 POP2r
-
+	&* ( addr* -- )
+	types/set-op STH2k
+	( a-min ) ports/w1-val
+	( b-max ) STH2kr ports/e1-case ,&case STR
+	( sort ) LTHk [ JMP SWP ]
+	( res ) random/from-range [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
 	JMP2r
 
+@op-s "S "Moves 20 "southward 20 "or 20 "bangs $1
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
+
+	&* ( addr* -- )
+	.head/y LDZ INC .grid/height LDZ EQU ?{ DUP2 below !move }
+	ports/<set-bang>
+	JMP2r
+
+@op-t "T "Reads 20 "eastward 20 "operand $1
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
+
+	&* ( addr* -- )
+	types/set-op STH2k
+	( key ) #0002 SUB2 ports/w-val
+	( len ) STH2kr ports/w1-val MIN1 #00
+	&>l
+		#00 OVR STH2kr INC2 ADD2 types/<lock-lut>
+		INC GTHk ?&>l
+	POP
+	( read ) MOD #00 SWP STH2kr INC2 ADD2 ports/e STH2r ports/<s>
+	JMP2r
+
+@op-u "U "Bangs 20 "on 20 "Euclidean 20 "rhythm $1
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
+
+	&* ( addr* -- )
+	types/set-op STH2k
+	( step ) ports/w1-val
+	( max ) STH2kr ports/e1-val MIN1 STH2
+	( frame ADD max SUB 1 ) .timer/frame LDZ2 #00 STHkr ADD2 #0001 SUB2
+	( MUL step ) OVRr #00 STHr MUL2
+	( % max ) #00 STHkr MOD2
+	( ADD step ) SWPr #00 STHr ADD2
+	( bucket GTH= max ) #00 STHr LTH2 #01 NEQ ports/<s-bang>
+	JMP2r
+
+@op-v "V "Reads 20 "and 20 "writes 20 "variable $1
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
+
+	&* ( addr* -- )
+	types/set-op STH2k
+	( key ) ports/w1
+	( val ) STH2kr ports/e1 DUP LIT ". EQU ?&idle
+	OVR LIT ". EQU ?&load
+	( save ) SWP variables/<set>
+	POP2r JMP2r
+	&load NIP variables/get STH2r ports/<s>
+	JMP2r
+	&idle POP2 POP2r JMP2r
+
 @op-w "W "Moves 20 "westward 20 "or 20 "bangs $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	grid/get ,&self STR
-	( wall ) .head/x LDZ #01 SUB #ff EQU ?&collide
-	( cell ) STH2kr #0001 SUB2 grid/get LIT ". NEQ ?&collide
-	( write new ) [ LIT &self $1 ] STH2kr #0001 SUB2 ports/<set-raw>
-	( erase old ) LIT ". STH2r !ports/<set-raw>
-	&collide
-
-	LIT "* STH2r !ports/<set-output>
+	&* ( addr* -- )
+	;head/x LDZ EQU ?{ DUP2 #0001 SUB2 !move }
+	ports/<set-bang>
+	JMP2r
 
 @op-x "X "Writes 20 "operand 20 "with 20 "offset $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( x ) STH2kr #0002 SUB2 ports/get-left-val #00 SWP ADD2
-	( y ) STH2kr ports/get-left1-val INC #00 SWP get-row ADD2
-	( val ) STH2r ports/get-right1-raw
-	ROT ROT
-
-	!ports/<set-output>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( x ) STH2kr #0002 SUB2 ports/w-val #00 SWP ADD2
+	( y ) STH2kr ports/w1-val INC get-row ADD2
+	( val ) STH2r ports/e1 ROT ROT ports/<set-output>
+	JMP2r
 
 @op-y "Y "Outputs 20 "westward 20 "operand $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( get above ) ports/get-left1-raw
+	&* ( addr* -- )
+	types/set-op STH2k
+	( get above ) ports/w1
 	( ignore cable ) DUP [ LIT "Y ] NEQ ?{ POP POP2r JMP2r }
-	( skip down )
-	STH2r
+	( skip down ) STH2r
 	&>w
-		INC2 DUP2 grid/get chrb36 #22 EQU
-		?&>w
-
-	!ports/<set-output>
+		INC2 DUP2 grid/get chrb36 #22 EQU ?&>w
+	ports/<set-output>
+	JMP2r
 
 @op-z "Z "Transitions 20 "operand 20 "to 20 "input $1
-	&lc get-bang ?&* POP2 JMP2r &*
+	&lc ( addr* -- )
+	get-bang [ ?&* POP2 ] JMP2r
 
-	STH2k .Types/op STH2kr types/<set>
-	( rate ) ports/get-left1-val
-	( target ) STH2kr ports/get-right1-case ,&case STR
-	( val ) STH2kr below grid/get chrb36
-	( res ) lerp
-
-	[ LIT &case $1 ] set-case STH2r !ports/<set-output-below>
+	&* ( addr* -- )
+	types/set-op STH2k
+	( rate ) ports/w1-val
+	( target ) STH2kr ports/e1-case ,&case STR
+	( val ) STH2kr ports/s chrb36
+	( res ) lerp [ LIT &case $1 ] chr/capitalize STH2r ports/<s>
+	JMP2r
 
 (
 @|special )
 
 @op-bang "* "Bangs 20 "neighboring 20 "operands $1
-	&*
-	LIT ". ROT ROT
-	grid/<set> JMP2r
-
-@op-comment "# "Comments 20 "line $1
-	&*
-	STH2k
-	( set itself )
-	DUP2 ports/<set-lock>
-	( get edge )
-	[ LIT2 00 -grid/width ] LDZ .head/x LDZ SUB ADD2
-	STH2r INC2
-	&>l
-		DUP2 ports/<set-lock>
-		( stop at hash ) DUP2 grid/get LIT "# EQU ?&end
-		INC2 GTH2k ?&>l
-	&end
-	POP2 POP2
+	&* ( addr* -- )
+	LIT ". ROT ROT grid/<set>
 	JMP2r
 
+@op-comment "# "Comments 20 "line $1
+	&* ( addr* -- )
+	STH2k
+	( set itself ) types/lock-lut
+	( get edge ) [ LIT2 00 -grid/width ] LDZ .head/x LDZ SUB ADD2 STH2r INC2
+	&>l
+		types/lock-lut
+		( stop at hash ) DUP2 grid/get LIT "# EQU ?&end
+		INC2 GTH2k ?&>l &end POP2 POP2 JMP2r
+
 @op-midi ": "Sends 20 "midi 20 "bytes $1
-	&*
+	&* ( addr* -- )
 	INC2k STH2k
-	( channel ) ports/get-right-val ,&chn STR
-	( octave ) INC2r STH2kr ports/get-right-val INC #0c MUL
-	( note ) INC2r STH2kr ports/get-right-raw chrmid ADD ,&pitch STR
-	( velocity ) INC2r STH2kr ports/get-right-raw chrvel ,&vel STR
-	( length ) INC2r STH2r ports/get-right-val INC ,&len STR
-	get-bang ?&has-bang POP2 JMP2r &has-bang
-	,&pitch LDR ?&has-pitch POP2 JMP2r &has-pitch
-	.Types/io ROT ROT types/<set>
+	( channel ) ports/e-val ;&chn STA
+	( octave ) INC2r STH2kr ports/e-val INC #0c MUL
+	( note ) INC2r STH2kr ports/e DUP ,&note STR
+	chrmid ADD ,&pitch STR
+	( velocity ) INC2r STH2kr ports/e chr/vel ,&vel STR
+	( length ) INC2r STH2r ports/e-val INC ,&len STR
+	[ LIT2 ". &note $1 ] NEQ ?{ POP2 JMP2r }
+	get-bang ?{ types/<set-pl>
+		JMP2r }
+	( bang ) types/<set-op>
 	[ LIT2 &chn $1 &pitch $1 ] [ LIT2 &len $1 &vel $1 ] !voices/<add>
 
 @op-pitch "; "Sends 20 "pitch 20 "byte $1
-	&*
+	&* ( addr* -- )
 	STH2k
-	( octave ) ports/get-right1-val
-	( note ) STH2kr INC2 ports/get-right1-raw
-	( has note ) DUP LIT ". NEQ ?&has-note [ POP2 POP2r JMP2r ] &has-note
-	( has bang ) get-bang ?&is-bang [ POP2 POP2r JMP2r ] &is-bang
-	( animate ) .Types/io STH2r types/<set>
-	( get note ) chrmid SWP INC #0c MUL ADD .Console/write DEO
+	( octave ) ports/e1-val
+	( note ) STH2kr INC2 ports/e1
+	( has note ) DUP LIT ". NEQ ?{ POP2 POP2r JMP2r }
+	get-bang ?{ POP2 STH2r types/<set-pl>
+		JMP2r }
+	( bang ) STH2r types/<set-op>
+	chrmid SWP INC #0c MUL ADD .Console/write DEO
 	JMP2r
 
 @op-byte "/ "Sends 20 "hexadecimal 20 "byte $1
-	&*
+	&* ( addr* -- )
 	STH2k
-	( hn ) ports/get-right1-val
-	( ln ) STH2kr INC2 ports/get-right1-val
-	( has bang ) get-bang ?&is-bang [ POP2 POP2r JMP2r ] &is-bang
-	( animate ) .Types/io STH2r types/<set>
-	#0f AND SWP #0f AND #40 SFT ADD .Console/write DEO
+	( hn ) ports/e1
+	( ln ) STH2kr INC2 ports/e1
+	( hv ) OVR LIT ". NEQ ?{ POP2 POP2r JMP2r }
+	( lv ) DUP LIT ". NEQ ?{ POP2 POP2r JMP2r }
+	get-bang ?{ POP2 STH2r types/<set-pl>
+		JMP2r }
+	( bang ) STH2r types/<set-op>
+	chrb36 #0f AND SWP chrb36 #0f AND #40 SFT ADD .Console/write DEO
 	JMP2r
 
 @op-string "" "Sends 20 "string 20 "bytes $1
-	&*
-	STH2k text/<set>
-	get-bang ?{ POP2r JMP2r }
-	.Types/io STH2r types/<set> !text/<send>
+	&* ( addr* -- )
+	STH2k ports/e1 LIT ". NEQ ?{ POP2r JMP2r }
+	STH2kr text/<set>
+	get-bang ?{ STH2r types/<set-pl>
+		JMP2r }
+	( bang ) STH2r types/<set-op> !text/<send>
 
 @op-self "$ "Loads 20 "orca 20 "file $1
-	&*
-	STH2k text/<set>
-	get-bang ?{ POP2r JMP2r }
-	.Types/io STH2r types/<set>
+	&* ( addr* -- )
+	STH2k ports/e1 LIT ". NEQ ?{ POP2r JMP2r }
+	STH2kr text/<set>
+	get-bang ?{ STH2r types/<set-pl>
+		JMP2r }
+	( bang ) STH2r types/<set-op>
 	.head/pos LDZ2 INC ;text/buf !file/<inject>
 
-@op-null
-	POP2
-	JMP2r
+@op-null POP2 JMP2r
 
 
 
@@ -1446,7 +1468,7 @@
 	18 1a 1c 1d 1f 21 23 24
 	26 28 ]
 
-@chrb36/lut ( char to b36 ) [
+@chr/b36 ( char to b36 ) [
 	( padding ) $20
 	00 00 00 00 00 00 00 00
 	00 00 00 00 00 00 00 00
@@ -1461,7 +1483,7 @@
 	19 1a 1b 1c 1d 1e 1f 20
 	21 22 23 00 00 00 00 00 ]
 
-@b36clc ( b36 to char-lc ) [
+@b36/chr ( b36 to char-lc ) [
 	30 31 32 33 34 35 36 37
 	38 39 61 62 63 64 65 66
 	67 68 69 6a 6b 6c 6d 6e
