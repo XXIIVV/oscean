@@ -53,14 +53,14 @@ function Emu (embed)
 				let rom = b64decode(rom_url[2]);
 				if(!rom_url[1])
 					rom = decodeUlz(rom);
-				this.load(rom, true);
+				this.load(rom);
 			}
 			else if (boot_ulz) {
-				this.load(decodeUlz(b64decode(boot_ulz)), true);
+				this.load(decodeUlz(b64decode(boot_ulz)));
 			}
-			// Or, get boot rom
-			else if(boot_rom)
-				this.load(boot_rom, true);
+			else if(boot_rom.length) {
+				this.load(boot_rom);
+			}
 			// Start screen vector
 			setInterval(() => {
 				window.requestAnimationFrame(() => {
@@ -78,6 +78,14 @@ function Emu (embed)
 		})
 	}
 
+	this.start = (rom) => {
+		this.console.start()
+		this.screen.set_zoom(default_zoom ? default_zoom : 1)
+		this.uxn.load(rom).eval(0x0100);
+		share.setROM(rom);
+		save.setROM(rom);
+	}
+
 	this.load_file = (file) => {
 		let reader = new FileReader()
 		reader.onload = (e) => {
@@ -86,11 +94,8 @@ function Emu (embed)
 		reader.readAsArrayBuffer(file)
 	}
 
-	this.load = (rom, fromURL = false) => {
-		this.screen.set_zoom(default_zoom ? default_zoom : 1)
-		this.uxn.load(rom).eval(0x0100);
-		share.setROM(rom);
-		save.setROM(rom);
+	this.load = (rom) => {
+		this.start(rom)
 	}
 
 	this.dei = (port) => {
