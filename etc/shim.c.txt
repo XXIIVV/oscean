@@ -21,11 +21,12 @@ start(void)
 	int n, i = 0;
 	Uint8 c, msg[3];
 	while((n = read(0, &c, 1)) > 0) {
+		if(c & 0x80) i = 0;
 		msg[i % 3] = c;
 		fflush(stdout);
 		i++;
 		if(i % 3 == 0)
-			Pm_WriteShort(midi, Pt_Time(), Pm_Message(0x90 + msg[0], msg[1], msg[2]));
+			Pm_WriteShort(midi, Pt_Time(), Pm_Message(msg[0], msg[1], msg[2]));
 	}
 }
 
