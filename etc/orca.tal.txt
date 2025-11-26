@@ -77,7 +77,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "21 20 "Nov 20 "2025 00 01
+	( date ) "25 20 "Nov 20 "2025 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -325,10 +325,14 @@
 	JSR2 POP2 BRK
 
 @on-button-arrow ( button key -> )
-	POP STHk #f0 AND button-mod STHr select/<mod>
+	POP STHk #f1 AND button-mod STHr select/<mod>
 	POP BRK
 
 @button-mod ( button -- button x y )
+	DUP #11 NEQ ?{ #00fc JMP2r }
+	DUP #21 NEQ ?{ #0004 JMP2r }
+	DUP #41 NEQ ?{ #f800 JMP2r }
+	DUP #81 NEQ ?{ #0800 JMP2r }
 	DUP #10 NEQ ?{ #00ff JMP2r }
 	DUP #20 NEQ ?{ #0001 JMP2r }
 	DUP #40 NEQ ?{ #ff00 JMP2r }
@@ -802,8 +806,10 @@
 	ADD STHr }
 
 @select/<mod> ( x y mod -- )
-	#0f AND DUP #04 EQU ?/<size>
-	#01 EQU ?/<drag>
+	#0e AND DUP
+	( | handlers )
+	#04 EQU ?/<size>
+	#02 EQU ?/<drag>
 	/<move> !insert/<set-anchor>
 
 @select/<move> ( x y -- )
@@ -822,12 +828,12 @@
 	.&to LDZ2 add-pos !/<to>
 
 @select/validate-from ( x y -- x y bool )
-	DUP .&y1 LDZ #ff00 NEQ2 STH
-	OVR .&x1 LDZ #ff00 NEQ2 STHr AND JMP2r
+	DUP .&y1 LDZ ADD #80 LTH ?{ #00 JMP2r }
+	OVR .&x1 LDZ ADD #80 LTH JMP2r
 
 @select/validate-to ( x y -- x y bool )
-	DUP .&y2 LDZ INC [ LIT2 01 -grid/height ] LDZ NEQ2 STH
-	OVR .&x2 LDZ INC [ LIT2 01 -grid/width ] LDZ NEQ2 STHr AND JMP2r
+	DUP .&y2 LDZ ADD .grid/height LDZ LTH ?{ #00 JMP2r }
+	OVR .&x2 LDZ ADD .grid/width LDZ LTH JMP2r
 
 @select/is-within ( x y -- bool )
 	DUP .&y1 LDZ LTH ?&outside
