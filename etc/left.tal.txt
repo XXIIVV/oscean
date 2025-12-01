@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "7 20 "Nov 20 "2025 $1 02
+	( date ) "1 20 "Dec 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -74,12 +74,12 @@
 	( - ) 01 "q =file/exit =dict/exit }
 	={ =dict/edit
 	( - ) 01 "c =snarf/<copy> =dict/copy
-	( - ) 01 "v =snarf/paste =dict/paste
-	( - ) 05 "V =snarf/paste-binary =dict/paste-binary
+	( - ) 01 "v =snarf/<paste> =dict/paste
+	( - ) 05 "V =snarf/<paste-binary> =dict/paste-binary
 	( - ) 01 "x =snarf/<cut> =dict/cut
 	( - ) 00 08 =erase =dict/erase
 	( - ) 00 7f =delete =dict/delete
-	( - ) 01 "k =request/capture =dict/request }
+	( - ) 01 "u =request/unix =dict/request }
 	={ =dict/go
 	( - ) 01 "/ =path/pop-folder =dict/directory
 	( - ) 01 0d =path/push-selection =dict/selection }
@@ -96,13 +96,14 @@
 	( - ) 01 "a =sel/<select-all> =dict/all
 	( - ) 01 "g =sel/<select-symbol> =dict/symbol
 	( - ) 01 09 =sel/<select-word> =dict/word
+	( - ) 01 "l =sel/<select-line> =dict/line
 	( - ) 00 1b =reset-each =dict/reset }
 	={ =dict/find
 	( - ) 01 "f =search/capture =dict/selection
 	( - ) 01 20 =search/capture-word =dict/symbol }
 	={ =dict/view
 	( - ) 01 "h =highlight/toggle =dict/highlight
-	( - ) 01 "l =nav/toggle-categories =dict/categories
+	( - ) 05 "D =nav/toggle-categories =dict/categories
 	( - ) 01 "d =nav/toggle-sidebar =dict/navbar
 	( - ) 01 "m =window/toggle-expand =dict/expand
 	( - ) 00 00 =theme/<reset> =dict/reset-theme }
@@ -288,6 +289,9 @@
 
 @sel/<select-all> ( -- )
 	textarea/get-range !/<set>
+
+@sel/<select-line> ( -- )
+	sel/get-from find-line-start DUP2 find-line-end INC2 !sel/<set>
 
 @sel/<set-any> ( addr* -- )
 	[ LIT2 04 -Controller/button ] DEI EQU ?sel/<set-b>
@@ -1378,10 +1382,10 @@
 	/<copy>
 	sel/erase !sel/<reset>
 
-@snarf/paste ( -- )
+@snarf/<paste> ( -- )
 	;&path-txt !file/<inject>
 
-@snarf/paste-binary ( -- )
+@snarf/<paste-binary> ( -- )
 	;&path-txt !file/<inject-binary>
 
 @snarf/path-txt ".snarf $1
@@ -1532,7 +1536,7 @@
 		DUP2 <cut-char-at> !sel/<set-a> }
 	sel/erase !sel/<reset>
 
-@request/capture ( -- )
+@request/unix ( -- )
 	search/capture ;search/buf .Console/addr DEO2
 	[ LIT2 02 -Console/mode ] DEO
 	[ LIT2 01 -Console/exec ] DEO !search/<reset>
@@ -1566,7 +1570,7 @@
 
 @reset-each ( -- )
 	[ LIT2 00 -nav/symbol ] STZ
-	.autocomplete/addr LDZ2 #ffff NEQ2 ?autocomplete/<reset>
+	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<reset>
 	sel/has-length ?&reset-selection
 	.search/buf LDZ ?search/<reset>
 	JMP2r
@@ -1645,6 +1649,7 @@
 	&cut "Cut $1
 	&erase "Erase $1
 	&delete "Delete $1
+	&line "Line $1
 	&go "Go $1
 	&directory "Directory $1
 	&selection "Selection $1
