@@ -4,24 +4,7 @@ let examples = {
 /*
 @|0.Hello-World */
 
-"0_mod": `<> (Welcome to the Modal playground,
-    Click the Rewrite button to evaluate the program.
-    Select other examples with the dropdown.)
-
-<> (equal ?a ?a) (Bool True) 
-<> (equal ?a ?b) (Bool False)
-
-<> (Rules are made of a left and a right side.
-    They are tested in from first to last, from left to right.
-    When a match occurs, the lhs is replaced by the rhs.
-    Wildcards prefixed with ? will always match.
-
-    Rules without a right-hand side are comments.
-    Printing is done with the ?: wildcard.)
-
-<> (print-bool (Bool ?:)) (done.)
-
-(print-bool (equal baz baz))`,
+"0_mod": `(+ 2 3)`,
 
 /*
 @|Add */
