@@ -101,6 +101,23 @@
 	AND ;Dict/ram-wrap test-part
 
 	( Part xx
+		> Testing PC wrapping: split instruction
+		> Storing 80[LIT] in 0xffff, and 55[val8] in 0x0000
+		> Storing 6c[JMP2r] in 0x0001 )
+
+    #8055 #ffff STA2 #6c #01 STZ #ffff JSR2 #55 EQU
+    ;Dict/pc-wrap test-part
+
+	( Part xx
+		> Testing PC wrapping: split value after instruction
+		> Storing a0[LIT2] in 0xfffe, 
+		> and 0x55[hi-byte] in 0xffff, and 0xaa[lo-byte] in 0x0000
+		> Storing 6c[JMP2r] in 0x0001 )
+
+    #a055 #fffe STA2  #aa6c #0000 STA2 #fffe JSR2 #55aa EQU2
+    ;Dict/pc2-wrap test-part
+
+	( Part xx
 		> Testing that zero-page is wrapping )
 
 	#5678 #ff STZ2
@@ -208,7 +225,7 @@ JMP2r
 	=op-pop/a =op-pop/b =op-pop/c =op-pop/d
 	=op-pop/e =op-pop/f =op-pop/g =op-pop/h ]
 =op-dup [
-	=op-dup/a =op-dup/b ]
+	=op-dup/a =op-dup/b =op-dup/c =op-dup/d ]
 =op-nip [
 	=op-nip/a =op-nip/b =op-nip/c =op-nip/d ]
 =op-swp [
@@ -216,7 +233,7 @@ JMP2r
 =op-ovr [
 	=op-ovr/a =op-ovr/b ]
 =op-rot [
-	=op-rot/a =op-rot/b ]
+	=op-rot/a =op-rot/b =op-rot/c ]
 =op-and [
 	=op-and/a =op-and/b =op-and/c =op-and/d
 	=op-and/e =op-and/f =op-and/g =op-and/h ]
@@ -346,6 +363,8 @@ JMP2r
 @op-dup ;Dict/dup !set
 	&a #0a #0b DUP ADD ADD [ #20 ] EQU JMP2r
 	&b #0a0b DUP2 ADD2 [ #1416 ] EQU2 JMP2r
+	&c #12 DUPk ADD ADD [ #36 ] EQU JMP2r
+	&d #1234 DUP2k ADD2 ADD2 [ #369c ] EQU2 JMP2r
 @op-nip ;Dict/nip !set
 	&a #12 #34 #56 NIP ADD [ #68 ] EQU JMP2r
 	&b #12 #34 #56 NIPk ADD2 ADD [ #f2 ] EQU JMP2r
@@ -360,6 +379,7 @@ JMP2r
 @op-rot ;Dict/rot !set
 	&a #02 #04 #10 ROT DIV ADD [ #0c ] EQU JMP2r
 	&b #0a0b #0c0d #0c0f ROT2 ADD2 NIP2 [ #161a ] EQU2 JMP2r
+	&c #0a0b #0c ROTk ADD2 ADD2 [ #2220 ] EQU2 JMP2r
 @op-and ;Dict/and !set
 	&a #fc #3f AND [ #3c ] EQU JMP2r
 	&b #f0 #0f AND [ #00 ] EQU JMP2r
@@ -459,6 +479,8 @@ JMP2r
 	&opctests "Opcodes $1
 	&stack-wrap "Stack-wrap $1
 	&ram-wrap "RAM-wrap $1
+	&pc-wrap "PC-wrap $1
+	&pc2-wrap "PC2-wrap $1
 	&zp-wrap "Zeropage-wrap $1
 	&dev-wrap "Devices-wrap $1
 	&result "Result: $1

@@ -15,6 +15,7 @@
 |12 @Types/lock-lut
 |16 @Types/lock-output
 |01 @Types/pl
+|02 @Types/nil
 |07 @Types/op
 |04 @Styles/selected
 
@@ -77,7 +78,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "25 20 "Nov 20 "2025 00 01
+	( date ) "3 20 "Dec 20 "2025 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -142,9 +143,6 @@
 
 %ciuc ( char -- bool ) {
 	LIT "A SUB #1a LTH }
-
-%cilc ( char -- bool ) {
-	LIT "a SUB #1a LTH }
 
 %chrb36 ( char -- b36 ) {
 	#00 SWP ;chr/b36 ADD2 LDA }
@@ -379,7 +377,7 @@
 	;&mmu .System/expansion DEO2
 	JMP2r
 
-	&mmu [ 00 &len $2 0000 =&buf 00 ]
+	&mmu [ 00 &len $2 0000 =&buf -Types/nil ]
 
 @variables/<reset> ( -- )
 	;&mmu .System/expansion DEO2
@@ -454,7 +452,6 @@
 	LIT &req $1 ?{ JMP2r }
 	[ LIT2 00 _&req ] STR
 	( | draw )
-	.select/to LDZ2 get-addr grid/get ;&highlight STA
 	.&height LDZ #00
 	&>ver
 		( row ) LITr 00 STHk [ LIT2r =grid/width ] LDZr MUL2r
@@ -470,17 +467,11 @@
 
 @grid/<draw-cell> ( x y addr* -- )
 	OVR2 select/is-within ?/<draw-cell-selected>
-	DUP2 types/get STHk ?/<draw-cell-port>
+	DUP2 types/get STHk .Types/nil NEQ ?/<draw-cell-port>
 	grid/get DUP LIT ". EQU ?/<draw-cell-grid>
-	DUP cilc ?/<draw-cell-lowercase>
 	#00 SWP #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
 	( draw ) #0f STHr AND INC .Screen/sprite DEO
 	POP2 JMP2r
-
-@grid/<draw-cell-lowercase> ( x y value . type -- )
-	#00 OVR #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
-	LIT &highlight $1 NEQ DUP ADD INC .Screen/sprite DEO
-	POP2 POPr JMP2r
 
 @grid/<draw-cell-grid> ( x y value . type -- )
 	POP POPr #0703 AND2 ORA ?{
