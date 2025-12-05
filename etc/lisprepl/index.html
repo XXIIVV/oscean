@@ -7,35 +7,18 @@
 	<meta property='og:description' content="By Hundred Rabbits"/>
 	<meta property='og:logo' content="media/services/logo.jpg"/>
 	<meta property="og:title" content="Modal Interpreter"/>
-	<meta property="og:url" content="https://wiki.xxiivv.com/site/modal.html"/>
+	<meta property="og:url" content="https://wiki.xxiivv.com/site/heol.html"/>
 	<meta name="viewport" content="width=device-width" />
 	<link href="media/services/icon.png" type="image/png" rel="shortcut icon">
-	<title>Modal Playground</title>
+	<title>Lisp Playground</title>
 	<script src="../uxnrepl/src/uxn.js"></script>
 	<script src="../uxnrepl/src/emu.js"></script>
-	<script src="src/modal.js"></script>
+	<script src="src/heol.js"></script>
 	<script src="src/examples.js"></script>
 </head>
 <body>
 	<textarea id="editor" spellcheck="false">
-<> (Welcome to the Modal playground,
-    Click the Rewrite button to evaluate the program.
-    Select other examples with the dropdown.)
-
-<> (equal ?a ?a) (Bool True) 
-<> (equal ?a ?b) (Bool False)
-
-<> (Rules are made of a left and a right side.
-    They are tested in from first to last, from left to right.
-    When a match occurs, the lhs is replaced by the rhs.
-    Wildcards prefixed with ? will always match.
-
-    Rules without a right-hand side are comments.
-    Printing is done with the ?: wildcard.)
-
-<> (print-bool (Bool ?:)) (done.)
-
-(print-bool (equal baz baz))</textarea>
+(+ 2 3)</textarea>
 	<div id='term'>Press <b>Rewrite</b> to evaluate.</div>
 	<div id='menu'>
 		<input type="button" id="run" value="Rewrite">
@@ -69,10 +52,11 @@ function run() {
 	let query = editor_el.value+'\n'
 	let program = new Uint8Array(0x10000)
 	let emu = new Emu()
-	emu.uxn.load(modal).eval(0x0100)
+	emu.uxn.load(heol).eval(0x0100)
 	for (let i = 0; i < query.length; i++)
 		emu.console.input(query.charAt(i).charCodeAt(0), 1)
 	emu.console.input(0x00, 4)
+	emu.console.stdout_body = emu.console.stdout_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
 	if(emu.console.stdout_body.includes('\n')) {
 		popup(emu.console.stdout_body)
 		wst_el.innerHTML = `> Result in new window`
