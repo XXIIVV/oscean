@@ -1,0 +1,455 @@
+( Uh Oh )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|2000 @types/atom
+|4000 @types/prim
+|6000 @types/cons
+|8000 @types/clos
+|a000 @types/nil
+
+|000
+
+	@err $2
+	@tru $2
+	@env $2
+	@token/buf $40
+
+|100
+
+@on-reset ( -> )
+	prim/<boot>
+	( #010e DEO ) BRK
+
+(
+@|Box )
+
+%tag ( box* -- tag* ) {
+	#e000 AND2 }
+
+%ord ( box* -- ord* ) {
+	#1fff AND2 }
+
+%not ( box* -- t ) {
+	tag ;types/nil EQU2 }
+
+%atom ( str* -- cell* ) {
+	sym/find-alloc ;types/atom ORA2 }
+
+%car ( box* -- value* ) {
+	ord INC2 INC2 LDA2 }
+
+%cdr ( box* -- value* ) {
+	ord LDA2 }
+
+@pair ( e* x* v* -- box* )
+	cons
+	( >> )
+
+@cons ( cdr* car* -- box* )
+	[ LIT2r &ptr =&mem ]
+	( car ) [ LIT2r 0002 ] SUB2r STH2kr STA2
+	( cdr ) [ LIT2r 0002 ] SUB2r STH2kr STA2
+	( update ptr ) DUP2r [ LITr _&ptr ] STR2r
+	STH2r ;types/cons ORA2 JMP2r
+
+(
+@|Parser )
+
+@token/<clear> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
+	JMP2r
+
+@token/<push> ( c -- )
+	DUP #20 GTH ?{ POP JMP2r }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@token/scan ( -- )
+	/<clear>
+	walk
+	( | special )
+	[ LIT "( ] seeing [ LIT ") ] seeing ORA [ LIT "' ] seeing ORA ?&special
+	( | body )
+	&>w
+		get
+		( ) [ LIT "( ] seeing #00 EQU
+		( ) [ LIT ") ] seeing #00 EQU AND
+		( ) [ LIT 20 ] seeing #00 EQU AND ?&>w
+	!/cap
+
+	&special ( -- c )
+	get
+	( >> )
+	&cap ( -- c )
+	#00 /<push>
+	JMP2r
+
+@getchar ( -- c )
+	;&callback .Console/vector DEO2
+	BRK
+
+	&callback ( -- c )
+	.Console/read DEI
+	( | normalize )
+	DUP #0a NEQ ?{ POP #20 }
+	DUP #09 NEQ ?{ POP #20 }
+	DUP #0d NEQ ?{ POP #20 }
+	JMP2r
+
+@get ( -- )
+	[ LIT &see 20 ] token/<push>
+	( >> )
+	&look ( -- )
+	getchar ,&see STR
+	JMP2r
+
+@seeing ( c -- t )
+	DUP #20 NEQ ?{
+		( a ) INC ,get/see LDR GTH
+		( b ) ,get/see LDR #00 NEQ AND JMP2r }
+	,get/see LDR EQU JMP2r
+
+@walk ( -- )
+	&>w
+		#20 seeing ?{ JMP2r }
+		get/look !&>w
+
+@read ( -- cell* )
+	token/scan
+	( >> )
+
+@parse ( -- cell* )
+	.token/buf LDZ LIT "( EQU ?list
+	.token/buf LDZ LIT "' EQU ?quote
+	( | atomic )
+	;token/buf str/is-dec ?{ ;token/buf atom JMP2r }
+	;token/buf str/to-dec NIP2 JMP2r
+
+@list ( -- cell* )
+	token/scan .token/buf LDZ LIT ") NEQ ?{ ;types/nil JMP2r }
+	.token/buf LDZ2 LIT2 ". $1 NEQ2 ?{ read !token/scan }
+	parse list SWP2 !cons
+
+@quote ( -- cell* )
+	;types/nil read cons ;dict/quote atom !cons
+
+(
+@|Core )
+
+@assoc ( env* box* -- res* )
+	STH2
+	&>w
+		DUP2 tag ;types/cons NEQ2 ?{
+			DUP2 car car STH2kr EQU2 ?{ cdr !&>w } }
+	POP2r car cdr JMP2r
+
+@bind ( env* t* v* -- res* )
+	DUP2 not ?{
+		DUP2 tag ;types/cons EQU2 ?&cons
+		!pair }
+	POP2 POP2 JMP2r
+
+	&cons ( env* t* v* -- res* )
+	STH2
+	STH2k car OVR2r STH2r car pair STH2r cdr STH2r cdr !bind
+
+@reduce ( env* t* f* -- res* )
+	STH2k /seg ROT2 ROT2 evlis STH2kr car car bind STH2r car cdr !eval
+
+	&seg ( cell* -- cell* )
+	cdr DUP2 not ?{ JMP2r }
+	POP2 .env LDZ2 JMP2r
+
+@eval ( env* box* -- res* )
+	DUP2 tag ;types/atom EQU2 ?assoc
+	DUP2 tag ;types/cons EQU2 ?&cons
+	NIP2 JMP2r
+
+	&cons ( env* box* -- res* )
+	( e x.cdr ) STH2k cdr
+	( e x.car eval ) OVR2 STH2r car eval
+	( | apply )
+	DUP2 tag ;types/prim EQU2 ?&prim
+	DUP2 tag ;types/clos EQU2 ?reduce
+	POP2 POP2 POP2 .err LDZ2 JMP2r
+
+	&prim ( env* t* f* -- res* )
+	ord #20 SFT2 ;prim/lut ADD2 INC2 INC2 LDA2 JMP2
+
+@evlis ( env* t* -- res* )
+	DUP2 tag ;types/atom EQU2 ?assoc
+	DUP2 tag ;types/cons EQU2 ?&cons
+	POP2 POP2 ;types/nil JMP2r
+
+	&cons ( env* t* -- res* )
+	OVR2 OVR2 car eval STH2
+	cdr evlis STH2r !cons
+
+@bool ( t -- cell* )
+	?{ ;types/nil JMP2r }
+	.tru LDZ2 JMP2r
+
+(
+@|Primitives )
+
+@prim/<print> ( box* -- )
+	[ LIT2 "< 18 ] DEO
+	ord #20 SFT2 ;&lut ADD2 LDA2 str/<print>
+	[ LIT2 "> 18 ] DEO
+	JMP2r
+
+@prim/<boot> ( -- )
+	;dict/err atom .err STZ2
+	;dict/tru atom .tru STZ2
+	;types/nil .tru LDZ2 .tru LDZ2 pair .env STZ2
+	;&lutend ;&lut [ LIT2r 0000 ]
+	&>l
+		LDA2k atom .env LDZ2 STH2kr ;types/prim ORA2 ROT2 pair .env STZ2
+		INC2r #0004 ADD2 GTH2k ?&>l
+	POP2 POP2 POP2r
+	( | listen )
+	&>w
+		;dict/prompt str/<print>
+		.env LDZ2 read eval <print>
+		.env LDZ2 ord ;cons/ptr STA2 !&>w
+
+@f-cons ( env* t* -- res* )
+	evlis DUP2 cdr car SWP2 car !cons
+
+@f-car ( env* t* -- res* )
+	evlis car car JMP2r
+
+@f-cdr ( env* t* -- res* )
+	evlis car cdr JMP2r
+
+@f-pair ( env* t* -- res* )
+	evlis car tag ;types/cons EQU2 !bool
+
+@f-eq ( env* t* -- res* )
+	evlis DUP2 car SWP2 cdr car EQU2 !bool
+
+@f-not ( env* t* -- res* )
+	evlis car not !bool
+
+@f-lt ( env* t* -- res* )
+	evlis DUP2 car SWP2 cdr car LTH2 !bool
+
+@f-eval ( env* t* -- res* )
+	OVR2 SWP2 evlis car !eval
+
+@f-quote ( env* t* -- res* )
+	car NIP2 JMP2r
+
+@f-if ( env* t* -- res* )
+	STH2
+	DUP2 STH2kr car eval not ?{ STH2r cdr car !eval }
+	STH2r cdr cdr car !eval
+
+@f-define ( env* t* -- res* )
+	STH2k cdr car eval .env LDZ2 SWP2 STH2kr car pair .env STZ2
+	STH2r car JMP2r
+
+@f-add ( env* t* -- res* )
+	evlis DUP2 car STH2
+	&>w
+		cdr DUP2 not ?{
+			DUP2 car STH2
+			ADD2r !&>w }
+	POP2 STH2r ord JMP2r
+
+@f-sub ( env* t* -- res* )
+	evlis DUP2 car STH2
+	&>w
+		cdr DUP2 not ?{
+			DUP2 car STH2
+			SUB2r !&>w }
+	POP2 STH2r ord JMP2r
+
+@f-mul ( env* t* -- res* )
+	evlis DUP2 car STH2
+	&>w
+		cdr DUP2 not ?{
+			DUP2 car STH2
+			MUL2r !&>w }
+	POP2 STH2r ord JMP2r
+
+@f-div ( env* t* -- res* )
+	evlis DUP2 car STH2
+	&>w
+		cdr DUP2 not ?{
+			DUP2 car STH2
+			DIV2r !&>w }
+	POP2 STH2r ord JMP2r
+
+@f-leta ( env* t* -- res* )
+	&>w
+		DUP2 STH2k not #00 EQU STH2r cdr not #00 EQU AND #00 EQU ?{
+			STH2
+			DUP2 STH2kr car cdr car eval STH2kr car car pair STH2r cdr !&>w }
+	car !eval
+
+@f-and ( env* t* -- res* )
+	[ LITr -tru ] LDZ2r
+	&>w
+		DUP2 not ?{
+			OVR2 OVR2 car eval POP2r STH2k not ?{ cdr !&>w } }
+	POP2 POP2 STH2r JMP2r
+
+@f-or ( env* t* -- res* )
+	[ LITr -tru ] LDZ2r
+	&>w
+		DUP2 not ?{
+			OVR2 OVR2 car eval POP2r STH2k not #00 EQU ?{ cdr !&>w } }
+	POP2 POP2 STH2r JMP2r
+
+@f-lambda ( env* t* -- res* )
+	STH2k cdr car STH2r car STH2
+	STH2
+	/seg STH2r STH2r pair ord ;types/clos ORA2 JMP2r
+
+	&seg ( env* -- env* )
+	DUP2 .env LDZ2 EQU2 ?{ JMP2r }
+	POP2 ;types/nil JMP2r
+
+(
+@|Symbols )
+
+@sym/find-alloc ( str* -- addr* )
+	/find INC2k ORA ?{
+		POP2 ,&ptr LDR2 SWP2 !/<push-str> }
+	NIP2 JMP2r
+
+@sym/find ( str* -- str* addr* )
+	STH2k ,&ptr LDR2 ;&mem
+	&>l
+		DUP2 STH2kr str/cmp ?{
+			INC2 GTH2k ?&>l
+		POP2 POP2 POP2r #ffff JMP2r }
+	NIP2 POP2r JMP2r
+
+@sym/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ /<push>
+			POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@sym/<push> ( char -- )
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+(
+@|Print )
+
+@<print-list> ( box* -- )
+	[ LIT2 "( 18 ] DEO
+	&>w
+		DUP2 car <print>
+		cdr DUP2 not ?&nil
+		DUP2 tag ;types/cons NEQ2 ?&not-cons
+		[ LIT2 20 18 ] DEO !&>w
+
+	&nil ( box* -- )
+	POP2 [ LIT2 ") 18 ] DEO
+	JMP2r
+
+	&not-cons ( box* -- )
+	;dict/pair str/<print>
+	<print>
+	[ LIT2 ") 18 ] DEO
+	JMP2r
+
+@<print> ( box* -- )
+	DUP2 tag
+	( | handlers )
+	DUP2 ;types/nil NEQ2 ?{ POP2 POP2 ;dict/nil-list !str/<print> }
+	DUP2 ;types/atom NEQ2 ?{ POP2 ord !str/<print> }
+	DUP2 ;types/prim NEQ2 ?{ POP2 !prim/<print> }
+	DUP2 ;types/cons NEQ2 ?{ POP2 !<print-list> }
+	DUP2 ;types/clos NEQ2 ?{ POP2 ord !dec/<print> }
+	POP2 ord !dec/<print>
+
+(
+@|Stdlib )
+
+%chr/is-dec ( c -- t ) {
+	LIT "0 SUB #0a LTH }
+
+@str/<print> ( str* -- )
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>wp
+
+@str/cmp ( a* b* -- t )
+	STH2
+	&>wc
+		LDAk LDAkr STHr NEQ ?{
+			INC2 INC2r LDAk ?&>wc
+		LDA LDAr STHr #0000 EQU2 JMP2r }
+	POP2 POP2r #00 JMP2r
+
+@str/is-dec ( str* -- t )
+	&>wid
+		LDAk DUP ?{ POP POP2 #01 JMP2r }
+		chr/is-dec ?{ POP2 #00 JMP2r }
+		INC2 !&>wid
+
+@str/to-dec ( str* -- str* val* )
+	[ LIT2r 0000 ]
+	&>wn
+		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
+		ADD2r INC2 LDAk #30 SUB #0a LTH ?&>wn
+	STH2r JMP2r
+
+@dec/<print> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
+
+@dict/err "ERR $1 &pair 20 ". 20 $1 &prompt 0a cebb 20 $1
+	&tru "#t $1
+	&nil-list "() $1
+	&eval "eval $1
+	&quote "quote $1
+	&cdr "cdr $1
+	&car "car $1
+	&cons "cons $1
+	&+ "+ $1
+	&- "- $1
+	&* "* $1
+	&/ "/ $1
+	&< "< $1
+	&eq? "eq? $1
+	&pair? "pair? $1
+	&or "or $1
+	&and "and $1
+	&not "not $1
+	&if "if $1
+	&let* "let* $1
+	&lambda "lambda $1
+	&define "define $1
+
+@prim/lut [
+	=dict/eval =f-eval =dict/quote =f-quote
+	=dict/cons =f-cons =dict/car =f-car
+	=dict/cdr =f-cdr =dict/eq? =f-eq
+	=dict/pair? =f-pair =dict/if =f-if
+	=dict/let* =f-leta =dict/lambda =f-lambda
+	=dict/define =f-define =dict/< =f-lt
+	=dict/or =f-or =dict/and =f-and
+	=dict/not =f-not =dict/+ =f-add
+	=dict/- =f-sub =dict/* =f-mul
+	=dict// =f-div ] &lutend
+
+@sym/mem
+|1ff0 @cons/mem
+

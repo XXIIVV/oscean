@@ -388,21 +388,26 @@
 @|Lambda )
 
 @lambda/make-name ( token* -- name* )
-	POP2 [ LIT &count $1 ] INCk ,&count STR
-	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
-	STA
+	POP2 [ LIT2 &count $2 ] INC2k ,&count STR2
+	DUP2 [ LIT2 &ptr =&mem ] INC2k INC2 ,&ptr STR2
+	STA2
 	( >> )
 
-@lambda/name ( id -- str* )
-	DUP #04 SFT hexc SWP hexc ,&id STR2
+@lambda/name ( id* -- str* )
+	/name-part ROT /name-part ,&id1 STR2
+	,&id2 STR2
 	;&sym JMP2r
 
+@lambda/name-part ( id -- hexchar hexchar )
+	DUP #04 SFT hexc SWP !hexc
+
 @lambda/pop ( -- )
-	,&ptr LDR2 #0001 SUB2 LDAk /name syms/<new>
+	,&ptr LDR2 #0002 SUB2 LDA2k /name syms/<new>
 	,&ptr STR2
 	JMP2r
 	&sym cebb
-	&id ".. $1
+	&id1 "..
+	&id2 ".. 00
 
 (
 @|Name )
@@ -785,7 +790,7 @@
 (
 @|Buffers )
 
-@lambda/mem $100
+@lambda/mem $200
 
 @macros/mem ( name\0, value\0 )
 	$1000 &memend
