@@ -17,8 +17,12 @@
 |100
 
 @on-reset ( -> )
-	prim/<boot>
-	( #010e DEO ) BRK
+	;meta #06 DEO2 !prim/<boot>
+
+@meta 00 "HEOL! 0a
+	( details ) "A 20 "Lisp 20 "interpreter 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "5 20 "Dec 20 "2025 $2
 
 (
 @|Box )
@@ -195,10 +199,7 @@
 @|Primitives )
 
 @prim/<print> ( box* -- )
-	[ LIT2 "< 18 ] DEO
-	ord #20 SFT2 ;&lut ADD2 LDA2 str/<print>
-	[ LIT2 "> 18 ] DEO
-	JMP2r
+	ord #20 SFT2 ;&lut ADD2 LDA2 !str/<print>
 
 @prim/<boot> ( -- )
 	;dict/err atom .err STZ2
@@ -313,6 +314,16 @@
 	DUP2 .env LDZ2 EQU2 ?{ JMP2r }
 	POP2 ;types/nil JMP2r
 
+@f-print ( env* t* -- res* )
+	[ LIT2 18 _<emit>/port ] STR
+	evlis car <print>
+	[ LIT2 19 _<emit>/port ] STR
+	NIP2 JMP2r
+
+@<emit> ( c -- )
+	[ LIT &port 19 ] DEO
+	JMP2r
+
 (
 @|Symbols )
 
@@ -345,22 +356,20 @@
 @|Print )
 
 @<print-list> ( box* -- )
-	[ LIT2 "( 18 ] DEO
+	[ LIT "( ] <emit>
 	&>w
 		DUP2 car <print>
 		cdr DUP2 not ?&nil
 		DUP2 tag ;types/cons NEQ2 ?&not-cons
-		[ LIT2 20 18 ] DEO !&>w
+		[ LIT 20 ] <emit> !&>w
 
 	&nil ( box* -- )
-	POP2 [ LIT2 ") 18 ] DEO
-	JMP2r
+	POP2 [ LIT ") ] !<emit>
 
 	&not-cons ( box* -- )
 	;dict/pair str/<print>
 	<print>
-	[ LIT2 ") 18 ] DEO
-	JMP2r
+	[ LIT ") ] !<emit>
 
 @<print> ( box* -- )
 	DUP2 tag
@@ -381,7 +390,7 @@
 @str/<print> ( str* -- )
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
-		#18 DEO
+		<emit>
 		INC2 !&>wp
 
 @str/cmp ( a* b* -- t )
@@ -411,44 +420,45 @@
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
 	&>write
-		NIP #30 ADD #18 DEO
+		NIP #30 ADD <emit>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
 @dict/err "ERR $1 &pair 20 ". 20 $1 &prompt 0a cebb 20 $1
 	&tru "#t $1
 	&nil-list "() $1
-	&eval "eval $1
+	&lambda "lambda $1
+	&define "define $1
 	&quote "quote $1
+	&print "print $1
+	&pair? "pair? $1
+	&eval "eval $1
+	&cons "cons $1
+	&let* "let* $1
 	&cdr "cdr $1
 	&car "car $1
-	&cons "cons $1
+	&eq? "eq? $1
+	&and "and $1
+	&not "not $1
+	&or "or $1
+	&if "if $1
 	&+ "+ $1
 	&- "- $1
 	&* "* $1
 	&/ "/ $1
 	&< "< $1
-	&eq? "eq? $1
-	&pair? "pair? $1
-	&or "or $1
-	&and "and $1
-	&not "not $1
-	&if "if $1
-	&let* "let* $1
-	&lambda "lambda $1
-	&define "define $1
 
 @prim/lut [
 	=dict/eval =f-eval =dict/quote =f-quote
-	=dict/cons =f-cons =dict/car =f-car
-	=dict/cdr =f-cdr =dict/eq? =f-eq
-	=dict/pair? =f-pair =dict/if =f-if
-	=dict/let* =f-leta =dict/lambda =f-lambda
-	=dict/define =f-define =dict/< =f-lt
-	=dict/or =f-or =dict/and =f-and
-	=dict/not =f-not =dict/+ =f-add
-	=dict/- =f-sub =dict/* =f-mul
-	=dict// =f-div ] &lutend
+	=dict/print =f-print =dict/cons =f-cons
+	=dict/car =f-car =dict/cdr =f-cdr
+	=dict/eq? =f-eq =dict/pair? =f-pair
+	=dict/if =f-if =dict/let* =f-leta
+	=dict/lambda =f-lambda =dict/define =f-define
+	=dict/< =f-lt =dict/or =f-or
+	=dict/and =f-and =dict/not =f-not
+	=dict/+ =f-add =dict/- =f-sub
+	=dict/* =f-mul =dict// =f-div ] &lutend
 
 @sym/mem
 |1ff0 @cons/mem
