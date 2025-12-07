@@ -74,13 +74,16 @@
 	/<clear>
 	walk
 	( | special )
-	[ LIT "( ] seeing [ LIT ") ] seeing ORA [ LIT "' ] seeing ORA ?&special
+	[ LIT "( ] seeing ?&special
+	[ LIT ") ] seeing ?&special
+	[ LIT "' ] seeing ?&special
 	( | body )
 	&>w
 		get
-		( ) [ LIT "( ] seeing #00 EQU
-		( ) [ LIT ") ] seeing #00 EQU AND
-		( ) [ LIT 20 ] seeing #00 EQU AND ?&>w
+		( | handlers )
+		[ LIT "( ] seeing ?{
+			[ LIT ") ] seeing ?{
+				[ LIT 20 ] seeing ?{ !&>w } } }
 	!/cap
 
 	&special ( -- c )
@@ -97,10 +100,10 @@
 	&callback ( -- c )
 	.Console/read DEI
 	( | normalize )
-	DUP #0a NEQ ?{ POP #20 }
-	DUP #09 NEQ ?{ POP #20 }
-	DUP #0d NEQ ?{ POP #20 }
-	JMP2r
+	DUP #0a EQU ?{
+		DUP #09 EQU ?{
+			DUP #0d EQU ?{ JMP2r } } }
+	POP #20 JMP2r
 
 @get ( -- )
 	[ LIT &see 20 ] token/<push>
@@ -389,6 +392,7 @@
 	LIT "0 SUB #0a LTH }
 
 @chr/escape ( byte -- byte )
+	DUP [ LIT "\ ] NEQ ?{ POP LIT "\ JMP2r }
 	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
 	[ LIT "n ] NEQ ?{ #0a JMP2r }
 	#20 JMP2r
