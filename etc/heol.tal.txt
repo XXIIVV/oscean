@@ -316,7 +316,7 @@
 
 @f-print ( env* t* -- res* )
 	[ LIT2 18 _<emit>/port ] STR
-	evlis DUP2 car <print>
+	car eval DUP2 <pretty-print>
 	[ LIT2 19 _<emit>/port ] STR
 	JMP2r
 
@@ -355,21 +355,22 @@
 (
 @|Print )
 
-@<print-list> ( box* -- )
-	[ LIT "( ] <emit>
+@<print-body> ( box* -- )
 	&>w
 		DUP2 car <print>
-		cdr DUP2 not ?&nil
-		DUP2 tag ;types/cons NEQ2 ?&not-cons
-		[ LIT 20 ] <emit> !&>w
+		cdr DUP2 not ?{
+			DUP2 tag ;types/cons EQU2 ?{ ;dict/pair str/<print> !<print> }
+			[ LIT 20 ] <emit> !&>w }
+	POP2 JMP2r
 
-	&nil ( box* -- )
-	POP2 [ LIT ") ] !<emit>
-
-	&not-cons ( box* -- )
-	;dict/pair str/<print>
-	<print>
+@<print-list> ( box* -- )
+	[ LIT "( ] <emit>
+	<print-body>
 	[ LIT ") ] !<emit>
+
+@<pretty-print> ( box* -- )
+	DUP2 tag ;types/cons NEQ2 ?{ !<print-body> }
+	( >> )
 
 @<print> ( box* -- )
 	DUP2 tag
@@ -387,9 +388,15 @@
 %chr/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
 
+@chr/escape ( byte -- byte )
+	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	[ LIT "n ] NEQ ?{ #0a JMP2r }
+	#20 JMP2r
+
 @str/<print> ( str* -- )
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk chr/escape }
 		<emit>
 		INC2 !&>wp
 
