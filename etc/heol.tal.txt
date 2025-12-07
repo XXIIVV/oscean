@@ -22,7 +22,7 @@
 @meta 00 "HEOL! 0a
 	( details ) "A 20 "Lisp 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Dec 20 "2025 $2
+	( date ) "7 20 "Dec 20 "2025 $2
 
 (
 @|Box )
@@ -35,6 +35,9 @@
 
 %not ( box* -- t ) {
 	tag ;types/nil EQU2 }
+
+%not-nil ( box* -- t ) {
+	tag ;types/nil NEQ2 }
 
 %atom ( str* -- cell* ) {
 	sym/find-alloc ;types/atom ORA2 }
@@ -59,17 +62,6 @@
 (
 @|Parser )
 
-@token/<clear> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
-	[ LIT2 00 -&buf ] STZ
-	JMP2r
-
-@token/<push> ( c -- )
-	DUP #20 GTH ?{ POP JMP2r }
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
-
 @token/scan ( -- )
 	/<clear>
 	walk
@@ -90,7 +82,18 @@
 	get
 	( >> )
 	&cap ( -- c )
-	#00 /<push>
+	#00
+	( >> )
+
+@token/<push> ( c -- )
+	DUP #20 GTH ?{ POP JMP2r }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@token/<clear> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
 @getchar ( -- c )
@@ -289,7 +292,7 @@
 
 @f-leta ( env* t* -- res* )
 	&>w
-		DUP2 STH2k not #00 EQU STH2r cdr not #00 EQU AND #00 EQU ?{
+		DUP2 STH2k not-nil STH2r cdr not-nil AND #00 EQU ?{
 			STH2
 			DUP2 STH2kr car cdr car eval STH2kr car car pair STH2r cdr !&>w }
 	car !eval
@@ -305,7 +308,7 @@
 	[ LITr -tru ] LDZ2r
 	&>w
 		DUP2 not ?{
-			OVR2 OVR2 car eval POP2r STH2k not #00 EQU ?{ cdr !&>w } }
+			OVR2 OVR2 car eval POP2r STH2k not-nil ?{ cdr !&>w } }
 	POP2 POP2 STH2r JMP2r
 
 @f-lambda ( env* t* -- res* )
