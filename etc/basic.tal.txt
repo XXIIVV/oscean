@@ -54,7 +54,7 @@
 	"TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "2 20 "Sep 20 "2025 $2
+	( date ) "7 20 "Dec 20 "2025 $2
 
 (
 @|Helpers )
@@ -98,18 +98,11 @@
 		LDAk #20 GTH ?&end &skip INC2 LDAk ?&>w &end JMP2r
 
 @walk-expr ( str* -- str* number* )
-	walk-number SWP2 walk-blank LDAk STH
-	SWP2 STHr math/find ORAk ?walk-arithmetic
-	POP2 JMP2r
-
-@walk-arithmetic ( str* number* fn* -- str* number* )
+	walk-number STH2
 	&>w
-		,&fn STR2
-		,&a STR2
-		INC2 walk-number ,&b STR2
-		[ LIT2 &a $2 ] [ LIT2 &b $2 ] [ LIT2 &fn $2 ] JSR2 SWP2 walk-blank LDAk STH
-		SWP2 STHr math/find ORAk ?&>w
-	POP2 JMP2r
+		walk-blank LDAk math/find ORAk ?{ POP2 STH2r JMP2r }
+		STH2
+		INC2 walk-number STH2r STH2r ROT2 ROT2 JSR2 STH2 !&>w
 
 @walk-number ( str* -- str* num* )
 	walk-blank LDAk [ LIT "$ ] EQU ?walk-hex

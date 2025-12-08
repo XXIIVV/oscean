@@ -131,18 +131,20 @@
 	( >> )
 
 @parse ( -- cell* )
-	.token/buf LDZ LIT "( EQU ?list
-	.token/buf LDZ LIT "' EQU ?quote
+	.token/buf LDZ LIT "( EQU ?&list
+	.token/buf LDZ LIT "' EQU ?&quote
 	( | atomic )
-	;token/buf str/is-dec ?{ ;token/buf atom JMP2r }
-	;token/buf str/to-dec NIP2 JMP2r
+	;token/buf DUP2 str/is-dec ?{ atom JMP2r }
+	!str/to-dec
 
-@list ( -- cell* )
-	token/scan .token/buf LDZ LIT ") NEQ ?{ ;types/nil JMP2r }
+	&list ( -- cell* )
+	token/scan
+	( | handlers )
+	.token/buf LDZ LIT ") NEQ ?{ ;types/nil JMP2r }
 	.token/buf LDZ2 LIT2 ". $1 NEQ2 ?{ read !token/scan }
-	parse list SWP2 !cons
+	parse /list SWP2 !cons
 
-@quote ( -- cell* )
+	&quote ( -- cell* )
 	;types/nil read cons ;dict/quote atom !cons
 
 (
@@ -421,12 +423,12 @@
 		chr/is-dec ?{ POP2 #00 JMP2r }
 		INC2 !&>wid
 
-@str/to-dec ( str* -- str* val* )
+@str/to-dec ( str* -- val* )
 	[ LIT2r 0000 ]
 	&>wn
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
 		ADD2r INC2 LDAk #30 SUB #0a LTH ?&>wn
-	STH2r JMP2r
+	POP2 STH2r JMP2r
 
 @dec/<print> ( short* -- )
 	[ LIT2r ff00 ]
