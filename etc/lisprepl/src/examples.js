@@ -5,10 +5,16 @@ let examples = {
 
 "hello": 
 
-`(and 
-	(print 'Hello)
-	(print 'World)
-	())`,
+`(define double
+	(lambda (x) (+ x x)))
+
+(if 
+	(eq? (+ (double 6) (* 34 56)) 1916)
+	'correct
+	'wrong)
+
+(print 
+	'(hello world))`,
 
 "factorial":
 
