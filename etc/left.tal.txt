@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "1 20 "Dec 20 "2025 $1 02
+	( date ) "9 20 "Dec 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -461,6 +461,12 @@
 (
 @|find )
 
+%not-header ( addr* -- addr* t ) {
+	LDA2k DUP2
+	( | handlers )
+	[ LIT2 0a "@ ] NEQ2 STH
+	[ LIT2 0a "% ] NEQ2 STHr AND }
+
 @find-above ( addr* -- addr* )
 	DUP2 find-line-prev SWP2 !find-line-place
 
@@ -519,8 +525,7 @@
 @find-first-marker ( addr* -- addr* )
 	#0002 SUB2
 	&>w
-		DUP2 ;textarea/buf LTH2 ?{
-			utf8/prev LDA2k [ LIT2 0a "@ ] NEQ2 ?&>w }
+		DUP2 ;textarea/buf LTH2 ?{ utf8/prev not-header ?&>w }
 	JMP2r
 
 %utf8/cont ( addr* -- addr* cont ) {
@@ -823,8 +828,7 @@
 	.search/buf LDZ ?&<update-search>
 	.textarea/eof LDZ2 get-scroll-addr find-first-marker
 	&>lu
-		LDA2k [ LIT2 0a "@ ] NEQ2 ?{ INC2k /<push> }
-		LDA2k [ LIT2 0a "% ] NEQ2 ?{ INC2k /<push> }
+		not-header ?{ INC2k /<push> }
 		;&ptr LDA .&bufend GTH ?{ INC2 wcap GTH2k ?&>lu }
 	POP2 POP2 JMP2r
 
