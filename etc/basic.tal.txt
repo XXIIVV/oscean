@@ -37,6 +37,9 @@
 	font/<draw-welcome>
 	;input/on-console .Console/vector DEO2
 	;input/on-control .Controller/vector DEO2
+	( | make output )
+	[ LIT &made 01 ] ?{ ;prg/mem prg/<eval>
+		BRK }
 	( | expect path )
 	.src/buf LDZ ?&soft
 	[ LIT2 00 -Console/type ] DEI EQU ?{
@@ -53,7 +56,7 @@
 	&body "TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "10 20 "Dec 20 "2025 $2
+	( date ) "12 20 "Dec 20 "2025 $2
 
 (
 @|Helpers )
@@ -179,6 +182,16 @@
 			DUP2 DUP2 ;&mem SUB2 #02 SFT2 file/<save-line> }
 		/next-instr GTH2k ?&>ls
 	POP2 POP2 JMP2r
+
+@prg/<make> ( name* -- )
+	#00 ;on-reset/made STA
+	.input/buf ;input/ptr STA
+	variables/<clear>
+	.File/name DEO2
+	;dict/ptr LDA2 #0100 SUB2 .File/length DEO2
+	#0100 .File/write DEO2
+	#01 ;on-reset/made STA
+	JMP2r
 
 @prg/<draw-line> ( line* -- )
 	DUP2 ;&mem SUB2 #02 SFT2 !font/<draw-line>
@@ -324,7 +337,7 @@
 	&>w
 		walk-blank LDAk chr/islc ?{ LDAk bind/<push> }
 		INC2 LDAk ?&>w
-	POP2
+	POP2 font/<draw-cursor>
 	( replace addr* ) bind/<interrupt>
 	;halt JMP2r
 
@@ -335,6 +348,10 @@
 @save =dict/save =dict/help-save
 	( | body )
 	walk-blank prg/<save> !prg/next-instr
+
+@make =dict/make =dict/help-make
+	( | body )
+	walk-blank prg/<make> !prg/next-instr
 
 @color =dict/color =dict/help-color
 	( | body )
@@ -370,16 +387,16 @@
 	( | body )
 	walk-blank /<draw-file> !prg/next-instr
 
-@help =dict/help =meta/body
-	( | body )
-	walk-blank cmds/<draw> !prg/next-instr
-
 @poke =dict/poke =dict/help-poke
 	( | body )
 	walk-expr #007f AND2 #30 SFT2 ;font/sprites ADD2 STH2
 	&>w
 		walk-blank LDAk ?{ POP2 POP2r !prg/next-instr }
 		walk-expr STH2kr INC2r INC2r STA2 !&>w
+
+@help =dict/help =meta/body
+	( | body )
+	walk-blank cmds/<draw> !prg/next-instr
 
 (
 @|Buffers )
@@ -974,7 +991,7 @@
 	=gosub =return =print =input
 	=save =load =color =cls
 	=draw =mode =poke =pict
-	&lut-nohelp =help &lut-end ]
+	&lut-nohelp =help =make &lut-end ]
 
 @math/lut [
 	"+ =&add "- =&sub
@@ -1018,6 +1035,7 @@
 	&input "INPUT $1 &help-input 7f "INPUT 20 "X, 20 "Y 2020 "Pause 20 "evaluation 20 "until 20 "user 20 "input. $1
 	&load "LOAD $1 &help-load 7f "LOAD 20 "input.bas 2020 "Load 20 "basic 20 "file. $1
 	&save "SAVE $1 &help-save 7f "SAVE 20 "output.bas 2020 "Save 20 "basic 20 "file. $1
+	&make "MAKE $1 &help-make 7f "MAKE 20 "output.rom 2020 "Make 20 "rom 20 "file. $1
 	&color "COLOR $1 &help-color 7f "COLOR 20 "$50f2, 20 "$b0f9, 20 "$a0f8 2020 "Set 20 "interface 20 "colors. $1
 	&cls "CLS $1 &help-cls 7f "CLR 2020 "Clear 20 "screen. $1
 	&draw "DRAW $1 &help-draw 7f "DRAW 20 "32, 20 "48 2020 "Set 20 "drawing 20 "position. $1
