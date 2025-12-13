@@ -1,8 +1,11 @@
-( Controller: Buttons should highlight on press and display the button and key bytes. )
+( Perifs: A peripherals test rom for the controller and mouse devices.
+| Controller: Buttons should highlight on press and display the button and key bytes.
+| Mouse: Buttons should highlight on press and display the x and y position. )
 
 |00 @System/vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 
 |000
 
@@ -11,6 +14,7 @@
 |100
 
 @on-reset ( -> )
+	;meta #06 DEO2
 	( | theme )
 	#0fff .System/r DEO2
 	#0f0f .System/g DEO2
@@ -19,23 +23,30 @@
 	.Screen/width DEI2 #01 SFT2 .center/x STZ2
 	.Screen/height DEI2 #01 SFT2 .center/y STZ2
 	controller/<draw>
-	;on-button .Controller/vector DEO2
+	mouse/<draw>
+	;controller/on-event .Controller/vector DEO2
+	;mouse/on-event .Mouse/vector DEO2
 	BRK
 
-@on-button ( -> )
-	controller/<draw>
-	( | print stack on start button )
-	[ LIT2 08 -Controller/button ] DEI NEQ ?{ #010e DEO }
-	BRK
+@meta 00 "Perifs 0a
+	( details ) "A 20 "Peripherals 20 "Test 0a
+	( author ) "By 20 "Hundred 20 "Rabbits 0a
+	( date ) "12 20 "Dec 20 "2025 00 00
 
 (
 @|Controller )
+
+@controller/on-event ( -> )
+	/<draw>
+	( | print stack on start button )
+	[ LIT2 08 -Controller/button ] DEI NEQ ?{ #010e DEO }
+	BRK
 
 @controller/<draw> ( -- )
 	.Controller/button DEI2
 	( | background )
 	.center/x LDZ2 #0040 SUB2 .Screen/x DEO2
-	.center/y LDZ2 #0020 SUB2 .Screen/y DEO2
+	.center/y LDZ2 #0040 SUB2 .Screen/y DEO2
 	#01f9 ;&icns #f6 <draw-times>
 	( | output )
 	.Screen/x DEI2 #0010 ADD2 .Screen/x DEO2
@@ -44,44 +55,100 @@
 	( | A button )
 	OVR #01 AND #00 EQU ?{
 		.center/x LDZ2 #0028 ADD2 .Screen/x DEO2
-		.center/y LDZ2 .Screen/y DEO2
+		.center/y LDZ2 #0020 SUB2 .Screen/y DEO2
 		#01fe ;large/icns #16 <draw-times> }
 	( | B button )
 	OVR #02 AND #00 EQU ?{
 		.center/x LDZ2 #0010 ADD2 .Screen/x DEO2
-		.center/y LDZ2 .Screen/y DEO2
+		.center/y LDZ2 #0020 SUB2 .Screen/y DEO2
 		#01fe ;large/icns #16 <draw-times> }
 	( | C button )
 	OVR #04 AND #00 EQU ?{
 		.center/x LDZ2 #0008 SUB2 .Screen/x DEO2
-		.center/y LDZ2 #0008 ADD2 .Screen/y DEO2
+		.center/y LDZ2 #0018 SUB2 .Screen/y DEO2
 		#01ff ;small/icn #16 <draw-times> }
 	( | S button )
 	OVR #08 AND #00 EQU ?{
 		.center/x LDZ2 #0018 SUB2 .Screen/x DEO2
-		.center/y LDZ2 #0008 ADD2 .Screen/y DEO2
+		.center/y LDZ2 #0018 SUB2 .Screen/y DEO2
 		#01ff ;small/icn #16 <draw-times> }
 	( | Up arrow )
 	OVR #10 AND #00 EQU ?{
 		.center/x LDZ2 #0030 SUB2 .Screen/x DEO2
-		.center/y LDZ2 #0008 SUB2 .Screen/y DEO2
+		.center/y LDZ2 #0028 SUB2 .Screen/y DEO2
 		#05ff ;arrow/icn #00 <draw-times> }
 	( | Down arrow )
 	OVR #20 AND #00 EQU ?{
 		.center/x LDZ2 #0030 SUB2 .Screen/x DEO2
-		.center/y LDZ2 #0008 ADD2 .Screen/y DEO2
+		.center/y LDZ2 #0018 SUB2 .Screen/y DEO2
 		#05ff ;arrow/icn #00 <draw-times> }
 	( | Left arrow )
 	OVR #40 AND #00 EQU ?{
 		.center/x LDZ2 #0038 SUB2 .Screen/x DEO2
-		.center/y LDZ2 .Screen/y DEO2
+		.center/y LDZ2 #0020 SUB2 .Screen/y DEO2
 		#05ff ;arrow/icn #00 <draw-times> }
 	( | Right arrow )
 	OVR #80 AND #00 EQU ?{
 		.center/x LDZ2 #0028 SUB2 .Screen/x DEO2
-		.center/y LDZ2 .Screen/y DEO2
+		.center/y LDZ2 #0020 SUB2 .Screen/y DEO2
 		#05ff ;arrow/icn #00 <draw-times> }
 	POP2 JMP2r
+
+(
+@|Mouse )
+
+@mouse/on-event ( -> )
+	/<draw>
+	/<draw-cursor>
+	BRK
+
+@mouse/<draw-cursor> ( -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	;&cursor-icn .Screen/addr DEO2
+	[ LIT2 &last-x $2 ] .Screen/x DEO2
+	[ LIT2 &last-y $2 ] .Screen/y DEO2
+	[ LIT2 40 -Screen/sprite ] DEO
+	.Mouse/x DEI2 #0003 SUB2 DUP2 ,&last-x STR2
+	.Screen/x DEO2
+	.Mouse/y DEI2 #0003 SUB2 DUP2 ,&last-y STR2
+	.Screen/y DEO2
+	[ LIT2 41 -Screen/sprite ] DEO
+	JMP2r
+
+@mouse/<draw> ( -- )
+	.center/x LDZ2 #0040 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0020 ADD2 .Screen/y DEO2
+	#01fc ;&icns #f6 <draw-times>
+	( | output )
+	.Screen/x DEI2 #0010 ADD2 .Screen/x DEO2
+	.Screen/y DEI2 #0030 SUB2 .Screen/y DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	.Mouse/state DEI DUP hex/<draw-byte>
+	( | x )
+	.Screen/x DEI2 #0018 ADD2 .Screen/x DEO2
+	.Mouse/x DEI2 hex/<draw-short>
+	( | y )
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	.Mouse/y DEI2 hex/<draw-short>
+	( | mouse 1 )
+	DUP #01 AND #00 EQU ?{
+		.center/x LDZ2 #0040 SUB2 .Screen/x DEO2
+		.center/y LDZ2 #0022 ADD2 .Screen/y DEO2
+		#05ff ;&tip-icn #16 <draw-times> }
+	( | mouse 2 )
+	DUP #02 AND #00 EQU ?{
+		.center/x LDZ2 #0028 SUB2 .Screen/x DEO2
+		.center/y LDZ2 #0022 ADD2 .Screen/y DEO2
+		#05ff ;small/icn #16 <draw-times> }
+	( | mouse 3 )
+	DUP #04 AND #00 EQU ?{
+		.center/x LDZ2 #0018 SUB2 .Screen/x DEO2
+		.center/y LDZ2 #0022 ADD2 .Screen/y DEO2
+		#05ff ;small/icn #16 <draw-times> }
+	POP JMP2r
+
+(
+@|Generics )
 
 @<draw-times> ( color times addr* auto -- )
 	.Screen/auto DEO
@@ -92,9 +159,6 @@
 		DEOkr
 		INC DUP ?&>l
 	POP POP2r JMP2r
-
-(
-@|drawing )
 
 @hex/<draw-short> ( short* -- )
 	[ LIT2 01 -Screen/auto ] DEO
@@ -107,11 +171,11 @@
 
 @hex/<draw-char> ( char -- )
 	#00 SWP #0f AND #30 SFT2 ;&icns ADD2 .Screen/addr DEO2
-	[ LIT2 03 -Screen/sprite ] DEO
+	[ LIT2 01 -Screen/sprite ] DEO
 	JMP2r
 
 (
-@|assets )
+@|Assets )
 
 @large/icns [
 	071f 3f7f 7fff ffff e0f8 fcfe feff ffff
@@ -178,6 +242,44 @@
 	0000 0000 0000 00ff 0000 0000 0000 00ff
 	0000 0000 0000 00ff 0000 0000 0000 00ff
 	0000 0000 0000 00ff 0101 0101 0202 0cf0 ]
+
+@mouse/tip-icn [ 0000 0000 187c 1800 $8 ]
+
+@mouse/cursor-icn [ 1010 10ee 1010 1000 ]
+
+@mouse/icns [
+	0000 0001 0618 6482 0718 6080 0000 0000
+	e01f 0000 0000 0000 00c0 3f00 001f 2020
+	0000 ff00 00f8 0404 0000 ff00 001f 2020
+	0000 ff00 00f8 0404 0000 ff00 0000 0000
+	0000 ff00 0000 0000 0000 ff00 0000 0000
+	0000 ff00 0000 0000 0000 ff00 0000 0000
+	0000 ff00 0000 0000 0000 ff00 0000 0000
+	0000 ff00 0000 0000 0000 c03e 0101 0101
+	6418 0601 0000 0000 0000 0080 6018 0700
+	0000 0000 001f e000 201f 0000 3fc0 0000
+	04f8 0000 ff00 0000 201f 0000 ff00 0000
+	04f8 0000 ff00 0000 0000 0000 ff00 0000
+	0000 0000 ff00 0000 0000 0000 ff00 0000
+	0000 0000 ff00 0000 0000 0000 ff00 0000
+	0000 0000 ff00 0000 0000 0000 ff00 0000
+	0000 0000 ff00 0000 0101 013e c000 0000
+	0000 6090 90f0 9090 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0302 0203 0202
+	0000 8040 4080 4040 0000 0102 0202 0202
+	0000 8040 0000 0040 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	9000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0300 0000 0000 0000
+	8000 0000 0000 0000 0100 0000 0000 0000
+	8000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
 @hex/icns [
 	0018 2424 2424 2418 0008 1808 0808 0808
