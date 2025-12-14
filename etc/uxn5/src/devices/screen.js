@@ -13,6 +13,7 @@ function Screen(emu)
 		[1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1],
 		[2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2]];
 
+	this.repaint = 0
 	this.pixels = 0
 	this.scale = 1
 	this.zoom = 1
@@ -61,7 +62,7 @@ function Screen(emu)
 			this.palette[i][1] = cg | (cg << 4)
 			this.palette[i][2] = cb | (cb << 4)
 		}
-		this.change(0, 0, this.width, this.height);
+		this.repaint = 1
 	}
 
 	this.resize = (width, height, scale) => {
@@ -80,7 +81,7 @@ function Screen(emu)
 			this.width = width;
 			this.height = height;
 		}
-		this.change(0, 0, width, height);
+		this.repaint = 1
 		console.log(`Resize requested: ${width}x${height}`)
 		this.displayctx.canvas.width = width;
 		this.displayctx.canvas.height = height;
@@ -104,8 +105,7 @@ function Screen(emu)
 				}
 			}
 		}
-		this.x1 = this.y1 = 9999;
-		this.x2 = this.y2 = 0;
+		this.x1 = this.y1 = this.x2 = this.y2 = 0;
 	}
 
 	let rX = 0, rY = 0, rA = 0, rMX = 0, rMY = 0, rMA = 0, rML = 0, rDX = 0, rDY = 0;
@@ -160,7 +160,7 @@ function Screen(emu)
 					y1 = 0, y2 = rY;
 				else
 					y1 = rY, y2 = this.height;
-				this.change(x1, y1, x2, y2);
+				this.repaint = 1
 				x1 = MAR(x1), y1 = MAR(y1);
 				hor = MAR(x2) - x1, ver = MAR(y2) - y1;
 				for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
@@ -171,7 +171,7 @@ function Screen(emu)
 			else {
 				if(rX >= 0 && rY >= 0 && rX < len && rY < this.height)
 					layer[MAR(rX) + MAR(rY) * len] = color;
-				this.change(rX, rY, rX + 1, rY + 1);
+				if(!this.repaint) this.change(rX, rY, rX + 1, rY + 1);
 				if(rMX) rX++;
 				if(rMY) rY++;
 			}
@@ -224,7 +224,7 @@ function Screen(emu)
 			else x1 = rX, x2 = x;
 			if(fy < 0) y1 = y, y2 = rY;
 			else y1 = rY, y2 = y;
-			this.change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
+			if(!this.repaint) this.change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
 			if(rMX) rX += rDX * fx;
 			if(rMY) rY += rDY * fy;
 			return;

@@ -66,12 +66,26 @@ function Emu (embed)
 				window.requestAnimationFrame(() => {
 					if(this.screen.vector)
 						this.uxn.eval(this.screen.vector)
-					if(this.screen.x2 && this.screen.y2 && this.screen.changed()) {
+					if(this.screen.repaint) {
+						this.screen.x1 = 0
+						this.screen.y1 = 0
+						this.screen.x2 = this.screen.width
+						this.screen.y2 = this.screen.height
+						this.screen.repaint = 0
 						let x = this.screen.x1, y = this.screen.y1;
 						let w = this.screen.x2 - x, h = this.screen.y2 - y;
 						this.screen.redraw()
 						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
 						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
+						console.log("1")
+					}
+					if(this.screen.changed()) {
+						let x = this.screen.x1, y = this.screen.y1;
+						let w = this.screen.x2 - x, h = this.screen.y2 - y;
+						this.screen.redraw()
+						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
+						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
+						console.log("0")
 					}
 				});
 			}, 1000 / 60);
