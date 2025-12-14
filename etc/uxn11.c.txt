@@ -409,7 +409,7 @@ console_input(int c, unsigned int type)
 #define MAR2(x) (x + 0x10)
 
 typedef struct UxnScreen {
-	int width, height, zoom, resized, x1, y1, x2, y2;
+	int width, height, zoom, resized, redraw, x1, y1, x2, y2;
 	unsigned int palette[16], *pixels;
 	Uint8 *bg;
 } UxnScreen;
@@ -445,8 +445,7 @@ screen_changed(void)
 	clamp(uxn_screen.y1, 0, uxn_screen.height);
 	clamp(uxn_screen.x2, 0, uxn_screen.width);
 	clamp(uxn_screen.y2, 0, uxn_screen.height);
-	return uxn_screen.x2 > uxn_screen.x1 &&
-		uxn_screen.y2 > uxn_screen.y1;
+	return uxn_screen.x2 > uxn_screen.x1 && uxn_screen.y2 > uxn_screen.y1;
 }
 
 static void
@@ -472,7 +471,7 @@ screen_palette(void)
 	}
 	for(i = 0; i < 16; i++)
 		uxn_screen.palette[i] = colors[(i >> 2) ? (i >> 2) : (i & 3)];
-	screen_change(0, 0, uxn_screen.width, uxn_screen.height);
+	uxn_screen.redraw = 1;
 }
 
 static void
@@ -486,8 +485,10 @@ screen_apply(int width, int height)
 	length = MAR2(width) * MAR2(height);
 	uxn_screen.bg = realloc(uxn_screen.bg, length);
 	memset(uxn_screen.bg, 0, length);
-	uxn_screen.width = width, uxn_screen.height = height, uxn_screen.resized = 1;
-	screen_change(0, 0, width, height);
+	uxn_screen.width = width;
+	uxn_screen.height = height;
+	uxn_screen.resized = 1;
+	uxn_screen.redraw = 1;
 }
 
 static void
@@ -505,8 +506,7 @@ screen_redraw(void)
 			}
 		}
 	}
-	uxn_screen.x1 = uxn_screen.y1 = 9999;
-	uxn_screen.x2 = uxn_screen.y2 = 0;
+	uxn_screen.x1 = uxn_screen.y1 = uxn_screen.x2 = uxn_screen.y2 = 0;
 }
 
 /* screen registers */
@@ -531,7 +531,7 @@ screen_draw_pixel(void)
 			y1 = 0, y2 = rY;
 		else
 			y1 = rY, y2 = uxn_screen.height;
-		screen_change(x1, y1, x2, y2);
+		uxn_screen.redraw = 1;
 		x1 = MAR(x1), y1 = MAR(y1);
 		hor = MAR(x2) - x1, ver = MAR(y2) - y1;
 		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
@@ -547,7 +547,7 @@ screen_draw_pixel(void)
 			const int src = uxn_screen.bg[ax];
 			uxn_screen.bg[ax] = above ? (src & 0x3) | color : (src & 0xc) | color;
 		}
-		screen_change(rX, rY, rX + 1, rY + 1);
+		if(!uxn_screen.redraw) screen_change(rX, rY, rX + 1, rY + 1);
 		if(rMX) rX++;
 		if(rMY) rY++;
 	}
@@ -616,7 +616,7 @@ screen_draw_sprite(void)
 		y1 = y, y2 = rY;
 	else
 		y1 = rY, y2 = y;
-	screen_change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
+	if(!uxn_screen.redraw) screen_change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
 	if(rMX) rX += rDX * fx;
 	if(rMY) rY += rDY * fy;
 }
@@ -1052,6 +1052,15 @@ emu_repaint(void)
 	XPutImage(display, window, DefaultGC(display, 0), ximage, x, y, x, y, w, h);
 }
 
+static void
+emu_repaint_all(void)
+{
+	uxn_screen.x1 = uxn_screen.y1 = 0;
+	uxn_screen.x2 = uxn_screen.width;
+	uxn_screen.y2 = uxn_screen.height;
+	emu_repaint();
+}
+
 void
 emu_resize(void)
 {
@@ -1063,10 +1072,7 @@ emu_resize(void)
 	if(ximage)
 		free(ximage);
 	ximage = XCreateImage(display, DefaultVisual(display, 0), DefaultDepth(display, DefaultScreen(display)), ZPixmap, 0, (char *)uxn_screen.pixels, width, height, 32, 0);
-	uxn_screen.x1 = uxn_screen.y1 = 0;
-	uxn_screen.x2 = uxn_screen.width;
-	uxn_screen.y2 = uxn_screen.height;
-	emu_repaint();
+	emu_repaint_all();
 }
 
 static void
@@ -1160,7 +1166,7 @@ emu_event(void)
 	XNextEvent(display, &ev);
 	switch(ev.type) {
 	case Expose:
-		screen_change(0, 0, 9000, 9000);
+		uxn_screen.redraw = 1;
 		break;
 	case ClientMessage:
 		dev[0x0f] = 0x80;
@@ -1231,7 +1237,9 @@ emu_run(void)
 				uxn_eval(screen_vector);
 			if(uxn_screen.resized)
 				emu_resize(), uxn_screen.resized = 0;
-			if(uxn_screen.x2 && uxn_screen.y2 && screen_changed())
+			if(uxn_screen.redraw)
+				emu_repaint_all(), uxn_screen.redraw = 0;
+			else if(screen_changed())
 				emu_repaint();
 		}
 		has_input = fds[2].revents & POLLIN;
@@ -1255,7 +1263,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 18 Oct 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 14 Dec 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
