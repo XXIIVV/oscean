@@ -77,7 +77,6 @@ function Emu (embed)
 						this.screen.redraw()
 						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
 						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
-						console.log("1")
 					}
 					if(this.screen.changed()) {
 						let x = this.screen.x1, y = this.screen.y1;
@@ -85,7 +84,6 @@ function Emu (embed)
 						this.screen.redraw()
 						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
 						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
-						console.log("0")
 					}
 				});
 			}, 1000 / 60);
