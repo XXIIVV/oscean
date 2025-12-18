@@ -6,10 +6,9 @@
 
 |000
 
-	@src $40
-	@token $30 &last $30 &last2 $30
-	@scope $20
-	@stats &lines $2 &tokens $2 &warnings $2
+	@src/buf $40
+	@scope/buf $40
+	@stats/lines $2 &tokens $2 &warnings $2
 
 (
 @|vectors )
@@ -25,26 +24,57 @@
 	;src/on-console .Console/vector DEO2
 	BRK
 
-@src/on-console ( -> )
-	[ LIT2 03 -Console/type ] DEI GTH ?{ <lint>
-		#800f DEO
-		BRK }
-	.Console/read DEI [ LIT2 00 &ptr -src ] INCk ,&ptr STR
-	STZ2
-	BRK
-
 @meta $1
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Nov 20 "2025 $2
+	( date ) "17 20 "Dec 20 "2025 $2
+
+(
+@|Source )
+
+@src/on-console ( -> )
+	[ LIT2 03 -Console/type ] DEI GTH ?{ <lint>
+		#800f DEO
+		BRK }
+	.Console/read DEI /<push>
+	BRK
+
+@src/<set> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
+	&>w
+		LDAk /<push>
+		INC2 LDAk ?&>w
+	LDA
+	( >> )
+
+@src/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+(
+@|Scope )
+
+@scope/<set> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
+	&>w
+		LDAk /<push>
+		INC2 LDAk ?&>w
+	LDA
+	( >> )
+
+@scope/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
 
 (
 @|core )
 
 @<lint> ( -- )
-	;dict/default-scope ;scope <scpy>
-	;src .File/name DEO2
+	;dict/default-scope scope/<set>
+	;src/buf .File/name DEO2
 	#0001 .File/length DEO2
 	;&c .File/read
 	&>s
@@ -75,9 +105,10 @@
 @parse-token ( t* -- )
 	LDAk [ LIT "( ] EQU ?walk-comment
 	LDAk [ LIT "[ ] EQU ?walk-block
+	LDAk [ LIT "% ] NEQ ?{ INC2k macros/<push-str> }
 	( blank ) LDAk #00 EQU ?<sclr>
 	( token count ) .stats/tokens LDZ2k INC2 ROT STZ2
-	( new scope ) DUP2 is-scope #00 EQU ?{ INC2k ;scope <scpy> }
+	( new scope ) DUP2 is-scope #00 EQU ?{ INC2k scope/<set> }
 	( include ) LDA [ LIT "~ ] EQU ?include
 	;rules2/end ;rules2
 	&>loop2
@@ -118,9 +149,8 @@
 
 @include ( -- )
 	;token scap/ #000a SUB2 ;dict/assets-tal scmp ?{
-		;src DUP2 <sclr>
-		;token INC2 OVR2 <scpy>
-		.File/name DEO2
+		;token INC2 src/<set>
+		;src/buf .File/name DEO2
 		#0000 .stats/lines STZ2 }
 	!reset
 
@@ -129,7 +159,7 @@
 
 @is-scope ( str* -- flag )
 	LDAk [ LIT "@ ] NEQ ?&fail
-	INC2k LDA ciuc ?&fail
+	INC2k LDA chr/is-uc ?&fail
 	POP2 #01 JMP2r
 
 	&fail ( str* -- flag )
@@ -159,7 +189,11 @@
 	POP2 #01 JMP2r
 
 @is-routine ( str* -- flag )
-	LDA !cilc
+	LDAk ?{ POP2 #00 JMP2r }
+	LDAk chr/is-uc ?{
+		LDAk is-runic ?{
+			DUP2 macros/find ?{ POP2 #01 JMP2r } } }
+	POP2 #00 JMP2r
 
 @is-litshort ( str* -- flag )
 	LDAk [ LIT "; ] EQU ?&pass
@@ -188,6 +222,15 @@
 	POP2 #00 JMP2r
 	&on-found POP2 #01 JMP2r
 
+@is-runic ( c -- t )
+	STH
+	;&runes
+	&>w
+		LDAk STHkr EQU ?{ INC2 LDAk ?&>w }
+	LDA STHr EQU JMP2r
+
+	&runes ""|{}%!?@#$%&().,;~ $1 &end
+
 @scmp-wild ( a* b* -- flag )
 	OVR2 LDA [ LIT "{ ] EQU ?scmp-template
 	OVR2 LDA [ LIT "< ] EQU ?scmp-lut
@@ -212,6 +255,30 @@
 	( ) DUP [ LIT "2 ] NEQ ?{ POP !is-litshort }
 	( ) DUP [ LIT "% ] NEQ ?{ POP !is-routine }
 	POP JMP2r
+
+(
+@|Macros )
+
+@macros/find ( str* -- found )
+	STH2
+	,&ptr LDR2 ;&mem EQU2k ?{
+		&>l
+			STH2kr OVR2 str/cmp ?&found
+			scap INC2 GTH2k ?&>l }
+	POP2 POP2 POP2r #00 JMP2r
+	&found POP2 POP2 POP2r #01 JMP2r
+
+@macros/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ /<push>
+			POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@macros/<push> ( c -- )
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	STA
+	JMP2r
 
 (
 @|print )
@@ -254,9 +321,9 @@
 
 @<print-line> ( -- )
 	;dict/in-txt <perr>
-	;scope <perr>
+	;scope/buf <perr>
 	;dict/at-txt <perr>
-	;src <perr>
+	;src/buf <perr>
 	[ LIT2 ": 19 ] DEO
 	.stats/lines LDZ2 INC2 <pdec>
 	#0a19 DEO
@@ -264,7 +331,7 @@
 
 @<print-summary> ( -- )
 	;dict/linted-txt <perr>
-	;src <perr>
+	;src/buf <perr>
 	#2019 DEO
 	;dict/with-txt <perr>
 	#2019 DEO
@@ -282,16 +349,20 @@
 (
 @|stdlib )
 
+@chr/is-uc ( c -- f )
+	[ LIT "A ] SUB #1a LTH JMP2r
+
+@str/cmp ( a* b* -- t )
+	STH2
+	&>wc
+		LDAk LDAkr STHr NEQ ?{
+			INC2 INC2r LDAk ?&>wc
+		LDA LDAr STHr #0000 EQU2 JMP2r }
+	POP2 POP2r #00 JMP2r
+
 @feof ( addr* -: f )
 	.File/read DEO2
 	.File/success DEI2 #0000 EQU2 JMP2r
-
-@ciuc ( c -- f )
-	[ LIT "A ] SUB #1a LTH JMP2r
-
-@cilc ( c -- f )
-	DUP [ LIT "< ] NEQ ?{ POP #01 JMP2r }
-	[ LIT "a ] SUB #1a LTH JMP2r
 
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
@@ -450,18 +521,15 @@
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	&brk "BRK ]
 
-@dict
-	&usage "usage: 20 "uxnlin.rom 20 "input.tal 0a $1
+@dict/usage "usage: 20 "uxnlin.rom 20 "input.tal 0a $1
 	&in-txt ", 20 "in 20 $1
 	&at-txt ", 20 "at 20 $1
 	&linted-txt "Linted 20 $1
 	&with-txt "with $1
 	&tokens-txt "tokens $1
-	&lines-txt "lines $1
 	&default-scope "@on-reset $1
 	&warnings-txt "warnings. $1
 	&assets-tal "assets.tal $1
-	&nested "Nested 20 "comment $1
 
 (
 @|hints )
@@ -879,6 +947,7 @@
 	"{2} $1 "LDA2 $1 "STH2 $1 =eagerstack
 	"{1} $1 "LDZ2 $1 "STH2 $1 =eagerstack
 	"{1} $1 "LDR2 $1 "STH2 $1 =eagerstack
+	"{2} $1 "LDZ $1 "STH2 $1 =latestack
 	( static )
 	"{2} $1 "ADD2 $1 "INC2 $1 =static
 	"{1} $1 "ADD $1 "INC $1 =static
@@ -894,3 +963,11 @@
 	"AND $1 "AND $1 "AND $1 =bitand
 	"EOR $1 "EOR $1 "EOR $1 =biteor
 	&end
+
+(
+@|Buffers )
+
+@token $30 &last $30 &last2 $30
+
+@macros/mem $2000
+
