@@ -713,14 +713,18 @@
 @<open-icn> ( -- )
 	;src/buf .File/name DEO2
 	#0008 .File/length DEO2
-	;canvas/mem ,&ptr STR2
+	;canvas/mem
 	&>s
-		[ LIT2 &ptr $2 ] DUP2 #0010 ADD2 ,&ptr STR2
-		feof ?&end
-		!&>s
-
-	&end ( -- )
-	;dict/chr-ext src/<cat> !canvas/<redraw>
+		DUP2 .File/read DEO2
+		( | copy ch1 to ch2 )
+		DUP2 #0008 ADD2 OVR2
+		&>l
+			LDA2k OVR2 #0008 ADD2 STA2
+			INC2 INC2 GTH2k ?&>l
+		POP2 POP2
+		( | continue )
+		#0010 ADD2 .File/success-lb DEI ?&>s
+	POP2 ;dict/chr-ext src/<cat> !canvas/<redraw>
 
 @<open-tga> ( -- )
 	;src/buf .File/name DEO2
@@ -761,7 +765,8 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 [ LIT2r 0000 ]
 	&stream ( -- )
-	;&pixel feof ?&end
+	;&pixel .File/read DEO2
+	[ LIT2 00 -File/success-lb ] DEI EQU ?&end
 	STH2kr ;&pixel [ LIT2 &filter $2 ] JSR2 canvas/<set-pixel-raw>
 	POP2 INC2 DUP2 [ LIT2 &w $2 ] NEQ2 ?&stream
 	( lb ) POP2 #0000 INC2r !&stream
@@ -958,10 +963,6 @@
 		[ LIT2r 0000 ] STH2k STA2r
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
-
-@feof ( buf* -- eof )
-	.File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU JMP2r
 
 @<pstr> ( str* -- )
 	LDAk #18 DEO
