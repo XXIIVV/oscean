@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "10 20 "Dec 20 "2025 $1 02
+	( date ) "19 20 "Dec 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -567,10 +567,13 @@
 	( | bg )
 	#0004 .Screen/x DEO2
 	#0028 .Screen/y DEO2
-	#01 ;textarea/lines LDZ #03 MUL STH2k SUB ;halftone-icn #02 <draw-times>
+	#01 ;textarea/lines LDZ #03 MUL STH2k SUB
+	( ) ;halftone-icn #02 <draw-times>
 	( | fg )
 	.scroll/y LDZ2 .&ratio LDZ2 DIV2 #0028 ADD2 .Screen/y DEO2
-	#01 STH2r #30 SFT2 [ LIT2 &lines $2 ] .&ratio LDZ2 DIV2 SUB2 #03 SFT2 SUB ;fill-icn #02 !<draw-times>
+	#01 STH2r #30 SFT2 [ LIT2 &lines $2 ] .&ratio LDZ2 DIV2 SUB2 #03 SFT2 SUB DUP ?{
+		( TODO: Fixme ) POP2 JMP2r }
+	( ) ;fill-icn #02 !<draw-times>
 
 @scrollbar/<update> ( -- )
 	#0001
@@ -757,7 +760,6 @@
 	#0000 STH2r SUB2 !/<mod-length>
 
 @textarea/<erase-all> ( -- )
-	#0000 ;&buf STA2
 	#0001 !/<set-length>
 
 @textarea/<mod-length> ( change* -- )
@@ -765,7 +767,9 @@
 	( >> )
 
 @textarea/<set-length> ( length* -- )
-	DUP2 ;&buf ADD2 .&eof STZ2
+	DUP2 ;&buf ADD2
+	( cap ) DUP2 #0001 SUB2 #0000 SWP2 STA2
+	.&eof STZ2
 	,&length2 STR2
 	reqdraw-both #0a !path/<set-state>
 
