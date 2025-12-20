@@ -111,10 +111,7 @@
 	[ LIT2 00 -Mouse/state ] DEI
 	( ) DUP #01 GTH .brush/erase STZ
 	( ) NEQ [ LIT &last $1 ] OVR ,&last STR
-	( fn* ) #10 SFT ORA #10 SFT
-	( tool ) .brush/tool LDZ
-	( alt override ) [ LIT2 02 -Controller/button ] DEI NEQ ?{ POP #03 }
-	#30 SFT ADD
+	( fn* ) #10 SFT ORA #10 SFT get-tool #30 SFT ADD
 	( load ) #00 SWP ;tools ADD2 LDA2 JSR2 BRK
 
 @on-frame ( -> )
@@ -127,6 +124,12 @@
 		[ LIT2 00 _&rect/xmax ] STR
 		[ LIT2 00 _&rect/ymax ] STR }
 	BRK
+
+@get-tool ( -- tool )
+	.Controller/button DEI DUP #01 AND ?{
+		DUP #02 AND ?{ POP .brush/tool LDZ JMP2r }
+		POP #00 JMP2r }
+	POP #03 JMP2r
 
 (
 @|methods )
