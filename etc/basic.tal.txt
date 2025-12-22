@@ -56,7 +56,7 @@
 	&body "TinyBASIC 0a
 	( details ) "A 20 "BASIC 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Dec 20 "2025 $2
+	( date ) "21 20 "Dec 20 "2025 $2
 
 (
 @|Helpers )
@@ -605,7 +605,6 @@
 
 @bind/<interrupt> ( addr* -- )
 	prg/next-instr .&addr STZ2
-	;&on-mouse .Mouse/vector DEO2
 	;&on-console .Console/vector DEO2
 	;&on-control .Controller/vector DEO2
 	JMP2r
@@ -621,19 +620,6 @@
 
 @bind/on-console ( -> )
 	[ LIT2 00 -Console/read ] DEI /assoc ?{ /<resume> }
-	BRK
-
-@bind/on-mouse ( -> )
-	cursor/<update>
-	.Mouse/state DEI ?{ BRK }
-	( | x )
-	.Mouse/x DEI2 /assoc ?{ cursor/<clear>
-		/<resume>
-		BRK }
-	( | y )
-	.Mouse/y DEI2 /assoc ?{ cursor/<clear>
-		/<resume>
-		BRK }
 	BRK
 
 @bind/on-control ( -> )
@@ -827,25 +813,6 @@
 
 @font/<draw-ws> ( -- )
 	.Screen/x DEI2k #0008 ADD2 ROT DEO2
-	JMP2r
-
-@cursor/<clear> ( -- )
-	[ LIT2 12 -Screen/auto ] DEO
-	#40 ;fill-icn !/<draw>
-
-@cursor/<update> ( -- )
-	/<clear>
-	[ LIT2 16 -Screen/auto ] DEO
-	#c2 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
-	.Mouse/x DEI2 ,&x STR2
-	.Mouse/y DEI2 ,&y STR2
-	( >> )
-
-@cursor/<draw> ( color addr* -- )
-	.Screen/addr DEO2
-	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
-	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
-	.Screen/sprite DEOk DEO
 	JMP2r
 
 (
@@ -1046,17 +1013,6 @@
 @fill-icn [ ffff ffff ffff ffff ]
 
 @hash-icn [ aa55 aa55 aa55 aa55 ]
-
-@cursor/up-chr [
-	0000 0000 0814 1417 0000 0000 0008 0808
-	0000 0000 0000 00c0 0000 0000 0000 0000
-	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
-	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
-	&down-chr [
-	0000 0000 0000 0817 0000 0000 0000 0008
-	0000 0000 0000 00c0 0000 0000 0000 0000
-	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
-	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @font/sprites ( atari8 )
 	$100 [
