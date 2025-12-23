@@ -6,81 +6,124 @@
 |100
 
 @on-reset ( -> )
-	file/<create>
-	file/<load>
-	#0004 .File/success DEI2 NEQ2 ?fail
-	;file/a1 LDA2 ;file/a2 LDA2 NEQ2 ?fail
-	;dict/load str/<print>
-	;file/b1 LDA2 ;file/b2 LDA2 NEQ2 ?fail
-	;dict/append str/<print>
-	;file/stat-buf file/<stat>
-	;file/stat-hs LDA2 LIT2 "00 NEQ2 ?fail
-	;file/stat-ls LDA2 LIT2 "04 NEQ2 ?fail
-	;dict/stat str/<print>
-	file/<delete>
-	;file/null-buf file/<stat>
-	;file/null-buf LDA2 LIT2 "!! NEQ2 ?fail
-	;dict/delete str/<print>
 	#800f DEO
-	BRK
-
-@fail ( -> )
-	;dict/failed str/<print>
-	#010f DEO
+	;dict/write file/test-write <test>
+	;dict/append file/test-append <test>
+	;dict/read file/test-read <test>
+	;dict/stat file/test-stat <test>
+	;dict/delete file/test-delete <test>
+	( | overflows )
+	;dict/write-of file/test-write-of <test>
+	;dict/read-of file/test-read-of <test>
+	;dict/stat-of file/test-stat-of <test>
+	( | cleanup )
+	;file/name .File/name DEO2
+	#01 .File/delete DEO
 	BRK
 
 (
-@|File )
+@|Tests )
 
-@file/<create> ( -- )
+@file/test-write ( -- pass )
 	;&name .File/name DEO2
 	#0002 .File/length DEO2
 	;&a1 .File/write DEO2
-	( | append )
+	.File/success DEI2 #0002 EQU2 JMP2r
+
+@file/test-append ( -- pass )
 	;&name .File/name DEO2
 	#0002 .File/length DEO2
 	#01 .File/append DEO
 	;&b1 .File/write DEO2
-	JMP2r
+	.File/success DEI2 #0002 EQU2 JMP2r
 
-@file/<load> ( -- )
+@file/test-read ( -- pass )
 	;&name .File/name DEO2
-	( two more bytes than max length ) #0006 .File/length DEO2
-	;&load-buf .File/read DEO2
-	JMP2r
+	( 4+2 ) #0006 .File/length DEO2
+	;&read-buf .File/read DEO2
+	( success ) .File/success DEI2 #0004 EQU2
+	( a ) ;&a1 LDA2 ;&a2 LDA2 EQU2 AND
+	( b ) ;&b1 LDA2 ;&b2 LDA2 EQU2 AND JMP2r
 
-@file/<stat> ( buf* -- )
+@file/test-stat ( -- pass )
 	;&name .File/name DEO2
 	#0004 .File/length DEO2
-	.File/stat DEO2
-	JMP2r
+	;&stat-buf .File/stat DEO2
+	( success ) .File/success DEI2 #0004 EQU2
+	( a ) ;&stat-hs LDA2 LIT2 "00 EQU2 AND
+	( b ) ;&stat-ls LDA2 LIT2 "04 EQU2 AND
+	( | try missing file )
+	;&unknown-name .File/name DEO2
+	#0002 .File/length DEO2
+	;&stat-buf .File/stat DEO2
+	;&stat-buf LDA2 LIT2 "!! EQU2 AND JMP2r
 
-@file/<delete> ( -- )
+@file/test-delete ( -- pass )
 	;&name .File/name DEO2
 	#01 .File/delete DEO
-	JMP2r
+	.File/success DEI2 #0001 EQU2
+	( | stat )
+	;&name .File/name DEO2
+	#0002 .File/length DEO2
+	;&null-buf .File/stat DEO2
+	;&null-buf LDA2 LIT2 "!! EQU2 AND
+	( | try failure )
+	#01 .File/delete DEO
+	.File/success DEI2 #0000 EQU2 AND JMP2r
 
-	&name "test.txt $1
+@file/test-write-of ( -- pass )
+	;&name .File/name DEO2
+	#0004 .File/length DEO2
+	#fffe .File/write DEO2
+	.File/success DEI2 #0002 EQU2 JMP2r
+
+@file/test-read-of ( -- pass )
+	;&name .File/name DEO2
+	#0002 .File/length DEO2
+	#ffff .File/read DEO2
+	.File/success DEI2 #0001 EQU2 JMP2r
+
+@file/test-stat-of ( -- pass )
+	;&name .File/name DEO2
+	#0004 .File/length DEO2
+	#fffe .File/stat DEO2
+	.File/success DEI2 #0002 EQU2 JMP2r
 
 (
-@|Utils )
+@|Helpers )
+
+@<test> ( name* f -- )
+	?{
+		str/<print>
+		#010f DEO
+		;dict/fail !str/<print> }
+	str/<print>
+	;dict/pass
+	( >> )
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
-	#18 DEO
+	.Console/write DEO
 	INC2 !/<print>
 
 (
-@|Data )
+@|Assets )
 
-@dict/failed "File: 20 "fail 0a $1
-	&load "File/load: 20 "pass 0a $1
-	&append "File/append: 20 "pass 0a $1
-	&stat "File/stat: 20 "pass 0a $1
-	&delete "File/delete: 20 "pass 0a $1
+@dict/write "File/write: 20 $1
+	&append "File/append: 20 $1
+	&read "File/read: 20 $1
+	&stat "File/stat: 20 $1
+	&delete "File/delete: 20 $1
+	&write-of "File/write(overflow): 20 $1
+	&read-of "File/read(overflow): 20 $1
+	&stat-of "File/stat(overflow): 20 $1
+	&fail "fail 0a $1
+	&pass "pass 0a $1
 
-@file/data &a1 1234 &b1 5678
-	( load buf ) &load-buf &a2 $2 &b2 $2
+@file/a1 1234 &b1 5678
+	( read buf ) &read-buf &a2 $2 &b2 $2
 	( stat buf ) &stat-buf &stat-hs $2 &stat-ls $2
 	( null buf ) &null-buf $4
+	&name "test.txt $1
+	&unknown-name "abcdefghj $1
 

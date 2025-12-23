@@ -1,52 +1,71 @@
 ( uxncli system.rom )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
 |100
 
 @on-reset ( -> )
 	#800f DEO
-	( | wst )
-	#12 .System/wst DEI #01 EQU ?{
-		;dict/wst1 <test>/fail
-		BRK }
-	;dict/wst1 <test>/pass
-	( | rst )
-	LITr 12 .System/rst DEI #01 EQU ?{
-		;dict/rst1 <test>/fail
-		BRK }
-	;dict/rst1 <test>/pass
-	( | copy left )
-	;buf #0006 ADD2 ;mmu-cpyl/a STA2
-	;buf #0003 ADD2 ;mmu-cpyl/b STA2
-	;mmu-cpyl .System/expansion DEO2
-	;dict/cpyl ;buf #0013 ;res1 mem/cmp <test>
-	( | copy right )
-	;buf #0003 ADD2 ;mmu-cpyr/a STA2
-	;buf #0009 ADD2 ;mmu-cpyr/b STA2
-	;mmu-cpyr .System/expansion DEO2
-	;dict/cpyr ;buf #0013 ;res2 mem/cmp <test>
-	( | copy left )
-	;buf #0009 ADD2 ;mmu-cpyl/a STA2
-	;buf #0006 ADD2 ;mmu-cpyl/b STA2
-	;mmu-cpyl .System/expansion DEO2
-	;dict/cpyl ;buf #0013 ;res3 mem/cmp <test>
-	( | memset )
-	;buf #0003 ADD2 ;mmu-fill/a STA2
-	;mmu-fill .System/expansion DEO2
-	;dict/fill ;buf #0013 ;res4 mem/cmp <test>
+	system/test-wst ;dict/wst ROT <test>
+	system/test-rst ;dict/rst ROT <test>
+	;dict/cpyl system/test-copyl <test>
+	;dict/cpyr system/test-copyr <test>
+	;dict/cpyl2 system/test-copyl2 <test>
+	;dict/fill system/test-fill <test>
+	BRK
 	( | boundary check )
 	;mmu-over .System/expansion DEO2
 	;dict/over #0000 LDA #ffff LDA #8888 EQU2 <test>
 	BRK
 
+(
+@|test )
+
+@system/test-wst ( --  pass )
+	#12 .System/wst DEI #01 EQU NIP JMP2r
+
+@system/test-rst ( --  pass )
+	LITr 12 .System/rst DEI #03 EQU POPr JMP2r
+
+@system/test-fill ( -- pass )
+	;buf #0003 ADD2 ;mmu-fill/a STA2
+	;mmu-fill .System/expansion DEO2
+	;buf #0013 ;res4 !mem/cmp
+
+@system/test-copyl ( -- pass )
+	;buf #0006 ADD2 ;mmu-cpyl/a STA2
+	;buf #0003 ADD2 ;mmu-cpyl/b STA2
+	;mmu-cpyl .System/expansion DEO2
+	;buf #0013 ;res1 !mem/cmp 
+
+@system/test-copyr ( -- pass )
+	;buf #0003 ADD2 ;mmu-cpyr/a STA2
+	;buf #0009 ADD2 ;mmu-cpyr/b STA2
+	;mmu-cpyr .System/expansion DEO2
+	;buf #0013 ;res2 !mem/cmp
+
+@system/test-copyl2 ( -- pass )
+	;buf #0009 ADD2 ;mmu-cpyl/a STA2
+	;buf #0006 ADD2 ;mmu-cpyl/b STA2
+	;mmu-cpyl .System/expansion DEO2
+	 ;buf #0013 ;res3 !mem/cmp
+
+(
+@|Helpers )
+
 @<test> ( name* f -- )
 	?{
-	&fail str/<print> #010f DEO ;dict/fail !str/<print> }
-	&pass str/<print> ;dict/pass !str/<print>
+		str/<print>
+		#010f DEO
+		;dict/fail !str/<print> }
+	str/<print>
+	;dict/pass
+	( >> )
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
-	#18 DEO
+	.Console/write DEO
 	INC2 !/<print>
 
 @mem/cmp ( a* length* b* -- t )
@@ -58,10 +77,11 @@
 	POP2r EQU2 JMP2r
 
 @dict
-	&wst1 "System/wst: 20 $1
-	&rst1 "System/rst: 20 $1
+	&wst "System/wst: 20 $1
+	&rst "System/rst: 20 $1
 	&cpyl "System/cpyl: 20 $1
 	&cpyr "System/cpyr: 20 $1
+	&cpyl2 "System/cpyl2: 20 $1
 	&fill "System/fill: 20 $1
 	&over "System/overflow: 20 $1
 	&pass "pass 0a $1
@@ -73,8 +93,12 @@
 @res3 [ "...[he[hello]lo].. $1 ]
 @res4 [ "...-------------.. $1 ]
 
+
 @mmu-fill [ 00 000d 0000 &a $2 2d ]
+
 @mmu-cpyl [ 01 0007 0000 &a $2 0000 &b $2 ]
+
 @mmu-cpyr [ 02 0007 0000 &a $2 0000 &b $2 ]
+
 @mmu-over [ 00 0002 0000 ffff 88 ]
 

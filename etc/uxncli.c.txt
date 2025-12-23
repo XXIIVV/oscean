@@ -19,19 +19,12 @@ cc -DNDEBUG -O2 -g0 -s src/uxncli.c -lutil -o bin/uxncli
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 
-static Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
-
-Uint8 emu_dei(const Uint8 port);
-void emu_deo(const Uint8 port, const Uint8 value);
-
 /* clang-format off */
 
 #define BANKS 0x10
 #define BANKS_CAP BANKS * 0x10000
 
 #define PEEK2(d) (*(d) << 8 | (d)[1])
-#define POKE2(d, v) { *(d) = (v) >> 8; (d)[1] = (v); }
-
 #define NEXT if(--cycles) goto step; else return 0;
 
 #define OPC(opc, A, B) {\
@@ -63,7 +56,10 @@ void emu_deo(const Uint8 port, const Uint8 value);
 #define DEI(i,r) r[0] = emu_dei(i); if(_2) r[1] = emu_dei(i + 1); PUT(r)
 #define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m]; PUT(r)
 
-static unsigned int
+Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100], emu_dei(const Uint8 port);
+void emu_deo(const Uint8 port, const Uint8 value);
+
+unsigned int
 uxn_eval(unsigned short pc)
 {
 	unsigned int a, b, c, x[2], y[2], z[2], cycles = 0x80000000;
@@ -130,7 +126,7 @@ system_print(char *name, int r)
 }
 
 static unsigned int
-system_load(char *rom_path)
+system_load(const char *rom_path)
 {
 	FILE *f = fopen(rom_path, "rb");
 	if(f) {
@@ -143,12 +139,12 @@ system_load(char *rom_path)
 }
 
 static unsigned int
-system_boot(char *rom_path, unsigned int has_args)
+system_boot(char *rom_path, const unsigned int has_args)
 {
 	ram = (Uint8 *)calloc(BANKS_CAP, sizeof(Uint8));
 	system_boot_path = rom_path;
 	dev[0x17] = has_args;
-	return system_load(rom_path);
+	return ram && system_load(rom_path);
 }
 
 static void
@@ -540,6 +536,8 @@ file_read(unsigned int id, Uint16 addr, unsigned int len)
 	void *dest = &ram[addr];
 	if(file_not_ready(id))
 		return 0;
+	if(addr + len > 0x10000)
+		len = 0x10000 - addr;
 	if(ufs[id].state != FILE_READ && ufs[id].state != DIR_READ) {
 		file_reset(id);
 		if((ufs[id].dir = opendir(ufs[id].filepath)) != NULL)
@@ -560,6 +558,8 @@ file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
 	unsigned int ret = 0;
 	if(file_not_ready(id))
 		return 0;
+	if(addr + len > 0x10000)
+		len = 0x10000 - addr;
 	file_write_dir(ufs[id].filepath);
 	if(ufs[id].state != FILE_WRITE && ufs[id].state != DIR_WRITE) {
 		file_reset(id);
@@ -583,6 +583,8 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 	struct stat st;
 	if(file_not_ready(id))
 		return 0;
+	if(addr + len > 0x10000)
+		len = 0x10000 - addr;
 	err = stat(ufs[id].filepath, &st);
 	dir = S_ISDIR(st.st_mode);
 	return put_stat(&ram[addr], len, st.st_size, err, dir, 0);
@@ -592,14 +594,14 @@ static unsigned int
 file_delete(unsigned int id)
 {
 	if(file_not_ready(id))
-		return -1;
-	return unlink(ufs[id].filepath);
+		return 0;
+	return !unlink(ufs[id].filepath);
 }
 
 static void
 file_success(unsigned int port, unsigned int value)
 {
-	POKE2(&dev[port], value);
+	dev[port] = value >> 8, dev[port + 1] = value;
 }
 
 /* file registers */
@@ -636,6 +638,7 @@ emu_dei(const Uint8 port)
 	/* Console */
 	case CMD_LIVE:
 	case CMD_EXIT: check_child(); break;
+	/* DateTime */
 	case 0xc0: datetime_update(); return (datetime_t->tm_year + 1900) >> 8;
 	case 0xc1: datetime_update(); return (datetime_t->tm_year + 1900);
 	case 0xc2: datetime_update(); return datetime_t->tm_mon;
@@ -690,7 +693,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 18 Oct 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 23 Dec 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
