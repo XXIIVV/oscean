@@ -4,31 +4,24 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-all: bin/oscean.rom bin/arvelie.rom bin/directory.rom
-
-clean:
-	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
-
-bal:
-	@ ${BAL} src/oscean.tal
-
-lint:
-	@ ${LIN} src/oscean.tal
-	@ ${LIN} src/arvelie.tal
-	@ ${LIN} src/directory.tal
-
-run: all
+run: bin/oscean.rom bin/arvelie.rom bin/directory.rom
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ ${EMU} bin/oscean.rom
 	@ ${EMU} bin/directory.rom docs/
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
-
-push: all
+clean:
+	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
+bal:
+	@ ${BAL} src/oscean.tal
+lint:
+	@ ${LIN} src/oscean.tal
+	@ ${LIN} src/arvelie.tal
+	@ ${LIN} src/directory.tal
+push:
 	@ git commit -am '*'
 	@ git push
-
 grab:
 	@ mkdir -p etc/uxn5
 	@ cp -r ../uxn5/index.html ../uxn5/src/ ../uxn5/media/ etc/uxn5/
@@ -42,4 +35,4 @@ bin/arvelie.rom: src/arvelie.tal
 bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
 
-.PHONY: all clean grab bal lint run
+.PHONY: run clean bal lint grab  
