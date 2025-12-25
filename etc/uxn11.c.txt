@@ -412,24 +412,23 @@ static int screen_x1, screen_y1, screen_x2, screen_y2, screen_reqsize, screen_re
 static unsigned int screen_vector, *screen_pixels, screen_palette[16];
 static Uint8 *screen_layers;
 
-static const Uint8 blending[16][4] = {
-	{0, 0, 1, 2},
-	{0, 1, 2, 3},
-	{0, 2, 3, 1},
-	{0, 3, 1, 2},
-	{1, 0, 1, 2},
-	{0, 1, 2, 3},
-	{1, 2, 3, 1},
-	{1, 3, 1, 2},
-	{2, 0, 1, 2},
-	{2, 1, 2, 3},
-	{0, 2, 3, 1},
-	{2, 3, 1, 2},
-	{3, 0, 1, 2},
-	{3, 1, 2, 3},
-	{3, 2, 3, 1},
-	{0, 3, 1, 2},
-};
+static const Uint8 blending[16][2][4] = {
+	{{0, 0, 1, 2}, {0, 0, 4, 8}},
+	{{0, 1, 2, 3}, {0, 4, 8, 12}},
+	{{0, 2, 3, 1}, {0, 8, 12, 4}},
+	{{0, 3, 1, 2}, {0, 12, 4, 8}},
+	{{1, 0, 1, 2}, {4, 0, 4, 8}},
+	{{0, 1, 2, 3}, {0, 4, 8, 12}},
+	{{1, 2, 3, 1}, {4, 8, 12, 4}},
+	{{1, 3, 1, 2}, {4, 12, 4, 8}},
+	{{2, 0, 1, 2}, {8, 0, 4, 8}},
+	{{2, 1, 2, 3}, {8, 4, 8, 12}},
+	{{0, 2, 3, 1}, {0, 8, 12, 4}},
+	{{2, 3, 1, 2}, {8, 12, 4, 8}},
+	{{3, 0, 1, 2}, {12, 0, 4, 8}},
+	{{3, 1, 2, 3}, {12, 4, 8, 12}},
+	{{3, 2, 3, 1}, {12, 8, 12, 4}},
+	{{0, 3, 1, 2}, {0, 12, 4, 8}}};
 
 static void
 screen_change(const int x1, const int y1, const int x2, const int y2)
@@ -446,14 +445,14 @@ screen_colorize(void)
 	int i, shift, colors[4];
 	for(i = 0, shift = 4; i < 4; ++i, shift ^= 4) {
 		Uint8
-			r = (dev[0x8 + i / 2] >> shift) & 0xf,
-			g = (dev[0xa + i / 2] >> shift) & 0xf,
-			b = (dev[0xc + i / 2] >> shift) & 0xf;
+			r = dev[0x8 + i / 2] >> shift & 0xf,
+			g = dev[0xa + i / 2] >> shift & 0xf,
+			b = dev[0xc + i / 2] >> shift & 0xf;
 		colors[i] = 0x0f000000 | r << 16 | g << 8 | b;
 		colors[i] |= colors[i] << 4;
 	}
 	for(i = 0; i < 16; i++)
-		screen_palette[i] = colors[(i >> 2) ? (i >> 2) : (i & 3)];
+		screen_palette[i] = colors[i >> 2 ? i >> 2 : i & 3];
 	screen_reqdraw = 1;
 }
 
@@ -532,10 +531,13 @@ static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
 static void
 screen_draw_pixel(void)
 {
+	int layer_mask, color;
 	const int ctrl = dev[0x2e];
 	const int len = MAR2(screen_width);
-	const int above = ctrl & 0x40;
-	const int color = above ? (ctrl & 0x3) << 2 : ctrl & 0x3;
+	if(ctrl & 0x40)
+		layer_mask = 0x3, color = (ctrl & 0x3) << 2;
+	else
+		layer_mask = 0xc, color = ctrl & 0x3;
 	/* fill mode */
 	if(ctrl & 0x80) {
 		int x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
@@ -551,19 +553,16 @@ screen_draw_pixel(void)
 		x1 = MAR(x1), y1 = MAR(y1);
 		hor = MAR(x2) - x1, ver = MAR(y2) - y1;
 		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
-			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++) {
-				const int src = screen_layers[ax];
-				screen_layers[ax] = above ? (src & 0x3) | color : (src & 0xc) | color;
-			}
+			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++)
+				screen_layers[ax] = (screen_layers[ax] & layer_mask) | color;
 	}
 	/* pixel mode */
 	else {
 		if(rX >= 0 && rY >= 0 && rX < len && rY < screen_height) {
 			const int ax = MAR(rX) + MAR(rY) * len;
-			const int src = screen_layers[ax];
-			screen_layers[ax] = above ? (src & 0x3) | color : (src & 0xc) | color;
+			screen_layers[ax] = (screen_layers[ax] & layer_mask) | color;
 		}
-		if(!screen_reqdraw) screen_change(rX, rY, rX + 1, rY + 1);
+		screen_reqdraw = 1;
 		if(rMX) rX++;
 		if(rMY) rY++;
 	}
@@ -572,33 +571,34 @@ screen_draw_pixel(void)
 static void
 screen_draw_sprite(void)
 {
+	const Uint8 *table;
 	const int ctrl = dev[0x2f];
 	const int blend = ctrl & 0xf;
-	const int above = ctrl & 0x40;
 	const int opaque = blend % 5;
 	const int fx = ctrl & 0x10 ? -1 : 1, fy = ctrl & 0x20 ? -1 : 1;
 	const int qfx = fx > 0 ? 7 : 0, qfy = fy < 0 ? 7 : 0;
 	const int dxy = fy * rDX, dyx = fx * rDY;
 	const int wmar = MAR(screen_width), wmar2 = MAR2(screen_width);
 	const int hmar2 = MAR2(screen_height);
-	const Uint8 *table = blending[blend];
-	int i, x1, x2, y1, y2, ax, ay, qx, qy, x = rX, y = rY;
+	int i, x1, x2, y1, y2, ax, ay, bx, by, qx, qy, x = rX, y = rY, layer_mask;
+	if(ctrl & 0x40)
+		layer_mask = 0x3, table = blending[blend][1];
+	else
+		layer_mask = 0xc, table = blending[blend][0];
 	if(ctrl & 0x80) {
 		const int addr_incr = rMA << 2;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 xmar = MAR(x), ymar = MAR(y);
-			const Uint16 xmar2 = MAR2(x), ymar2 = MAR2(y);
+			const Uint16 xmar = MAR(x), ymar2 = MAR2(y);
 			if(xmar < wmar && ymar2 < hmar2) {
+				const Uint16 xmar2 = MAR2(x), ymar = MAR(y);
 				const Uint8 *sprite = &ram[rA];
-				const int by = ymar2 * wmar2;
-				for(ay = ymar * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
-					const int ch1 = sprite[qy], ch2 = sprite[qy + 8] << 1, bx = xmar2 + ay;
-					for(ax = xmar + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
-						const int color = ((ch1 >> qx) & 1) | ((ch2 >> qx) & 2);
-						if(opaque || color) {
-							const int src = screen_layers[ax];
-							screen_layers[ax] = above ? (src & 0x3) | table[color] << 2 : (src & 0xc) | table[color];
-						}
+				for(ay = ymar * wmar2, by = ymar2 * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
+					const int ch1 = sprite[qy];
+					const int ch2 = sprite[qy + 8] << 1;
+					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
+						const int color = (ch1 >> qx & 1) | (ch2 >> qx & 2);
+						if(opaque || color)
+							screen_layers[ax] = (screen_layers[ax] & layer_mask) | table[color];
 					}
 				}
 			}
@@ -606,19 +606,16 @@ screen_draw_sprite(void)
 	} else {
 		const int addr_incr = rMA << 1;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 xmar = MAR(x), ymar = MAR(y);
-			const Uint16 xmar2 = MAR2(x), ymar2 = MAR2(y);
+			const Uint16 xmar = MAR(x), ymar2 = MAR2(y);
 			if(xmar < wmar && ymar2 < hmar2) {
+				const Uint16 xmar2 = MAR2(x), ymar = MAR(y);
 				const Uint8 *sprite = &ram[rA];
-				const int by = ymar2 * wmar2;
-				for(ay = ymar * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
-					const int ch1 = sprite[qy], bx = xmar2 + ay;
-					for(ax = xmar + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
-						const int color = (ch1 >> qx) & 1;
-						if(opaque || color) {
-							const int src = screen_layers[ax];
-							screen_layers[ax] = above ? (src & 0x3) | table[color] << 2 : (src & 0xc) | table[color];
-						}
+				for(ay = ymar * wmar2, by = ymar2 * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
+					const int ch1 = sprite[qy];
+					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
+						const int color = ch1 >> qx & 1;
+						if(opaque || color)
+							screen_layers[ax] = (screen_layers[ax] & layer_mask) | table[color];
 					}
 				}
 			}
@@ -1231,7 +1228,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 23 Dec 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 24 Dec 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
