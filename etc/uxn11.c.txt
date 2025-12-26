@@ -214,6 +214,17 @@ system_expansion(const Uint16 exp)
 #define CONSOLE_EOA 0x3
 #define CONSOLE_END 0x4
 
+static unsigned int console_vector;
+
+static unsigned int
+console_input(int c, unsigned int type)
+{
+	if(c == EOF) c = 0, type = CONSOLE_END;
+	dev[0x12] = c, dev[0x17] = type;
+	if(console_vector) uxn_eval(console_vector);
+	return type != CONSOLE_END;
+}
+
 #undef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
 
@@ -230,8 +241,6 @@ system_expansion(const Uint16 exp)
 #include <sys/ioctl.h>
 #include <util.h>
 #endif
-
-static unsigned int console_vector;
 
 /* subprocess support */
 static char *fork_args[4] = {"/bin/sh", "-c", "", NULL};
@@ -392,25 +401,20 @@ console_close(void)
 	kill_child();
 }
 
-static unsigned int
-console_input(int c, unsigned int type)
-{
-	if(c == EOF) c = 0, type = 4;
-	dev[0x12] = c, dev[0x17] = type;
-	if(console_vector) uxn_eval(console_vector);
-	return type != 4;
-}
-
 /*
 @|Screen ------------------------------------------------------------ */
 
 #define MAR(x) (x + 0x8)
 #define MAR2(x) (x + 0x10)
 
-static int screen_width, screen_height, screen_zoom;
+static Uint8 *screen_layers;
+static int screen_zoom = 1;
+static int screen_width, screen_height;
 static int screen_x1, screen_y1, screen_x2, screen_y2, screen_reqsize, screen_reqdraw;
 static unsigned int screen_vector, *screen_pixels, screen_palette[16];
-static Uint8 *screen_layers;
+static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
+
+void emu_redraw(void), emu_resize(void);
 
 static const Uint8 blending[16][2][4] = {
 	{{0, 0, 1, 2}, {0, 0, 4, 8}},
@@ -465,18 +469,13 @@ screen_resize(int width, int height)
 		memset(screen_layers, 0, length);
 		screen_width = width;
 		screen_height = height;
-		screen_reqsize = 1;
-		screen_reqdraw = 1;
+		screen_reqsize = screen_reqdraw = 1;
 	}
 }
 
 static void
-scree_redraw(void)
+screen_redraw(void)
 {
-	const int ax = screen_x1 * screen_zoom;
-	const int ay = screen_y1 * screen_zoom;
-	const int aw = screen_x2 * screen_zoom - ax;
-	const int ah = screen_y2 * screen_zoom - ay;
 	int i, x, y, k, l;
 	for(y = screen_y1; y < screen_y2; y++) {
 		const int ys = y * screen_zoom;
@@ -489,7 +488,7 @@ scree_redraw(void)
 			}
 		}
 	}
-	XPutImage(display, window, DefaultGC(display, 0), ximage, ax, ay, ax, ay, aw, ah);
+	emu_redraw();
 	screen_x1 = screen_y1 = screen_x2 = screen_y2 = screen_reqdraw = 0;
 }
 
@@ -499,34 +498,23 @@ screen_update(void)
 	if(screen_vector)
 		uxn_eval(screen_vector);
 	if(screen_reqsize) {
-		const int width = screen_width * screen_zoom;
-		const int height = screen_height * screen_zoom;
-		const int length = screen_width * screen_height * sizeof(unsigned int) * screen_zoom * screen_zoom;
-		XResizeWindow(display, window, width, height);
-		screen_pixels = realloc(screen_pixels, length);
-		if(ximage)
-			free(ximage);
-		ximage = XCreateImage(display, DefaultVisual(display, 0), DefaultDepth(display, DefaultScreen(display)), ZPixmap, 0, (char *)screen_pixels, width, height, 32, 0);
-		screen_reqdraw = 1;
+		screen_pixels = realloc(screen_pixels, screen_width * screen_height * sizeof(unsigned int) * screen_zoom * screen_zoom);
 		screen_reqsize = 0;
+		emu_resize();
 	}
 	if(screen_reqdraw) {
 		screen_x1 = screen_y1 = 0;
 		screen_x2 = screen_width;
 		screen_y2 = screen_height;
-		scree_redraw();
+		screen_redraw();
 	} else if(screen_x2 > screen_x1 && screen_y2 > screen_y1) {
 		CLAMP(screen_x1, 0, screen_width);
 		CLAMP(screen_y1, 0, screen_height);
 		CLAMP(screen_x2, 0, screen_width);
 		CLAMP(screen_y2, 0, screen_height);
-		scree_redraw();
+		screen_redraw();
 	}
 }
-
-/* screen registers */
-
-static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
 
 static void
 screen_draw_pixel(void)
@@ -1061,13 +1049,30 @@ emu_deo(const Uint8 port, const Uint8 value)
 	}
 }
 
+void
+emu_resize(void)
+{
+	const int width = screen_width * screen_zoom;
+	const int height = screen_height * screen_zoom;
+	if(ximage) free(ximage);
+	ximage = XCreateImage(display, DefaultVisual(display, 0), DefaultDepth(display, DefaultScreen(display)), ZPixmap, 0, (char *)screen_pixels, width, height, 32, 0);
+	XResizeWindow(display, window, width, height);
+}
+
+void
+emu_redraw(void)
+{
+	const int ax = screen_x1 * screen_zoom;
+	const int ay = screen_y1 * screen_zoom;
+	const int aw = screen_x2 * screen_zoom - ax;
+	const int ah = screen_y2 * screen_zoom - ay;
+	XPutImage(display, window, DefaultGC(display, 0), ximage, ax, ay, ax, ay, aw, ah);
+}
+
 static void
 emu_restart(unsigned int soft)
 {
-	console_close();
-	screen_resize(WIDTH, HEIGHT);
-	system_reboot(soft);
-	uxn_eval(0x100);
+	screen_resize(WIDTH, HEIGHT), system_reboot(soft), uxn_eval(0x100);
 }
 
 static Uint8
@@ -1123,17 +1128,6 @@ display_floating(void)
 	XMapWindow(display, window);
 }
 
-static unsigned int
-display_init(void)
-{
-	display = XOpenDisplay(NULL);
-	if(!display) return !fprintf(stderr, "Display: failed\n");
-	display_center();
-	display_hidecursor();
-	display_floating();
-	return 1;
-}
-
 static void
 emu_event(void)
 {
@@ -1151,10 +1145,10 @@ emu_event(void)
 		KeySym sym;
 		XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
 		switch(sym) {
-		case XK_F1: screen_zoom = (screen_zoom % 3) + 1, screen_reqsize = 1; break;
+		case XK_F1: screen_zoom = (screen_zoom % 3) + 1, screen_reqsize = screen_reqdraw = 1; break;
 		case XK_F2: emu_deo(0xe, 0x1); break;
-		case XK_F4: emu_restart(0); break;
-		case XK_F5: emu_restart(1); break;
+		case XK_F4: console_close(), emu_restart(0); break;
+		case XK_F5: console_close(), emu_restart(1); break;
 		}
 		controller_down(get_button(sym));
 		if(XLookupKeysym((XKeyPressedEvent *)&ev, 0) == XK_Tab)
@@ -1186,6 +1180,17 @@ emu_event(void)
 		mouse_pos(e->x / screen_zoom, e->y / screen_zoom);
 	} break;
 	}
+}
+
+static int
+emu_init(void)
+{
+	display = XOpenDisplay(NULL);
+	if(!display) return !fprintf(stderr, "Display: failed\n");
+	display_center();
+	display_hidecursor();
+	display_floating();
+	return 1;
 }
 
 static void
@@ -1221,6 +1226,11 @@ emu_run(void)
 				console_input(0, CONSOLE_STD);
 		}
 	}
+	if(ximage)
+		XDestroyImage(ximage);
+	XDestroyWindow(display, window);
+	XCloseDisplay(display);
+	console_close();
 }
 
 int
@@ -1228,12 +1238,11 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 24 Dec 2025.\n");
+		return !fprintf(stdout, "%s - Varvara Emulator, 26 Dec 2025.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
-	screen_zoom = 1;
 	screen_resize(WIDTH, HEIGHT);
 	if(uxn_eval(0x100) && console_vector) {
 		for(; i < argc; i++) {
@@ -1243,13 +1252,10 @@ main(int argc, char **argv)
 			console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
 		}
 	}
-	if(!display_init())
-		return !fprintf(stdout, "Could not open display.\n");
-	emu_run();
-	if(ximage)
-		XDestroyImage(ximage);
-	XDestroyWindow(display, window);
-	XCloseDisplay(display);
-	console_close();
+	if(!dev[0x0f]) {
+		if(!emu_init())
+			return !fprintf(stdout, "Could not initialize %s.\n", argv[0]);
+		emu_run();
+	}
 	return dev[0x0f] & 0x7f;
 }

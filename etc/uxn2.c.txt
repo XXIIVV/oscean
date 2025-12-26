@@ -29,10 +29,6 @@ cc --std=c99 -Wall -Wno-unknown-pragmas -DNDEBUG -O2 -g0 -s -L/usr/local/lib src
 #define WIDTH (64 * 8)
 #define HEIGHT (40 * 8)
 
-#define STEP_MAX 0x80000000
-#define PAGE_PROGRAM 0x0100
-#define PAGE_SIZE 0x10000
-
 /* clang-format off */
 
 #define CLAMP(v,a,b) { if(v < a) v = a; else if(v >= b) v = b; }
@@ -127,7 +123,7 @@ step:
 /*
 @|System ------------------------------------------------------------ */
 
-static char *boot_path;
+static char *system_boot_path;
 
 static void
 system_print(char *name, int r)
@@ -152,32 +148,27 @@ system_load(const char *rom_path)
 	return !!f;
 }
 
-static int
-system_error(char *msg, const char *err)
+static unsigned int
+system_boot(char *rom_path, const unsigned int has_args)
 {
-	fprintf(stderr, "%s: %s\n", msg, err), fflush(stderr);
-	return 0;
-}
-
-static int
-system_boot(Uint8 *mem, char *rom_path, int has_args)
-{
-	ram = mem;
-	boot_path = rom_path;
+	ram = (Uint8 *)calloc(BANKS_CAP, sizeof(Uint8));
+	system_boot_path = rom_path;
 	dev[0x17] = has_args;
-	if(mem && system_load(rom_path))
-		return uxn_eval(PAGE_PROGRAM);
-	return 0;
+	return ram && system_load(rom_path);
 }
 
-static int
-system_reboot(int soft)
+static unsigned int
+system_reboot(const unsigned int soft)
 {
-	int i;
-	for(i = 0x0; i < 0x100; i++) dev[i] = 0;
-	for(i = soft ? 0x100 : 0; i < PAGE_SIZE; i++) ram[i] = 0;
+	memset(dev, 0, 0x100);
+	memset(stk[0], 0, 0x100);
+	memset(stk[1], 0, 0x100);
+	if(soft)
+		memset(ram + 0x100, 0, 0xff00);
+	else
+		memset(ram, 0, 0x10000);
 	ptr[0] = ptr[1] = 0;
-	return system_boot(ram, boot_path, 0);
+	return system_load(system_boot_path);
 }
 
 static void
@@ -211,308 +202,253 @@ system_expansion(const Uint16 exp)
 		fprintf(stderr, "Unknown command: %s\n", &ram[exp]);
 }
 
-/* IO */
-
-static Uint8
-system_dei(Uint8 addr)
+static int
+system_error(char *msg, const char *err)
 {
-	switch(addr) {
-	case 0x04: return ptr[0];
-	case 0x05: return ptr[1];
-	default: return dev[addr];
-	}
-}
-
-static void
-system_deo(Uint8 port)
-{
-	switch(port) {
-	case 0x3: {
-		system_expansion(PEEK2(dev + 2));
-		break;
-	}
-	case 0x04: ptr[0] = dev[4]; return;
-	case 0x05: ptr[1] = dev[5]; return;
-	case 0xe:
-		system_print("WST", 0), system_print("RST", 1);
-		return;
-	}
+	fprintf(stderr, "%s: %s\n", msg, err), fflush(stderr);
+	return 0;
 }
 
 /*
 @|Console ----------------------------------------------------------- */
-
-static int console_vector;
 
 #define CONSOLE_STD 0x1
 #define CONSOLE_ARG 0x2
 #define CONSOLE_EOA 0x3
 #define CONSOLE_END 0x4
 
+static int console_vector;
+
 static unsigned int
 console_input(int c, unsigned int type)
 {
-	if(c == EOF) c = 0, type = 4;
+	if(c == EOF) c = 0, type = CONSOLE_END;
 	dev[0x12] = c, dev[0x17] = type;
 	if(console_vector) uxn_eval(console_vector);
-	return type != 4;
-}
-
-static void
-console_arguments(int i, int argc, char **argv)
-{
-	for(; i < argc; i++) {
-		char *p = argv[i];
-		while(*p)
-			console_input(*p++, CONSOLE_ARG);
-		console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
-	}
-}
-
-static void
-console_deo(Uint8 addr)
-{
-	FILE *fd;
-	switch(addr) {
-	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
-	case 0x18: fd = stdout, fputc(dev[0x18], fd), fflush(fd); break;
-	case 0x19: fd = stderr, fputc(dev[0x19], fd), fflush(fd); break;
-	}
+	return type != CONSOLE_END;
 }
 
 /*
 @|Screen ------------------------------------------------------------ */
 
-static int window_created, fullscreen, borderless;
-static Uint32 stdin_event, audio0_event, zoom = 1;
+static int emu_zoom = 1;
+#define screen_zoom 1
+
+static Uint8 *screen_layers;
+static int screen_width, screen_height;
+static int screen_x1, screen_y1, screen_x2, screen_y2, screen_reqsize, screen_reqdraw;
+static unsigned int screen_vector, *screen_pixels, screen_palette[16];
 static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
 
 #define MAR(x) (x + 0x8)
 #define MAR2(x) (x + 0x10)
 
-typedef struct UxnScreen {
-	int width, height, vector, x1, y1, x2, y2, scale;
-	Uint32 palette[16], *pixels;
-	Uint8 *fg, *bg;
-} UxnScreen;
+void emu_redraw(void), emu_resize(void);
 
-UxnScreen uxn_screen;
+static const Uint8 blending[16][2][4] = {
+	{{0, 0, 1, 2}, {0, 0, 4, 8}},
+	{{0, 1, 2, 3}, {0, 4, 8, 12}},
+	{{0, 2, 3, 1}, {0, 8, 12, 4}},
+	{{0, 3, 1, 2}, {0, 12, 4, 8}},
+	{{1, 0, 1, 2}, {4, 0, 4, 8}},
+	{{0, 1, 2, 3}, {0, 4, 8, 12}},
+	{{1, 2, 3, 1}, {4, 8, 12, 4}},
+	{{1, 3, 1, 2}, {4, 12, 4, 8}},
+	{{2, 0, 1, 2}, {8, 0, 4, 8}},
+	{{2, 1, 2, 3}, {8, 4, 8, 12}},
+	{{0, 2, 3, 1}, {0, 8, 12, 4}},
+	{{2, 3, 1, 2}, {8, 12, 4, 8}},
+	{{3, 0, 1, 2}, {12, 0, 4, 8}},
+	{{3, 1, 2, 3}, {12, 4, 8, 12}},
+	{{3, 2, 3, 1}, {12, 8, 12, 4}},
+	{{0, 3, 1, 2}, {0, 12, 4, 8}}};
 
-static Uint8 blending[4][16] = {
-	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
-	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
-	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
-	{2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2}};
-
-int emu_resize(int width, int height);
-
-static int
-screen_changed(void)
+static void
+screen_change(const int x1, const int y1, const int x2, const int y2)
 {
-	CLAMP(uxn_screen.x1, 0, uxn_screen.width);
-	CLAMP(uxn_screen.y1, 0, uxn_screen.height);
-	CLAMP(uxn_screen.x2, 0, uxn_screen.width);
-	CLAMP(uxn_screen.y2, 0, uxn_screen.height);
-	return uxn_screen.x2 > uxn_screen.x1 &&
-		uxn_screen.y2 > uxn_screen.y1;
+	if(x1 < screen_x1) screen_x1 = x1;
+	if(y1 < screen_y1) screen_y1 = y1;
+	if(x2 > screen_x2) screen_x2 = x2;
+	if(y2 > screen_y2) screen_y2 = y2;
 }
 
 static void
-screen_change(int x1, int y1, int x2, int y2)
+screen_colorize(void)
 {
-	if(x1 < uxn_screen.x1) uxn_screen.x1 = x1;
-	if(y1 < uxn_screen.y1) uxn_screen.y1 = y1;
-	if(x2 > uxn_screen.x2) uxn_screen.x2 = x2;
-	if(y2 > uxn_screen.y2) uxn_screen.y2 = y2;
-}
-
-static void
-screen_palette(void)
-{
-	int i, shift;
-	unsigned long colors[4];
+	int i, shift, colors[4];
 	for(i = 0, shift = 4; i < 4; ++i, shift ^= 4) {
 		Uint8
-			r = (dev[0x8 + i / 2] >> shift) & 0xf,
-			g = (dev[0xa + i / 2] >> shift) & 0xf,
-			b = (dev[0xc + i / 2] >> shift) & 0xf;
+			r = dev[0x8 + i / 2] >> shift & 0xf,
+			g = dev[0xa + i / 2] >> shift & 0xf,
+			b = dev[0xc + i / 2] >> shift & 0xf;
 		colors[i] = 0x0f000000 | r << 16 | g << 8 | b;
 		colors[i] |= colors[i] << 4;
 	}
 	for(i = 0; i < 16; i++)
-		uxn_screen.palette[i] = colors[(i >> 2) ? (i >> 2) : (i & 3)];
-	screen_change(0, 0, uxn_screen.width, uxn_screen.height);
+		screen_palette[i] = colors[i >> 2 ? i >> 2 : i & 3];
+	screen_reqdraw = 1;
 }
 
 static void
-screen_resize(Uint16 width, Uint16 height, int scale)
+screen_resize(int width, int height)
 {
-	Uint32 *pixels;
-	CLAMP(width, 8, 0x800);
-	CLAMP(height, 8, 0x800);
-	CLAMP(scale, 1, 3);
-	/* on rescale */
-	pixels = realloc(uxn_screen.pixels, width * height * sizeof(Uint32) * scale * scale);
-	if(!pixels) return;
-	uxn_screen.pixels = pixels;
-	uxn_screen.scale = scale;
-	/* on resize */
-	if(uxn_screen.width != width || uxn_screen.height != height) {
-		int i, length = MAR2(width) * MAR2(height);
-		Uint8 *bg = realloc(uxn_screen.bg, length), *fg = realloc(uxn_screen.fg, length);
-		if(!bg || !fg) return;
-		uxn_screen.bg = bg, uxn_screen.fg = fg;
-		uxn_screen.width = width, uxn_screen.height = height;
-		for(i = 0; i < length; i++)
-			uxn_screen.bg[i] = uxn_screen.fg[i] = 0;
+	if(width != screen_width || height != screen_height) {
+		int length = MAR2(width) * MAR2(height);
+		screen_layers = realloc(screen_layers, length);
+		memset(screen_layers, 0, length);
+		screen_width = width;
+		screen_height = height;
+		screen_reqsize = screen_reqdraw = 1;
 	}
-	screen_change(0, 0, width, height);
-	emu_resize(width, height);
 }
 
 static void
 screen_redraw(void)
 {
 	int i, x, y, k, l;
-	for(y = uxn_screen.y1; y < uxn_screen.y2; y++) {
-		int ys = y * uxn_screen.scale;
-		for(x = uxn_screen.x1, i = MAR(x) + MAR(y) * MAR2(uxn_screen.width); x < uxn_screen.x2; x++, i++) {
-			int c = uxn_screen.palette[uxn_screen.fg[i] << 2 | uxn_screen.bg[i]];
-			for(k = 0; k < uxn_screen.scale; k++) {
-				int oo = ((ys + k) * uxn_screen.width + x) * uxn_screen.scale;
-				for(l = 0; l < uxn_screen.scale; l++)
-					uxn_screen.pixels[oo + l] = c;
+	for(y = screen_y1; y < screen_y2; y++) {
+		const int ys = y * screen_zoom;
+		for(x = screen_x1, i = MAR(x) + MAR(y) * MAR2(screen_width); x < screen_x2; x++, i++) {
+			const int c = screen_palette[screen_layers[i]];
+			for(k = 0; k < screen_zoom; k++) {
+				const int oo = ((ys + k) * screen_width + x) * screen_zoom;
+				for(l = 0; l < screen_zoom; l++)
+					screen_pixels[oo + l] = c;
 			}
 		}
 	}
-	uxn_screen.x1 = uxn_screen.y1 = 9999;
-	uxn_screen.x2 = uxn_screen.y2 = 0;
+	emu_redraw();
+	screen_x1 = screen_y1 = screen_x2 = screen_y2 = screen_reqdraw = 0;
 }
 
-static Uint8
-screen_dei(Uint8 addr)
+static void
+screen_update(void)
 {
-	switch(addr) {
-	case 0x22: return uxn_screen.width >> 8;
-	case 0x23: return uxn_screen.width;
-	case 0x24: return uxn_screen.height >> 8;
-	case 0x25: return uxn_screen.height;
-	case 0x28: return rX >> 8;
-	case 0x29: return rX;
-	case 0x2a: return rY >> 8;
-	case 0x2b: return rY;
-	case 0x2c: return rA >> 8;
-	case 0x2d: return rA;
-	default: return dev[addr];
+	if(screen_vector)
+		uxn_eval(screen_vector);
+	if(screen_reqsize) {
+		screen_pixels = realloc(screen_pixels, screen_width * screen_height * sizeof(unsigned int) * screen_zoom * screen_zoom);
+		screen_reqsize = 0;
+		emu_resize();
+	}
+	if(screen_reqdraw) {
+		screen_x1 = screen_y1 = 0;
+		screen_x2 = screen_width;
+		screen_y2 = screen_height;
+		screen_redraw();
+	} else if(screen_x2 > screen_x1 && screen_y2 > screen_y1) {
+		CLAMP(screen_x1, 0, screen_width);
+		CLAMP(screen_y1, 0, screen_height);
+		CLAMP(screen_x2, 0, screen_width);
+		CLAMP(screen_y2, 0, screen_height);
+		screen_redraw();
 	}
 }
 
 static void
-screen_deo(Uint8 addr)
+screen_draw_pixel(void)
 {
-	switch(addr) {
-	case 0x21: uxn_screen.vector = PEEK2(&dev[0x20]); return;
-	case 0x23: screen_resize(PEEK2(&dev[0x22]), uxn_screen.height, uxn_screen.scale); return;
-	case 0x25: screen_resize(uxn_screen.width, PEEK2(&dev[0x24]), uxn_screen.scale); return;
-	case 0x26: rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; return;
-	case 0x28:
-	case 0x29: rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX); return;
-	case 0x2a:
-	case 0x2b: rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY); return;
-	case 0x2c:
-	case 0x2d: rA = (dev[0x2c] << 8) | dev[0x2d]; return;
-	case 0x2e: {
-		int ctrl = dev[0x2e];
-		int color = ctrl & 0x3;
-		int len = MAR2(uxn_screen.width);
-		Uint8 *layer = ctrl & 0x40 ? uxn_screen.fg : uxn_screen.bg;
-		/* fill mode */
-		if(ctrl & 0x80) {
-			int x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
-			if(ctrl & 0x10)
-				x1 = 0, x2 = rX;
-			else
-				x1 = rX, x2 = uxn_screen.width;
-			if(ctrl & 0x20)
-				y1 = 0, y2 = rY;
-			else
-				y1 = rY, y2 = uxn_screen.height;
-			screen_change(x1, y1, x2, y2);
-			x1 = MAR(x1), y1 = MAR(y1);
-			hor = MAR(x2) - x1, ver = MAR(y2) - y1;
-			for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
-				for(ax = ay + x1, bx = ax + hor; ax < bx; ax++)
-					layer[ax] = color;
-		}
-		/* pixel mode */
-		else {
-			if(rX >= 0 && rY >= 0 && rX < len && rY < uxn_screen.height)
-				layer[MAR(rX) + MAR(rY) * len] = color;
-			screen_change(rX, rY, rX + 1, rY + 1);
-			if(rMX) rX++;
-			if(rMY) rY++;
-		}
-		return;
+	int layer_mask, color;
+	const int ctrl = dev[0x2e];
+	const int len = MAR2(screen_width);
+	if(ctrl & 0x40)
+		layer_mask = 0x3, color = (ctrl & 0x3) << 2;
+	else
+		layer_mask = 0xc, color = ctrl & 0x3;
+	/* fill mode */
+	if(ctrl & 0x80) {
+		int x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
+		if(ctrl & 0x10)
+			x1 = 0, x2 = rX;
+		else
+			x1 = rX, x2 = screen_width;
+		if(ctrl & 0x20)
+			y1 = 0, y2 = rY;
+		else
+			y1 = rY, y2 = screen_height;
+		screen_reqdraw = 1;
+		x1 = MAR(x1), y1 = MAR(y1);
+		hor = MAR(x2) - x1, ver = MAR(y2) - y1;
+		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
+			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++)
+				screen_layers[ax] = (screen_layers[ax] & layer_mask) | color;
 	}
-	case 0x2f: {
-		int ctrl = dev[0x2f];
-		int blend = ctrl & 0xf, opaque = blend % 5;
-		int fx = ctrl & 0x10 ? -1 : 1, fy = ctrl & 0x20 ? -1 : 1;
-		int qfx = fx > 0 ? 7 : 0, qfy = fy < 0 ? 7 : 0;
-		int dxy = fy * rDX, dyx = fx * rDY;
-		int wmar = MAR(uxn_screen.width), wmar2 = MAR2(uxn_screen.width);
-		int hmar2 = MAR2(uxn_screen.height);
-		int i, x1, x2, y1, y2, ax, ay, qx, qy, x = rX, y = rY;
-		Uint8 *layer = ctrl & 0x40 ? uxn_screen.fg : uxn_screen.bg;
-		if(ctrl & 0x80) {
-			int addr_incr = rMA << 2;
-			for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-				Uint16 xmar = MAR(x), ymar = MAR(y);
-				Uint16 xmar2 = MAR2(x), ymar2 = MAR2(y);
-				if(xmar < wmar && ymar2 < hmar2) {
-					Uint8 *sprite = &ram[rA];
-					int by = ymar2 * wmar2;
-					for(ay = ymar * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
-						int ch1 = sprite[qy], ch2 = sprite[qy + 8] << 1, bx = xmar2 + ay;
-						for(ax = xmar + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
-							int color = ((ch1 >> qx) & 1) | ((ch2 >> qx) & 2);
-							if(opaque || color) layer[ax] = blending[color][blend];
-						}
-					}
-				}
-			}
-		} else {
-			int addr_incr = rMA << 1;
-			for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-				Uint16 xmar = MAR(x), ymar = MAR(y);
-				Uint16 xmar2 = MAR2(x), ymar2 = MAR2(y);
-				if(xmar < wmar && ymar2 < hmar2) {
-					Uint8 *sprite = &ram[rA];
-					int by = ymar2 * wmar2;
-					for(ay = ymar * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
-						int ch1 = sprite[qy], bx = xmar2 + ay;
-						for(ax = xmar + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
-							int color = (ch1 >> qx) & 1;
-							if(opaque || color) layer[ax] = blending[color][blend];
-						}
+	/* pixel mode */
+	else {
+		if(rX >= 0 && rY >= 0 && rX < len && rY < screen_height) {
+			const int ax = MAR(rX) + MAR(rY) * len;
+			screen_layers[ax] = (screen_layers[ax] & layer_mask) | color;
+		}
+		screen_reqdraw = 1;
+		if(rMX) rX++;
+		if(rMY) rY++;
+	}
+}
+
+static void
+screen_draw_sprite(void)
+{
+	const Uint8 *table;
+	const int ctrl = dev[0x2f];
+	const int blend = ctrl & 0xf;
+	const int opaque = blend % 5;
+	const int fx = ctrl & 0x10 ? -1 : 1, fy = ctrl & 0x20 ? -1 : 1;
+	const int qfx = fx > 0 ? 7 : 0, qfy = fy < 0 ? 7 : 0;
+	const int dxy = fy * rDX, dyx = fx * rDY;
+	const int wmar = MAR(screen_width), wmar2 = MAR2(screen_width);
+	const int hmar2 = MAR2(screen_height);
+	int i, x1, x2, y1, y2, ax, ay, bx, by, qx, qy, x = rX, y = rY, layer_mask;
+	if(ctrl & 0x40)
+		layer_mask = 0x3, table = blending[blend][1];
+	else
+		layer_mask = 0xc, table = blending[blend][0];
+	if(ctrl & 0x80) {
+		const int addr_incr = rMA << 2;
+		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
+			const Uint16 xmar = MAR(x), ymar2 = MAR2(y);
+			if(xmar < wmar && ymar2 < hmar2) {
+				const Uint16 xmar2 = MAR2(x), ymar = MAR(y);
+				const Uint8 *sprite = &ram[rA];
+				for(ay = ymar * wmar2, by = ymar2 * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
+					const int ch1 = sprite[qy];
+					const int ch2 = sprite[qy + 8] << 1;
+					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
+						const int color = (ch1 >> qx & 1) | (ch2 >> qx & 2);
+						if(opaque || color)
+							screen_layers[ax] = (screen_layers[ax] & layer_mask) | table[color];
 					}
 				}
 			}
 		}
-		if(fx < 0)
-			x1 = x, x2 = rX;
-		else
-			x1 = rX, x2 = x;
-		if(fy < 0)
-			y1 = y, y2 = rY;
-		else
-			y1 = rY, y2 = y;
-		screen_change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
-		if(rMX) rX += rDX * fx;
-		if(rMY) rY += rDY * fy;
-		return;
+	} else {
+		const int addr_incr = rMA << 1;
+		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
+			const Uint16 xmar = MAR(x), ymar2 = MAR2(y);
+			if(xmar < wmar && ymar2 < hmar2) {
+				const Uint16 xmar2 = MAR2(x), ymar = MAR(y);
+				const Uint8 *sprite = &ram[rA];
+				for(ay = ymar * wmar2, by = ymar2 * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
+					const int ch1 = sprite[qy];
+					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
+						const int color = ch1 >> qx & 1;
+						if(opaque || color)
+							screen_layers[ax] = (screen_layers[ax] & layer_mask) | table[color];
+					}
+				}
+			}
+		}
 	}
-	}
+	if(fx < 0)
+		x1 = x, x2 = rX;
+	else
+		x1 = rX, x2 = x;
+	if(fy < 0)
+		y1 = y, y2 = rY;
+	else
+		y1 = rY, y2 = y;
+	if(!screen_reqdraw) screen_change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
+	if(rMX) rX += rDX * fx;
+	if(rMY) rY += rDY * fy;
 }
 
 /*
@@ -547,6 +483,7 @@ static UxnAudio uxn_audio[POLYPHONY];
 
 /* clang-format on */
 
+static Uint32 audio0_event;
 int audio_render(int instance, Sint16 *sample, Sint16 *end);
 
 static void
@@ -660,29 +597,6 @@ audio_get_position(int instance)
 	return uxn_audio[instance].i;
 }
 
-static Uint8
-audio_dei(int instance, Uint8 *d, Uint8 port)
-{
-	if(!audio_id) return d[port];
-	switch(port) {
-	case 0x4: return audio_get_vu(instance);
-	case 0x2: POKE2(d + 0x2, audio_get_position(instance)); /* fall through */
-	default: return d[port];
-	}
-}
-
-static void
-audio_deo(int instance, Uint8 *d, Uint8 port)
-{
-	if(!audio_id) return;
-	if(port == 0xf) {
-		SDL_LockAudioDevice(audio_id);
-		audio_start(instance, d);
-		SDL_UnlockAudioDevice(audio_id);
-		SDL_PauseAudioDevice(audio_id, 0);
-	}
-}
-
 /*
 @|Controller -------------------------------------------------------- */
 
@@ -713,14 +627,6 @@ controller_key(Uint8 key)
 		dev[0x83] = key;
 		if(controller_vector) uxn_eval(controller_vector);
 		dev[0x83] = 0;
-	}
-}
-
-static void
-controller_deo(Uint8 addr)
-{
-	switch(addr) {
-	case 0x81: controller_vector = PEEK2(&dev[0x80]); break;
 	}
 }
 
@@ -759,14 +665,6 @@ mouse_scroll(Uint16 x, Uint16 y)
 	if(mouse_vector) uxn_eval(mouse_vector);
 	dev[0x9a] = 0, dev[0x9b] = 0;
 	dev[0x9c] = 0, dev[0x9d] = 0;
-}
-
-static void
-mouse_deo(Uint8 addr)
-{
-	switch(addr) {
-	case 0x91: mouse_vector = PEEK2(&dev[0x90]); break;
-	}
 }
 
 /*
@@ -1069,11 +967,131 @@ file_delete(UxnFile *c)
 	return c->outside_sandbox ? 0 : unlink(c->current_filename);
 }
 
-static void
-file_deo(Uint8 port)
+/*
+@|Datetime ---------------------------------------------------------- */
+
+#include <time.h>
+
+time_t datetime_seconds;
+struct tm *datetime_t, datetime_zt = {0};
+
+void
+datetime_update(void)
 {
-	Uint16 addr, len, res;
+	datetime_seconds = time(NULL);
+	datetime_t = localtime(&datetime_seconds);
+	if(datetime_t == NULL)
+		datetime_t = &datetime_zt;
+}
+
+/*
+@|Core -------------------------------------------------------------- */
+
+Uint8
+emu_dei(const Uint8 port)
+{
 	switch(port) {
+	/* System */
+	case 0x04: return ptr[0];
+	case 0x05: return ptr[1];
+	/* Screen */
+	case 0x22: return screen_width >> 8;
+	case 0x23: return screen_width;
+	case 0x24: return screen_height >> 8;
+	case 0x25: return screen_height;
+	case 0x28: return rX >> 8;
+	case 0x29: return rX;
+	case 0x2a: return rY >> 8;
+	case 0x2b: return rY;
+	case 0x2c: return rA >> 8;
+	case 0x2d: return rA;
+	/* Audio */
+	case 0x34: return audio_get_vu(0);
+	case 0x44: return audio_get_vu(1);
+	case 0x54: return audio_get_vu(2);
+	case 0x64: return audio_get_vu(3);
+	/* DateTime */
+	case 0xc0: datetime_update(); return (datetime_t->tm_year + 1900) >> 8;
+	case 0xc1: datetime_update(); return (datetime_t->tm_year + 1900);
+	case 0xc2: datetime_update(); return datetime_t->tm_mon;
+	case 0xc3: datetime_update(); return datetime_t->tm_mday;
+	case 0xc4: datetime_update(); return datetime_t->tm_hour;
+	case 0xc5: datetime_update(); return datetime_t->tm_min;
+	case 0xc6: datetime_update(); return datetime_t->tm_sec;
+	case 0xc7: datetime_update(); return datetime_t->tm_wday;
+	case 0xc8: datetime_update(); return datetime_t->tm_yday >> 8;
+	case 0xc9: datetime_update(); return datetime_t->tm_yday;
+	case 0xca: datetime_update(); return datetime_t->tm_isdst;
+	}
+	return dev[port];
+}
+
+void
+emu_deo(Uint8 addr, Uint8 value)
+{
+	dev[addr] = value;
+	Uint16 len, res;
+	switch(addr) {
+	/* System */
+	case 0x03: system_expansion(PEEK2(dev + 2)); return;
+	case 0x04: ptr[0] = dev[4]; return;
+	case 0x05: ptr[1] = dev[5]; return;
+	case 0x08:
+	case 0x09:
+	case 0x0a:
+	case 0x0b:
+	case 0x0c:
+	case 0x0d: screen_colorize(); return;
+	case 0x0e: system_print("WST", 0), system_print("RST", 1); return;
+	/* Console */
+	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
+	case 0x18: fputc(dev[0x18], stdout), fflush(stdout); return;
+	case 0x19: fputc(dev[0x19], stderr), fflush(stderr); return;
+	case 0x1a: fprintf(stderr, "%02x", dev[0x1a]); break;
+	case 0x1b: fprintf(stderr, "%02x", dev[0x1b]); break;
+	/* Screen */
+	case 0x21: screen_vector = PEEK2(&dev[0x20]); return;
+	case 0x23: screen_resize(PEEK2(&dev[0x22]) & 0xfff, screen_height & 0xfff); return;
+	case 0x25: screen_resize(screen_width & 0xfff, PEEK2(&dev[0x24]) & 0xfff); return;
+	case 0x26: rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; return;
+	case 0x28:
+	case 0x29: rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX); return;
+	case 0x2a:
+	case 0x2b: rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY); return;
+	case 0x2c:
+	case 0x2d: rA = (dev[0x2c] << 8) | dev[0x2d]; return;
+	case 0x2e: screen_draw_pixel(); return;
+	case 0x2f: screen_draw_sprite(); return;
+	/* Audio */
+	case 0x3f:
+		SDL_LockAudioDevice(audio_id);
+		audio_start(0, &dev[addr & 0xf0]);
+		SDL_UnlockAudioDevice(audio_id);
+		SDL_PauseAudioDevice(audio_id, 0);
+		break;
+	case 0x4f:
+		SDL_LockAudioDevice(audio_id);
+		audio_start(1, &dev[addr & 0xf0]);
+		SDL_UnlockAudioDevice(audio_id);
+		SDL_PauseAudioDevice(audio_id, 0);
+		break;
+	case 0x5f:
+		SDL_LockAudioDevice(audio_id);
+		audio_start(2, &dev[addr & 0xf0]);
+		SDL_UnlockAudioDevice(audio_id);
+		SDL_PauseAudioDevice(audio_id, 0);
+		break;
+	case 0x6f:
+		SDL_LockAudioDevice(audio_id);
+		audio_start(3, &dev[addr & 0xf0]);
+		SDL_UnlockAudioDevice(audio_id);
+		SDL_PauseAudioDevice(audio_id, 0);
+		break;
+	/* Controller */
+	case 0x81: controller_vector = PEEK2(&dev[0x80]); return;
+	/* Mouse */
+	case 0x91: mouse_vector = PEEK2(&dev[0x90]); return;
+	/* File 1 */
 	case 0xa5:
 		addr = PEEK2(&dev[0xa4]);
 		len = PEEK2(&dev[0xaa]);
@@ -1144,84 +1162,15 @@ file_deo(Uint8 port)
 	}
 }
 
-/*
-@|Datetime ---------------------------------------------------------- */
-
-#include <time.h>
-
-static Uint8
-datetime_dei(Uint8 addr)
-{
-	time_t seconds = time(NULL);
-	struct tm zt = {0};
-	struct tm *t = localtime(&seconds);
-	if(t == NULL)
-		t = &zt;
-	switch(addr) {
-	case 0xc0: return (t->tm_year + 1900) >> 8;
-	case 0xc1: return (t->tm_year + 1900);
-	case 0xc2: return t->tm_mon;
-	case 0xc3: return t->tm_mday;
-	case 0xc4: return t->tm_hour;
-	case 0xc5: return t->tm_min;
-	case 0xc6: return t->tm_sec;
-	case 0xc7: return t->tm_wday;
-	case 0xc8: return t->tm_yday >> 8;
-	case 0xc9: return t->tm_yday;
-	case 0xca: return t->tm_isdst;
-	default: return dev[addr];
-	}
-}
-
-/*
-@|Core -------------------------------------------------------------- */
-
-Uint8
-emu_dei(Uint8 addr)
-{
-	Uint8 p = addr & 0x0f, d = addr & 0xf0;
-	switch(d) {
-	case 0x00: return system_dei(addr);
-	case 0x20: return screen_dei(addr);
-	case 0x30: return audio_dei(0, &dev[d], p);
-	case 0x40: return audio_dei(1, &dev[d], p);
-	case 0x50: return audio_dei(2, &dev[d], p);
-	case 0x60: return audio_dei(3, &dev[d], p);
-	case 0xc0: return datetime_dei(addr);
-	}
-	return dev[addr];
-}
-
-void
-emu_deo(Uint8 addr, Uint8 value)
-{
-	Uint8 p = addr & 0x0f, d = addr & 0xf0;
-	dev[addr] = value;
-	switch(d) {
-	case 0x00:
-		system_deo(addr);
-		if(p > 0x7 && p < 0xe) screen_palette();
-		break;
-	case 0x10: console_deo(addr); break;
-	case 0x20: screen_deo(addr); break;
-	case 0x30: audio_deo(0, &dev[d], p); break;
-	case 0x40: audio_deo(1, &dev[d], p); break;
-	case 0x50: audio_deo(2, &dev[d], p); break;
-	case 0x60: audio_deo(3, &dev[d], p); break;
-	case 0x80: controller_deo(addr); break;
-	case 0x90: mouse_deo(addr); break;
-	case 0xa0: file_deo(addr); break;
-	case 0xb0: file_deo(addr); break;
-	}
-}
-
 /* Handlers */
 
+static int fullscreen, borderless;
 static SDL_Window *emu_window;
 static SDL_Texture *emu_texture;
 static SDL_Renderer *emu_renderer;
 static SDL_Rect emu_viewport;
 static SDL_Thread *stdin_thread;
+static Uint32 stdin_event;
 
 static int
 stdin_handler(void *p)
@@ -1250,16 +1199,7 @@ set_window_size(SDL_Window *window, int w, int h)
 	if(w == win_old.x && h == win_old.y) return;
 	SDL_RenderClear(emu_renderer);
 	SDL_SetWindowSize(window, w, h);
-	screen_resize(uxn_screen.width, uxn_screen.height, 1);
-}
-
-static void
-set_zoom(Uint8 z, int win)
-{
-	if(z < 1) return;
-	if(win)
-		set_window_size(emu_window, uxn_screen.width * z, uxn_screen.height * z);
-	zoom = z;
+	screen_resize(screen_width, screen_height);
 }
 
 static void
@@ -1283,31 +1223,28 @@ set_borderless(int value)
 
 /* emulator primitives */
 
-int
-emu_resize(int width, int height)
+void
+emu_resize(void)
 {
-	if(!window_created)
-		return 0;
 	if(emu_texture != NULL)
 		SDL_DestroyTexture(emu_texture);
-	SDL_RenderSetLogicalSize(emu_renderer, width, height);
-	emu_texture = SDL_CreateTexture(emu_renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
+	SDL_RenderSetLogicalSize(emu_renderer, screen_width, screen_height);
+	emu_texture = SDL_CreateTexture(emu_renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, screen_width, screen_height);
 	if(emu_texture == NULL || SDL_SetTextureBlendMode(emu_texture, SDL_BLENDMODE_NONE))
-		return system_error("SDL_SetTextureBlendMode", SDL_GetError());
-	if(SDL_UpdateTexture(emu_texture, NULL, uxn_screen.pixels, sizeof(Uint32)) != 0)
-		return system_error("SDL_UpdateTexture", SDL_GetError());
+		system_error("SDL_SetTextureBlendMode", SDL_GetError());
+	if(SDL_UpdateTexture(emu_texture, NULL, screen_pixels, sizeof(Uint32)) != 0)
+		system_error("SDL_UpdateTexture", SDL_GetError());
 	emu_viewport.x = 0;
 	emu_viewport.y = 0;
-	emu_viewport.w = uxn_screen.width;
-	emu_viewport.h = uxn_screen.height;
-	set_window_size(emu_window, width * zoom, height * zoom);
-	return 1;
+	emu_viewport.w = screen_width;
+	emu_viewport.h = screen_height;
+	set_window_size(emu_window, screen_width * emu_zoom, screen_height * emu_zoom);
 }
 
-static void
+void
 emu_redraw(void)
 {
-	if(SDL_UpdateTexture(emu_texture, NULL, uxn_screen.pixels, uxn_screen.width * sizeof(Uint32)) != 0)
+	if(SDL_UpdateTexture(emu_texture, NULL, screen_pixels, screen_width * sizeof(Uint32)) != 0)
 		system_error("SDL_UpdateTexture", SDL_GetError());
 	SDL_RenderClear(emu_renderer);
 	SDL_RenderCopy(emu_renderer, emu_texture, NULL, &emu_viewport);
@@ -1315,47 +1252,9 @@ emu_redraw(void)
 }
 
 static void
-emu_init_audio(void)
+emu_restart(unsigned int soft)
 {
-	SDL_AudioSpec as;
-	SDL_zero(as);
-	as.freq = SAMPLE_FREQUENCY;
-	as.format = AUDIO_S16SYS;
-	as.channels = 2;
-	as.callback = audio_callback;
-	as.samples = 512;
-	as.userdata = NULL;
-	audio_id = SDL_OpenAudioDevice(NULL, 0, &as, NULL, 0);
-	if(!audio_id)
-		system_error("sdl_audio", SDL_GetError());
-	audio0_event = SDL_RegisterEvents(POLYPHONY);
-	SDL_PauseAudioDevice(audio_id, 1);
-}
-
-static int
-emu_init(void)
-{
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
-		return system_error("sdl", SDL_GetError());
-	emu_init_audio();
-	if(SDL_NumJoysticks() > 0 && SDL_JoystickOpen(0) == NULL)
-		system_error("sdl_joystick", SDL_GetError());
-	stdin_event = SDL_RegisterEvents(1);
-	SDL_DetachThread(stdin_thread = SDL_CreateThread(stdin_handler, "stdin", NULL));
-	SDL_StartTextInput();
-	SDL_ShowCursor(SDL_DISABLE);
-	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-	SDL_SetRenderDrawColor(emu_renderer, 0x00, 0x00, 0x00, 0xff);
-	screen_resize(WIDTH, HEIGHT, 1);
-	return 1;
-}
-
-static void
-emu_restart(int soft)
-{
-	screen_resize(WIDTH, HEIGHT, uxn_screen.scale);
-	system_reboot(soft);
-	SDL_SetWindowTitle(emu_window, "Varvara");
+	screen_resize(WIDTH, HEIGHT), system_reboot(soft), uxn_eval(0x100);
 }
 
 static Uint8
@@ -1407,7 +1306,7 @@ get_key(SDL_Event *event)
 }
 
 static int
-handle_events(void)
+emu_event(void)
 {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
@@ -1415,7 +1314,7 @@ handle_events(void)
 		if(event.type == SDL_QUIT)
 			return 0;
 		else if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_EXPOSED)
-			emu_redraw();
+			screen_reqdraw = 1;
 		/* Mouse */
 		else if(event.type == SDL_MOUSEMOTION)
 			mouse_pos(event.motion.x, event.motion.y);
@@ -1442,7 +1341,7 @@ handle_events(void)
 			else if(get_button(&event))
 				controller_down(get_button(&event));
 			else if(event.key.keysym.sym == SDLK_F1)
-				set_zoom(zoom == 3 ? 1 : zoom + 1, 1);
+				emu_zoom = (emu_zoom % 3) + 1, screen_reqsize = screen_reqdraw = 1;
 			else if(event.key.keysym.sym == SDLK_F2)
 				emu_deo(0xe, 0x1);
 			else if(event.key.keysym.sym == SDLK_F3)
@@ -1491,45 +1390,73 @@ handle_events(void)
 	return 1;
 }
 
+static void
+emu_init_audio(void)
+{
+	SDL_AudioSpec as;
+	SDL_zero(as);
+	as.freq = SAMPLE_FREQUENCY;
+	as.format = AUDIO_S16SYS;
+	as.channels = 2;
+	as.callback = audio_callback;
+	as.samples = 512;
+	as.userdata = NULL;
+	audio_id = SDL_OpenAudioDevice(NULL, 0, &as, NULL, 0);
+	if(!audio_id)
+		system_error("sdl_audio", SDL_GetError());
+	audio0_event = SDL_RegisterEvents(POLYPHONY);
+	SDL_PauseAudioDevice(audio_id, 1);
+}
+
 static int
+emu_init(void)
+{
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
+		return system_error("sdl", SDL_GetError());
+	emu_init_audio();
+	if(SDL_NumJoysticks() > 0 && SDL_JoystickOpen(0) == NULL)
+		system_error("sdl_joystick", SDL_GetError());
+	stdin_event = SDL_RegisterEvents(1);
+	SDL_DetachThread(stdin_thread = SDL_CreateThread(stdin_handler, "stdin", NULL));
+	SDL_StartTextInput();
+	SDL_ShowCursor(SDL_DISABLE);
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+	SDL_SetRenderDrawColor(emu_renderer, 0x00, 0x00, 0x00, 0xff);
+	/* Window */
+	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+	if(fullscreen)
+		window_flags = window_flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
+	emu_window = SDL_CreateWindow("Uxn2",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		screen_width * emu_zoom,
+		screen_height * emu_zoom,
+		window_flags);
+	if(emu_window == NULL)
+		return system_error("sdl_window", SDL_GetError());
+	emu_renderer = SDL_CreateRenderer(emu_window, -1, SDL_RENDERER_ACCELERATED);
+	if(emu_renderer == NULL)
+		return system_error("sdl_renderer", SDL_GetError());
+	return 1;
+}
+
+static void
 emu_run(void)
 {
 	Uint64 next_refresh = 0;
 	Uint64 perf_freq = SDL_GetPerformanceFrequency();
 	Uint64 frame_interval = perf_freq / 60;
 	Uint64 ms_interval = perf_freq / 1000;
-	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
-	window_created = 0;
-	if(fullscreen)
-		window_flags = window_flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
-	emu_window = SDL_CreateWindow("Uxn2",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		uxn_screen.width * zoom,
-		uxn_screen.height * zoom,
-		window_flags);
-	if(emu_window == NULL)
-		return system_error("sdl_window", SDL_GetError());
-	window_created = 1;
-	emu_renderer = SDL_CreateRenderer(emu_window, -1, SDL_RENDERER_ACCELERATED);
-	if(emu_renderer == NULL)
-		return system_error("sdl_renderer", SDL_GetError());
-	emu_resize(uxn_screen.width, uxn_screen.height);
 	/* game loop */
-	for(;;) {
+	for(; !dev[0x0f];) {
 		Uint64 now = SDL_GetPerformanceCounter();
-		/* .System/halt */
-		if(dev[0x0f])
-			return system_error("Run", "Ended.");
-		if(!handle_events())
-			return 0;
+		if(!emu_event())
+			return;
 		if(now >= next_refresh) {
 			next_refresh = now + frame_interval;
-			uxn_eval(uxn_screen.vector);
-			if(uxn_screen.x2 && uxn_screen.y2 && screen_changed())
-				screen_redraw(), emu_redraw();
+			screen_update();
 		}
-		if(uxn_screen.vector) {
+		if(screen_vector) {
 			now = SDL_GetPerformanceCounter();
 			if(now < next_refresh) {
 				Uint64 delay_ms = (next_refresh - now) / ms_interval;
@@ -1538,34 +1465,6 @@ emu_run(void)
 		} else
 			SDL_WaitEvent(NULL);
 	}
-}
-
-int
-main(int argc, char **argv)
-{
-	int i = 1;
-	char *rom_path;
-	/* flags */
-	if(argc > 1 && argv[i][0] == '-') {
-		if(!strcmp(argv[i], "-v"))
-			return system_error("Uxn(gui) - Varvara Emulator", "12 Jul 2025.");
-		else if(!strcmp(argv[i], "-2x"))
-			set_zoom(2, 0);
-		else if(!strcmp(argv[i], "-3x"))
-			set_zoom(3, 0);
-		else if(strcmp(argv[i], "-f") == 0)
-			set_fullscreen(1, 0);
-		i++;
-	}
-	/* init */
-	rom_path = i == argc ? "boot.rom" : argv[i++];
-	if(!emu_init())
-		return system_error("Init", "Failed to initialize varvara.");
-	if(!system_boot((Uint8 *)calloc(PAGE_SIZE * BANKS + 1, sizeof(Uint8)), rom_path, argc > i))
-		return system_error("usage:", "uxn2 [-v | -f | -2x | -3x] file.rom [args...]");
-	/* start */
-	console_arguments(i, argc, argv);
-	emu_run();
 	/* end */
 	SDL_CloseAudioDevice(audio_id);
 #ifdef _WIN32
@@ -1575,5 +1474,30 @@ main(int argc, char **argv)
 	close(0); /* make stdin thread exit */
 #endif
 	SDL_Quit();
+}
+
+int
+main(int argc, char **argv)
+{
+	int i = 1;
+	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
+		return !fprintf(stdout, "%s - Varvara Emulator, 26 Dec 2025.\n", argv[0]);
+	else if(argc == 1)
+		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
+	else if(!system_boot(argv[i++], argc > 2))
+		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
+	screen_resize(WIDTH, HEIGHT);
+	if(uxn_eval(0x100) && console_vector) {
+		for(; i < argc; i++) {
+			char *p = argv[i];
+			while(*p)
+				console_input(*p++, CONSOLE_ARG);
+			console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
+		}
+	}
+	/* Run */
+	if(!emu_init())
+		return !fprintf(stdout, "Could not initialize %s.\n", argv[0]);
+	emu_run();
 	return dev[0x0f] & 0x7f;
 }
