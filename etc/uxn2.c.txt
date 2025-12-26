@@ -21,20 +21,23 @@ copyright notice and this permission notice appear in all copies.
 THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 
-cc --std=c99 -Wall -Wno-unknown-pragmas -DNDEBUG -O2 -g0 -s -L/usr/local/lib src/uxn2.c -o bin/uxn2
+cc -I/usr/include/SDL2 -DNDEBUG -O2 -g0 -s -lSDL2 src/uxn2.c -o bin/uxn2
 */
+
+/* clang-format off */
 
 #define BANKS 0x10
 #define BANKS_CAP BANKS * 0x10000
 #define WIDTH (64 * 8)
 #define HEIGHT (40 * 8)
-
-/* clang-format off */
-
-#define CLAMP(v,a,b) { if(v < a) v = a; else if(v >= b) v = b; }
 #define TWOS(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
 #define PEEK2(d) (*(d) << 8 | (d)[1])
 #define POKE2(d, v) { *(d) = (v) >> 8; (d)[1] = (v); }
+#define CLAMP(v, a, b) { if(v < a) v = a; else if(v >= b) v = b; }
+
+/*
+@|Uxn --------------------------------------------------------------- */
+
 #define NEXT if(--cycles) goto step; else return 0;
 
 #define OPC(opc, A, B) {\
@@ -224,17 +227,16 @@ console_input(int c, unsigned int type)
 /*
 @|Screen ------------------------------------------------------------ */
 
-static int emu_zoom = 1;
-#define screen_zoom 1
-
-static Uint8 *screen_layers;
-static int screen_width, screen_height;
-static int screen_x1, screen_y1, screen_x2, screen_y2, screen_reqsize, screen_reqdraw;
-static unsigned int screen_vector, *screen_pixels, screen_palette[16];
-static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
-
 #define MAR(x) (x + 0x8)
 #define MAR2(x) (x + 0x10)
+#define screen_zoom 1
+static int emu_zoom = 1;
+
+static Uint8 *screen_layers;
+static int screen_width, screen_height, screen_reqsize, screen_reqdraw;
+static int screen_x1, screen_y1, screen_x2, screen_y2;
+static int screen_vector, *screen_pixels, screen_palette[16];
+static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
 
 void emu_redraw(void), emu_resize(void);
 
@@ -1155,8 +1157,6 @@ emu_deo(Uint8 addr, Uint8 value)
 	}
 }
 
-/* Handlers */
-
 static int fullscreen, borderless;
 static SDL_Window *emu_window;
 static SDL_Texture *emu_texture;
@@ -1198,7 +1198,7 @@ set_window_size(SDL_Window *window, int w, int h)
 static void
 set_fullscreen(int value, int win)
 {
-	Uint32 flags = 0; /* windowed mode; SDL2 has no constant for this */
+	Uint32 flags = 0;
 	fullscreen = value;
 	if(fullscreen)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -1213,8 +1213,6 @@ set_borderless(int value)
 	borderless = value;
 	SDL_SetWindowBordered(emu_window, !value);
 }
-
-/* emulator primitives */
 
 void
 emu_resize(void)
@@ -1247,7 +1245,9 @@ emu_redraw(void)
 static void
 emu_restart(unsigned int soft)
 {
-	screen_resize(WIDTH, HEIGHT), system_reboot(soft), uxn_eval(0x100);
+	screen_resize(WIDTH, HEIGHT);
+	system_reboot(soft);
+	uxn_eval(0x100);
 }
 
 static Uint8
