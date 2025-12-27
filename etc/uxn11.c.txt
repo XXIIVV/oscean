@@ -406,12 +406,13 @@ console_close(void)
 
 #define MAR(x) (x + 0x8)
 #define MAR2(x) (x + 0x10)
+static int screen_zoom = 1;
 
 static Uint8 *screen_layers;
-static int screen_zoom = 1;
-static int screen_width, screen_height;
-static int screen_x1, screen_y1, screen_x2, screen_y2, screen_reqsize, screen_reqdraw;
-static unsigned int screen_vector, *screen_pixels, screen_palette[16];
+static int screen_width, screen_height, screen_wmar2, screen_hmar2;
+static int screen_reqsize, screen_reqdraw;
+static int screen_x1, screen_y1, screen_x2, screen_y2;
+static int screen_vector, *screen_pixels, screen_palette[16];
 static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
 
 void emu_redraw(void), emu_resize(void);
@@ -464,11 +465,12 @@ static void
 screen_resize(int width, int height)
 {
 	if(width != screen_width || height != screen_height) {
-		int length = MAR2(width) * MAR2(height);
+		int length;
+		screen_width = width, screen_wmar2 = MAR2(width);
+		screen_height = height, screen_hmar2 = MAR2(height);
+		length = screen_wmar2 * screen_hmar2;
 		screen_layers = realloc(screen_layers, length);
 		memset(screen_layers, 0, length);
-		screen_width = width;
-		screen_height = height;
 		screen_reqsize = screen_reqdraw = 1;
 	}
 }
@@ -479,7 +481,7 @@ screen_redraw(void)
 	int i, x, y, k, l;
 	for(y = screen_y1; y < screen_y2; y++) {
 		const int ys = y * screen_zoom;
-		for(x = screen_x1, i = MAR(x) + MAR(y) * MAR2(screen_width); x < screen_x2; x++, i++) {
+		for(x = screen_x1, i = MAR(x) + MAR(y) * screen_wmar2; x < screen_x2; x++, i++) {
 			const int c = screen_palette[screen_layers[i]];
 			for(k = 0; k < screen_zoom; k++) {
 				const int oo = ((ys + k) * screen_width + x) * screen_zoom;
@@ -521,7 +523,7 @@ screen_draw_pixel(void)
 {
 	int layer_mask, color;
 	const int ctrl = dev[0x2e];
-	const int len = MAR2(screen_width);
+	const int len = screen_wmar2;
 	if(ctrl & 0x40)
 		layer_mask = 0x3, color = (ctrl & 0x3) << 2;
 	else
@@ -566,8 +568,6 @@ screen_draw_sprite(void)
 	const int fx = ctrl & 0x10 ? -1 : 1, fy = ctrl & 0x20 ? -1 : 1;
 	const int qfx = fx > 0 ? 7 : 0, qfy = fy < 0 ? 7 : 0;
 	const int dxy = fy * rDX, dyx = fx * rDY;
-	const int wmar = MAR(screen_width), wmar2 = MAR2(screen_width);
-	const int hmar2 = MAR2(screen_height);
 	int i, x1, x2, y1, y2, ax, ay, bx, by, qx, qy, x = rX, y = rY, layer_mask;
 	if(ctrl & 0x40)
 		layer_mask = 0x3, table = blending[blend][1];
@@ -576,11 +576,11 @@ screen_draw_sprite(void)
 	if(ctrl & 0x80) {
 		const int addr_incr = rMA << 2;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 xmar = MAR(x), ymar2 = MAR2(y);
-			if(xmar < wmar && ymar2 < hmar2) {
-				const Uint16 xmar2 = MAR2(x), ymar = MAR(y);
+			const Uint16 ymar2 = MAR2(y), xmar2 = MAR2(x);
+			if(xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
+				const Uint16 xmar = MAR(x), ymar = MAR(y);
 				const Uint8 *sprite = &ram[rA];
-				for(ay = ymar * wmar2, by = ymar2 * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
+				for(ay = ymar * screen_wmar2, by = ymar2 * screen_wmar2, qy = qfy; ay < by; ay += screen_wmar2, qy += fy) {
 					const int ch1 = sprite[qy];
 					const int ch2 = sprite[qy + 8] << 1;
 					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
@@ -594,11 +594,11 @@ screen_draw_sprite(void)
 	} else {
 		const int addr_incr = rMA << 1;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 xmar = MAR(x), ymar2 = MAR2(y);
-			if(xmar < wmar && ymar2 < hmar2) {
-				const Uint16 xmar2 = MAR2(x), ymar = MAR(y);
+			const Uint16 ymar2 = MAR2(y), xmar2 = MAR2(x);
+			if(xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
+				const Uint16 xmar = MAR(x), ymar = MAR(y);
 				const Uint8 *sprite = &ram[rA];
-				for(ay = ymar * wmar2, by = ymar2 * wmar2, qy = qfy; ay < by; ay += wmar2, qy += fy) {
+				for(ay = ymar * screen_wmar2, by = ymar2 * screen_wmar2, qy = qfy; ay < by; ay += screen_wmar2, qy += fy) {
 					const int ch1 = sprite[qy];
 					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
 						const int color = ch1 >> qx & 1;

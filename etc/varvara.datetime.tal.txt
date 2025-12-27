@@ -1,0 +1,77 @@
+( usage: uxncli datetime.rom )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|100
+
+@on-reset ( -> )
+	.DateTime/year DEI2k dec/<print>
+	[ LIT "- ] .Console/write DEO
+	INC INC DEIk INC <print-dec-pad>
+	[ LIT "- ] .Console/write DEO
+	INC DEI <print-dec-pad>
+	#0a18 DEO
+	( | .. )
+	;dict/date str/<print>
+	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/days ADD2 str/<print>
+	[ LIT2 ", 18 ] DEO
+	#2018 DEO
+	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months ADD2 str/<print>
+	#2018 DEO
+	[ LIT2 00 -DateTime/day ] DEI dec/<print>
+	[ LIT2 ", 18 ] DEO
+	#2018 DEO
+	.DateTime/year DEI2 dec/<print>
+	#0a18 DEO
+	( | .. )
+	;dict/time str/<print>
+	.DateTime/hour DEIk <print-dec-pad>
+	[ LIT2 ": 18 ] DEO
+	INC DEIk <print-dec-pad>
+	[ LIT2 ": 18 ] DEO
+	INC DEI <print-dec-pad>
+	#0a18 DEO
+	( | .. )
+	;dict/doty str/<print>
+	.DateTime/doty DEI2 dec/<print>
+	#0a18 DEO
+	#800f DEO
+	BRK
+
+@<print-dec-pad> ( byte -- )
+	#0a DIVk dec/<emit>
+	DIVk MUL SUB
+	( >> )
+
+@dec/<emit> ( byte -- )
+	LIT "0 ADD #18 DEO
+	JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@dec/<print> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&>w
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{ DUP dec/<emit>
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
+	POP2r POP2 POP2 JMP2r
+
+(
+@|assets )
+
+@dict/date "The 20 "date 20 "is: 20 $1
+	&time "The 20 "time 20 "is: 20 $1
+	&doty "The 20 "day 20 "of 20 "the 20 "year 20 "is: 20 $1
+	&months [
+	"Jan $1 "Feb $1 "Mar $1 "Apr $1
+	"May $1 "Jun $1 "Jul $1 "Aug $1
+	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
+	&days [
+	"Sun $1 "Mon $1 "Tue $1 "Wed $1
+	"Thu $1 "Fri $1 "Sat $1 ]
+
