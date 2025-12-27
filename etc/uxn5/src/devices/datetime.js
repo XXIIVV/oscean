@@ -12,6 +12,7 @@ function DateTime(emu)
 			case 0xc4: return now.getHours();
 			case 0xc5: return now.getMinutes();
 			case 0xc6: return now.getSeconds();
+			case 0xc7: return now.getDay();
 			case 0xc8: return doty() >> 8;
 			case 0xc9: return doty() & 0xff;
 			// TODO dst
