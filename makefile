@@ -28,11 +28,11 @@ grab:
 	@ mkdir -p etc/solrela
 	@ cp -r ../solrela/index.html ../solrela/src/ ../solrela/media/ etc/solrela/
 
+.PHONY: run clean bal lint push grab
+
 bin/oscean.rom: src/oscean.tal
 	@ ${ASM} src/oscean.tal bin/oscean.rom
 bin/arvelie.rom: src/arvelie.tal
 	@ ${ASM} src/arvelie.tal bin/arvelie.rom
 bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
-
-.PHONY: run clean bal lint grab  
