@@ -48,7 +48,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Nov 20 "2025 $2
+	( date ) "27 20 "Dec 20 "2025 $2
 
 
 
@@ -382,7 +382,7 @@
 @syms/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
-	DUP2 ;refs/ptr LDA2 LTH2 ?{
+	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/Symbols err/<token> }
 	,&ptr STR2
 	STA
@@ -451,13 +451,12 @@
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
 	name/unpack syms/find-alloc syms/is-declared ?{
-		DUP2 head/get ,&ptr LDR2 #000a SUB2 ,&ptr STR2
+		DUP2 head/get
 		( addr* ) /<push-short>
 		( symbol* ) /<push-short>
 		( type-fn* ) [ LIT2 &type $2 ] /<push-short>
 		( scope* ) [ LIT2 &scope $2 ] /<push-short>
-		( line* ) ;token/line LDA2 /<push-short>
-		,&ptr LDR2 #000a SUB2 ,&ptr STR2 }
+		( line* ) ;token/line LDA2 /<push-short> }
 	( | mark as used )
 	syms/use LDA2 JMP2r
 
@@ -466,9 +465,9 @@
 	( >> )
 
 @refs/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&memend ] INC2k
+	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
-	DUP2 ;syms/ptr LDA2 GTH2 ?{
+	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/References err/<token> }
 	,&ptr STR2
 	STA
@@ -493,11 +492,12 @@
 	INC2 INC2 SUB2 JMP2r
 
 @refs/<resolve-all> ( -- )
-	,&ptr LDR2 ;&memend
+	,&ptr LDR2 ;&mem
 	&>l
 		EQU2k ?{
-			#000a SUB2 DUP2 ;err/ref STA2
-			DUP2k #0004 ADD2 LDA2 JSR2 !&>l }
+			DUP2 ;err/ref STA2
+			DUP2k #0004 ADD2 LDA2 JSR2
+			( ) #000a ADD2 !&>l }
 	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
@@ -716,15 +716,16 @@
 (
 @|Buffers )
 
-@lambda/mem $200
+@lambda/mem $100
 
 @macros/mem ( name\0, value\0 )
 	$1000 &memend
 
+@refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
+	$3000 &memend
+
 @syms/mem ( addr*, SymType, name\0 )
-	$7000 &memend
-|syms/mem @refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
-	$7000 &memend
+	$4800 &memend
 
 @rom/mem ( zeropage )
 	$100
@@ -734,4 +735,5 @@
 
 
 |00 @SymType/empty $1 &used $1 &declared
+
 
