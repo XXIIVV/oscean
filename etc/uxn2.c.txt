@@ -572,6 +572,15 @@ audio_start(int instance, Uint8 *d)
 		c->period = NOTE_PERIOD;
 }
 
+static void
+audio_play(int instance, Uint8 *d)
+{
+	SDL_LockAudioDevice(audio_id);
+	audio_start(instance, d);
+	SDL_UnlockAudioDevice(audio_id);
+	SDL_PauseAudioDevice(audio_id, 0);
+}
+
 Uint8
 audio_get_vu(int instance)
 {
@@ -666,301 +675,241 @@ mouse_scroll(Uint16 x, Uint16 y)
 /*
 @|File -------------------------------------------------------------- */
 
-#define POLYFILEY 2
-#define DEV_FILE0 0xa
-
-#include <dirent.h>
-#include <errno.h>
-#include <limits.h>
 #include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
 #include <unistd.h>
-
-#ifdef _WIN32
-#include <direct.h>
-#include <libiberty/libiberty.h>
-#define realpath(s, dummy) lrealpath(s)
-#define DIR_SEP_CHAR '\\'
-#define DIR_SEP_STR "\\"
-#define pathcmp(path1, path2, length) strncasecmp(path1, path2, length) /* strncasecmp provided by libiberty */
-#define notdriveroot(file_name) (file_name[0] != DIR_SEP_CHAR && ((strlen(file_name) > 2 && file_name[1] != ':') || strlen(file_name) <= 2))
-#define mkdir(file_name) (_mkdir(file_name) == 0)
-#else
-#define DIR_SEP_CHAR '/'
-#define DIR_SEP_STR "/"
-#define pathcmp(path1, path2, length) strncmp(path1, path2, length)
-#define notdriveroot(file_name) (file_name[0] != DIR_SEP_CHAR)
-#define mkdir(file_name) (mkdir(file_name, 0755) == 0)
-#endif
-
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
+#include <dirent.h>
+#include <sys/stat.h>
 
 typedef struct {
 	FILE *f;
 	DIR *dir;
-	char current_filename[4096];
-	struct dirent *de;
+	char *filepath;
 	enum { IDLE,
 		FILE_READ,
 		FILE_WRITE,
 		DIR_READ,
 		DIR_WRITE
 	} state;
-	int outside_sandbox;
 } UxnFile;
 
-static UxnFile uxn_file[POLYFILEY];
+static UxnFile ufs[2];
+static Uint8 dirbuf[0x10000], *_dirbuf = dirbuf;
+static unsigned int rL1, rL2;
 
 static void
-reset(UxnFile *c)
+make_pathfile(char *pathbuf, const char *filepath, const char *basename)
 {
-	if(c->f != NULL) {
-		fclose(c->f);
-		c->f = NULL;
-	}
-	if(c->dir != NULL) {
-		closedir(c->dir);
-		c->dir = NULL;
-	}
-	c->de = NULL;
-	c->state = IDLE;
-	c->outside_sandbox = 0;
+	char c = '/';
+	while(*filepath)
+		c = *filepath++, *pathbuf = c, pathbuf++;
+	if(c != '/')
+		*pathbuf = '/', pathbuf++;
+	while(*basename)
+		*pathbuf = *basename++, pathbuf++;
+	*pathbuf = 0;
 }
 
-static Uint16
-get_entry(char *p, Uint16 len, const char *pathname, const char *basename, int fail_nonzero)
+static unsigned int
+put_fill(Uint8 *dest, unsigned int len, char c)
 {
+	unsigned int i;
+	for(i = 0; i < len; i++)
+		*dest = c, dest++;
+	return len;
+}
+
+static unsigned int
+put_size(Uint8 *dest, unsigned int len, unsigned int size)
+{
+	unsigned int i;
+	for(i = 0, dest += len; i < len; i++, size >>= 4)
+		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+	return len;
+}
+
+static unsigned int
+put_text(Uint8 *dest, const char *text)
+{
+	Uint8 *anchor = dest;
+	while(*text)
+		*dest = *text++, dest++;
+	*dest = 0;
+	return dest - anchor;
+}
+
+static unsigned int
+put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, unsigned int dir, unsigned int capsize)
+{
+	if(err) return put_fill(dest, len, '!');
+	if(dir) return put_fill(dest, len, '-');
+	if(capsize && size >= 0x10000) return put_fill(dest, len, '?');
+	return put_size(dest, len, size);
+}
+
+static unsigned int
+put_statfile(Uint8 *dest, const char *filepath, const char *basename)
+{
+	unsigned int err, dir;
 	struct stat st;
-	if(len < strlen(basename) + 8)
-		return 0;
-	if(stat(pathname, &st))
-		return fail_nonzero ? snprintf(p, len, "!!!! %s\n", basename) : 0;
-	else if(S_ISDIR(st.st_mode))
-		return snprintf(p, len, "---- %s/\n", basename);
-	else if(st.st_size < 0x10000)
-		return snprintf(p, len, "%04x %s\n", (unsigned int)st.st_size, basename);
-	else
-		return snprintf(p, len, "???? %s\n", basename);
+	Uint8 *anchor = dest;
+	char pathbuf[0x2000];
+	make_pathfile(pathbuf, filepath, basename);
+	err = stat(pathbuf, &st);
+	dir = S_ISDIR(st.st_mode);
+	dest += put_stat(dest, 4, st.st_size, err, dir, 1);
+	dest += put_text(dest, " ");
+	dest += put_text(dest, basename);
+	dest += put_text(dest, dir ? "/\n" : "\n");
+	return dest - anchor;
 }
 
-static Uint16
-file_read_dir(UxnFile *c, char *dest, Uint16 len)
+static unsigned int
+put_fdir(Uint8 *dest, unsigned int len, const char *filepath, DIR *dir)
 {
-	static char pathname[4352];
-	char *p = dest;
-	if(c->de == NULL) c->de = readdir(c->dir);
-	for(; c->de != NULL; c->de = readdir(c->dir)) {
-		Uint16 n;
-		if(c->de->d_name[0] == '.' && c->de->d_name[1] == '\0')
+	unsigned int i;
+	struct dirent *de = readdir(dir);
+	for(_dirbuf = dirbuf; de != NULL; de = readdir(dir)) {
+		const char *name = de->d_name;
+		if(name[0] == '.' && (name[1] == '.' || name[1] == '\0'))
 			continue;
-		if(strcmp(c->de->d_name, "..") == 0) {
-			/* hide "sandbox/.." */
-			char cwd[PATH_MAX] = {'\0'}, *t;
-			/* Note there's [currently] no way of chdir()ing from uxn, so $PWD
-			 * is always the sandbox top level. */
-			getcwd(cwd, sizeof(cwd));
-			/* We already checked that c->current_filename exists so don't need a wrapper. */
-			t = realpath(c->current_filename, NULL);
-			if(strcmp(cwd, t) == 0) {
-				free(t);
-				continue;
-			}
-			free(t);
-		}
-		if(strlen(c->current_filename) + 1 + strlen(c->de->d_name) < sizeof(pathname))
-			snprintf(pathname, sizeof(pathname), "%s/%s", c->current_filename, c->de->d_name);
 		else
-			pathname[0] = '\0';
-		n = get_entry(p, len, pathname, c->de->d_name, 1);
-		if(!n) break;
-		p += n;
-		len -= n;
+			_dirbuf += put_statfile(_dirbuf, filepath, name);
 	}
-	return p - dest;
+	for(i = 0; i < len && dirbuf[i]; i++)
+		dest[i] = dirbuf[i];
+	dest[i] = 0;
+	return i;
 }
 
-static char *
-retry_realpath(const char *file_name)
-{
-	char *r, p[PATH_MAX] = {'\0'}, *x;
-	int fnlen;
-	if(file_name == NULL) {
-		errno = EINVAL;
-		return NULL;
-	} else if((fnlen = strlen(file_name)) >= PATH_MAX) {
-		errno = ENAMETOOLONG;
-		return NULL;
-	}
-	if(notdriveroot(file_name)) {
-		getcwd(p, sizeof(p));
-		if(strlen(p) + strlen(DIR_SEP_STR) + fnlen >= PATH_MAX) {
-			errno = ENAMETOOLONG;
-			return NULL;
-		}
-		strcat(p, DIR_SEP_STR);
-	}
-	strcat(p, file_name);
-	while((r = realpath(p, NULL)) == NULL) {
-		if(errno != ENOENT)
-			return NULL;
-		x = strrchr(p, DIR_SEP_CHAR);
-		if(x)
-			*x = '\0';
-		else
-			return NULL;
-	}
-	return r;
-}
-
-static void
-file_check_sandbox(UxnFile *c)
-{
-	char *x, *rp, cwd[PATH_MAX] = {'\0'};
-	x = getcwd(cwd, sizeof(cwd));
-	rp = retry_realpath(c->current_filename);
-	if(rp == NULL || (x && pathcmp(cwd, rp, strlen(cwd)) != 0)) {
-		c->outside_sandbox = 1;
-		fprintf(stderr, "file warning: blocked attempt to access %s outside of sandbox\n", c->current_filename);
-	}
-	free(rp);
-}
-
-static Uint16
-file_init(UxnFile *c, char *filename, size_t max_len, int override_sandbox)
-{
-	char *p = c->current_filename;
-	size_t len = sizeof(c->current_filename);
-	reset(c);
-	if(len > max_len) len = max_len;
-	while(len) {
-		if((*p++ = *filename++) == '\0') {
-			if(!override_sandbox) /* override sandbox for loading roms */
-				file_check_sandbox(c);
-			return 0;
-		}
-		len--;
-	}
-	c->current_filename[0] = '\0';
-	return 0;
-}
-
-static Uint16
-file_read(UxnFile *c, void *dest, int len)
-{
-	if(c->outside_sandbox) return 0;
-	if(c->state != FILE_READ && c->state != DIR_READ) {
-		reset(c);
-		if((c->dir = opendir(c->current_filename)) != NULL)
-			c->state = DIR_READ;
-		else if((c->f = fopen(c->current_filename, "rb")) != NULL)
-			c->state = FILE_READ;
-	}
-	if(c->state == FILE_READ)
-		return fread(dest, 1, len, c->f);
-	if(c->state == DIR_READ)
-		return file_read_dir(c, dest, len);
-	return 0;
-}
-
-static int
+static unsigned int
 is_dir_path(char *p)
 {
 	char c;
-	int saw_slash = 0;
-	while((c = *p++))
-		saw_slash = c == DIR_SEP_CHAR;
+	unsigned int saw_slash = 0;
+	while((c = *p++)) saw_slash = c == '/';
 	return saw_slash;
 }
 
-static int
-dir_exists(char *p)
+static unsigned int
+is_dir_real(char *p)
 {
 	struct stat st;
 	return stat(p, &st) == 0 && S_ISDIR(st.st_mode);
 }
 
-static int
-ensure_parent_dirs(char *p)
+static unsigned int
+file_write_dir(char *p)
 {
-	int ok = 1;
+	unsigned int ok = 1;
 	char c, *s = p;
 	for(; ok && (c = *p); p++) {
-		if(c == DIR_SEP_CHAR) {
+		if(c == '/') {
 			*p = '\0';
-			ok = dir_exists(s) || mkdir(s);
+			ok = is_dir_real(s) || (mkdir(s, 0755) == 0);
 			*p = c;
 		}
 	}
 	return ok;
 }
 
-static Uint16
-file_write(UxnFile *c, void *src, Uint16 len, Uint8 flags)
+static void
+file_reset(unsigned int id)
 {
-	Uint16 ret = 0;
-	if(c->outside_sandbox) return 0;
-	ensure_parent_dirs(c->current_filename);
-	if(c->state != FILE_WRITE && c->state != DIR_WRITE) {
-		reset(c);
-		if(is_dir_path(c->current_filename))
-			c->state = DIR_WRITE;
-		else if((c->f = fopen(c->current_filename, (flags & 0x01) ? "ab" : "wb")) != NULL)
-			c->state = FILE_WRITE;
+	if(ufs[id].f != NULL) fclose(ufs[id].f), ufs[id].f = NULL;
+	if(ufs[id].dir != NULL) closedir(ufs[id].dir), ufs[id].dir = NULL;
+	ufs[id].state = IDLE;
+}
+
+static unsigned int
+file_init(unsigned int id, Uint16 addr)
+{
+	file_reset(id);
+	ufs[id].filepath = (char *)&ram[addr];
+	return 0;
+}
+
+static unsigned int
+file_not_ready(unsigned int id)
+{
+	if(ufs[id].filepath == 0) {
+		fprintf(stderr, "File %d is uninitialized\n", id);
+		return 1;
+	} else
+		return 0;
+}
+
+static unsigned int
+file_read(unsigned int id, Uint16 addr, unsigned int len)
+{
+	void *dest = &ram[addr];
+	if(file_not_ready(id))
+		return 0;
+	if(addr + len > 0x10000)
+		len = 0x10000 - addr;
+	if(ufs[id].state != FILE_READ && ufs[id].state != DIR_READ) {
+		file_reset(id);
+		if((ufs[id].dir = opendir(ufs[id].filepath)) != NULL)
+			ufs[id].state = DIR_READ;
+		else if((ufs[id].f = fopen(ufs[id].filepath, "rb")) != NULL)
+			ufs[id].state = FILE_READ;
 	}
-	if(c->state == FILE_WRITE) {
-		if((ret = fwrite(src, 1, len, c->f)) > 0 && fflush(c->f) != 0)
+	if(ufs[id].state == FILE_READ)
+		return fread(dest, 1, len, ufs[id].f);
+	if(ufs[id].state == DIR_READ)
+		return put_fdir(dest, len, ufs[id].filepath, ufs[id].dir);
+	return 0;
+}
+
+static unsigned int
+file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
+{
+	unsigned int ret = 0;
+	if(file_not_ready(id))
+		return 0;
+	if(addr + len > 0x10000)
+		len = 0x10000 - addr;
+	file_write_dir(ufs[id].filepath);
+	if(ufs[id].state != FILE_WRITE && ufs[id].state != DIR_WRITE) {
+		file_reset(id);
+		if(is_dir_path(ufs[id].filepath))
+			ufs[id].state = DIR_WRITE;
+		else if((ufs[id].f = fopen(ufs[id].filepath, (flags & 0x01) ? "ab" : "wb")) != NULL)
+			ufs[id].state = FILE_WRITE;
+	}
+	if(ufs[id].state == FILE_WRITE)
+		if((ret = fwrite(&ram[addr], 1, len, ufs[id].f)) > 0 && fflush(ufs[id].f) != 0)
 			ret = 0;
-	}
-	if(c->state == DIR_WRITE) {
-		ret = dir_exists(c->current_filename);
-	}
+	if(ufs[id].state == DIR_WRITE)
+		ret = is_dir_real(ufs[id].filepath);
 	return ret;
 }
 
-static Uint16
-stat_fill(Uint8 *dest, Uint16 len, char c)
+static unsigned int
+file_stat(unsigned int id, Uint16 addr, unsigned int len)
 {
-	Uint16 i;
-	for(i = 0; i < len; i++)
-		*(dest++) = c;
-	return len;
-}
-
-static Uint16
-stat_size(Uint8 *dest, Uint16 len, off_t size)
-{
-	Uint16 i;
-	dest += len - 1;
-	for(i = 0; i < len; i++) {
-		char c = '0' + (Uint8)(size & 0xf);
-		if(c > '9') c += 39;
-		*(dest--) = c;
-		size = size >> 4;
-	}
-	return size == 0 ? len : stat_fill(dest, len, '?');
-}
-
-static Uint16
-file_stat(UxnFile *c, void *dest, Uint16 len)
-{
+	unsigned int err, dir;
 	struct stat st;
-	if(c->outside_sandbox)
+	if(file_not_ready(id))
 		return 0;
-	else if(stat(c->current_filename, &st))
-		return stat_fill(dest, len, '!');
-	else if(S_ISDIR(st.st_mode))
-		return stat_fill(dest, len, '-');
-	else
-		return stat_size(dest, len, st.st_size);
+	if(addr + len > 0x10000)
+		len = 0x10000 - addr;
+	err = stat(ufs[id].filepath, &st);
+	dir = S_ISDIR(st.st_mode);
+	return put_stat(&ram[addr], len, st.st_size, err, dir, 0);
 }
 
-static Uint16
-file_delete(UxnFile *c)
+static unsigned int
+file_delete(unsigned int id)
 {
-	return c->outside_sandbox ? 0 : unlink(c->current_filename);
+	if(file_not_ready(id))
+		return 0;
+	return !unlink(ufs[id].filepath);
+}
+
+static void
+file_success(unsigned int port, unsigned int value)
+{
+	dev[port] = value >> 8, dev[port + 1] = value;
 }
 
 /*
@@ -982,6 +931,14 @@ datetime_update(void)
 
 /*
 @|Core -------------------------------------------------------------- */
+
+static int fullscreen, borderless;
+static SDL_Window *emu_window;
+static SDL_Texture *emu_texture;
+static SDL_Renderer *emu_renderer;
+static SDL_Rect emu_viewport;
+static SDL_Thread *stdin_thread;
+static Uint32 stdin_event;
 
 Uint8
 emu_dei(const Uint8 port)
@@ -1026,7 +983,6 @@ void
 emu_deo(Uint8 addr, Uint8 value)
 {
 	dev[addr] = value;
-	Uint16 len, res;
 	switch(addr) {
 	/* System */
 	case 0x03: system_expansion(PEEK2(dev + 2)); return;
@@ -1043,8 +999,8 @@ emu_deo(Uint8 addr, Uint8 value)
 	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
 	case 0x18: fputc(dev[0x18], stdout), fflush(stdout); return;
 	case 0x19: fputc(dev[0x19], stderr), fflush(stderr); return;
-	case 0x1a: fprintf(stderr, "%02x", dev[0x1a]); break;
-	case 0x1b: fprintf(stderr, "%02x", dev[0x1b]); break;
+	case 0x1a: fprintf(stderr, "%02x", dev[0x1a]); return;
+	case 0x1b: fprintf(stderr, "%02x", dev[0x1b]); return;
 	/* Screen */
 	case 0x21: screen_vector = PEEK2(&dev[0x20]); return;
 	case 0x23: screen_resize(PEEK2(&dev[0x22]) & 0xfff, screen_height & 0xfff); return;
@@ -1059,112 +1015,68 @@ emu_deo(Uint8 addr, Uint8 value)
 	case 0x2e: screen_draw_pixel(); return;
 	case 0x2f: screen_draw_sprite(); return;
 	/* Audio */
-	case 0x3f:
-		SDL_LockAudioDevice(audio_id);
-		audio_start(0, &dev[addr & 0xf0]);
-		SDL_UnlockAudioDevice(audio_id);
-		SDL_PauseAudioDevice(audio_id, 0);
-		break;
-	case 0x4f:
-		SDL_LockAudioDevice(audio_id);
-		audio_start(1, &dev[addr & 0xf0]);
-		SDL_UnlockAudioDevice(audio_id);
-		SDL_PauseAudioDevice(audio_id, 0);
-		break;
-	case 0x5f:
-		SDL_LockAudioDevice(audio_id);
-		audio_start(2, &dev[addr & 0xf0]);
-		SDL_UnlockAudioDevice(audio_id);
-		SDL_PauseAudioDevice(audio_id, 0);
-		break;
-	case 0x6f:
-		SDL_LockAudioDevice(audio_id);
-		audio_start(3, &dev[addr & 0xf0]);
-		SDL_UnlockAudioDevice(audio_id);
-		SDL_PauseAudioDevice(audio_id, 0);
-		break;
+	case 0x3f: audio_play(0, &dev[addr & 0xf0]); return;
+	case 0x4f: audio_play(1, &dev[addr & 0xf0]); return;
+	case 0x5f: audio_play(2, &dev[addr & 0xf0]); return;
+	case 0x6f: audio_play(3, &dev[addr & 0xf0]); return;
 	/* Controller */
 	case 0x81: controller_vector = PEEK2(&dev[0x80]); return;
 	/* Mouse */
 	case 0x91: mouse_vector = PEEK2(&dev[0x90]); return;
 	/* File 1 */
-	case 0xa5:
-		addr = PEEK2(&dev[0xa4]);
-		len = PEEK2(&dev[0xaa]);
-		if(len > 0x10000 - addr)
-			len = 0x10000 - addr;
-		res = file_stat(&uxn_file[0], &ram[addr], len);
-		POKE2(&dev[0xa2], res);
-		break;
-	case 0xa6:
-		res = file_delete(&uxn_file[0]);
-		POKE2(&dev[0xa2], res);
-		break;
-	case 0xa9:
-		addr = PEEK2(&dev[0xa8]);
-		res = file_init(&uxn_file[0], (char *)&ram[addr], 0x10000 - addr, 0);
-		POKE2(&dev[0xa2], res);
-		break;
-	case 0xad:
-		addr = PEEK2(&dev[0xac]);
-		len = PEEK2(&dev[0xaa]);
-		if(len > 0x10000 - addr)
-			len = 0x10000 - addr;
-		res = file_read(&uxn_file[0], &ram[addr], len);
-		POKE2(&dev[0xa2], res);
-		break;
-	case 0xaf:
-		addr = PEEK2(&dev[0xae]);
-		len = PEEK2(&dev[0xaa]);
-		if(len > 0x10000 - addr)
-			len = 0x10000 - addr;
-		res = file_write(&uxn_file[0], &ram[addr], len, dev[0xa7]);
-		POKE2(&dev[0xa2], res);
-		break;
+	case 0xab: rL1 = PEEK2(&dev[0xaa]); break;
+	case 0xa5: file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1)); break;
+	case 0xa6: file_success(0xa2, file_delete(0)); break;
+	case 0xa9: file_success(0xa2, file_init(0, PEEK2(&dev[0xa8]))); break;
+	case 0xad: file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1)); break;
+	case 0xaf: file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7])); break;
 	/* File 2 */
-	case 0xb5:
-		addr = PEEK2(&dev[0xb4]);
-		len = PEEK2(&dev[0xba]);
-		if(len > 0x10000 - addr)
-			len = 0x10000 - addr;
-		res = file_stat(&uxn_file[1], &ram[addr], len);
-		POKE2(&dev[0xb2], res);
-		break;
-	case 0xb6:
-		res = file_delete(&uxn_file[1]);
-		POKE2(&dev[0xb2], res);
-		break;
-	case 0xb9:
-		addr = PEEK2(&dev[0xb8]);
-		res = file_init(&uxn_file[1], (char *)&ram[addr], 0x10000 - addr, 0);
-		POKE2(&dev[0xb2], res);
-		break;
-	case 0xbd:
-		addr = PEEK2(&dev[0xbc]);
-		len = PEEK2(&dev[0xba]);
-		if(len > 0x10000 - addr)
-			len = 0x10000 - addr;
-		res = file_read(&uxn_file[1], &ram[addr], len);
-		POKE2(&dev[0xb2], res);
-		break;
-	case 0xbf:
-		addr = PEEK2(&dev[0xbe]);
-		len = PEEK2(&dev[0xba]);
-		if(len > 0x10000 - addr)
-			len = 0x10000 - addr;
-		res = file_write(&uxn_file[1], &ram[addr], len, dev[0xb7]);
-		POKE2(&dev[0xb2], res);
-		break;
+	case 0xbb: rL2 = PEEK2(&dev[0xba]); break;
+	case 0xb5: file_success(0xb2, file_stat(1, PEEK2(&dev[0xb4]), rL2)); break;
+	case 0xb6: file_success(0xb2, file_delete(1)); break;
+	case 0xb9: file_success(0xb2, file_init(1, PEEK2(&dev[0xb8]))); break;
+	case 0xbd: file_success(0xb2, file_read(1, PEEK2(&dev[0xbc]), rL2)); break;
+	case 0xbf: file_success(0xb2, file_write(1, PEEK2(&dev[0xbe]), rL2, dev[0xb7])); break;
 	}
 }
 
-static int fullscreen, borderless;
-static SDL_Window *emu_window;
-static SDL_Texture *emu_texture;
-static SDL_Renderer *emu_renderer;
-static SDL_Rect emu_viewport;
-static SDL_Thread *stdin_thread;
-static Uint32 stdin_event;
+void
+emu_resize(void)
+{
+	if(emu_texture != NULL)
+		SDL_DestroyTexture(emu_texture);
+	SDL_RenderSetLogicalSize(emu_renderer, screen_width, screen_height);
+	emu_texture = SDL_CreateTexture(emu_renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, screen_width, screen_height);
+	if(emu_texture == NULL || SDL_SetTextureBlendMode(emu_texture, SDL_BLENDMODE_NONE))
+		fprintf(stderr, "SDL_SetTextureBlendMode: %s\n", SDL_GetError());
+	if(SDL_UpdateTexture(emu_texture, NULL, screen_pixels, sizeof(Uint32)) != 0)
+		fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
+	emu_viewport.x = 0;
+	emu_viewport.y = 0;
+	emu_viewport.w = screen_width;
+	emu_viewport.h = screen_height;
+	SDL_SetWindowSize(emu_window, screen_width * emu_zoom, screen_height * emu_zoom);
+	screen_resize(screen_width, screen_height);
+}
+
+void
+emu_redraw(void)
+{
+	if(SDL_UpdateTexture(emu_texture, NULL, screen_pixels, screen_width * sizeof(Uint32)) != 0)
+		fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
+	SDL_RenderClear(emu_renderer);
+	SDL_RenderCopy(emu_renderer, emu_texture, NULL, &emu_viewport);
+	SDL_RenderPresent(emu_renderer);
+}
+
+static void
+emu_restart(unsigned int soft)
+{
+	screen_resize(WIDTH, HEIGHT);
+	system_reboot(soft);
+	uxn_eval(0x100);
+}
+
 
 static int
 stdin_handler(void *p)
@@ -1186,17 +1098,6 @@ stdin_handler(void *p)
 }
 
 static void
-set_window_size(SDL_Window *window, int w, int h)
-{
-	SDL_Point win_old;
-	SDL_GetWindowSize(window, &win_old.x, &win_old.y);
-	if(w == win_old.x && h == win_old.y) return;
-	SDL_RenderClear(emu_renderer);
-	SDL_SetWindowSize(window, w, h);
-	screen_resize(screen_width, screen_height);
-}
-
-static void
 set_fullscreen(int value, int win)
 {
 	Uint32 flags = 0;
@@ -1213,42 +1114,6 @@ set_borderless(int value)
 	if(fullscreen) return;
 	borderless = value;
 	SDL_SetWindowBordered(emu_window, !value);
-}
-
-void
-emu_resize(void)
-{
-	if(emu_texture != NULL)
-		SDL_DestroyTexture(emu_texture);
-	SDL_RenderSetLogicalSize(emu_renderer, screen_width, screen_height);
-	emu_texture = SDL_CreateTexture(emu_renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, screen_width, screen_height);
-	if(emu_texture == NULL || SDL_SetTextureBlendMode(emu_texture, SDL_BLENDMODE_NONE))
-		fprintf(stderr, "SDL_SetTextureBlendMode: %s\n", SDL_GetError());
-	if(SDL_UpdateTexture(emu_texture, NULL, screen_pixels, sizeof(Uint32)) != 0)
-		fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
-	emu_viewport.x = 0;
-	emu_viewport.y = 0;
-	emu_viewport.w = screen_width;
-	emu_viewport.h = screen_height;
-	set_window_size(emu_window, screen_width * emu_zoom, screen_height * emu_zoom);
-}
-
-void
-emu_redraw(void)
-{
-	if(SDL_UpdateTexture(emu_texture, NULL, screen_pixels, screen_width * sizeof(Uint32)) != 0)
-		fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
-	SDL_RenderClear(emu_renderer);
-	SDL_RenderCopy(emu_renderer, emu_texture, NULL, &emu_viewport);
-	SDL_RenderPresent(emu_renderer);
-}
-
-static void
-emu_restart(unsigned int soft)
-{
-	screen_resize(WIDTH, HEIGHT);
-	system_reboot(soft);
-	uxn_eval(0x100);
 }
 
 static Uint8
@@ -1303,9 +1168,9 @@ static int
 emu_event(void)
 {
 	SDL_Event event;
-	while(SDL_PollEvent(&event) && !dev[0x0f]) {
+	while(SDL_PollEvent(&event)) {
 		/* Window */
-		if(event.type == SDL_QUIT)
+		if(event.type == SDL_QUIT || dev[0x0f])
 			return 0;
 		else if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_EXPOSED)
 			screen_reqdraw = 1;
@@ -1441,7 +1306,7 @@ emu_run(void)
 	Uint64 frame_interval = perf_freq / 60;
 	Uint64 ms_interval = perf_freq / 1000;
 	/* game loop */
-	for(; !dev[0x0f];) {
+	for(;;) {
 		Uint64 now = SDL_GetPerformanceCounter();
 		if(!emu_event())
 			return;
@@ -1474,7 +1339,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 26 Dec 2025.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 28 Dec 2025.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
