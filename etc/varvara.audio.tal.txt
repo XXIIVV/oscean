@@ -1,0 +1,177 @@
+( dev/audio )
+
+%GET-NOTE { #00 SWP ;melody ADD2 LDA }
+%GET-HEXCHAR  { #00 SWP #30 SFT2 ;font-hex ADD2 .Screen/addr DEO2 }
+
+( devices )
+
+|00 @System     [ &vector $2 &pad      $6 &r      $2 &g     $2 &b      $2 ]
+|20 @Screen     [ &vector $2 &width    $2 &height $2 &pad   $2 &x      $2 &y    $2 &addr  $2 &pixel $1 &sprite $1 ]
+|30 @Audio0     [ &vector $2 &position $2 &output $1 &pad   $3 &adsr   $2 &length $2 &addr $2 &volume $1 &pitch $1 ]
+|80 @Controller [ &vector $2 &button $1 &key    $1 ]
+
+( variables )
+
+|0000
+
+@timer     $1
+@progress  $1
+@selection $1
+@offset
+	&x $2 &y $2
+
+|0100 ( -> )
+	
+	( theme )
+	#0f8f .System/r DEO2 
+	#0f8f .System/g DEO2 
+	#0f80 .System/b DEO2 
+
+	( vectors )
+	;on-frame .Screen/vector DEO2
+	;on-button .Controller/vector DEO2
+
+	( setup synth )
+	#0208 .Audio0/adsr DEO2
+	;saw .Audio0/addr DEO2
+	#0100 .Audio0/length DEO2
+	#dd .Audio0/volume DEO ( TODO: turn ON )
+
+	( center )
+	.Screen/width DEI2 #01 SFT2 #0080 SUB2 .offset/x STZ2
+	.Screen/height DEI2 #01 SFT2 #0040 SUB2 .offset/y STZ2
+
+	;draw JSR2
+	#02 ;draw-selector JSR2
+
+BRK
+
+@on-button ( -> )
+
+	.Controller/button DEI #04 SFT
+	[ #01 ] NEQk NIP ,&no-up JCN 
+		.selection LDZ STHk 
+		#00 ;draw-note JSR2
+		[ STHkr GET-NOTE INC ] #00 STHkr ;melody ADD2 STA
+		STHr #01 ;draw-note JSR2
+		#02 ;draw-selector JSR2
+		&no-up
+	[ #02 ] NEQk NIP ,&no-down JCN 
+		.selection LDZ STHk 
+		#00 ;draw-note JSR2
+		[ STHkr GET-NOTE #01 SUB ] #00 STHkr ;melody ADD2 STA
+		STHr #01 ;draw-note JSR2
+		#02 ;draw-selector JSR2
+		&no-down
+	[ #04 ] NEQk NIP ,&no-left JCN 
+		#00 ;draw-selector JSR2
+		.selection LDZ #01 SUB #1f AND .selection STZ
+		#02 ;draw-selector JSR2
+		&no-left
+	[ #08 ] NEQk NIP ,&no-right JCN 
+		#00 ;draw-selector JSR2
+		.selection LDZ INC #1f AND .selection STZ
+		#02 ;draw-selector JSR2
+		&no-right
+	POP
+	
+BRK
+
+@on-frame ( -> )
+
+	( incr ) .timer LDZ INC .timer STZ 
+	( skip ) .timer LDZ #10 EQU #01 JCN [ BRK ]
+	.progress LDZ 
+	( play note )    DUP GET-NOTE .Audio0/pitch DEO
+	( erase last )   DUP #01 SUB #1f AND #01 ,draw-note JSR
+	( draw current ) #01 ,draw-note JSR
+	( incr ) .progress LDZ INC #1f AND .progress STZ
+	#00 .timer STZ
+
+BRK
+
+@draw ( -- )
+
+	#20 #00
+	&loop
+		DUP #01 ,draw-note JSR
+		INC GTHk ,&loop JCN
+	POP2
+
+JMP2r
+
+@draw-note ( id color -- )
+
+	STH STH
+	( set x ) [ #00 STHkr ] #30 SFT2 .offset/x LDZ2 ADD2 .Screen/x DEO2
+	( set y ) [ #00 #00 STHkr ;melody ADD2 LDA ] #20 SFT2 #0100 SWP2 SUB2 .offset/y LDZ2 ADD2 #0080 ADD2 .Screen/y DEO2
+	( set addr ) ;marker-icn [ #00 .progress LDZ STHr EQU #08 MUL ADD2 ] .Screen/addr DEO2
+	( draw ) STHr .Screen/sprite DEO
+
+JMP2r
+
+@draw-selector ( color -- )
+	
+	STH
+	[ #00 .selection LDZ ] #30 SFT2 .offset/x LDZ2 ADD2 .Screen/x DEO2
+	#0070 .offset/y LDZ2 ADD2 .Screen/y DEO2
+	;selector-icn .Screen/addr DEO2
+	STHkr .Screen/sprite DEO
+
+	.Screen/y DEI2k #0008 ADD2 ROT DEO2
+	.selection LDZ GET-NOTE STHr ,draw-byte JSR
+
+JMP2r
+
+@draw-byte ( byte color -- )
+	
+	STH 
+	DUP 
+		#04 SFT GET-HEXCHAR 
+		( draw ) STHkr .Screen/sprite DEO
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+		#0f AND GET-HEXCHAR 
+		( draw ) STHr .Screen/sprite DEO
+
+JMP2r
+
+@melody 
+	54 52 54 4f 4b 4f 48 ff
+	54 52 54 4f 4b 4f 48 ff
+	54 56 57 56 57 54 56 54 
+	56 52 54 52 54 50 54 ff 
+
+@selector-icn
+	0000 0010 387c 0000
+
+@marker-icn
+	3844 8282 8244 3800
+	387c fefe fe7c 3800
+
+@saw 
+	0003 0609 0c0f 1215 181b 1e21 2427 2a2d
+	3033 3639 3b3e 4143 4649 4b4e 5052 5557
+	595b 5e60 6264 6667 696b 6c6e 7071 7274
+	7576 7778 797a 7b7b 7c7d 7d7e 7e7e 7e7e
+	7f7e 7e7e 7e7e 7d7d 7c7b 7b7a 7978 7776
+	7574 7271 706e 6c6b 6967 6664 6260 5e5b
+	5957 5552 504e 4b49 4643 413e 3b39 3633
+	302d 2a27 2421 1e1b 1815 120f 0c09 0603
+	00fd faf7 f4f1 eeeb e8e5 e2df dcd9 d6d3
+	d0cd cac7 c5c2 bfbd bab7 b5b2 b0ae aba9
+	a7a5 a2a0 9e9c 9a99 9795 9492 908f 8e8c
+	8b8a 8988 8786 8585 8483 8382 8282 8282
+	8182 8282 8282 8383 8485 8586 8788 898a
+	8b8c 8e8f 9092 9495 9799 9a9c 9ea0 a2a5
+	a7a9 abae b0b2 b5b7 babd bfc2 c5c7 cacd
+	d0d3 d6d9 dcdf e2e5 e8eb eef1 f4f7 fafd 
+
+@font-hex ( 0-F )
+	007c 8282 8282 827c 0030 1010 1010 1010
+	007c 8202 7c80 80fe 007c 8202 1c02 827c
+	000c 1424 4484 fe04 00fe 8080 7c02 827c
+	007c 8280 fc82 827c 007c 8202 1e02 0202
+	007c 8282 7c82 827c 007c 8282 7e02 827c
+	007c 8202 7e82 827e 00fc 8282 fc82 82fc
+	007c 8280 8080 827c 00fc 8282 8282 82fc
+	007c 8280 f080 827c 007c 8280 f080 8080
