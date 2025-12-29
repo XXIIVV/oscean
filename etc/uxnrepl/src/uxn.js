@@ -22,7 +22,7 @@ function Uxn (emu)
 		this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
 		this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
 		this.print = () => {
-			let res = `${name} `
+			let res = `${name}${this.ptr - 8 ? ' ' : '|'}`
 			for(let i = this.ptr - 8; i != this.ptr; i++) {
 				res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
 				res += ((i + 1) & 0xff) ? ' ' : '|'

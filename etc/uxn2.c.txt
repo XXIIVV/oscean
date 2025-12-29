@@ -133,7 +133,7 @@ static void
 system_print(char *name, int r)
 {
 	Uint8 i;
-	fprintf(stderr, "%s ", name);
+	fprintf(stderr, "%s%c", name, ptr[r] - 8 ? ' ' : '|');
 	for(i = ptr[r] - 8; i != ptr[r]; i++)
 		fprintf(stderr, "%02x%c", stk[r][i], i == 0xff ? '|' : ' ');
 	fprintf(stderr, "<%02x\n", ptr[r]);
@@ -272,7 +272,7 @@ screen_change(const int x1, const int y1, const int x2, const int y2)
 static void
 screen_colorize(void)
 {
-	int i, shift, colors[4];
+	unsigned int i, shift, colors[4];
 	for(i = 0, shift = 4; i < 4; ++i, shift ^= 4) {
 		Uint8
 			r = dev[0x8 + i / 2] >> shift & 0xf,
@@ -1338,7 +1338,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 28 Dec 2025.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 29 Dec 2025.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
