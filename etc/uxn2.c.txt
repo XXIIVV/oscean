@@ -1077,7 +1077,6 @@ emu_restart(unsigned int soft)
 	uxn_eval(0x100);
 }
 
-
 static int
 stdin_handler(void *p)
 {
