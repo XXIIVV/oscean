@@ -184,10 +184,8 @@ system_expansion(const Uint16 exp)
 	unsigned int addr = PEEK2(aptr + 5);
 	if(ram[exp] == 0x0) {
 		unsigned int dst_value = ram[exp + 7];
-		unsigned short a = addr;
 		if(bank < BANKS_CAP)
-			for(limit = a + length; a != limit; a++)
-				ram[bank + a] = dst_value;
+			memset(ram + bank + addr, dst_value, length);
 	} else if(ram[exp] == 0x1) {
 		unsigned int dst_bank = PEEK2(aptr + 7) * 0x10000;
 		unsigned int dst_addr = PEEK2(aptr + 9);
@@ -404,8 +402,6 @@ console_close(void)
 /*
 @|Screen ------------------------------------------------------------ */
 
-#define MAR(x) (x + 0x8)
-#define MAR2(x) (x + 0x10)
 static int screen_zoom = 1;
 
 static Uint8 *screen_layers;
@@ -466,8 +462,8 @@ screen_resize(int width, int height)
 {
 	if(width != screen_width || height != screen_height) {
 		int length;
-		screen_width = width, screen_wmar2 = MAR2(width);
-		screen_height = height, screen_hmar2 = MAR2(height);
+		screen_width = width, screen_wmar2 = width + 0x10;
+		screen_height = height, screen_hmar2 = height + 0x10;
 		length = screen_wmar2 * screen_hmar2;
 		screen_layers = realloc(screen_layers, length);
 		memset(screen_layers, 0, length);
@@ -478,15 +474,27 @@ screen_resize(int width, int height)
 static void
 screen_redraw(void)
 {
-	int i, x, y, k, l;
-	for(y = screen_y1; y < screen_y2; y++) {
-		const int ys = y * screen_zoom;
-		for(x = screen_x1, i = MAR(x) + MAR(y) * screen_wmar2; x < screen_x2; x++, i++) {
-			const int c = screen_palette[screen_layers[i]];
-			for(k = 0; k < screen_zoom; k++) {
-				const int oo = ((ys + k) * screen_width + x) * screen_zoom;
-				for(l = 0; l < screen_zoom; l++)
-					screen_pixels[oo + l] = c;
+	int x, y;
+	if(screen_zoom == 1) {
+		int colmar = (screen_y1 + 8) * screen_wmar2;
+		int *dst = &screen_pixels[screen_y1 * screen_width + screen_x1];
+		for(y = screen_y1; y < screen_y2; y++, dst += screen_width, colmar += screen_wmar2) {
+			int i = (screen_x1 + 8) + colmar;
+			int *a = dst, *b = a + (screen_x2 - screen_x1);
+			while(a < b)
+				*a++ = screen_palette[screen_layers[i++]];
+		}
+	} else {
+		int i, k, l;
+		for(y = screen_y1; y < screen_y2; y++) {
+			const int ys = y * screen_zoom;
+			for(x = screen_x1, i = (x + 8) + (y + 8) * screen_wmar2; x < screen_x2; x++, i++) {
+				const int c = screen_palette[screen_layers[i]];
+				for(k = 0; k < screen_zoom; k++) {
+					const int oo = (ys + k) * screen_width * screen_zoom + x * screen_zoom;
+					for(l = 0; l < screen_zoom; l++)
+						screen_pixels[oo + l] = c;
+				}
 			}
 		}
 	}
@@ -521,7 +529,7 @@ screen_update(void)
 static void
 screen_draw_pixel(void)
 {
-	int layer_mask, color;
+	int layer_mask, color, px;
 	const int ctrl = dev[0x2e];
 	const int len = screen_wmar2;
 	if(ctrl & 0x40)
@@ -530,7 +538,7 @@ screen_draw_pixel(void)
 		layer_mask = 0xc, color = ctrl & 0x3;
 	/* fill mode */
 	if(ctrl & 0x80) {
-		int x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
+		int x1, y1, x2, y2, ay, by;
 		if(ctrl & 0x10)
 			x1 = 0, x2 = rX;
 		else
@@ -540,23 +548,35 @@ screen_draw_pixel(void)
 		else
 			y1 = rY, y2 = screen_height;
 		screen_reqdraw = 1;
-		x1 = MAR(x1), y1 = MAR(y1);
-		hor = MAR(x2) - x1, ver = MAR(y2) - y1;
-		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
-			for(ax = ay + x1, bx = ax + hor; ax < bx; ax++)
-				screen_layers[ax] = (screen_layers[ax] & layer_mask) | color;
+		x1 = x1 + 8, y1 = y1 + 8;
+		const int hor = (x2 + 8) - x1, ver = (y2 + 8) - y1;
+		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len) {
+			Uint8 *dst = &screen_layers[ay + x1];
+			for(px = 0; px < hor; px++)
+				dst[px] = (dst[px] & layer_mask) | color;
+		}
 	}
 	/* pixel mode */
 	else {
-		if(rX >= 0 && rY >= 0 && rX < len && rY < screen_height) {
-			const int ax = MAR(rX) + MAR(rY) * len;
-			screen_layers[ax] = (screen_layers[ax] & layer_mask) | color;
+		const int x = rX, y = rY;
+		if(x < len && y < screen_height) {
+			Uint8 *dst = &screen_layers[(x + 8) + (y + 8) * len];
+			*dst = (*dst & layer_mask) | color;
 		}
 		screen_reqdraw = 1;
 		if(rMX) rX++;
 		if(rMY) rY++;
 	}
 }
+
+/* clang-format off */
+
+#define o1BPP(n) { const int qx = qfx - n * fx; dst[n] = (dst[n] & layer_mask) | table[(ch1 >> qx) & 1]; }
+#define a1BPP(n) { const int qx = qfx - n * fx; const int color = (ch1 >> qx) & 1; if(color) dst[n] = (dst[n] & layer_mask) | table[color]; }
+#define o2BPP(n) { const int qx = qfx - n * fx; dst[n] = (dst[n] & layer_mask) | table[((ch1 >> qx) & 1) | ((ch2 >> qx) & 2)]; }
+#define a2BPP(n) { const int qx = qfx - n * fx; const int color = ((ch1 >> qx) & 1) | ((ch2 >> qx) & 2); if(color) dst[n] = (dst[n] & layer_mask) | table[color]; }
+
+/* clang-format on */
 
 static void
 screen_draw_sprite(void)
@@ -568,7 +588,7 @@ screen_draw_sprite(void)
 	const int fx = ctrl & 0x10 ? -1 : 1, fy = ctrl & 0x20 ? -1 : 1;
 	const int qfx = fx > 0 ? 7 : 0, qfy = fy < 0 ? 7 : 0;
 	const int dxy = fy * rDX, dyx = fx * rDY;
-	int i, x1, x2, y1, y2, ax, ay, bx, by, qx, qy, x = rX, y = rY, layer_mask;
+	int i, x1, x2, y1, y2, ay, by, qy, x = rX, y = rY, layer_mask;
 	if(ctrl & 0x40)
 		layer_mask = 0x3, table = blending[blend][1];
 	else
@@ -576,17 +596,19 @@ screen_draw_sprite(void)
 	if(ctrl & 0x80) {
 		const int addr_incr = rMA << 2;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 ymar2 = MAR2(y), xmar2 = MAR2(x);
+			const Uint16 xmar2 = x + 16, ymar2 = y + 16;
 			if(xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
-				const Uint16 xmar = MAR(x), ymar = MAR(y);
 				const Uint8 *sprite = &ram[rA];
-				for(ay = ymar * screen_wmar2, by = ymar2 * screen_wmar2, qy = qfy; ay < by; ay += screen_wmar2, qy += fy) {
-					const int ch1 = sprite[qy];
-					const int ch2 = sprite[qy + 8] << 1;
-					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
-						const int color = (ch1 >> qx & 1) | (ch2 >> qx & 2);
-						if(opaque || color)
-							screen_layers[ax] = (screen_layers[ax] & layer_mask) | table[color];
+				const Uint16 xmar = x + 8, ymar = y + 8;
+				if(xmar2 == xmar + 8) {
+					for(ay = ymar * screen_wmar2, by = ymar2 * screen_wmar2, qy = qfy; ay < by; ay += screen_wmar2, qy += fy) {
+						const int ch1 = sprite[qy], ch2 = sprite[qy + 8] << 1;
+						Uint8 *dst = &screen_layers[xmar + ay];
+						if(opaque) {
+							o2BPP(0) o2BPP(1) o2BPP(2) o2BPP(3) o2BPP(4) o2BPP(5) o2BPP(6) o2BPP(7)
+						} else {
+							a2BPP(0) a2BPP(1) a2BPP(2) a2BPP(3) a2BPP(4) a2BPP(5) a2BPP(6) a2BPP(7)
+						}
 					}
 				}
 			}
@@ -594,16 +616,19 @@ screen_draw_sprite(void)
 	} else {
 		const int addr_incr = rMA << 1;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 ymar2 = MAR2(y), xmar2 = MAR2(x);
+			const Uint16 xmar2 = x + 16, ymar2 = y + 16;
 			if(xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
-				const Uint16 xmar = MAR(x), ymar = MAR(y);
 				const Uint8 *sprite = &ram[rA];
-				for(ay = ymar * screen_wmar2, by = ymar2 * screen_wmar2, qy = qfy; ay < by; ay += screen_wmar2, qy += fy) {
-					const int ch1 = sprite[qy];
-					for(ax = xmar + ay, bx = xmar2 + ay, qx = qfx; ax < bx; ax++, qx -= fx) {
-						const int color = ch1 >> qx & 1;
-						if(opaque || color)
-							screen_layers[ax] = (screen_layers[ax] & layer_mask) | table[color];
+				const Uint16 xmar = x + 8, ymar = y + 8;
+				if(xmar2 == xmar + 8) {
+					for(ay = ymar * screen_wmar2, by = ymar2 * screen_wmar2, qy = qfy; ay < by; ay += screen_wmar2, qy += fy) {
+						const int ch1 = sprite[qy];
+						Uint8 *dst = &screen_layers[xmar + ay];
+						if(opaque) {
+							o1BPP(0) o1BPP(1) o1BPP(2) o1BPP(3) o1BPP(4) o1BPP(5) o1BPP(6) o1BPP(7)
+						} else {
+							a1BPP(0) a1BPP(1) a1BPP(2) a1BPP(3) a1BPP(4) a1BPP(5) a1BPP(6) a1BPP(7)
+						}
 					}
 				}
 			}
@@ -1235,7 +1260,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 29 Dec 2025.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 30 Dec 2025.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

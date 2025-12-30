@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 /*
 Copyright (c) 2021-2025 Devine Lu Linvega, Andrew Alderwick,
@@ -59,7 +60,7 @@ Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100], emu_dei(const Uint8 port);
 void emu_deo(const Uint8 port, const Uint8 value);
 
 unsigned int
-uxn_eval(unsigned short pc)
+uxn_eval(Uint16 pc)
 {
 	unsigned int a, b, c, x[2], y[2], z[2], cycles = 0x80000000;
 step:
@@ -118,7 +119,7 @@ static void
 system_print(char *name, int r)
 {
 	Uint8 i;
-	fprintf(stderr, "%s ", name);
+	fprintf(stderr, "%s%c", name, ptr[r] - 8 ? ' ' : '|');
 	for(i = ptr[r] - 8; i != ptr[r]; i++)
 		fprintf(stderr, "%02x%c", stk[r][i], i == 0xff ? '|' : ' ');
 	fprintf(stderr, "<%02x\n", ptr[r]);
@@ -150,26 +151,24 @@ static void
 system_expansion(const Uint16 exp)
 {
 	Uint8 *aptr = ram + exp;
-	unsigned short length = PEEK2(aptr + 1), limit;
+	Uint16 length = PEEK2(aptr + 1), limit;
 	unsigned int bank = PEEK2(aptr + 3) * 0x10000;
 	unsigned int addr = PEEK2(aptr + 5);
 	if(ram[exp] == 0x0) {
 		unsigned int dst_value = ram[exp + 7];
-		unsigned short a = addr;
 		if(bank < BANKS_CAP)
-			for(limit = a + length; a != limit; a++)
-				ram[bank + a] = dst_value;
+			memset(ram + bank + addr, dst_value, length);
 	} else if(ram[exp] == 0x1) {
 		unsigned int dst_bank = PEEK2(aptr + 7) * 0x10000;
 		unsigned int dst_addr = PEEK2(aptr + 9);
-		unsigned short a = addr, c = dst_addr;
+		Uint16 a = addr, c = dst_addr;
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			for(limit = a + length; a != limit; c++, a++)
 				ram[dst_bank + c] = ram[bank + a];
 	} else if(ram[exp] == 0x2) {
 		unsigned int dst_bank = PEEK2(aptr + 7) * 0x10000;
 		unsigned int dst_addr = PEEK2(aptr + 9);
-		unsigned short a = addr + length - 1, c = dst_addr + length - 1;
+		Uint16 a = addr + length - 1, c = dst_addr + length - 1;
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			for(limit = addr - 1; a != limit; a--, c--)
 				ram[dst_bank + c] = ram[bank + a];
@@ -515,7 +514,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 28 Dec 2025.\n");
+		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 30 Dec 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
