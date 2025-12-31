@@ -572,17 +572,18 @@ screen_draw_pixel(void)
 /* clang-format off */
 
 #define PUT_PIXEL(n, op) if(op | color) dst[n] = (dst[n] & layer_mask) | table[color]; 
-#define GET_COLOR(depth, ch1, ch2, qx)  const int color = depth ? (((ch1 >> qx) & 1) | ((ch2 >> qx) & 2)) : (ch1 >> qx) & 1; 
+#define GET_COLOR(depth) const int color = depth ? (((ch1 >> qx) & 1) | ((ch2 >> qx) & 2)) : (ch1 >> qx) & 1; 
 
-#define PUT_PIXELS(n,op,depth,ch1,ch2, qx) {\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(0, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(1, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(2, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(3, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(4, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(5, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(6, op); qx -= fx; }\
-	{GET_COLOR(depth, ch1, ch2, qx) PUT_PIXEL(7, op); qx -= fx; }\
+#define PUT_PIXELS(n,op,depth,c1,c2) {\
+	int qx = qfx; const int ch1 = c1, ch2 = c2;\
+	{GET_COLOR(depth) PUT_PIXEL(0, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(1, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(2, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(3, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(4, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(5, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(6, op); qx -= fx; }\
+	{GET_COLOR(depth) PUT_PIXEL(7, op); qx -= fx; }\
 }
 
 /* clang-format on */
@@ -615,14 +616,12 @@ screen_draw_sprite(void)
 			if(xmar2 == xmar + 8 && ymar2 == ymar + 8 && xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
 				Uint8 *dst = &screen_layers[xmar + ymar * screen_wmar2];
 				Uint8 *sch1 = &ram[rA + qfy], *sch2 = sch1 + 8;
-				for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy, sch2 += fy) {
-					const int ch1 = *sch1, ch2 = *sch2 << 1;
-					int qx = qfx;
-					if(opaque)
-						PUT_PIXELS(n, 1, 1, ch1, ch2, qx)
-					else
-						PUT_PIXELS(n, 0, 1, ch1, ch2, qx)
-				}
+				if(opaque)
+					for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy, sch2 += fy)
+						PUT_PIXELS(n, 1, 1, *sch1, *sch2 << 1)
+				else
+					for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy, sch2 += fy)
+						PUT_PIXELS(n, 0, 1, *sch1, *sch2 << 1)
 			}
 		}
 	} else {
@@ -632,14 +631,12 @@ screen_draw_sprite(void)
 			if(xmar2 == xmar + 8 && ymar2 == ymar + 8 && xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
 				Uint8 *dst = &screen_layers[xmar + ymar * screen_wmar2];
 				Uint8 *sch1 = &ram[rA + qfy];
-				for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy) {
-					const int ch1 = *sch1;
-					int qx = qfx;
-					if(opaque)
-						PUT_PIXELS(n, 1, 0, ch1, 0, qx)
-					else
-						PUT_PIXELS(n, 0, 0, ch1, 0, qx)
-				}
+				if(opaque)
+					for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy)
+						PUT_PIXELS(n, 1, 0, *sch1, 0)
+				else
+					for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy)
+						PUT_PIXELS(n, 0, 0, *sch1, 0)
 			}
 		}
 	}
