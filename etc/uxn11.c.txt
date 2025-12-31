@@ -590,7 +590,7 @@ screen_draw_pixel(void)
 static void
 screen_draw_sprite(void)
 {
-	int i, qy, x = rX, y = rY, layer_mask;
+	int i, x = rX, y = rY, layer_mask;
 	int fx, fy, qfx, qfy, dxy, dyx, row;
 	const Uint8 *table;
 	const int ctrl = dev[0x2f];
@@ -611,13 +611,11 @@ screen_draw_sprite(void)
 	if(ctrl & 0x80) {
 		const int addr_incr = rMA << 2;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 xmar2 = x + 16, ymar2 = y + 16, xmar = x + 8;
-			if(xmar2 == xmar + 8 && xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
-				const Uint16 ymar = y + 8;
-				const int height = ymar2 - ymar;
+			const Uint16 xmar2 = x + 16, ymar2 = y + 16, xmar = x + 8, ymar = y + 8;
+			if(xmar2 == xmar + 8 && ymar2 == ymar + 8 && xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
 				Uint8 *dst = &screen_layers[xmar + ymar * screen_wmar2];
 				Uint8 *sch1 = &ram[rA + qfy], *sch2 = sch1 + 8;
-				for(row = 0; row < height; row++, dst += screen_wmar2, sch1 += fy, sch2 += fy) {
+				for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy, sch2 += fy) {
 					const int ch1 = *sch1, ch2 = *sch2 << 1;
 					int qx = qfx;
 					if(opaque)
@@ -630,13 +628,11 @@ screen_draw_sprite(void)
 	} else {
 		const int addr_incr = rMA << 1;
 		for(i = 0; i <= rML; i++, x += dyx, y += dxy, rA += addr_incr) {
-			const Uint16 xmar2 = x + 16, ymar2 = y + 16, xmar = x + 8;
-			if(xmar2 == xmar + 8 && xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
-				const Uint16 ymar = y + 8;
-				const int height = ymar2 - ymar;
+			const Uint16 xmar2 = x + 16, ymar2 = y + 16, xmar = x + 8, ymar = y + 8;
+			if(xmar2 == xmar + 8 && ymar2 == ymar + 8 && xmar2 < screen_wmar2 && ymar2 < screen_hmar2) {
 				Uint8 *dst = &screen_layers[xmar + ymar * screen_wmar2];
 				Uint8 *sch1 = &ram[rA + qfy];
-				for(row = 0; row < height; row++, dst += screen_wmar2, sch1 += fy) {
+				for(row = 0; row < 8; row++, dst += screen_wmar2, sch1 += fy) {
 					const int ch1 = *sch1;
 					int qx = qfx;
 					if(opaque)
