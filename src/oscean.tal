@@ -232,30 +232,15 @@
 (
 @|Diaries )
 
-@make-diary-path ( id -- path* )
-	( x0 ) DUP #0a DIV LIT "0 ADD SWP
-	( 0x ) #0a DIVk MUL SUB LIT "0 ADD ,&id STR2
-	;&buf JMP2r
-
-	&buf "src/tables/diary/ &id $2 ".tsv $1
-
 @diaries/<parse> ( -- )
 	;path/events .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	;header-txt html/<str>
 	;tag/p html/<open>
 	#4000 .File/length DEO2
-	( | New System )
 	.YEAR
-	&>ll
-		#01 SUB DUP make-diary-path str/<print>
-		#0a19 DEO
-		DUP ?&>ll
-	POP
-	( | Old System )
-	;diary-path-pages/end ;diary-path-pages
 	&>l-pages
-		LDA2k workarea/make
+		#01 SUB DUP path-table-diary/make workarea/make
 		( uncap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
 			DUP2 DUP2 #000a ADD2 path-tmp-log/make .File2/name DEO2
@@ -268,8 +253,8 @@
 				DUP2 #000a ADD2 ;warnings/unknown warning/<print> }
 			journal/<write-log>
 			str/cap str/cap str/cap GTH2k ?&>l-logs
-		POP2 POP2 INC2 INC2 GTH2k ?&>l-pages
-	POP2 POP2 ;tag/p html/<close>
+		POP2 POP2 DUP ?&>l-pages
+	POP ;tag/p html/<close>
 	JMP2r
 
 @diaries/get ( id* -- mask )
@@ -754,6 +739,13 @@
 	JMP2r
 
 	&res [ "tmp/map- &resbuf $30 ]
+
+@path-table-diary/make ( id -- path* )
+	( x0 ) DUP #0a DIV LIT "0 ADD SWP
+	( 0x ) #0a DIVk MUL SUB LIT "0 ADD ,&id STR2
+	;&res JMP2r
+
+	&res "src/tables/diary/ &id $2 ".tsv $1
 
 (
 @|Stdlib )
