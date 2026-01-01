@@ -3,6 +3,7 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|14 @YEAR
 |1000 @diary/buflen
 |1000 @incoming/buflen
 |2000 @lexicon/buflen
@@ -20,7 +21,7 @@
 	sitemap/<delete>
 	lexicon/<load>
 	sitemap/<build>
-	diary/<parse>
+	diaries/<parse>
 	lexicon/<build>
 	diaries/<print-available>
 	BRK
@@ -228,12 +229,30 @@
 		str/cap LDAk ?&>wc
 	POP2 STH2r JMP2r
 
-@diary/<parse> ( -- )
+(
+@|Diaries )
+
+@make-diary-path ( id -- path* )
+	( x0 ) DUP #0a DIV LIT "0 ADD SWP
+	( 0x ) #0a DIVk MUL SUB LIT "0 ADD ,&id STR2
+	;&buf JMP2r
+
+	&buf "src/tables/diary/ &id $2 ".tsv $1
+
+@diaries/<parse> ( -- )
 	;path/events .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	;header-txt html/<str>
 	;tag/p html/<open>
 	#4000 .File/length DEO2
+	( | New System )
+	.YEAR
+	&>ll
+		#01 SUB DUP make-diary-path str/<print>
+		#0a19 DEO
+		DUP ?&>ll
+	POP
+	( | Old System )
 	;diary-path-pages/end ;diary-path-pages
 	&>l-pages
 		LDA2k workarea/make
@@ -935,22 +954,18 @@
 	&19 "src/tables/diary/19.tsv $1
 	&18 "src/tables/diary/18.tsv $1
 	&17 "src/tables/diary/17.tsv $1
-
 	&16 "src/tables/diary/16.tsv $1
 	&15 "src/tables/diary/15.tsv $1
-
 	&14 "src/tables/diary/14.tsv $1
 	&13 "src/tables/diary/13.tsv $1
 	&12 "src/tables/diary/12.tsv $1
 	&11 "src/tables/diary/11.tsv $1
 	&10 "src/tables/diary/10.tsv $1
-
 	&09 "src/tables/diary/09.tsv $1
 	&08 "src/tables/diary/08.tsv $1
 	&07 "src/tables/diary/07.tsv $1
 	&06 "src/tables/diary/06.tsv $1
 	&05 "src/tables/diary/05.tsv $1
-
 	&04 "src/tables/diary/04.tsv $1
 	&03 "src/tables/diary/03.tsv $1
 	&02 "src/tables/diary/02.tsv $1
@@ -958,27 +973,16 @@
 	&00 "src/tables/diary/00.tsv $1
 
 @diary-path-pages [
-=diary-paths/19
-=diary-paths/18
-=diary-paths/17
-=diary-paths/16
-=diary-paths/15
-=diary-paths/14
-=diary-paths/13
-=diary-paths/12
-=diary-paths/11
-=diary-paths/10
-
-=diary-paths/09
-=diary-paths/08
-=diary-paths/07
-=diary-paths/06
-=diary-paths/05
-=diary-paths/04
-=diary-paths/03
-=diary-paths/02
-=diary-paths/01
-=diary-paths/00 ] &end
+	=diary-paths/19 =diary-paths/18
+	=diary-paths/17 =diary-paths/16
+	=diary-paths/15 =diary-paths/14
+	=diary-paths/13 =diary-paths/12
+	=diary-paths/11 =diary-paths/10
+	=diary-paths/09 =diary-paths/08
+	=diary-paths/07 =diary-paths/06
+	=diary-paths/05 =diary-paths/04
+	=diary-paths/03 =diary-paths/02
+	=diary-paths/01 =diary-paths/00 ] &end
 
 @dict/xxiivv-txt "XXIIVV $1
 	&self-txt "self $1 &mdash-entity-txt 20 "&mdash; 20 $1
