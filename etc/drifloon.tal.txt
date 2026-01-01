@@ -29,10 +29,10 @@
 @rom/<emit> ( -- )
 	;dict/assembled err/<print>
 	;dict/in err/<print>
-	;head/length LDA2 DUP2 #0100 SUB2 err/<pdec>
+	;head/boundary LDA2 DUP2 #00ff SUB2 err/<pdec>
 	;dict/bytes err/<print>
 	( | write )
-	;rom/mem ADD2 ;rom/output
+	;rom/mem ADD2 INC2 ;rom/output
 	&>l
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
@@ -42,13 +42,14 @@
 	POP2 JMP2r
 
 @err/<emit> ( c -- )
-	#19 DEO JMP2r
+	#19 DEO
+	JMP2r
 
 @meta $1
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Dec 20 "2025 $2
+	( date ) "1 20 "Jan 20 "2026 $2
 
 
 
@@ -567,7 +568,7 @@
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
-	DUP2 [ LIT2 &length 0100 ] LTH2 ?{ INC2k ,&length STR2 }
+	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
 	JMP2r
 
 @head/get ( -- addr* )

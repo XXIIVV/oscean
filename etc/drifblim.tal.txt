@@ -89,17 +89,17 @@
 	#20 err/<emit>
 	;dst/buf err/<print>
 	;dict/in err/<print>
-	;head/length LDA2 DUP2 #0100 SUB2 err/<pdec>
+	;head/boundary LDA2 DUP2 #00ff SUB2 err/<pdec>
 	;dict/bytes err/<print>
 	( | emit rom )
 	;dst/buf .File/name DEO2
 	#0001 .File/length DEO2
-	#0100
+	#00ff
 	&>ler
-		DUP2 ,&src STR2
+		INC2 DUP2 ,&src STR2
 		;&mmu-get .System/expansion DEO2
 		;&buf .File/write DEO2
-		INC2 NEQ2k ?&>ler
+		NEQ2k ?&>ler
 	POP2 POP2
 	( | emit sym )
 	;dict/sym-ext dst/<push-str>
@@ -641,7 +641,7 @@
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
-	DUP2 [ LIT2 &length 0100 ] LTH2 ?{ INC2k ,&length STR2 }
+	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
 	JMP2r
 
 @head/get ( -- addr* )
