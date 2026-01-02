@@ -117,7 +117,8 @@ function Uxn (emu)
 	}
 	
 	this.step = () => {
-		const ins = ram[pc++]
+		const ins = ram[pc]
+		pc = (pc + 1) & 0xffff
 		m2 = ins & 0x20
 		mr = ins >> 6 & 1
 		mk = ins & 0x80
