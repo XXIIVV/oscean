@@ -16,14 +16,14 @@ function Uxn (emu)
 	function Stack(u, name)
 	{
 		const ram = new Uint8Array(0x100)
-		this.ptr = 0
-		this.PO1 = () => { return ram[--this.ptr & 0xff] }
+		this.ptr = new Uint8Array(1)
+		this.PO1 = () => { return ram[--this.ptr[0] & 0xff] }
 		this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
-		this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
+		this.PU1 = (val) => { ram[this.ptr[0]++ & 0xff] = val }
 		this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
 		this.print = () => {
-			let res = `${name}${this.ptr - 8 ? ' ' : '|'}`
-			for(let i = this.ptr - 8; i != this.ptr; i++) {
+			let res = `${name}${this.ptr[0] - 8 ? ' ' : '|'}`
+			for(let i = this.ptr[0] - 8; i != this.ptr[0]; i++) {
 				res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
 				res += ((i + 1) & 0xff) ? ' ' : '|'
 			}
@@ -52,7 +52,7 @@ function Uxn (emu)
 	function Pek(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; Put(o) }
 	function Pok(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
 	
-	function Rec() { if(mk) stk[mr].ptr = pk }
+	function Rec() { if(mk) stk[mr].ptr[0] = pk }
 
 	/* Opcodes */
 
@@ -121,7 +121,7 @@ function Uxn (emu)
 		m2 = ins & 0x20
 		mr = ins >> 6 & 1
 		mk = ins & 0x80
-		pk = stk[mr].ptr
+		pk = stk[mr].ptr[0]
 		lut[ins & 0x1f](ins)
 		return ins
 	}
