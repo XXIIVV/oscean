@@ -9,7 +9,7 @@
 #include <poll.h>
 
 /*
-Copyright (c) 2021-2025 Devine Lu Linvega, Andrew Alderwick, 
+Copyright (c) 2021-2026 Devine Lu Linvega, Andrew Alderwick, 
 Andrew Richards, Eiríkr Åsheim, Sigrid Solveig Haflínudóttir
 
 Permission to use, copy, modify, and distribute this software for any
@@ -531,7 +531,6 @@ screen_draw_pixel(void)
 {
 	int layer_mask, color, px;
 	const int ctrl = dev[0x2e];
-	const int len = screen_wmar2;
 	if(ctrl & 0x40)
 		layer_mask = 0x3, color = (ctrl & 0x3) << 2;
 	else
@@ -550,7 +549,7 @@ screen_draw_pixel(void)
 		screen_reqdraw = 1;
 		x1 = x1 + 8, y1 = y1 + 8;
 		const int hor = (x2 + 8) - x1, ver = (y2 + 8) - y1;
-		for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len) {
+		for(ay = y1 * screen_wmar2, by = ay + ver * screen_wmar2; ay < by; ay += screen_wmar2) {
 			Uint8 *dst = &screen_layers[ay + x1];
 			for(px = 0; px < hor; px++)
 				dst[px] = (dst[px] & layer_mask) | color;
@@ -560,7 +559,7 @@ screen_draw_pixel(void)
 	else {
 		const unsigned int x = rX, y = rY;
 		if(x < screen_width && y < screen_height) {
-			Uint8 *dst = &screen_layers[(x + 8) + (y + 8) * len];
+			Uint8 *dst = &screen_layers[(x + 8) + (y + 8) * screen_wmar2];
 			*dst = (*dst & layer_mask) | color;
 		}
 		screen_reqdraw = 1;
@@ -1227,7 +1226,7 @@ emu_init(void)
 static void
 emu_run(void)
 {
-	int has_input, has_eof;
+	int has_input, has_eof, has_sent = 1;
 	char expirations[8], coninp[CONINBUFSIZE];
 	static const struct itimerspec screen_tspec = {{0, 16666666}, {0, 16666666}};
 	struct pollfd fds[3];
@@ -1252,9 +1251,9 @@ emu_run(void)
 		if(has_input || has_eof) {
 			int i = 1, n = read(fds[2].fd, coninp, CONINBUFSIZE - 1);
 			for(i = 0, coninp[n] = 0; i < n; i++)
-				console_input(coninp[i], CONSOLE_STD);
-			if(n == 0)
-				console_input(0, CONSOLE_END);
+				console_input(coninp[i], CONSOLE_STD), has_sent = 1;
+			if(n == 0 && has_sent)
+				console_input(0, CONSOLE_END), has_sent = 0;
 		}
 	}
 	if(ximage)
@@ -1269,7 +1268,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 2 Jan 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 3 Jan 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

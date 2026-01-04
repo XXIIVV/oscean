@@ -1,0 +1,1179 @@
+( hey kirie! )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+(
+@|enums )
+
+|00 @Neuron/name $2 &state $1 &threshold $1 &saturation $1 &exci-list $2 &inhi-list $2 &size
+|01 @State/alive
+|02 @State/inhibited
+|03 @State/alive-inhibited
+|05 @State/alive-fire
+
+|000
+
+	@lhs/buf $20
+	@rhs/buf $20
+	@live/buf $40
+	@token/buf $38
+	@sel/a $2 &b $2 &length $2
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	( | theme )
+	theme/<load>
+	( | size )
+	#0280 .Screen/width DEO2
+	#0180 .Screen/height DEO2
+	editor/<start>
+	BRK
+
+@meta $1
+	( name ) "Neur-Pad 0a
+	( desc ) "Neural 20 "Nets 20 "Language 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "3 20 "Jan 20 "2026 $2
+
+@token/<init> ( -- )
+	/<clear>
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
+
+@token/<push> ( c -- )
+	DUP #21 LTH ?/<clear>
+	DUP [ LIT "* ] EQU ?/neur
+	DUP [ LIT ": ] EQU ?/exci
+	DUP [ LIT "; ] EQU ?/inhi
+	DUP [ LIT ". ] EQU ?/done
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@token/neur ( c -- )
+	;&buf mind/find-alloc rule/<push-neuron> !/<clear>
+
+@token/exci ( c -- )
+	;Neuron/exci-list rule/<bind-type> !/<clear>
+
+@token/inhi ( c -- )
+	;Neuron/inhi-list rule/<bind-type> !/<clear>
+
+@token/done ( c -- )
+	rule/<bind-auto>
+	rule/<init>
+	( >> )
+
+@token/<clear> ( c -- )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
+	POP JMP2r
+
+(
+@|list )
+
+%list/new ( -- cell* ) {
+	#ffff }
+
+%list/cdr ( cell* -- cell* ) {
+	INC2 INC2 LDA2 }
+
+%list/car ( cell* -- value* ) {
+	LDA2 }
+
+@list/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@list/<each> ( cell* func* -- )
+	STH2
+	INC2k ORA ?{ POP2 POP2r JMP2r }
+	( * ) STH2kr JSR2 list/cdr STH2r !/<each>
+
+@list/<cons> ( value* list* -- head* )
+	( cdr* ) [ LIT2 &ptr =&buf ] STH2k STA2
+	( car* ) INC2kr INC2r STH2kr STA2
+	( ptr* ) INC2r INC2r [ LITr _&ptr ] STR2r
+	STH2r JMP2r
+
+(
+@|Compiler )
+
+@rule/<init> ( -- )
+	[ LIT2 00 _&depth ] STR
+	[ LIT2 00 _&dst ] STR
+	lhs/<init> !rhs/<init>
+
+@rule/<push-connection> ( b* a* -- )
+	[ LIT2 &dst =Neuron/exci-list ] ADD2 STH2k LDA2 SWP2 list/<cons>
+	STH2r STA2
+	JMP2r
+
+@rule/<bind-type> ( dst* -- )
+	,&dst STR2
+	/<bind>
+	,&depth LDR INC ,&depth STR
+	JMP2r
+
+@rule/is-odd ( -- even/odd )
+	[ LIT2 01 &depth $1 ] AND JMP2r
+
+@rule/<bind-auto> ( -- )
+	,&depth LDR ?{ lhs/get-range ;neuron/do-wake !arr2/<foreach> }
+	( >> )
+
+@rule/<bind> ( -- )
+	/get-from-range
+	( | get infer threshold )
+	SUB2k #01 SFT2 EQUk ?{ DUP ,&threshold STR }
+	POP2
+	( | connect each )
+	;/do-connect arr2/<foreach>
+	/is-odd ?lhs/<init>
+	!rhs/<init>
+
+@rule/do-connect ( n* -- n* )
+	LDA2k STH2
+	/get-to-range
+	&>lb
+		EQU2k ?{
+			( | set infer threshold )
+			LDA2k neuron/get-state .State/alive AND ?{
+				LDA2k [ LIT2 -State/alive &threshold $1 ]
+				( set ) SWP2 neuron/<set-state-threshold> }
+			( | bind )
+			LDA2k STH2kr /<push-connection>
+			INC2 INC2 !&>lb }
+	POP2 POP2 POP2r JMP2r
+
+@rule/<push-neuron> ( n* -- )
+	/is-odd ?rhs/<push-neuron>
+	!lhs/<push-neuron>
+
+@rule/get-from-range ( -- to* from* )
+	/is-odd ?lhs/get-range
+	!rhs/get-range
+
+@rule/get-to-range ( -- to* from* )
+	/is-odd ?rhs/get-range
+	!lhs/get-range
+
+@lhs/<init> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
+
+@lhs/get-range ( -- to* from* )
+	[ LIT2 00 _&ptr ] LDR ;&buf JMP2r
+
+@lhs/<push-neuron> ( n* -- )
+	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
+	STZ2
+	JMP2r
+
+@rhs/<init> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
+
+@rhs/get-range ( -- to* from* )
+	[ LIT2 00 _&ptr ] LDR ;&buf JMP2r
+
+@rhs/<push-neuron> ( n* -- )
+	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
+	STZ2
+	JMP2r
+
+(
+@|Runtime )
+
+@live/<init> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	;live/buf #0040 !mem/<clear>
+
+@live/<push-neuron> ( n* -- )
+	STH2
+	( | find neuron )
+	,&ptr LDR .&buf
+	&>lf
+		EQUk ?{
+			LDZ2k STH2kr NEQ2 ?{ POP2 POP2r JMP2r }
+			INC INC !&>lf }
+	POP2 STH2r
+	( | push neuron )
+	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
+	STZ2
+	JMP2r
+
+@live/count ( -- count )
+	,&ptr LDR .&buf SUB #01 SFT JMP2r
+
+@live/<eval> ( -- )
+	mind/<fire>
+	[ LIT2 00 _&limit ] STR
+	&>w
+		,&ptr LDR .&buf EQU ?{
+			[ LIT2 80 &limit $1 ] INCk ,&limit STR
+			/<step>
+			NEQ ?&>w }
+	JMP2r
+
+@live/<step> ( -- )
+	excited/<init>
+	dirty/<init>
+	[ LIT2 00 _&ptr ] LDR ;&buf ;neuron/do-step arr2/<foreach>
+	#0a18 DEO
+	[ LIT2 -&buf _&ptr ] STR
+	excited/<preserve> !dirty/<clean>
+
+@excited/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@excited/<push-neuron> ( n* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@excited/<preserve> ( -- )
+	,&ptr LDR2 ;&buf ;/do-preserve !arr2/<foreach>
+
+@excited/do-preserve ( n* -- n* )
+	LDA2k neuron/get-state .State/inhibited AND ?{
+		( live ) LDA2k !live/<push-neuron> }
+	JMP2r
+
+@dirty/<init> ( -- )
+	/<clean>
+	;&buf ,&ptr STR2
+	JMP2r
+
+@dirty/<push-neuron> ( n* -- n* )
+	DUP2 [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@dirty/<clean> ( -- )
+	,&ptr LDR2 ;&buf ;/do-clean !arr2/<foreach>
+
+@dirty/do-clean ( n* -- n* )
+	LDA2k STH2
+	.State/alive STH2kr neuron/<set-state>
+	#00 STH2r !neuron/<set-saturation>
+
+(
+@|Neuron )
+
+@neuron/<print-name> ( neuron* -- )
+	LDA2k str/<print>
+	[ LIT2 "/ 18 ] DEO
+	/get-threshold #0f AND [ LIT "0 ] ADD #18 DEO
+	#2018 DEO
+	JMP2r
+
+@neuron/do-wake ( n* -- n* )
+	LDA2k [ LIT2 -State/alive-fire 01 ] SWP2 !neuron/<set-state-threshold>
+
+@neuron/do-step ( n* -- n* )
+	LDA2k DUP2 /<print-name>
+	DUP2 /get-threshold ?{
+		( /0 always excited ) DUP2 excited/<push-neuron> }
+	DUP2 ;Neuron/inhi-list ADD2 LDA2 ;/do-send-inhi list/<each>
+	;Neuron/exci-list ADD2 LDA2 ;/do-send-exci !list/<each>
+
+@neuron/do-send-exci ( n* -- n* )
+	LDA2k dirty/<push-neuron>
+	DUP2 neuron/<inc-saturation>
+	?{ DUP2 excited/<push-neuron> }
+	POP2 JMP2r
+
+@neuron/do-send-inhi ( n* -- n* )
+	LDA2k dirty/<push-neuron>
+	.State/alive-inhibited ROT ROT
+	( >> )
+
+@neuron/<set-state> ( state n* -- )
+	;Neuron/state ADD2 STA
+	JMP2r
+
+@neuron/get-state ( n* -- state )
+	;Neuron/state ADD2 LDA JMP2r
+
+@neuron/<inc-saturation> ( n* -- saturated )
+	;Neuron/threshold ADD2 LDA2k INC OVR2 STA2
+	LDA2 GTH JMP2r
+
+@neuron/<set-saturation> ( sat n* -- )
+	;Neuron/saturation ADD2 STA
+	JMP2r
+
+@neuron/<set-manual-threshold> ( /0* n* -- )
+	STH2
+	SWP [ LIT "/ ] EQU ?{
+		POP #01 STH2r ;Neuron/threshold ADD2 STA
+		JMP2r }
+	[ LIT "0 ] SUB .State/alive SWP STH2r
+	( >> )
+
+@neuron/<set-state-threshold> ( state threshold n* -- )
+	;Neuron/state ADD2 STA2
+	JMP2r
+
+@neuron/get-threshold ( n* -- threshold )
+	;Neuron/threshold ADD2 LDA JMP2r
+
+(
+@|Storage )
+
+@mind/find-alloc ( name* -- neuron* )
+	LDZk ?{ POP2 ;anon-name !/<push-name> }
+	( | find neuron )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>lf
+		EQU2k ?{
+			LDA2k STH2kr SWP2 str/compare ?{ POP2r NIP2 JMP2r }
+			;Neuron/size ADD2 !&>lf }
+	POP2 POP2
+	( | allocate neuron )
+	STH2r dict/push-word
+	( | set threshold )
+	LDA2 ,&ptr LDR2 neuron/<set-manual-threshold>
+	( >> )
+
+@mind/<push-name> ( name* -- neuron* )
+	( | set empty lists )
+	list/new ,&ptr LDR2 ;Neuron/exci-list ADD2 STA2
+	list/new ,&ptr LDR2 ;Neuron/inhi-list ADD2 STA2
+	[ LIT2 &ptr =&buf ] DUP2 ;Neuron/size ADD2 ,&ptr STR2
+	STA2k NIP2 JMP2r
+
+@mind/<init> ( -- )
+	;mind/buf #4000 mem/<clear>
+	;&buf ,&ptr STR2
+	JMP2r
+
+@mind/<fire> ( -- )
+	,&ptr LDR2 ;&buf
+	&>lk
+		EQU2k ?{
+			DUP2 ;Neuron/state ADD2 LDA2
+			( not zero ) #00 NEQ SWP
+			( not fire ) .State/alive-fire NEQ AND ?{
+				( push ) DUP2 live/<push-neuron> }
+			;Neuron/size ADD2 !&>lk }
+	POP2 POP2 JMP2r
+
+@dict/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@dict/push-word ( str* -- ptr* cap* )
+	,&ptr LDR2 SWP2
+	&>w
+		LDAk [ LIT "* ] EQU ?&end
+		LDAk [ LIT "/ ] EQU ?&end
+		LDAk /<push-byte>
+		INC2 LDAk ?&>w
+	&end ( -- )
+	#00
+	( >> )
+
+@dict/<push-byte> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+(
+@|etc )
+
+@str/compare ( s* n* -- false )
+	STH2
+	&>w
+		LDAk LDAkr STHr NEQ ?{ INC2 INC2r LDAk ?&>w }
+	LDA LDAr STHr ?{
+		( ) DUP #00 NEQ
+		( ) SWP [ LIT "/ ] NEQ AND JMP2r }
+	POP #01 JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@arr2/<foreach> ( to* from* fn* -- )
+	STH2
+	&>l
+		EQU2k ?{
+			STH2kr JSR2 INC2 INC2 !&>l }
+	POP2 POP2 POP2r JMP2r
+
+
+
+( @|Editor )
+
+@editor/<start> ( -- )
+	sidebar/<draw>
+	#20 ;&buf STA
+	sel/<reset>
+	;&on-control .Controller/vector DEO2
+	;&on-mouse .Mouse/vector DEO2
+	;&on-console .Console/vector DEO2
+	JMP2r
+
+@editor/on-console ( -> )
+	.Console/read DEI insert BRK
+
+@editor/<parse> ( -- )
+	dirty/<clean>
+	excited/<init>
+	dirty/<init>
+	dict/<init>
+	list/<init>
+	mind/<init>
+	live/<init>
+	token/<init>
+	;&buf
+	&>wp
+		LDAk token/<push>
+		INC2 LDAk ?&>wp
+	POP2 !mind/<fire>
+
+@editor/<redraw> ( -- )
+	( | clear )
+	#0010 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | draw )
+	[ LIT2 15 -Screen/auto ] DEO
+	#0018 .Screen/x DEO2
+	#0010 .Screen/y DEO2
+	;&buf
+	&>w
+		DUP2 #0001 SUB2 LDA2 font/char-addr .Screen/addr DEO2
+		is-selected STH
+		[ LIT2 06 &color 01 ] STHr [ JMP SWP POP ] .Screen/sprite DEOk DEO
+		.Screen/x DEI2k #0010 SUB2 ROT DEO2
+		( | draw selector )
+		DUP2 sel/get-from NEQ2 ?{
+			sel/has-length ?{
+				;blink-icn .Screen/addr DEO2
+				[ LIT2 05 -Screen/sprite ] DEO
+				.Screen/x DEI2k #0008 SUB2 ROT DEO2 } }
+		walk-char POP LDAk live/scan INC2 LDAk ?&>w
+	POP2 JMP2r
+
+@editor/on-control ( -> )
+	.Controller/key DEI .Controller/button DEI
+	( | shortcuts )
+	DUP2 #0002 NEQ2 ?{ POP2 editor/<step>
+		BRK }
+	DUP2 [ LIT2 "a 01 ] NEQ2 ?{ POP2 sel/<all>
+		BRK }
+	DUP2 [ LIT2 "x 01 ] NEQ2 ?{ POP2 edit-cut BRK }
+	DUP2 [ LIT2 "c 01 ] NEQ2 ?{ POP2 edit-copy BRK }
+	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ POP2 edit-paste BRK }
+	DUP2 [ LIT2 "p 01 ] NEQ2 ?{ POP2 edit-print BRK }
+	( | mask shift key )
+	#fb AND
+	( | arrows )
+	DUP #10 NEQ ?{
+		sel/get-to #0001 SUB2 find-line-start sel/<variable> }
+	DUP #20 NEQ ?{ sel/get-to INC2 find-line-end sel/<variable> }
+	DUP #40 NEQ ?{ sel/<left> }
+	DUP #80 NEQ ?{ sel/<right> }
+	DUP #42 NEQ ?{
+		.sel/b LDZ2 #0001 SUB2 find-word-start sel/<variable> }
+	DUP #82 NEQ ?{
+		.sel/b LDZ2 INC2 find-word-end sel/<variable> }
+	POP
+	( | key )
+	DUP #08 NEQ ?{ erase POP BRK }
+	DUP #7f NEQ ?{ delete POP BRK }
+	DUP #09 LTH ?{ DUP insert }
+	POP BRK
+
+@editor/<bind> ( -> )
+	;&on-mouse .Mouse/vector DEO2
+	BRK
+
+@editor/on-mouse ( -> )
+	.Mouse/x DEI2 #0010 LTH2 ?sidebar/<bind>
+	#41 [ LIT2 00 -Mouse/state ] DEI NEQ ADD ;pointer/arrow-icn cursor/<update>
+	[ LIT &last $1 ] .Mouse/state DEI DUP #02 LTH ?{
+		get-position sel/<word>
+		[ LIT2 00 -Mouse/state ] DEO }
+	DUP2 #0001 NEQ2 ?{ get-position sel/<variable> }
+	DUP2 #0101 NEQ2 ?{ get-position sel/<to> }
+	,&last STR
+	POP BRK
+
+@editor/on-frame ( -> )
+	/<redraw>
+	#0000 .Screen/vector DEO2
+	BRK
+
+@editor/<reqdraw> ( -- )
+	;&on-frame .Screen/vector DEO2
+	JMP2r
+
+@editor/has-changed ( -- )
+	/<parse> !sidebar/<draw-state>
+
+@editor/<step> ( -- )
+	live/<step> !editor/<redraw>
+
+(
+@|Find )
+
+@find-line-start ( addr* -- addr* )
+	;editor/buf #0001 SUB2 SWP2
+	&>l
+		#0001 SUB2 LDAk DUP #0a EQU SWP #00 EQU ORA ?&end
+		LTH2k ?&>l &end NIP2 INC2 JMP2r
+
+@find-line-end ( addr* -- addr* )
+	get-eof SWP2
+	&>l
+		LDAk #0a EQU ?&end
+		LDAk #00 EQU ?&end
+		INC2 GTH2k ?&>l &end NIP2 JMP2r
+
+@find-word-start ( addr* -- addr* )
+	;editor/buf SWP2
+	&>l
+		#0001 SUB2 LDAk #21 LTH ?&end
+		LTH2k ?&>l &end NIP2 INC2 JMP2r
+
+@find-word-end ( addr* -- addr* )
+	get-eof SWP2
+	&>l
+		LDAk #21 LTH ?&end
+		INC2 GTH2k ?&>l &end NIP2 JMP2r
+
+(
+@|Selection )
+
+@sel/get-from ( -- addr* )
+	.&b LDZ2 .&a LDZ2 LTH2k [ JMP SWP2 POP2 ] JMP2r
+
+@sel/get-to ( -- addr* )
+	.&a LDZ2 .&b LDZ2 GTH2k [ JMP SWP2 POP2 ] JMP2r
+
+@sel/<variable> ( addr* -- )
+	[ LIT2 04 -Controller/button ] DEI AND ?/<to>
+	!/<from>
+
+@sel/<reset> ( -- )
+	/get-from
+	( >> )
+
+@sel/<from> ( addr* -- )
+	/clamp DUP2 .&a STZ2
+	.&b STZ2 !/<apply>
+
+@sel/<to> ( addr* -- )
+	/clamp DUP2 .&b LDZ2 NEQ2 ?{ POP2 JMP2r }
+	.&b STZ2 !/<apply>
+
+@sel/<word> ( addr* -- )
+	DUP2
+	&>back
+		#0001 SUB2 LDAk #20 GTH ?&>back
+	INC2 SWP2
+	&>next
+		INC2 LDAk chr/not-word-end ?&>next
+	OVR2 OVR2 is-sel ?{
+		.&b STZ2
+		.&a STZ2 !/<apply> }
+	POP2
+	( | line )
+	DUP2 find-line-start .&a STZ2
+	find-line-end .&b STZ2 !/<apply>
+
+@sel/<all> ( -- )
+	;editor/buf DUP2 .&a STZ2
+	str/cap #0001 SUB2 .&b STZ2
+	( >> )
+
+@sel/<apply> ( -- )
+	/get-to /get-from SUB2 .&length STZ2 !editor/<reqdraw>
+
+@sel/<left> ( -- )
+	.&length LDZ2 #0000 EQU2 [ LIT2 04 -Controller/button ] DEI AND #00 NEQ ORA ?{ /get-from !/<from> }
+	.&b LDZ2 #0001 SUB2 !/<variable>
+
+@sel/<right> ( -- )
+	.&length LDZ2 #0000 EQU2 [ LIT2 04 -Controller/button ] DEI AND #00 NEQ ORA ?{ /get-to !/<from> }
+	.&b LDZ2 INC2 !/<variable>
+
+@sel/clamp ( addr* -- addr* )
+	( min ) ;editor/buf GTH2k [ JMP SWP2 POP2 ]
+	( max ) get-eof #0001 SUB2 LTH2k [ JMP SWP2 POP2 ] JMP2r
+
+@sel/has-length ( -- t )
+	.&a LDZ2 .&b LDZ2 NEQ2 JMP2r
+
+(
+@|etc )
+
+@insert ( char -- )
+	DUP #7f LTH ?{ POP JMP2r }
+	DUP ?{ POP JMP2r }
+	sel/get-from str/cap ;editor/buf #1000 ADD2 LTH2 ?{ POP JMP2r }
+	( | convert linebreaks )
+	DUP #0d EQU #03 MUL SUB .sel/length LDZ2 #0000 EQU2 ?{ erase-sel }
+	sel/get-from STH2k #0001 SUB2 get-eof #0001 <msfr>
+	STH2kr STA
+	STH2r INC2 sel/<from> !editor/has-changed
+
+@erase ( -- )
+	.sel/length LDZ2 #0000 EQU2 ?{ erase-sel !sel/<reset> }
+	sel/get-from ;editor/buf NEQ2 [ JMP JMP2r ]
+	( ) sel/get-from #0001 SUB2 DUP2 cut-char sel/<from> !editor/has-changed
+
+@erase-sel ( -- )
+	sel/get-from get-eof .sel/length LDZ2 <msfl> !editor/has-changed
+
+@delete ( -- )
+	.sel/length LDZ2 ORA ?{
+		sel/get-from INC2k get-eof NEQ2 ?{ POP2 JMP2r }
+		cut-char editor/<reqdraw> !editor/has-changed }
+	erase-sel !sel/<reset>
+
+@get-eof ( -- addr* )
+	;editor/buf !str/cap
+
+@cut-char ( addr* -- )
+	get-eof #0001 !<msfl>
+
+(
+@|Cont )
+
+@is-selected ( addr* -- addr* f )
+	DUP2 sel/get-from LTH2 ?&false
+	DUP2 sel/get-to #0001 SUB2 GTH2 ?&false
+	#01 JMP2r
+	&false #00 JMP2r
+
+@is-sel ( a* b* -- f )
+	.sel/b LDZ2 EQU2 STH
+	.sel/a LDZ2 EQU2 STHr AND JMP2r
+
+@pos-to-line ( y* -- line )
+	#04 SFT2 NIP JMP2r
+
+@get-position ( -- addr* )
+	#0018 .Screen/x DEO2
+	#0010 .Screen/y DEO2
+	( | walk to line )
+	.Mouse/y DEI2 pos-to-line ,&line STR
+	;editor/buf
+	&>walk-line
+		.Screen/y DEI2 pos-to-line [ LIT &line $1 ] EQU ?&end-line
+		walk-char POP INC2 LDAk ?&>walk-line
+	&end-line ( walk to char )
+	.Mouse/x DEI2 #0004 SUB2 ,&x STR2
+	&>walk-char
+		.Screen/x DEI2 [ LIT2 &x $2 ] GTH2 ?&end-char
+		walk-char ?&end-char
+		INC2 LDAk ?&>walk-char &end-char JMP2r
+
+@walk-char ( addr* -- addr* lb )
+	font/char-width .Screen/x DEI2 ADD2 .Screen/x DEO2
+	( | tab )
+	LDAk #09 NEQ ?{ #00 !font/<draw-tab> }
+	( | linebreak )
+	LDAk #0a NEQ ?{ #01 #0018 !font/<draw-linebreak> }
+	#00 JMP2r
+
+(
+@|Misc )
+
+@edit-cut ( -- )
+	.sel/length LDZ2 #0001 GTH2 [ JMP JMP2r ] edit-copy erase-sel sel/<reset> !editor/has-changed
+
+@edit-copy ( -- )
+	.sel/length LDZ2 #0001 GTH2 [ JMP JMP2r ] ;dict/snarf-txt .File/name DEO2
+	.sel/length LDZ2 .File/length DEO2
+	sel/get-from .File/write DEO2
+	JMP2r
+
+@edit-paste ( -- )
+	;dict/snarf-txt file-inject !editor/has-changed
+
+@edit-print ( -- )
+	sel/get-to sel/get-from
+	&>l
+		LDAk .Console/write DEO
+		INC2 GTH2k ?&>l
+	POP2 POP2 [ LIT2 0a -Console/write ] DEO
+	JMP2r
+
+@file-inject ( name* -- )
+	DUP2 file-size ORAk ?{ POP2 POP2 JMP2r }
+	STH2
+	.File/name DEO2
+	DUP2r [ LITr -File/length ] DEO2r
+	( | erase when sel length )
+	.sel/length LDZ2 #0000 EQU2 ?{
+		sel/get-from get-eof .sel/length LDZ2 <msfl> }
+	( push right ) sel/get-from #0001 SUB2 get-eof STH2kr <msfr>
+	sel/get-from .File/read DEO2
+	sel/get-from STH2r ADD2 !sel/<from>
+
+@file-size ( path* -- size* )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	[ LIT2r 0000 ]
+	&>s
+		;&b .File/read DEO2
+		[ LIT2 00 -File/success-lb ] DEI EQU ?&eof
+		INC2r !&>s
+	&eof STH2r JMP2r
+	&b $1
+
+(
+@|Cursor )
+
+@cursor/<update> ( color addr* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 /<draw>
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	.Screen/addr DEO2
+	( >> )
+
+@cursor/<draw> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+(
+@|Font )
+
+@font/char-addr ( prev char -- addr* )
+	DUP #7e GTH ?&missing
+	DUP #20 LTH ?&blank
+	SWP #20 LTH POP #20 SUB #00 SWP #50 SFT2 ;&glyphs ADD2 JMP2r
+	&blank POP2 ;&glyphs JMP2r
+	&missing POP2 ;error-icn JMP2r
+
+@font/char-width ( addr* -- addr* width* )
+	LDAk DUP #7e GTH ?{
+		#00 SWP ;&widths ADD2 LDA #00 SWP JMP2r }
+	POP #0008 JMP2r
+
+@font/<draw-tab> ( -- )
+	.Screen/x DEI2 #0010 ADD2 .Screen/x DEO2
+	JMP2r
+
+@font/<draw-linebreak> ( x* -- )
+	.Screen/x DEO2
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	JMP2r
+
+(
+@|stdlib )
+
+@<msfl> ( b* a* len* -- )
+	STH2
+	SWP2 EQU2k ?&e
+	&>l
+		DUP2k STH2kr ADD2 LDA ROT ROT STA
+		INC2 GTH2k ?&>l
+	POP2 POP2 &e POP2r JMP2r
+
+@<msfr> ( b* a* len* -- )
+	STH2
+	EQU2k ?&e
+	&>l
+		DUP2 LDAk ROT ROT STH2kr ADD2 STA
+		#0001 SUB2 LTH2k ?&>l
+	POP2 POP2 &e POP2r JMP2r
+
+(
+@|Sidebar )
+
+@sidebar/<bind> ( -> )
+	;&on-mouse .Mouse/vector DEO2
+	BRK
+
+@sidebar/on-mouse ( -> )
+	.Mouse/x DEI2 #000f GTH2 ?editor/<bind>
+	LIT &last $1 .Mouse/state DEI DUP ,&last STR
+	( | draw cursor )
+	DUP #00 NEQ #41 ADD ;pointer/arrow-icn cursor/<update>
+	EQUk ?{
+		#0001 NEQ2 ?{ /<run>
+			BRK }
+		/<draw-state>
+		BRK }
+	POP2 BRK
+
+@sidebar/<run> ( -- )
+	editor/<step> !/<draw-down>
+
+@sidebar/<draw> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	( | fill )
+	[ LIT2 12 -Screen/auto ] DEO
+	;halftone-icn .Screen/addr DEO2
+	[ LIT2 00 -Screen/height ] DEI2 #03 SFT2 NIP SUB [ LIT2r 01 -Screen/sprite ]
+	&>times
+		DEOkr
+		INC DUP ?&>times
+	POP POP2r
+	( >> )
+
+@sidebar/<draw-state> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	;ascii-icn .Screen/addr DEO2
+	live/count ?{ ;empty-icn .Screen/addr DEO2 }
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@sidebar/<draw-down> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	;active-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+(
+@|Utils )
+
+@chr/not-word-end ( c -- t )
+	DUP LIT ", EQU ?{
+		DUP LIT ". EQU ?{
+			DUP LIT "; EQU ?{
+				DUP LIT ": EQU ?{ #20 GTH JMP2r } } } }
+	POP #00 JMP2r
+
+@str/cap ( str* -- end* )
+	LDAk ?{ JMP2r }
+	INC2 !/cap
+
+@str/seg ( a* b* -- bool )
+	STH2
+	&>ws
+		LDAk LDAkr STHr NEQ ?{ INC2r INC2 LDAk ?&>ws }
+	LDAr LITr "* EQUr LDA #00 EQU STHr AND JMP2r
+
+@str/<print-word> ( str* -- )
+	LDAk DUP #20 GTH ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !/<print-word>
+
+@live/find-name ( str* -- t )
+	STH2
+	;&ptr LDA .&buf
+	&>l
+		NEQk ?{ POP2 #00 POP2r JMP2r }
+		LDZ2k LDA2 STH2kr str/seg #00 EQU ?{ POP2 #01 POP2r JMP2r }
+		INC INC !&>l
+
+@live/scan ( str* c --str* )
+	DUP LIT "* NEQ ?{
+		POP #01 ;editor/color STA
+		JMP2r }
+	#20 GTH ?{
+		INC2k live/find-name ?{ #01 ;editor/color STA
+			JMP2r }
+		#09 ;editor/color STA }
+	JMP2r
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0a8 #f0ec #f0b9
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+@mem/<clear> ( addr* length* -- )
+	,&addr STR2
+	,&length STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 00 &length $2 0000 &addr $2 00
+
+@dict/snarf-txt ".snarf $1
+
+
+
+( @|Assets )
+
+@pointer/arrow-icn [ 80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
+
+@pointer/caret-icn [ c628 1010 1010 1010 1010 1010 1010 28c6 ]
+
+@halftone-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+@ascii-icn [
+	aa55 805f 9051 9357 aa55 02f9 0a89 cae9
+	9753 9150 9f40 aa55 eac9 8a09 fa01 aa55 ]
+
+@empty-icn [
+	aa55 805f 9050 9050 aa55 02f9 0a09 0a09
+	9050 9050 9f40 aa55 0a09 0a09 fa01 aa55 ]
+
+@active-icn [
+	aa55 805f 9057 9757 aa55 02f9 0ae9 eae9
+	9757 9750 9f40 aa55 eae9 ea09 fa01 aa55 ]
+
+@fill-icn [ ffff ffff ffff ffff ffff ffff ffff ffff ]
+
+@error-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+@blink-icn [ 8080 8080 8080 8080 8080 8080 8080 8080 ]
+
+(
+@|Font )
+
+@font/widths [
+	0000 0000 0000 0000 0009 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0405 0509 070b 0b04 0606 0708 0408 0308
+	0a05 0a0a 0a09 0a0a 0a0a 0404 0608 0609
+	0b0c 0a09 0908 080a 0a06 050a 080c 0a09
+	0909 0a09 080b 0c0e 0a0a 0804 0704 0707
+	0508 0907 0908 0508 0a04 0508 040e 0a08
+	0909 0807 060a 0a0c 080a 0705 0305 0810 ]
+	&glyphs [
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2020 2020 2020 2020 2000 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 5050 5000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0a3f 147e 2800 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1038 5450 3018 1414 1454 3810 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3f48 4849 3204 0912 2222 2100 0000
+	0000 c040 8000 0000 8040 4040 8000 0000
+	0000 1824 2428 1028 4442 4122 1c00 0000
+	0000 0000 0000 0000 c080 0080 c000 0000
+	0000 4040 4000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0010 2020 4040 4040 4040 4020 2010 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0020 1010 0808 0808 0808 0810 1020 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1054 3854 1000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1010 10fe 1010 1000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 2020 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 007e 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0002 0204 0408 0810 1020 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1e21 4040 4040 4040 4021 1e00 0000
+	0000 0000 8080 8080 8080 8000 0000 0000
+	0000 2060 2020 2020 2020 2020 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1e21 4000 0102 0408 1020 7f00 0000
+	0000 0000 8080 0000 0000 0080 8000 0000
+	0000 1e21 0101 0206 0100 0040 211e 0000
+	0000 0000 0000 0000 0080 8080 0000 0000
+	0000 0204 0812 2242 7f02 0202 0700 0000
+	0000 0000 0000 0000 8000 0000 0000 0000
+	0000 7e40 4040 7c02 0101 0101 020c 7000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	000c 1020 405e 6140 4040 4021 1e00 0000
+	0000 0000 0000 0080 8080 8000 0000 0000
+	0000 7f40 0101 0202 0404 0808 0800 0000
+	0000 8080 0000 0000 0000 0000 0000 0000
+	0000 1e21 2121 1e21 4040 4040 211e 0000
+	0000 0000 0000 0000 8080 8080 0000 0000
+	0000 1e21 4040 4040 211e 0001 021c 0000
+	0000 0000 8080 8080 8080 8000 0000 0000
+	0000 0000 0000 2000 0000 0000 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 2000 0000 0000 2020 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0008 1020 4020 1008 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 7e00 007e 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0040 2010 0810 2040 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1c22 4141 0204 0808 0800 0800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 001f 204e 5252 4d20 1e00 0000
+	0000 0000 0000 8040 4040 8000 0000 0000
+	0000 0404 0a0a 1111 203f 4040 e000 0000
+	0000 0000 0000 0000 8080 4040 e000 0000
+	0000 fc42 4141 7e41 4040 4041 fe00 0000
+	0000 0000 0000 0000 8080 8000 0000 0000
+	0000 3c42 8180 8080 8080 8142 3c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fc42 4141 4141 4141 4142 fc00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fe42 4040 4878 4840 4042 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fe42 4240 4878 4840 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3c42 8180 8083 8181 8142 3c00 0000
+	0000 0000 0000 0080 0000 0000 0000 0000
+	0000 e341 4141 417f 4141 4141 e300 0000
+	0000 8000 0000 0000 0000 0000 8000 0000
+	0000 7020 2020 2020 2020 2020 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7020 2020 2020 2020 2020 2020 20c0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 e742 4448 5060 5048 4442 e700 0000
+	0000 8000 0000 0000 0000 0000 8000 0000
+	0000 e040 4040 4040 4040 4042 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 c040 6060 5151 4a4a 4444 e000 0000
+	0000 6040 c0c0 4040 4040 4040 e000 0000
+	0000 e361 5151 4949 4545 4343 e100 0000
+	0000 8000 0000 0000 0000 0000 0000 0000
+	0000 3c42 8181 8181 8181 8142 3c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fc42 4141 4142 7c40 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3c42 8181 8181 8181 8142 3c08 0600
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fc42 4141 4142 7c44 4241 e300 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 3d43 8180 6018 0681 81c2 bc00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fe92 1010 1010 1010 1010 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 e140 4040 4040 4040 4021 1e00 0000
+	0000 c080 8080 8080 8080 8000 0000 0000
+	0000 e040 4020 2011 110a 0a04 0400 0000
+	0000 e040 4080 8000 0000 0000 0000 0000
+	0000 ee44 4422 2215 1515 0808 0800 0000
+	0000 3810 1020 2040 4040 8080 8000 0000
+	0000 e341 2222 1408 1422 2241 e300 0000
+	0000 8000 0000 0000 0000 0000 8000 0000
+	0000 e341 2222 1414 0808 0808 1c00 0000
+	0000 8000 0000 0000 0000 0000 0000 0000
+	0000 fe82 0408 0810 2020 4082 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0060 4040 4040 4040 4040 4040 4060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 4020 2010 1008 0804 0400 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0060 2020 2020 2020 2020 2020 2060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0010 2844 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 4020 1000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 448c 3444 848c 7200 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 40c0 405c 6241 4141 4162 5c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 4480 8080 8044 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0602 023a 4682 8282 8247 3a00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 4482 fe80 8244 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3040 40e0 4040 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 023a 4482 8244 7880 7c82 827c
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 40c0 405c 6241 4141 4141 e300 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 0040 0040 c040 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0020 0020 6020 2020 2020 2020 4080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 40c0 404c 4850 6050 4844 ee00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 c040 4040 4040 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0058 e542 4242 4242 e700 0000
+	0000 0000 00c0 2010 1010 1010 3800 0000
+	0000 0000 005c e241 4141 4141 e300 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 0000 0038 4482 8282 8244 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00dc 6241 4141 4162 5c40 40e0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003a 4682 8282 8246 3a02 0207
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 005c e240 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0078 8480 6018 0484 7800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 40e0 4040 4040 4048 3000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00c3 4141 4141 4123 1d00 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 0000 00e3 4122 2214 1408 0800 0000
+	0000 0000 0080 0000 0000 0000 0000 0000
+	0000 0000 00e0 4444 2a2a 1111 1100 0000
+	0000 0000 00e0 4040 8080 0000 0000 0000
+	0000 0000 00ee 4428 1010 2844 ee00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00e3 4122 2214 1408 0810 3020
+	0000 0000 0080 0000 0000 0000 0000 0000
+	0000 0000 00fc 8408 1020 4084 fc00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 2020 2020 4020 2020 2020 1000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4040 4040 4040 4040 4040 4040 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 2020 2020 1020 2020 2020 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0032 4c00 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+(
+@|Buffers )
+
+@anon-name "* $1
+
+@excited/buf $40
+
+@dirty/buf $40
+
+@dict/buf $4000
+
+@list/buf ( [car* cdr*] )
+	$400
+
+@mind/buf $4000
+
+@editor/buf $400
+
