@@ -24,7 +24,7 @@
 	@secto $2
 	@secprog $2
 	@frames/a $2 &b $2
-	@controls/repeat $1 &shuffle $1
+	@controls/repeat $1 &shuffle $1 &volume $1
 	@path/buf $2 &null $80
 
 |100
@@ -44,6 +44,7 @@
 	;dict/home-path path/<set>
 	dir/<refresh>
 	prng/<init>
+	#05 controls/<set-volume>
 	( | unlock )
 	;on-mouse-body .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
@@ -54,7 +55,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "14 20 "Nov 20 "2025 $2
+	( date ) "6 20 "Jan 20 "2026 $2
 
 (
 @|macros )
@@ -119,18 +120,38 @@
 	BRK
 
 	&controls ( y* -> )
-	POP2 .Mouse/x DEI2 #0010 SUB2 #05 SFT2 NIP
-	( > ) DUP #01 NEQ ?{ controls/<toggle-repeat>
-		;on-mouse-locked .Mouse/vector DEO2 }
-	( > ) DUP #02 NEQ ?{ <skip-prev>
-		;on-mouse-locked .Mouse/vector DEO2 }
-	( > ) DUP #03 NEQ ?{ <send-pause>
-		;on-mouse-locked .Mouse/vector DEO2 }
-	( > ) DUP #04 NEQ ?{ <skip-next>
-		;on-mouse-locked .Mouse/vector DEO2 }
-	( > ) DUP #05 NEQ ?{ controls/<toggle-shuffle>
-		;on-mouse-locked .Mouse/vector DEO2 }
-	POP BRK
+	POP2 .Mouse/x DEI2
+	( | handlers )
+	DUP2 #0024 GTH2 ?{ POP2 BRK }
+	DUP2 #003c GTH2 ?{
+		controls/<toggle-repeat>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	DUP2 #0050 GTH2 ?{
+		controls/<decr-volume>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	DUP2 #0070 GTH2 ?{
+		<skip-prev>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	DUP2 #0080 GTH2 ?{
+		<send-pause>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	DUP2 #00ac GTH2 ?{
+		<skip-next>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	DUP2 #00c4 GTH2 ?{
+		controls/<incr-volume>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	DUP2 #00d8 GTH2 ?{
+		controls/<toggle-shuffle>
+		;on-mouse-locked .Mouse/vector DEO2
+		POP2 BRK }
+	POP2 BRK
 
 	&seeker ( -> )
 	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 <seek>
@@ -247,6 +268,14 @@
 	[ LIT2 02 -paused ] LDZ ORA .paused STZ
 	;dict/pause-cmd str/<print> !controls/<draw-play>
 
+@<send-volume> ( vol -- )
+	;dict/volume str/<print>
+	#00 SWP #14 MUL dec/<print>
+	#0a18 DEO
+	JMP2r
+
+@dict/volume "VOLUME 20 $1
+
 @<move> ( mod -- )
 	.selection LDZ ADD
 	( top ) INCk ?{ POP JMP2r }
@@ -346,7 +375,7 @@
 
 @controls/<draw-shuffle> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
-	#00b0 .Screen/x DEO2
+	#00c8 .Screen/x DEO2
 	#0058 .Screen/y DEO2
 	[ LIT2 00 -&shuffle ] LDZ #50 SFT2 ;&shuffle-icn ADD2 .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
@@ -358,10 +387,38 @@
 
 @controls/<draw-repeat> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
-	#0040 .Screen/x DEO2
+	#0028 .Screen/x DEO2
 	#0058 .Screen/y DEO2
 	[ LIT2 00 -&repeat ] LDZ #50 SFT2 ;&repeat-icn ADD2 .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@controls/<decr-volume> ( -- )
+	.&volume LDZ
+	( clamp ) DUP #00 NEQ ?{ POP JMP2r }
+	#01 SUB !/<set-volume>
+
+@controls/<incr-volume> ( -- )
+	.&volume LDZ
+	( clamp ) DUP #05 LTH ?{ POP JMP2r }
+	INC DUP !/<set-volume>
+
+@controls/<set-volume> ( volume -- )
+	DUP .&volume STZ
+	.playing LDZ ?{ POP JMP2r }
+	<send-volume> !/<draw-volume>
+
+@controls/<draw-volume> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0040 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	[ LIT2 00 -&volume ] LDZ #50 SFT2 ;&volume-icn ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEOk
+	( | incr )
+	#00b0 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	[ LIT2 00 -&volume ] LDZ INC #50 SFT2 ;&volume-icn ADD2 .Screen/addr DEO2
+	DEOk DEO
 	JMP2r
 
 @progress/<draw> ( -- )
@@ -787,6 +844,7 @@
 	track/<draw-album>
 	controls/<draw-repeat>
 	controls/<draw-prev>
+	controls/<draw-volume>
 	controls/<draw-play>
 	controls/<draw-next>
 	controls/<draw-shuffle>
@@ -1267,6 +1325,7 @@
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
 @cursor/down-chr [
 	0000 0000 0000 0817 0000 0000 0000 0008
 	0000 0000 0000 00c0 0000 0000 0000 0000
@@ -1276,12 +1335,15 @@
 @progress/left-chr [
 	0000 030f 1f1f 3f3f 0000 0003 0f0f 1f1f
 	3f3f 1f1f 0f03 0000 1f1f 0f0f 0300 0000 ]
+
 @progress/middle-chr [
 	0000 ffff ffff ffff 0000 00ff ffff ffff
 	ffff ffff ffff 0000 ffff ffff ff00 0000 ]
+
 @progress/right-chr [
 	0000 c0f0 f8f8 fcfc 0000 00c0 f0f0 f8f8
 	fcfc f8f8 f0c0 0000 f8f8 f0f0 c000 0000 ]
+
 @progress/fill-icn [
 	0000 0003 0f0f 1f1f 1f1f 0f0f 0300 0000
 	0000 00c0 f0f0 f8f8 f8f8 f0f0 c000 0000 ]
@@ -1326,11 +1388,13 @@
 	0008 183f 3f18 0800 0008 18f8 f000 0000
 	0000 000f 1f18 1818 0010 18fc fc18 1008
 	1818 181f 0f00 0000 1818 18f8 f000 0000 ]
+
 @controls/shuffle-icn [
 	0000 001f 1f00 0000 0010 18fc fc18 1000
 	0000 001f 1f00 0000 0010 18fc fc18 1000
 	0000 001f 1f01 0101 0010 187c bc98 9080
 	0101 011d 1e00 0000 8090 98fc fc18 1000 ]
+
 @controls/pause-icn [
 	0000 001e 1e1e 1e1e 0000 0078 7878 7878
 	1e1e 1e1e 1e00 0000 7878 7878 7800 0000
@@ -1338,9 +1402,27 @@
 	0f0f 0f0f 0c00 0000 fcf0 c000 0000 0000
 	0000 000c 0b08 0808 0000 0000 00c0 300c
 	0808 080b 0c00 0000 0c30 c000 0000 0000 ]
+
 @controls/next-icn [
 	0000 0018 1c1e 1f1f 0000 0018 1818 1898
 	1f1f 1e1c 1800 0000 9818 1818 1800 0000 ]
+
+@controls/volume-icn [
+	0000 0000 0103 1f1f 0000 00c0 c0c0 c0c0
+	1f1f 0301 0000 0000 c0c0 c0c0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 c0c0 c0d0
+	1f1f 0301 0000 0000 d0c0 c0c0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 c0d0 d0c8
+	1f1f 0301 0000 0000 c8d0 d0c0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 d0c8 c8c4
+	1f1f 0301 0000 0000 c4c8 c8d0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 c8c4 c4d2
+	1f1f 0301 0000 0000 d2c4 c4c8 c000 0000
+	0000 0000 0103 1f1f 0000 00c8 c4d4 d2ca
+	1f1f 0301 0000 0000 cad2 d4c4 c800 0000
+	0000 0000 0103 1f1f 0000 00c4 d2ca c9c5
+	1f1f 0301 0000 0000 c5c9 cad2 c400 0000 ]
+
 @controls/prev-icn [
 	0000 0018 1818 1819 0000 0018 3878 f8f8
 	1918 1818 1800 0000 f8f8 7838 1800 0000 ]
