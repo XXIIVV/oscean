@@ -1,16 +1,19 @@
 #include <stdio.h>
 
-static unsigned int console_vector;
-static unsigned char ram[0x10000], dev[0x100], ptr[2], stk[2][0x100];
+typedef unsigned char Uint8;
+typedef unsigned short Uint16;
 
-static unsigned char
-emu_dei(const unsigned char port)
+static unsigned int console_vector;
+static Uint8 ram[0x10000], dev[0x100], ptr[2], stk[2][0x100];
+
+static Uint8
+emu_dei(const Uint8 port)
 {
 	return dev[port];
 }
 
 static void
-emu_deo(const unsigned char port, const unsigned char value)
+emu_deo(const Uint8 port, const Uint8 value)
 {
 	dev[port] = value;
 	switch(port) {
@@ -21,9 +24,11 @@ emu_deo(const unsigned char port, const unsigned char value)
 }
 
 #define REM *sp -= 1 + _2;
-#define DEC stk[_r][--(*sp)]
-#define INC stk[_r][(*sp)++]
+#define DEC s[--(*sp)]
+#define INC s[(*sp)++]
 #define MOV { if(_2) pc = a; else pc += (signed char)a; }
+#define JMP(x) { c = ram[pc] << 8, c |= ram[pc+1]; pc += x + 2; }
+#define STK(m) Uint8 *s = stk[m], *sp = &ptr[m]; 
 #define PO1(o) o = DEC;
 #define PO2(o) { PO1(o) o |= DEC << 8; }
 #define POx(o) { PO1(o) if(_2) o |= DEC << 8; }
@@ -38,34 +43,32 @@ emu_deo(const unsigned char port, const unsigned char value)
 #define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m]; PUT(r)
 
 #define OPC(opc, A, B) {\
-	case 0x00|opc: {const int _2=0,_r=0;unsigned char *sp = &ptr[_r];A B} goto step;\
-	case 0x20|opc: {const int _2=1,_r=0;unsigned char *sp = &ptr[_r];A B} goto step;\
-	case 0x40|opc: {const int _2=0,_r=1;unsigned char *sp = &ptr[_r];A B} goto step;\
-	case 0x60|opc: {const int _2=1,_r=1;unsigned char *sp = &ptr[_r];A B} goto step;\
-	case 0x80|opc: {const int _2=0,_r=0;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step;\
-	case 0xa0|opc: {const int _2=1,_r=0;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step;\
-	case 0xc0|opc: {const int _2=0,_r=1;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step;\
-	case 0xe0|opc: {const int _2=1,_r=1;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step; }
+	case 0x00|opc: {const int _2=0,_r=0;STK(_r)A B} goto step;\
+	case 0x20|opc: {const int _2=1,_r=0;STK(_r)A B} goto step;\
+	case 0x40|opc: {const int _2=0,_r=1;STK(_r)A B} goto step;\
+	case 0x60|opc: {const int _2=1,_r=1;STK(_r)A B} goto step;\
+	case 0x80|opc: {const int _2=0,_r=0;STK(_r)int k=*sp;A *sp=k;B} goto step;\
+	case 0xa0|opc: {const int _2=1,_r=0;STK(_r)int k=*sp;A *sp=k;B} goto step;\
+	case 0xc0|opc: {const int _2=0,_r=1;STK(_r)int k=*sp;A *sp=k;B} goto step;\
+	case 0xe0|opc: {const int _2=1,_r=1;STK(_r)int k=*sp;A *sp=k;B} goto step; }
 
-#define LIT2(m) { unsigned char *s = stk[m]; s[ptr[m]++] = ram[pc++]; s[ptr[m]++] = ram[pc++]; }
-#define JUMP(x) { c = ram[pc++] << 8, c |= ram[pc++]; pc += x; }
 
 static unsigned int
-uxn_eval(unsigned short pc)
+uxn_eval(Uint16 pc)
 {
-	unsigned short a, b, c, x[2], y[2], z[2];
+	Uint16 a, b, c, x[2], y[2], z[2];
 step:
 	switch(ram[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: if(stk[0][--ptr[0]]) JUMP(c) else pc += 2; goto step;
-	/* JMI */ case 0x40: JUMP(c) goto step;
-	/* JSI */ case 0x60: unsigned char *sp = &ptr[1]; JUMP(0) stk[1][(*sp)++] = pc >> 8, stk[1][(*sp)++]= pc, pc += c; goto step;
-	/* LI2 */ case 0xa0: LIT2(0) goto step;
-	/* LIT */ case 0x80: stk[0][ptr[0]++] = ram[pc++]; goto step;
-	/* L2r */ case 0xe0: LIT2(1) goto step;
-	/* LIr */ case 0xc0: stk[1][ptr[1]++] = ram[pc++]; goto step;
+	/* JCI */ case 0x20: if(stk[0][--ptr[0]]) JMP(c) else pc += 2; goto step;
+	/* JMI */ case 0x40: JMP(c) goto step;
+	/* JSI */ case 0x60: { STK(1) JMP(0) INC = pc >> 8; INC = pc; pc += c; } goto step;
+	/* LI2 */ case 0xa0: { STK(0) INC = ram[pc++]; INC = ram[pc++]; } goto step;
+	/* LIT */ case 0x80: { stk[0][ptr[0]++] = ram[pc++]; } goto step;
+	/* L2r */ case 0xe0: { STK(1) INC = ram[pc++]; INC = ram[pc++]; } goto step;
+	/* LIr */ case 0xc0: { stk[1][ptr[1]++] = ram[pc++]; } goto step;
 	/* INC */ OPC(0x01,POx(a),PUx(a + 1))
-	/* POP */ OPC(0x02,REM,{})
+	/* POP */ OPC(0x02,REM,(void)s;)
 	/* NIP */ OPC(0x03,GOT(x) REM,PUT(x))
 	/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x) PUT(y))
 	/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y) PUT(x) PUT(z))
