@@ -9,7 +9,7 @@
 #include <poll.h>
 
 /*
-Copyright (c) 2021-2026 Devine Lu Linvega, Andrew Alderwick, 
+Copyright (c) 2021-2026 Devine Lu Linvega, Andrew Alderwick,
 Andrew Richards, Eiríkr Åsheim, Sigrid Solveig Haflínudóttir
 
 Permission to use, copy, modify, and distribute this software for any
@@ -49,35 +49,35 @@ static Window window;
 Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100], emu_dei(const Uint8 port);
 void emu_deo(const Uint8 port, const Uint8 value);
 
-#define REM *sp -= 1 + _2;
-#define DEC s[--(*sp)]
-#define INC s[(*sp)++]
+#define REM *p -= 1 + _2;
+#define DEC s[--(*p)]
+#define INC s[(*p)++]
 #define MOV { if(_2) pc = a; else pc += (signed char)a; }
-#define JMP(x) { c = ram[pc] << 8, c |= ram[pc+1]; pc += x + 2; }
-#define STK(m) Uint8 *s = stk[m], *sp = &ptr[m];
+#define JMP(x) { c = ram[pc] << 8, c |= ram[pc + 1]; pc += x + 2; }
+#define STK(m) Uint8 *s = stk[m], *p = &ptr[m];
 #define PO1(o) o = DEC;
 #define PO2(o) { PO1(o) o |= DEC << 8; }
 #define POx(o) { PO1(o) if(_2) o |= DEC << 8; }
-#define RP1(i) stk[!_r][ptr[!_r]++] = i;
+#define POt(o) if(_2) PO1(o[1]) PO1(o[0])
 #define PU1(i) INC = i;
+#define PU2(i) PU1(i >> 8) PU1(i)
 #define PUx(i) c = (i); if(_2) PU1(c >> 8) PU1(c)
-#define GOT(o) if(_2) PO1(o[1]) PO1(o[0])
-#define PUT(i) PU1(i[0]) if(_2) PU1(i[1])
+#define PUt(i) PU1(i[0]) if(_2) PU1(i[1])
+#define PUr(i) stk[!_r][ptr[!_r]++] = i;
 #define DEO(o,r) emu_deo(o, r[0]); if(_2) emu_deo(o + 1, r[1]);
-#define DEI(i,r) r[0] = emu_dei(i); if(_2) r[1] = emu_dei(i + 1); PUT(r)
+#define DEI(i,r) r[0] = emu_dei(i); if(_2) r[1] = emu_dei(i + 1);
 #define POK(o,r,m) ram[o] = r[0]; if(_2) ram[(o + 1) & m] = r[1];
-#define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m]; PUT(r)
+#define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m];
 
 #define OPC(opc, A, B) {\
 	case 0x00|opc: {const int _2=0,_r=0;STK(_r)A B} goto step;\
 	case 0x20|opc: {const int _2=1,_r=0;STK(_r)A B} goto step;\
 	case 0x40|opc: {const int _2=0,_r=1;STK(_r)A B} goto step;\
 	case 0x60|opc: {const int _2=1,_r=1;STK(_r)A B} goto step;\
-	case 0x80|opc: {const int _2=0,_r=0;STK(_r)int k=*sp;A *sp=k;B} goto step;\
-	case 0xa0|opc: {const int _2=1,_r=0;STK(_r)int k=*sp;A *sp=k;B} goto step;\
-	case 0xc0|opc: {const int _2=0,_r=1;STK(_r)int k=*sp;A *sp=k;B} goto step;\
-	case 0xe0|opc: {const int _2=1,_r=1;STK(_r)int k=*sp;A *sp=k;B} goto step; }
-
+	case 0x80|opc: {const int _2=0,_r=0;STK(_r)int k=*p; A *p=k;B} goto step;\
+	case 0xa0|opc: {const int _2=1,_r=0;STK(_r)int k=*p; A *p=k;B} goto step;\
+	case 0xc0|opc: {const int _2=0,_r=1;STK(_r)int k=*p; A *p=k;B} goto step;\
+	case 0xe0|opc: {const int _2=1,_r=1;STK(_r)int k=*p; A *p=k;B} goto step;}
 
 static unsigned int
 uxn_eval(Uint16 pc)
@@ -88,34 +88,34 @@ step:
 	/* BRK */ case 0x00: return 1;
 	/* JCI */ case 0x20: if(stk[0][--ptr[0]]) JMP(c) else pc += 2; goto step;
 	/* JMI */ case 0x40: JMP(c) goto step;
-	/* JSI */ case 0x60: { STK(1) JMP(0) INC = pc >> 8; INC = pc; pc += c; } goto step;
+	/* JSI */ case 0x60: { STK(1) JMP(0) PU2(pc) pc += c; } goto step;
 	/* LI2 */ case 0xa0: { STK(0) INC = ram[pc++]; INC = ram[pc++]; } goto step;
 	/* LIT */ case 0x80: { stk[0][ptr[0]++] = ram[pc++]; } goto step;
 	/* L2r */ case 0xe0: { STK(1) INC = ram[pc++]; INC = ram[pc++]; } goto step;
 	/* LIr */ case 0xc0: { stk[1][ptr[1]++] = ram[pc++]; } goto step;
 	/* INC */ OPC(0x01,POx(a),PUx(a + 1))
 	/* POP */ OPC(0x02,REM,(void)s;)
-	/* NIP */ OPC(0x03,GOT(x) REM,PUT(x))
-	/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x) PUT(y))
-	/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y) PUT(x) PUT(z))
-	/* DUP */ OPC(0x06,GOT(x),PUT(x) PUT(x))
-	/* OVR */ OPC(0x07,GOT(x) GOT(y),PUT(y) PUT(x) PUT(y))
+	/* NIP */ OPC(0x03,POt(x) REM,PUt(x))
+	/* SWP */ OPC(0x04,POt(x) POt(y),PUt(x) PUt(y))
+	/* ROT */ OPC(0x05,POt(x) POt(y) POt(z),PUt(y) PUt(x) PUt(z))
+	/* DUP */ OPC(0x06,POt(x),PUt(x) PUt(x))
+	/* OVR */ OPC(0x07,POt(x) POt(y),PUt(y) PUt(x) PUt(y))
 	/* EQU */ OPC(0x08,POx(a) POx(b),PU1(b == a))
 	/* NEQ */ OPC(0x09,POx(a) POx(b),PU1(b != a))
 	/* GTH */ OPC(0x0a,POx(a) POx(b),PU1(b > a))
 	/* LTH */ OPC(0x0b,POx(a) POx(b),PU1(b < a))
 	/* JMP */ OPC(0x0c,POx(a),MOV)
 	/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) MOV)
-	/* JSR */ OPC(0x0e,POx(a),RP1(pc >> 8) RP1(pc) MOV)
-	/* STH */ OPC(0x0f,GOT(x),RP1(x[0]) if(_2) RP1(x[1]))
-	/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff))
-	/* STZ */ OPC(0x11,PO1(a) GOT(y),POK(a, y, 0xff))
-	/* LDR */ OPC(0x12,PO1(a),PEK(pc + (signed char)a, x, 0xffff))
-	/* STR */ OPC(0x13,PO1(a) GOT(y),POK(pc + (signed char)a, y, 0xffff))
-	/* LDA */ OPC(0x14,PO2(a),PEK(a, x, 0xffff))
-	/* STA */ OPC(0x15,PO2(a) GOT(y),POK(a, y, 0xffff))
-	/* DEI */ OPC(0x16,PO1(a),DEI(a, x))
-	/* DEO */ OPC(0x17,PO1(a) GOT(y),DEO(a, y))
+	/* JSR */ OPC(0x0e,POx(a),PUr(pc >> 8) PUr(pc) MOV)
+	/* STH */ OPC(0x0f,POt(x),PUr(x[0]) if(_2) PUr(x[1]))
+	/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff) PUt(x))
+	/* STZ */ OPC(0x11,PO1(a) POt(y),POK(a, y, 0xff))
+	/* LDR */ OPC(0x12,PO1(a),PEK(pc + (signed char)a, x, 0xffff) PUt(x))
+	/* STR */ OPC(0x13,PO1(a) POt(y),POK(pc + (signed char)a, y, 0xffff))
+	/* LDA */ OPC(0x14,PO2(a),PEK(a, x, 0xffff) PUt(x))
+	/* STA */ OPC(0x15,PO2(a) POt(y),POK(a, y, 0xffff))
+	/* DEI */ OPC(0x16,PO1(a),DEI(a, x) PUt(x))
+	/* DEO */ OPC(0x17,PO1(a) POt(y),DEO(a, y))
 	/* ADD */ OPC(0x18,POx(a) POx(b),PUx(b + a))
 	/* SUB */ OPC(0x19,POx(a) POx(b),PUx(b - a))
 	/* MUL */ OPC(0x1a,POx(a) POx(b),PUx(b * a))
@@ -211,35 +211,15 @@ system_deo_expansion(void)
 		fprintf(stderr, "Unknown command: %s\n", &ram[exp]);
 }
 
-Uint8
-system_dei_wst(void)
-{
-	return ptr[0];
-}
+/* clang-format off */
 
-Uint8
-system_dei_rst(void)
-{
-	return ptr[1];
-}
+Uint8 system_dei_wst(void) { return ptr[0]; }
+Uint8 system_dei_rst(void) { return ptr[1]; }
+void system_deo_wst(void) { ptr[0] = dev[4]; }
+void system_deo_rst(void) { ptr[0] = dev[4]; }
+void system_deo_print(void) { system_print("WST", 0), system_print("RST", 1); }
 
-void
-system_deo_wst(void)
-{
-	ptr[0] = dev[4];
-}
-
-void
-system_deo_rst(void)
-{
-	ptr[0] = dev[4];
-}
-
-void
-system_deo_print(void)
-{
-	system_print("WST", 0), system_print("RST", 1);
-}
+/* clang-format on */
 
 /*
 @|Console ----------------------------------------------------------- */
@@ -436,49 +416,17 @@ console_close(void)
 	kill_child();
 }
 
-Uint8
-console_dei_childlive(void)
-{
-	check_child();
-	return dev[CMD_LIVE];
-}
+/* clang-format off */
 
-Uint8
-console_dei_childexit(void)
-{
-	check_child();
-	return dev[CMD_EXIT];
-}
+Uint8 console_dei_childlive(void) { check_child(); return dev[CMD_LIVE]; }
+Uint8 console_dei_childexit(void) { check_child(); return dev[CMD_EXIT]; }
+void console_deo_vector(void) { console_vector = PEEK2(&dev[0x10]); }
+void console_deo_stdout(void) { fputc(dev[0x18], stdout), fflush(stdout); }
+void console_deo_stderr(void) { fputc(dev[0x19], stderr), fflush(stderr); }
+void console_deo_hb(void) { fprintf(stderr, "%02x", dev[0x1a]); }
+void console_deo_lb(void) { fprintf(stderr, "%02x", dev[0x1b]); }
 
-void
-console_deo_vector(void)
-{
-	console_vector = PEEK2(&dev[0x10]);
-}
-
-void
-console_deo_stdout(void)
-{
-	fputc(dev[0x18], stdout), fflush(stdout);
-}
-
-void
-console_deo_stderr(void)
-{
-	fputc(dev[0x19], stderr), fflush(stderr);
-}
-
-void
-console_deo_hb(void)
-{
-	fprintf(stderr, "%02x", dev[0x1a]);
-}
-
-void
-console_deo_lb(void)
-{
-	fprintf(stderr, "%02x", dev[0x1b]);
-}
+/* clang-format on */
 
 /*
 @|Screen ------------------------------------------------------------ */
@@ -651,88 +599,10 @@ screen_deo_pixel(void)
 	}
 }
 
-Uint8
-screen_dei_rxhb(void)
-{
-	return rX >> 8;
-}
-
-Uint8
-screen_dei_rxlb(void)
-{
-	return rX;
-}
-
-Uint8
-screen_dei_ryhb(void)
-{
-	return rY >> 8;
-}
-
-Uint8
-screen_dei_rylb(void)
-{
-	return rY;
-}
-
-Uint8
-screen_dei_rahb(void)
-{
-	return rA >> 8;
-}
-
-Uint8
-screen_dei_ralb(void)
-{
-	return rA;
-}
-
-void
-screen_deo_vector(void)
-{
-	screen_vector = PEEK2(&dev[0x20]);
-}
-
-void
-screen_deo_width(void)
-{
-	screen_resize(PEEK2(&dev[0x22]) & 0xfff, screen_height & 0xfff);
-}
-
-void
-screen_deo_height(void)
-{
-	screen_resize(screen_width & 0xfff, PEEK2(&dev[0x24]) & 0xfff);
-}
-
-void
-screen_deo_auto(void)
-{
-	rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2;
-}
-
-void
-screen_deo_x(void)
-{
-	rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX);
-}
-
-void
-screen_deo_y(void)
-{
-	rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY);
-}
-
-void
-screen_deo_addr(void)
-{
-	rA = (dev[0x2c] << 8) | dev[0x2d];
-}
-
 /* clang-format off */
 
-#define PUT_PIXEL(n, op) if(op | color) dst[n] = (dst[n] & layer_mask) | table[color]; 
-#define GET_COLOR(depth) const int color = depth ? (((ch1 >> qx) & 1) | ((ch2 >> qx) & 2)) : (ch1 >> qx) & 1; 
+#define PUT_PIXEL(n, op) if(op | color) dst[n] = (dst[n] & layer_mask) | table[color];
+#define GET_COLOR(depth) const int color = depth ? (((ch1 >> qx) & 1) | ((ch2 >> qx) & 2)) : (ch1 >> qx) & 1;
 
 #define PUT_PIXELS(n,op,depth,c1,c2) {\
 	int qx = qfx; const int ch1 = c1, ch2 = c2;\
@@ -815,6 +685,24 @@ screen_deo_sprite(void)
 	if(rMX) rX += rDX * fx;
 	if(rMY) rY += rDY * fy;
 }
+
+/* clang-format off */
+
+Uint8 screen_dei_rxhb(void) { return rX >> 8; }
+Uint8 screen_dei_rxlb(void) { return rX; }
+Uint8 screen_dei_ryhb(void) { return rY >> 8; }
+Uint8 screen_dei_rylb(void) { return rY; }
+Uint8 screen_dei_rahb(void) { return rA >> 8; }
+Uint8 screen_dei_ralb(void) { return rA; }
+void screen_deo_vector(void) { screen_vector = PEEK2(&dev[0x20]); }
+void screen_deo_width(void) { screen_resize(PEEK2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
+void screen_deo_height(void) { screen_resize(screen_width & 0xfff, PEEK2(&dev[0x24]) & 0xfff); }
+void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; }
+void screen_deo_x(void) { rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX); }
+void screen_deo_y(void) { rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY); }
+void screen_deo_addr(void) { rA = (dev[0x2c] << 8) | dev[0x2d]; }
+
+/* clang-format on */
 
 /*
 @|Controller -------------------------------------------------------- */
@@ -1137,77 +1025,22 @@ file_success(unsigned int port, unsigned int value)
 	dev[port] = value >> 8, dev[port + 1] = value;
 }
 
-void
-filea_deo_vector(void)
-{
-	rL1 = PEEK2(&dev[0xaa]);
-}
+/* clang-format off */
 
-void
-filea_deo_stat(void)
-{
-	file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1));
-}
+void filea_deo_vector(void) { rL1 = PEEK2(&dev[0xaa]); }
+void filea_deo_stat(void) { file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1)); }
+void filea_deo_delete(void) { file_success(0xa2, file_delete(0)); }
+void filea_deo_name(void) { file_success(0xa2, file_init(0, PEEK2(&dev[0xa8]))); }
+void filea_deo_read(void) { file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1)); }
+void filea_deo_write(void) { file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7])); }
+void fileb_deo_vector(void) { rL2 = PEEK2(&dev[0xba]); }
+void fileb_deo_stat(void) { file_success(0xb2, file_stat(0, PEEK2(&dev[0xb4]), rL2)); }
+void fileb_deo_delete(void) { file_success(0xb2, file_delete(0)); }
+void fileb_deo_name(void) { file_success(0xb2, file_init(0, PEEK2(&dev[0xb8]))); }
+void fileb_deo_read(void) { file_success(0xb2, file_read(0, PEEK2(&dev[0xbc]), rL2)); }
+void fileb_deo_write(void) { file_success(0xb2, file_write(0, PEEK2(&dev[0xbe]), rL2, dev[0xb7])); }
 
-void
-filea_deo_delete(void)
-{
-	file_success(0xa2, file_delete(0));
-}
-
-void
-filea_deo_name(void)
-{
-	file_success(0xa2, file_init(0, PEEK2(&dev[0xa8])));
-}
-
-void
-filea_deo_read(void)
-{
-	file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1));
-}
-
-void
-filea_deo_write(void)
-{
-	file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7]));
-}
-
-void
-fileb_deo_vector(void)
-{
-	rL2 = PEEK2(&dev[0xba]);
-}
-
-void
-fileb_deo_stat(void)
-{
-	file_success(0xb2, file_stat(0, PEEK2(&dev[0xb4]), rL2));
-}
-
-void
-fileb_deo_delete(void)
-{
-	file_success(0xb2, file_delete(0));
-}
-
-void
-fileb_deo_name(void)
-{
-	file_success(0xb2, file_init(0, PEEK2(&dev[0xb8])));
-}
-
-void
-fileb_deo_read(void)
-{
-	file_success(0xb2, file_read(0, PEEK2(&dev[0xbc]), rL2));
-}
-
-void
-fileb_deo_write(void)
-{
-	file_success(0xb2, file_write(0, PEEK2(&dev[0xbe]), rL2, dev[0xb7]));
-}
+/* clang-format on */
 
 /*
 @|Datetime ---------------------------------------------------------- */
@@ -1226,82 +1059,21 @@ datetime_update(void)
 		datetime_t = &datetime_zt;
 }
 
-Uint8
-datetime_dei_yhb(void)
-{
-	datetime_update();
-	return (datetime_t->tm_year + 1900) >> 8;
-}
+/* clang-format off */
 
-Uint8
-datetime_dei_ylb(void)
-{
-	datetime_update();
-	return (datetime_t->tm_year + 1900);
-}
+Uint8 datetime_dei_yhb(void) { datetime_update(); return (datetime_t->tm_year + 1900) >> 8; }
+Uint8 datetime_dei_ylb(void) { datetime_update(); return (datetime_t->tm_year + 1900); }
+Uint8 datetime_dei_mon(void) { datetime_update(); return datetime_t->tm_mon; }
+Uint8 datetime_dei_day(void) { datetime_update(); return datetime_t->tm_mday; }
+Uint8 datetime_dei_hou(void) { datetime_update(); return datetime_t->tm_hour; }
+Uint8 datetime_dei_min(void) { datetime_update(); return datetime_t->tm_min; }
+Uint8 datetime_dei_sec(void) { datetime_update(); return datetime_t->tm_sec; }
+Uint8 datetime_dei_wday(void) { datetime_update(); return datetime_t->tm_wday; }
+Uint8 datetime_dei_ydayhb(void) { datetime_update(); return datetime_t->tm_yday >> 8; }
+Uint8 datetime_dei_ydaylb(void) { datetime_update(); return datetime_t->tm_yday; }
+Uint8 datetime_dei_dst(void) { datetime_update(); return datetime_t->tm_isdst; }
 
-Uint8
-datetime_dei_mon(void)
-{
-	datetime_update();
-	return datetime_t->tm_mon;
-}
-
-Uint8
-datetime_dei_day(void)
-{
-	datetime_update();
-	return datetime_t->tm_mday;
-}
-
-Uint8
-datetime_dei_hou(void)
-{
-	datetime_update();
-	return datetime_t->tm_hour;
-}
-
-Uint8
-datetime_dei_min(void)
-{
-	datetime_update();
-	return datetime_t->tm_min;
-}
-
-Uint8
-datetime_dei_sec(void)
-{
-	datetime_update();
-	return datetime_t->tm_sec;
-}
-
-Uint8
-datetime_dei_wday(void)
-{
-	datetime_update();
-	return datetime_t->tm_wday;
-}
-
-Uint8
-datetime_dei_ydayhb(void)
-{
-	datetime_update();
-	return datetime_t->tm_yday >> 8;
-}
-
-Uint8
-datetime_dei_ydaylb(void)
-{
-	datetime_update();
-	return datetime_t->tm_yday;
-}
-
-Uint8
-datetime_dei_dst(void)
-{
-	datetime_update();
-	return datetime_t->tm_isdst;
-}
+/* clang-format on */
 
 /*
 @|Core -------------------------------------------------------------- */
