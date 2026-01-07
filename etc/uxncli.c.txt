@@ -20,6 +20,11 @@ cc -DNDEBUG -O2 -g0 -s src/uxncli.c -o bin/uxncli
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 
+typedef void (*deo_handler)(void);
+static deo_handler deo_handlers[256];
+typedef Uint8 (*dei_handler)(void);
+static dei_handler dei_handlers[256];
+
 /* clang-format off */
 
 #define BANKS 0x10
@@ -61,7 +66,6 @@ void emu_deo(const Uint8 port, const Uint8 value);
 	case 0xa0|opc: {const int _2=1,_r=0;STK(_r)int k=*sp;A *sp=k;B} goto step;\
 	case 0xc0|opc: {const int _2=0,_r=1;STK(_r)int k=*sp;A *sp=k;B} goto step;\
 	case 0xe0|opc: {const int _2=1,_r=1;STK(_r)int k=*sp;A *sp=k;B} goto step; }
-
 
 static unsigned int
 uxn_eval(Uint16 pc)
@@ -152,8 +156,9 @@ system_boot(char *rom_path, const unsigned int has_args)
 }
 
 static void
-system_expansion(const Uint16 exp)
+system_deo_expansion(void)
 {
+	const Uint16 exp = PEEK2(dev + 2);
 	Uint8 *aptr = ram + exp;
 	Uint16 length = PEEK2(aptr + 1), limit;
 	unsigned int bank = PEEK2(aptr + 3) * 0x10000;
@@ -180,6 +185,36 @@ system_expansion(const Uint16 exp)
 		fprintf(stderr, "Unknown command: %s\n", &ram[exp]);
 }
 
+Uint8
+system_dei_wst(void)
+{
+	return ptr[0];
+}
+
+Uint8
+system_dei_rst(void)
+{
+	return ptr[1];
+}
+
+void
+system_deo_wst(void)
+{
+	ptr[0] = dev[4];
+}
+
+void
+system_deo_rst(void)
+{
+	ptr[0] = dev[4];
+}
+
+void
+system_deo_print(void)
+{
+	system_print("WST", 0), system_print("RST", 1);
+}
+
 /*
 @|Console ----------------------------------------------------------- */
 
@@ -196,6 +231,36 @@ console_input(int c, unsigned int type)
 	dev[0x12] = c, dev[0x17] = type;
 	if(console_vector && !dev[0x0f])
 		uxn_eval(console_vector);
+}
+
+void
+console_deo_vector(void)
+{
+	console_vector = PEEK2(&dev[0x10]);
+}
+
+void
+console_deo_stdout(void)
+{
+	fputc(dev[0x18], stdout), fflush(stdout);
+}
+
+void
+console_deo_stderr(void)
+{
+	fputc(dev[0x19], stderr), fflush(stderr);
+}
+
+void
+console_deo_hb(void)
+{
+	fprintf(stderr, "%02x", dev[0x1a]);
+}
+
+void
+console_deo_lb(void)
+{
+	fprintf(stderr, "%02x", dev[0x1b]);
 }
 
 /*
@@ -437,6 +502,78 @@ file_success(unsigned int port, unsigned int value)
 	dev[port] = value >> 8, dev[port + 1] = value;
 }
 
+void
+filea_deo_vector(void)
+{
+	rL1 = PEEK2(&dev[0xaa]);
+}
+
+void
+filea_deo_stat(void)
+{
+	file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1));
+}
+
+void
+filea_deo_delete(void)
+{
+	file_success(0xa2, file_delete(0));
+}
+
+void
+filea_deo_name(void)
+{
+	file_success(0xa2, file_init(0, PEEK2(&dev[0xa8])));
+}
+
+void
+filea_deo_read(void)
+{
+	file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1));
+}
+
+void
+filea_deo_write(void)
+{
+	file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7]));
+}
+
+void
+fileb_deo_vector(void)
+{
+	rL2 = PEEK2(&dev[0xba]);
+}
+
+void
+fileb_deo_stat(void)
+{
+	file_success(0xb2, file_stat(0, PEEK2(&dev[0xb4]), rL2));
+}
+
+void
+fileb_deo_delete(void)
+{
+	file_success(0xb2, file_delete(0));
+}
+
+void
+fileb_deo_name(void)
+{
+	file_success(0xb2, file_init(0, PEEK2(&dev[0xb8])));
+}
+
+void
+fileb_deo_read(void)
+{
+	file_success(0xb2, file_read(0, PEEK2(&dev[0xbc]), rL2));
+}
+
+void
+fileb_deo_write(void)
+{
+	file_success(0xb2, file_write(0, PEEK2(&dev[0xbe]), rL2, dev[0xb7]));
+}
+
 /*
 @|Datetime ---------------------------------------------------------- */
 
@@ -454,29 +591,132 @@ datetime_update(void)
 		datetime_t = &datetime_zt;
 }
 
+Uint8
+datetime_dei_yhb(void)
+{
+	datetime_update();
+	return (datetime_t->tm_year + 1900) >> 8;
+}
+
+Uint8
+datetime_dei_ylb(void)
+{
+	datetime_update();
+	return (datetime_t->tm_year + 1900);
+}
+
+Uint8
+datetime_dei_mon(void)
+{
+	datetime_update();
+	return datetime_t->tm_mon;
+}
+
+Uint8
+datetime_dei_day(void)
+{
+	datetime_update();
+	return datetime_t->tm_mday;
+}
+
+Uint8
+datetime_dei_hou(void)
+{
+	datetime_update();
+	return datetime_t->tm_hour;
+}
+
+Uint8
+datetime_dei_min(void)
+{
+	datetime_update();
+	return datetime_t->tm_min;
+}
+
+Uint8
+datetime_dei_sec(void)
+{
+	datetime_update();
+	return datetime_t->tm_sec;
+}
+
+Uint8
+datetime_dei_wday(void)
+{
+	datetime_update();
+	return datetime_t->tm_wday;
+}
+
+Uint8
+datetime_dei_ydayhb(void)
+{
+	datetime_update();
+	return datetime_t->tm_yday >> 8;
+}
+
+Uint8
+datetime_dei_ydaylb(void)
+{
+	datetime_update();
+	return datetime_t->tm_yday;
+}
+
+Uint8
+datetime_dei_dst(void)
+{
+	datetime_update();
+	return datetime_t->tm_isdst;
+}
+
 /*
 @|Core -------------------------------------------------------------- */
+
+void
+emu_connect(void)
+{
+	/* DEI */
+	dei_handlers[0x04] = system_dei_wst;
+	dei_handlers[0x05] = system_dei_rst;
+	dei_handlers[0xc0] = datetime_dei_yhb;
+	dei_handlers[0xc1] = datetime_dei_ylb;
+	dei_handlers[0xc2] = datetime_dei_mon;
+	dei_handlers[0xc3] = datetime_dei_day;
+	dei_handlers[0xc4] = datetime_dei_hou;
+	dei_handlers[0xc5] = datetime_dei_min;
+	dei_handlers[0xc6] = datetime_dei_sec;
+	dei_handlers[0xc7] = datetime_dei_wday;
+	dei_handlers[0xc8] = datetime_dei_ydayhb;
+	dei_handlers[0xc9] = datetime_dei_ydaylb;
+	dei_handlers[0xca] = datetime_dei_dst;
+	/* DEO */
+	deo_handlers[0x03] = system_deo_expansion;
+	deo_handlers[0x04] = system_deo_wst;
+	deo_handlers[0x05] = system_deo_rst;
+	deo_handlers[0x0e] = system_deo_print;
+	deo_handlers[0x11] = console_deo_vector;
+	deo_handlers[0x18] = console_deo_stdout;
+	deo_handlers[0x19] = console_deo_stderr;
+	deo_handlers[0x1a] = console_deo_hb;
+	deo_handlers[0x1b] = console_deo_lb;
+	deo_handlers[0xab] = filea_deo_vector;
+	deo_handlers[0xa5] = filea_deo_stat;
+	deo_handlers[0xa6] = filea_deo_delete;
+	deo_handlers[0xa9] = filea_deo_name;
+	deo_handlers[0xad] = filea_deo_read;
+	deo_handlers[0xaf] = filea_deo_write;
+	deo_handlers[0xbb] = filea_deo_vector;
+	deo_handlers[0xb5] = filea_deo_stat;
+	deo_handlers[0xb6] = filea_deo_delete;
+	deo_handlers[0xb9] = filea_deo_name;
+	deo_handlers[0xbd] = filea_deo_read;
+	deo_handlers[0xbf] = filea_deo_write;
+}
 
 Uint8
 emu_dei(const Uint8 port)
 {
-	switch(port) {
-	/* System */
-	case 0x04: return ptr[0];
-	case 0x05: return ptr[1];
-	/* DateTime */
-	case 0xc0: datetime_update(); return (datetime_t->tm_year + 1900) >> 8;
-	case 0xc1: datetime_update(); return (datetime_t->tm_year + 1900);
-	case 0xc2: datetime_update(); return datetime_t->tm_mon;
-	case 0xc3: datetime_update(); return datetime_t->tm_mday;
-	case 0xc4: datetime_update(); return datetime_t->tm_hour;
-	case 0xc5: datetime_update(); return datetime_t->tm_min;
-	case 0xc6: datetime_update(); return datetime_t->tm_sec;
-	case 0xc7: datetime_update(); return datetime_t->tm_wday;
-	case 0xc8: datetime_update(); return datetime_t->tm_yday >> 8;
-	case 0xc9: datetime_update(); return datetime_t->tm_yday;
-	case 0xca: datetime_update(); return datetime_t->tm_isdst;
-	}
+	if(dei_handlers[port])
+		return dei_handlers[port]();
 	return dev[port];
 }
 
@@ -484,39 +724,15 @@ void
 emu_deo(const Uint8 port, const Uint8 value)
 {
 	dev[port] = value;
-	switch(port) {
-	/* System */
-	case 0x03: system_expansion(PEEK2(dev + 2)); break;
-	case 0x04: ptr[0] = dev[4]; break;
-	case 0x05: ptr[1] = dev[5]; break;
-	case 0x0e: system_print("WST", 0), system_print("RST", 1); break;
-	/* Console */
-	case 0x11: console_vector = PEEK2(&dev[0x10]); return;
-	case 0x18: fputc(dev[0x18], stdout), fflush(stdout); break;
-	case 0x19: fputc(dev[0x19], stderr), fflush(stderr); break;
-	case 0x1a: fprintf(stderr, "%02x", dev[0x1a]); break;
-	case 0x1b: fprintf(stderr, "%02x", dev[0x1b]); break;
-	/* File 1 */
-	case 0xab: rL1 = PEEK2(&dev[0xaa]); break;
-	case 0xa5: file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1)); break;
-	case 0xa6: file_success(0xa2, file_delete(0)); break;
-	case 0xa9: file_success(0xa2, file_init(0, PEEK2(&dev[0xa8]))); break;
-	case 0xad: file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1)); break;
-	case 0xaf: file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7])); break;
-	/* File 2 */
-	case 0xbb: rL2 = PEEK2(&dev[0xba]); break;
-	case 0xb5: file_success(0xb2, file_stat(1, PEEK2(&dev[0xb4]), rL2)); break;
-	case 0xb6: file_success(0xb2, file_delete(1)); break;
-	case 0xb9: file_success(0xb2, file_init(1, PEEK2(&dev[0xb8]))); break;
-	case 0xbd: file_success(0xb2, file_read(1, PEEK2(&dev[0xbc]), rL2)); break;
-	case 0xbf: file_success(0xb2, file_write(1, PEEK2(&dev[0xbe]), rL2, dev[0xb7])); break;
-	}
+	if(deo_handlers[port])
+		deo_handlers[port]();
 }
 
 int
 main(int argc, char **argv)
 {
 	int i = 1;
+	emu_connect();
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
 		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 7 Jan 2026.\n");
 	else if(argc == 1)
