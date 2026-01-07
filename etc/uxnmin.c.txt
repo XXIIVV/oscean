@@ -20,49 +20,50 @@ emu_deo(const unsigned char port, const unsigned char value)
 	}
 }
 
-#define REM ptr[_r] -= 1 + _2;
-#define DEC(m) stk[m][--ptr[m]]
-#define INC(m) stk[m][ptr[m]++]
-#define IMM(r) { r = ram[pc++] << 8, r |= ram[pc++]; }
-#define MOV(x) { if(_2) pc = x; else pc += (signed char)x; }
-#define PO1(o) o = DEC(_r);
-#define PO2(o) { PO1(o) o |= DEC(_r) << 8; }
-#define POx(o) if(_2) PO2(o) else PO1(o)
+#define REM *sp -= 1 + _2;
+#define DEC stk[_r][--(*sp)]
+#define INC stk[_r][(*sp)++]
+#define MOV { if(_2) pc = a; else pc += (signed char)a; }
+#define PO1(o) o = DEC;
+#define PO2(o) { PO1(o) o |= DEC << 8; }
+#define POx(o) { PO1(o) if(_2) o |= DEC << 8; }
+#define RP1(i) stk[!_r][ptr[!_r]++] = i;
+#define PU1(i) INC = i;
+#define PUx(i) c = (i); if(_2) PU1(c >> 8) PU1(c)
 #define GOT(o) if(_2) PO1(o[1]) PO1(o[0])
-#define DEO(o,r) emu_deo(o, r[0]); if(_2) emu_deo(o + 1, r[1]);
-#define POK(o,r,m) ram[o] = r[0]; if(_2) ram[(o + 1) & m] = r[1];
-#define RP1(i) INC(!_r) = i;
-#define PU1(i) INC(_r) = i;
-#define PUx(i) if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i)
 #define PUT(i) PU1(i[0]) if(_2) PU1(i[1])
+#define DEO(o,r) emu_deo(o, r[0]); if(_2) emu_deo(o + 1, r[1]);
 #define DEI(i,r) r[0] = emu_dei(i); if(_2) r[1] = emu_dei(i + 1); PUT(r)
+#define POK(o,r,m) ram[o] = r[0]; if(_2) ram[(o + 1) & m] = r[1];
 #define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m]; PUT(r)
 
-#define NEXT if(--cycles) goto step; else return 0;
 #define OPC(opc, A, B) {\
-	case 0x00|opc: {const int _2=0,_r=0;A B} NEXT\
-	case 0x20|opc: {const int _2=1,_r=0;A B} NEXT\
-	case 0x40|opc: {const int _2=0,_r=1;A B} NEXT\
-	case 0x60|opc: {const int _2=1,_r=1;A B} NEXT\
-	case 0x80|opc: {const int _2=0,_r=0;int k=ptr[0];A ptr[0]=k;B} NEXT\
-	case 0xa0|opc: {const int _2=1,_r=0;int k=ptr[0];A ptr[0]=k;B} NEXT\
-	case 0xc0|opc: {const int _2=0,_r=1;int k=ptr[1];A ptr[1]=k;B} NEXT\
-	case 0xe0|opc: {const int _2=1,_r=1;int k=ptr[1];A ptr[1]=k;B} NEXT }
+	case 0x00|opc: {const int _2=0,_r=0;unsigned char *sp = &ptr[_r];A B} goto step;\
+	case 0x20|opc: {const int _2=1,_r=0;unsigned char *sp = &ptr[_r];A B} goto step;\
+	case 0x40|opc: {const int _2=0,_r=1;unsigned char *sp = &ptr[_r];A B} goto step;\
+	case 0x60|opc: {const int _2=1,_r=1;unsigned char *sp = &ptr[_r];A B} goto step;\
+	case 0x80|opc: {const int _2=0,_r=0;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step;\
+	case 0xa0|opc: {const int _2=1,_r=0;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step;\
+	case 0xc0|opc: {const int _2=0,_r=1;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step;\
+	case 0xe0|opc: {const int _2=1,_r=1;unsigned char *sp = &ptr[_r];int k=*sp;A *sp=k;B} goto step; }
+
+#define LIT2(m) { unsigned char *s = stk[m]; s[ptr[m]++] = ram[pc++]; s[ptr[m]++] = ram[pc++]; }
+#define JUMP(x) { c = ram[pc++] << 8, c |= ram[pc++]; pc += x; }
 
 static unsigned int
 uxn_eval(unsigned short pc)
 {
-	unsigned int a, b, c, x[2], y[2], z[2], cycles = 0x80000000;
+	unsigned short a, b, c, x[2], y[2], z[2];
 step:
 	switch(ram[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: if(DEC(0)) { IMM(c) pc += c; } else pc += 2; NEXT
-	/* JMI */ case 0x40: IMM(c) pc += c; NEXT
-	/* JSI */ case 0x60: IMM(c) INC(1) = pc >> 8, INC(1) = pc, pc += c; NEXT
-	/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
-	/* LIT */ case 0x80: INC(0) = ram[pc++]; NEXT
-	/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
-	/* LIr */ case 0xc0: INC(1) = ram[pc++]; NEXT
+	/* JCI */ case 0x20: if(stk[0][--ptr[0]]) JUMP(c) else pc += 2; goto step;
+	/* JMI */ case 0x40: JUMP(c) goto step;
+	/* JSI */ case 0x60: unsigned char *sp = &ptr[1]; JUMP(0) stk[1][(*sp)++] = pc >> 8, stk[1][(*sp)++]= pc, pc += c; goto step;
+	/* LI2 */ case 0xa0: LIT2(0) goto step;
+	/* LIT */ case 0x80: stk[0][ptr[0]++] = ram[pc++]; goto step;
+	/* L2r */ case 0xe0: LIT2(1) goto step;
+	/* LIr */ case 0xc0: stk[1][ptr[1]++] = ram[pc++]; goto step;
 	/* INC */ OPC(0x01,POx(a),PUx(a + 1))
 	/* POP */ OPC(0x02,REM,{})
 	/* NIP */ OPC(0x03,GOT(x) REM,PUT(x))
@@ -74,9 +75,9 @@ step:
 	/* NEQ */ OPC(0x09,POx(a) POx(b),PU1(b != a))
 	/* GTH */ OPC(0x0a,POx(a) POx(b),PU1(b > a))
 	/* LTH */ OPC(0x0b,POx(a) POx(b),PU1(b < a))
-	/* JMP */ OPC(0x0c,POx(a),MOV(a))
-	/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) MOV(a))
-	/* JSR */ OPC(0x0e,POx(a),RP1(pc >> 8) RP1(pc) MOV(a))
+	/* JMP */ OPC(0x0c,POx(a),MOV)
+	/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) MOV)
+	/* JSR */ OPC(0x0e,POx(a),RP1(pc >> 8) RP1(pc) MOV)
 	/* STH */ OPC(0x0f,GOT(x),RP1(x[0]) if(_2) RP1(x[1]))
 	/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff))
 	/* STZ */ OPC(0x11,PO1(a) GOT(y),POK(a, y, 0xff))
