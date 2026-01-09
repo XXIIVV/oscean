@@ -1341,7 +1341,7 @@ emu_run(void)
 	for(;;) {
 		Uint64 now = SDL_GetPerformanceCounter();
 		if(!emu_event())
-			return;
+			break;
 		if(now >= next_refresh) {
 			next_refresh = now + frame_interval;
 			screen_update();
