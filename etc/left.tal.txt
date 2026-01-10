@@ -1,14 +1,15 @@
-( Left )
+	( Left )
 
-|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
-|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|80 @Controller/vector $2 &button $1 &key $1
-|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
-|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|0178 @nav/width
-|0170 @nav/width-8
-|0160 @nav/width-inner
+|00 	@System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 	@Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
+|20 	@Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 	@Controller/vector $2 &button $1 &key $1
+|90 	@Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|a0 	@File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|0178 	@nav/width
+|0170 	@nav/width-8
+|0160 	@nav/width-inner
+|0017 	@glyph/sel
 
 |000
 
@@ -31,8 +32,8 @@
 	( | meta )
 	;meta #06 DEO2
 	( | size 550x2de )
-	theme/<load>
 	window/<set-default-size>
+	theme/<load>
 	menu/<init>
 	.path/buf LDZ ?&soft
 	#01c8 ;path/anchor STA2
@@ -59,7 +60,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "19 20 "Dec 20 "2025 $1 02
+	( date ) "9 20 "Jan 20 "2026 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -94,13 +95,12 @@
 	( - ) 04 09 =sel/<untab> =dict/untab }
 	={ =dict/select
 	( - ) 01 "a =sel/<select-all> =dict/all
-	( - ) 01 "g =sel/<select-symbol> =dict/symbol
 	( - ) 01 09 =sel/<select-word> =dict/word
 	( - ) 01 "l =sel/<select-line> =dict/line
 	( - ) 00 1b =reset-each =dict/reset }
 	={ =dict/find
-	( - ) 01 "f =search/capture =dict/selection
-	( - ) 01 20 =search/capture-word =dict/symbol }
+	( - ) 01 20 =search/capture-word =dict/symbol
+	( - ) 01 "f =search/capture =dict/selection }
 	={ =dict/view
 	( - ) 01 "h =highlight/toggle =dict/highlight
 	( - ) 05 "D =nav/toggle-categories =dict/categories
@@ -261,10 +261,6 @@
 
 (
 @|selection )
-
-@sel/<select-symbol> ( -- )
-	sel/get-from
-	( >> )
 
 @sel/<select-symbol-at> ( addr* -- )
 	DUP2 find-prev-special/ SWP2 find-next-special/
@@ -843,9 +839,10 @@
 	POP2 STHr #01 SUB JMP2r
 
 @nav/id-to-color ( id sel -- color )
-	OVR EQU ?{
-		/id-to-addr INC2 LDA [ LIT "| ] EQU #03 MUL INC JMP2r }
-	POP #09 JMP2r
+	EQUk ?{
+		POP /id-to-addr INC2 LDA [ LIT "| ] EQU ?{ #01 JMP2r }
+		#08 JMP2r }
+	POP2 #04 JMP2r
 
 @nav/<push> ( addr* -- )
 	( | toggle categories )
@@ -1226,9 +1223,7 @@
 
 	&get-ascii ( addr* -- addr* glyph* )
 	[ LIT &rune $1 ] ?{
-		LDAk
-		( ) DUP #1f LTH ?&get-blank
-		#00 SWP #0030 MUL2 ;&glyphs ADD2 JMP2r }
+		LDAk #00 SWP #0030 MUL2 ;&glyphs ADD2 JMP2r }
 	[ LIT2 00 _&rune ] LDR #0030 MUL2 ;&runes ADD2 [ LIT2 00 _&rune ] STR
 	JMP2r
 
@@ -1658,7 +1653,7 @@
 	&rename "Rename $1
 	&open "Open $1
 	&save "Save $1
-	&send "Send $1
+	&send "Send -glyph/sel $1
 	&build "Build $1
 	&exit "Exit $1
 	&edit "Edit $1
@@ -1671,7 +1666,7 @@
 	&line "Line $1
 	&go "Go $1
 	&directory "Directory $1
-	&selection "Selection $1
+	&selection "Selection -glyph/sel $1
 	&format "Format $1
 	&strip "Strip $1
 	&trim "Trim $1
@@ -1680,7 +1675,7 @@
 	&tab "Tab $1
 	&untab "Untab $1
 	&select "Select $1
-	&request "Request $1
+	&request "Request -glyph/sel $1
 	&all "All $1
 	&word "Word $1
 	&symbol "Symbol $1
@@ -1810,24 +1805,30 @@
 	&cat-colors [ 0100 0401 ]
 
 @menu/<draw-sub> ( sub* sel -- )
-	#00 SWP DUP ADD ;&sub-colors ADD2 LDA2
-	( | fill )
+	?{
+		( | fill )
+		.&anchor LDZ2 #0006 ADD2 .Screen/x DEO2
+		#01e8 ;fill-icn #21 <draw-times>
+		( | text )
+		.&anchor LDZ2 #0009 ADD2 .Screen/x DEO2
+		#0004 ADD2 LDA2 #04 ank/<draw-left-color>
+		( | nextline )
+		.Screen/y DEI2k #0018 ADD2 ROT DEO2
+		JMP2r }
+	( | Selected )
 	.&anchor LDZ2 #0006 ADD2 .Screen/x DEO2
-	#e0 ;fill-icn #21 <draw-times>
-	STH
+	#02e8 ;fill-icn #21 <draw-times>
 	( | text )
 	.&anchor LDZ2 #0009 ADD2 .Screen/x DEO2
-	DUP2 #0004 ADD2 LDA2 STHr ank/<draw-left-color>
+	DUP2 #0004 ADD2 LDA2 #08 ank/<draw-left-color>
 	( | butkey )
-	.&anchor LDZ2 #00e8 ADD2 .Screen/x DEO2
+	.&anchor LDZ2 #00a8 ADD2 .Screen/x DEO2
 	#00 ;ank/color-ascii STA
 	LDA2 SWP ank/<draw-button>
 	ank/<draw-key>
 	( | nextline )
 	.Screen/y DEI2k #0018 ADD2 ROT DEO2
 	JMP2r
-
-	&sub-colors [ 0401 0802 ]
 
 @menu/cat-icn [
 	0307 0707 0707 0707 0707 0707 0707 0707
@@ -2159,9 +2160,10 @@ e040 4040 4040 4000 0000 c0e0 e0c0 0000
 3f3f 3f00 0000 0000 0000 0000 0000 0000
 0000 0000 00f0 f0f0 f0f0 f000 0000 0000
 &runes
-0000 060f 1f36 2606 0606 0606 0606 0606
-2636 1f0f 063f 0000 0000 0000 80c0 4000
-0000 0000 0000 0000 40c0 8000 00c0 0000
+( selection icon )
+0000 0000 0000 0000 0003 0f0f 1f1f 0f0f
+0300 0000 0000 0000 0000 0000 0000 0000
+0000 c0c0 e0e0 c0c0 0000 0000 0000 0000
 
 0000 071f 1f3f 3f3f 3f3c 3838 3c3f 3f3f
 3f1f 1f07 0000 0000 0000 80e0 e0f0 f0f0
