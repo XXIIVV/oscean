@@ -427,7 +427,7 @@ static int screen_vector, *screen_pixels, screen_palette[16];
 static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
 static Uint8 *screen_layers;
 
-static const Uint8 blending[16][2][4] = {
+static const Uint8 blend_lut[16][2][4] = {
 	{{0, 0, 1, 2}, {0, 0, 4, 8}},
 	{{0, 1, 2, 3}, {0, 4, 8, 12}},
 	{{0, 2, 3, 1}, {0, 8, 12, 4}},
@@ -444,6 +444,9 @@ static const Uint8 blending[16][2][4] = {
 	{{3, 1, 2, 3}, {12, 4, 8, 12}},
 	{{3, 2, 3, 1}, {12, 8, 12, 4}},
 	{{0, 3, 1, 2}, {0, 12, 4, 8}}};
+
+static const int opaque_lut[16] = {
+	0, -1, -1, -1, -1, 0, -1, -1, -1, -1, 0, -1, -1, -1, -1, 0};
 
 void emu_redraw(void), emu_resize(void);
 
@@ -597,46 +600,36 @@ screen_deo_sprite(void)
 {
 	int i, j, x = rX, y = rY;
 	const int ctrl = dev[0x2f];
-	const int blend = ctrl & 0xf;
-	const int opaque_mask = -(blend % 5);
-	const int flipx = ctrl & 0x10, dx = flipx ? -rDY : rDY;
-	const int flipy = ctrl & 0x20, dy = flipy ? -rDX : rDX;
-	const int layer_mask = (ctrl & 0x40) ? 0x3 : 0xc;
-	const Uint8 *table = (ctrl & 0x40) ? blending[blend][1] : blending[blend][0];
-	const int is_2bpp = (ctrl & 0x80) != 0;
+	const int flipx = ctrl & 0x10, flipy = ctrl & 0x20;
+	const int dx = flipx ? -rDY : rDY, dy = flipy ? -rDX : rDX;
+	const int row_start = flipx ? 0 : 7, row_delta = flipx ? 1 : -1;
+	const int col_start = flipy ? 7 : 0, col_delta = flipy ? -1 : 1;
+	const int layer = ctrl & 0x40, layer_mask = layer ? 0x3 : 0xc;
+	const int is_2bpp = ctrl & 0x80;
 	const int addr_incr = rMA << (is_2bpp ? 2 : 1);
 	const int stride = screen_wmar2;
-	const int qfy = flipy ? 7 : 0;
-	const int src_stride = flipy ? -1 : 1;
+	const int blend = ctrl & 0xf;
+	const int opaque_mask = opaque_lut[blend];
+	const Uint8 *table = blend_lut[blend][layer >> 6];
 	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_incr) {
 		const Uint16 x0 = x + 8, y0 = y + 8;
 		if(x0 + 8 >= stride || y0 + 8 >= screen_hmar2) continue;
 		Uint8 *dst = screen_layers + y0 * stride + x0;
-		const Uint8 *src = &ram[rA + qfy];
-		for(j = 0; j < 8; j++, dst += stride, src += src_stride) {
-			const int ch1 = *src, ch2 = is_2bpp ? (src[8] << 1) : 0;
+		const Uint8 *col = &ram[rA + col_start];
+		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
+			const int ch1 = *col, ch2 = is_2bpp ? (col[8] << 1) : 0;
 			Uint8 *d = dst;
-			if(flipx)
-				for(int px = 0, bit = 0x01; px < 8; px++, d++) {
-					const int color = ((ch1 & bit) ? 1 : 0) | ((ch2 & (bit << 1)) ? 2 : 0);
-					const Uint8 mask = (color | opaque_mask) ? 0xff : 0x00;
-					const Uint8 next = (*d & layer_mask) | table[color];
-					*d = (*d & ~mask) | (next & mask), bit <<= 1;
-				}
-			else
-				for(int px = 0, bit = 0x80; px < 8; px++, d++) {
-					const int color = ((ch1 & bit) ? 1 : 0) | ((ch2 & (bit << 1)) ? 2 : 0);
-					const Uint8 mask = (color | opaque_mask) ? 0xff : 0x00;
-					const Uint8 next = (*d & layer_mask) | table[color];
-					*d = (*d & ~mask) | (next & mask), bit >>= 1;
-				}
+			for(int px = 0, row = row_start; px < 8; px++, d++, row += row_delta) {
+				const int bit = 1 << row;
+				const int color = ((ch1 & bit) ? 1 : 0) | ((ch2 & (bit << 1)) ? 2 : 0);
+				const Uint8 mask = (color | opaque_mask) ? 0xff : 0x00;
+				*d = (*d & ~mask) | (((*d & layer_mask) | table[color]) & mask);
+			}
 		}
 	}
 	if(!screen_reqdraw) {
-		int x1 = flipx ? x : rX;
-		int x2 = flipx ? rX : x;
-		int y1 = flipy ? y : rY;
-		int y2 = flipy ? rY : y;
+		int x1 = flipx ? x : rX, x2 = flipx ? rX : x;
+		int y1 = flipy ? y : rY, y2 = flipy ? rY : y;
 		screen_change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
 	}
 	if(rMX) rX += flipx ? -rDX : rDX;
