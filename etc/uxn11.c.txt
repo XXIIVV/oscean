@@ -614,13 +614,16 @@ screen_deo_sprite(void)
 		Uint8 *dst = screen_layers + y0 * stride + x0;
 		const Uint8 *col = &ram[rA + col_start];
 		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
-			const int ch1 = *col, ch2 = is_2bpp ? (col[8] << 1) : 0;
 			Uint8 *d = dst;
+			const int ch1 = *col, ch2 = is_2bpp ? col[8] : 0;
 			for(int k = 0, row = row_start; k < 8; k++, d++, row += row_delta) {
 				const int bit = 1 << row;
-				const int color = ((ch1 & bit) ? 1 : 0) | ((ch2 & (bit << 1)) ? 2 : 0);
-				const Uint8 mask = -(!!(color | opaque_mask));
-				*d = (*d & ~mask) | (((*d & layer_mask) | table[color]) & mask);
+				const int color = (!!(ch1 & bit)) | (!!(ch2 & bit) << 1);
+				const Uint8 value = *d;
+				const Uint8 mask = opaque_mask | -(!!color);
+				const Uint8 base = value & layer_mask;
+				const Uint8 next = (value & ~mask) | (table[color] & mask);
+				*d = base | next;
 			}
 		}
 	}
@@ -1316,7 +1319,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 11 Jan 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 13 Jan 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
