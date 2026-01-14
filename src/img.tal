@@ -11,15 +11,34 @@
 |100
 
 @on-reset ( -> )
-	diaries/<parse>
+	diaries/<build>
 	BRK
+
+%<t> ( tag* -- ) {
+	LIT2 "< 18 DEO
+	str/<print>
+	LIT2 "> 18 DEO }
+
+%</t> ( tag* -- ) {
+	LIT2 "< 18 DEO
+	LIT2 "/ 18 DEO
+	str/<print>
+	LIT2 "> 18 DEO }
+
+@diaries/<build> ( -- )
+	;dict/xml-head str/<print-ln>
+	;dict/rss-version str/<print-ln>
+	;tag/channel <t>
+	diaries/<parse>
+	;tag/channel </t>
+	JMP2r
 
 @diaries/<parse> ( -- )
 	#4000 .File/length DEO2
 	.YEAR
 	&>l-pages
 		#01 SUB DUP path-table-diary/make workarea/make
-		( uncap ) ;workarea/buf #0a00 str/<swap-char>
+		( linecap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
 			DUP2 str/<print>
 			#0a18 DEO
@@ -41,6 +60,14 @@
 	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
 	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
 
+(
+@|Stdlib )
+
+@str/<print-ln> ( str* -- )
+	/<print>
+	#0a18 DEO
+	JMP2r
+
 @str/<print> ( str* -- )
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
@@ -60,6 +87,11 @@
 	&>wc
 		LDAk ?{ INC2 JMP2r }
 		INC2 !&>wc
+
+@dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> 00
+	&rss-version "<rss 20 "version="2.0"> 00
+
+@tag/channel "channel $1
 
 @workarea/buf
 
