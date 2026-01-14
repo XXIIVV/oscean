@@ -30,6 +30,9 @@
 	str/<print>
 	</t> }
 
+%log/has-no-picture ( log* -- log* t ) {
+	DUP2 #0006 ADD2 ;dict/no-picture str/cmp3 }
+
 @diaries/<build> ( -- )
 	;dict/xml-head str/<print-ln>
 	;dict/rss-version str/<print-ln>
@@ -41,7 +44,8 @@
 	#0a18 DEO
 	;tag/description ;dict/desc <wrap>
 	#0a18 DEO
-	( diaries/<parse> ) ;tag/channel </t>
+	diaries/<parse>
+	;tag/channel </t>
 	JMP2r
 
 @diaries/<parse> ( -- )
@@ -51,11 +55,16 @@
 		#01 SUB DUP path-table-diary/make workarea/make
 		( linecap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
-			DUP2 str/<print>
-			#0a18 DEO
+			log/has-no-picture ?{ log/<emit> }
 			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 DUP ?&>l-pages
 	POP JMP2r
+
+
+
+@log/<emit> ( log* -- log* )
+	DUP2 str/<print-ln>
+	JMP2r
 
 @path-table-diary/make ( id -- path* )
 	( x0 ) DUP #0a DIV LIT "0 ADD SWP
@@ -85,6 +94,11 @@
 		#18 DEO
 		INC2 !&>wp
 
+@str/cmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
 @str/<swap-char> ( str* a b -- )
 	,&b STR
 	,&a STR
@@ -104,6 +118,7 @@
 	&title "XXIIVV $1
 	&url "https://wiki.xxiivv.com/ $1
 	&desc "Journal 20 "Images $1
+	&no-picture "000 $1
 
 @tag/channel "channel $1
 	&title "title $1
