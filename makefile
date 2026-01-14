@@ -4,15 +4,14 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom bin/directory.rom
+run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ ${EMU} bin/oscean.rom
+	@ ${EMU} bin/img.rom > links/img.xml
 	@ ${EMU} bin/directory.rom docs/
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
-img: bin/img.rom
-	@ ${EMU} bin/img.rom
 clean:
 	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
 bal:
