@@ -25,12 +25,23 @@
 	str/<print>
 	LIT2 "> 18 DEO }
 
+%<wrap> ( str* tags* -- ) {
+	OVR2 <t>
+	str/<print>
+	</t> }
+
 @diaries/<build> ( -- )
 	;dict/xml-head str/<print-ln>
 	;dict/rss-version str/<print-ln>
 	;tag/channel <t>
-	diaries/<parse>
-	;tag/channel </t>
+	#0a18 DEO
+	;tag/title ;dict/title <wrap>
+	#0a18 DEO
+	;tag/link ;dict/url <wrap>
+	#0a18 DEO
+	;tag/description ;dict/desc <wrap>
+	#0a18 DEO
+	( diaries/<parse> ) ;tag/channel </t>
 	JMP2r
 
 @diaries/<parse> ( -- )
@@ -88,10 +99,18 @@
 		LDAk ?{ INC2 JMP2r }
 		INC2 !&>wc
 
-@dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> 00
-	&rss-version "<rss 20 "version="2.0"> 00
+@dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> $1
+	&rss-version "<rss 20 "version="2.0"> $1
+	&title "XXIIVV $1
+	&url "https://wiki.xxiivv.com/ $1
+	&desc "Journal 20 "Images $1
 
 @tag/channel "channel $1
+	&title "title $1
+	&link "link $1
+	&description "description $1
+	&item "item $1
+	&pubdate "pubDate $1
 
 @workarea/buf
 
