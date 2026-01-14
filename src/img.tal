@@ -14,6 +14,9 @@
 	diaries/<build>
 	BRK
 
+%<lb> ( -- ) {
+	#0a18 DEO }
+
 %<t> ( tag* -- ) {
 	LIT2 "< 18 DEO
 	str/<print>
@@ -25,7 +28,7 @@
 	str/<print>
 	LIT2 "> 18 DEO }
 
-%<wrap> ( str* tags* -- ) {
+%<wrap> ( tag* str* -- ) {
 	OVR2 <t>
 	str/<print>
 	</t> }
@@ -33,17 +36,30 @@
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 #0006 ADD2 ;dict/no-picture str/cmp3 }
 
+@log/<emit> ( log* -- log* )
+	;tag/item <t>
+	( | title )
+	;tag/title OVR2 #000a ADD2 str/next <wrap>
+	( | link )
+	;tag/link <t>
+	;path/url str/<print>
+	;path/diary str/<print>
+	DUP2 #0006 ADD2 str/<print>
+	;path/ext-jpg str/<print>
+	;tag/link <t>
+	( | description )
+	;tag/item </t>
+	<lb>
+	JMP2r
+
 @diaries/<build> ( -- )
 	;dict/xml-head str/<print-ln>
 	;dict/rss-version str/<print-ln>
 	;tag/channel <t>
-	#0a18 DEO
+	<lb>
 	;tag/title ;dict/title <wrap>
-	#0a18 DEO
-	;tag/link ;dict/url <wrap>
-	#0a18 DEO
+	;tag/link ;path/url <wrap>
 	;tag/description ;dict/desc <wrap>
-	#0a18 DEO
 	diaries/<parse>
 	;tag/channel </t>
 	JMP2r
@@ -60,11 +76,8 @@
 		POP2 POP2 DUP ?&>l-pages
 	POP JMP2r
 
-
-
-@log/<emit> ( log* -- log* )
-	DUP2 str/<print-ln>
-	JMP2r
+(
+@|Utils )
 
 @path-table-diary/make ( id -- path* )
 	( x0 ) DUP #0a DIV LIT "0 ADD SWP
@@ -85,12 +98,12 @@
 
 @str/<print-ln> ( str* -- )
 	/<print>
-	#0a18 DEO
+	<lb>
 	JMP2r
 
 @str/<print> ( str* -- )
 	&>wp
-		LDAk DUP ?{ POP POP2 JMP2r }
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
 		#18 DEO
 		INC2 !&>wp
 
@@ -98,6 +111,11 @@
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@str/next ( str* -- next* )
+	&>wn
+		LDAk #20 LTH ?{ INC2 !&>wn }
+	INC2 JMP2r
 
 @str/<swap-char> ( str* a b -- )
 	,&b STR
@@ -116,9 +134,12 @@
 @dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> $1
 	&rss-version "<rss 20 "version="2.0"> $1
 	&title "XXIIVV $1
-	&url "https://wiki.xxiivv.com/ $1
 	&desc "Journal 20 "Images $1
 	&no-picture "000 $1
+
+@path/url "https://wiki.xxiivv.com/ $1
+	&diary "media/diary/ $1
+	&ext-jpg ".jpg $1
 
 @tag/channel "channel $1
 	&title "title $1
