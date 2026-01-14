@@ -28,6 +28,21 @@
 	str/<print>
 	LIT2 "> 18 DEO }
 
+%<img> ( jpg* -- ) {
+	LIT2 "< 18 DEO
+	;tag/img str/<print>
+	LIT2 20 18 DEO
+	;tag/src str/<print>
+	LIT2 "= 18 DEO
+	LIT2 "" 18 DEO
+	;path/url str/<print>
+	;path/diary str/<print>
+	str/<print>
+	;path/ext-jpg str/<print>
+	LIT2 "" 18 DEO
+	LIT2 "/ 18 DEO
+	LIT2 "> 18 DEO }
+
 %<wrap> ( tag* str* -- ) {
 	OVR2 <t>
 	str/<print>
@@ -46,8 +61,17 @@
 	;path/diary str/<print>
 	DUP2 #0006 ADD2 str/<print>
 	;path/ext-jpg str/<print>
-	;tag/link <t>
+	;tag/link </t>
 	( | description )
+	;tag/description <t>
+	;tag/cdata-a str/<print>
+	DUP2 #0006 ADD2 <img>
+	;tag/cdata-b str/<print>
+	;tag/description </t>
+	( | pubdate )
+	;tag/pubdate <t>
+	DUP2 arvelie/<print>
+	;tag/pubdate </t>
 	;tag/item </t>
 	<lb>
 	JMP2r
@@ -75,6 +99,30 @@
 			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 DUP ?&>l-pages
 	POP JMP2r
+
+(
+@|Arvelie )
+
+@arvelie/get-year ( date* -- year* )
+	bytedec #07d6 ADD2 JMP2r
+
+@arvelie/get-doty ( date* -- doty* )
+	INC2 INC2 LDAk [ LIT "A ] SUB STH
+	INC2 bytedec #00 STHr #000e MUL2 ADD2 JMP2r
+
+@arvelie/<print> ( date* -- )
+	DUP2 /get-doty SWP2 /get-year /<emit-gre>
+	JMP2r
+
+@arvelie/<emit-gre> ( doty* year* -- )
+	#1a DEO2
+	#1a DEO2
+	JMP2r
+
+@bytedec ( str* -- dec* )
+	LDA2
+	( a ) [ LIT "0 ] SUB SWP
+	( b ) [ LIT "0 ] SUB #0a MUL ADD #00 SWP JMP2r
 
 (
 @|Utils )
@@ -146,7 +194,11 @@
 	&link "link $1
 	&description "description $1
 	&item "item $1
+	&img "img $1
+	&src "src $1
 	&pubdate "pubDate $1
+	&cdata-a "<![CDATA[ $1
+	&cdata-b "]]> $1
 
 @workarea/buf
 
