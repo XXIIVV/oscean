@@ -21,6 +21,7 @@ lint:
 	@ ${LIN} src/oscean.tal
 	@ ${LIN} src/arvelie.tal
 	@ ${LIN} src/directory.tal
+	@ ${LIN} src/img.tal
 push:
 	@ git commit -am '*'
 	@ git push

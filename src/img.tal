@@ -11,6 +11,9 @@
 	diaries/<build>
 	BRK
 
+(
+@|Framework )
+
 %<lb> ( -- ) {
 	#0a18 DEO }
 
@@ -45,6 +48,9 @@
 	str/<print>
 	</t> }
 
+(
+@|Diary )
+
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 #0006 ADD2 ;dict/no-picture str/cmp3 }
 
@@ -68,6 +74,8 @@
 	( | pubdate )
 	;tag/pubdate <t>
 	DUP2 arvelie/year-month-day year-month-day/<print>
+	#2018 DEO
+	;dict/midnight str/<print>
 	;tag/pubdate </t>
 	;tag/item </t>
 	<lb>
@@ -101,21 +109,14 @@
 @|Arvelie )
 
 @arvelie/get-year ( date* -- year* )
-	bytedec #07d6 ADD2 JMP2r
+	dec/parse #07d6 ADD2 JMP2r
 
 @arvelie/get-doty ( date* -- doty* )
 	INC2 INC2 LDAk [ LIT "A ] SUB STH
-	INC2 bytedec #00 STHr #000e MUL2 ADD2 JMP2r
+	INC2 dec/parse #00 STHr #000e MUL2 ADD2 JMP2r
 
 @arvelie/year-month-day ( date* -- )
 	DUP2 /get-doty SWP2 /get-year !doty-year/year-month-day
-	JMP2r
-
-@dotw/<print> ( dotw -- )
-	#00 SWP #20 SFT2 ;dict/dotw-txt ADD2 !str/<print>
-
-@month/<print> ( month -- )
-	#00 SWP #20 SFT2 ;dict/months-txt ADD2 !str/<print>
 
 @year-month-day/<print> ( year* month day -- )
 	OVR2 OVR2 year-month-day/dotw dotw/<print>
@@ -128,47 +129,6 @@
 	dec/<print>
 	JMP2r
 
-@doty-year/year-month-day ( doty* year* -- year* month day )
-	,&year STR2
-	STH2
-	#0c00
-	&>l2
-		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
-		STH2k SUB2r !&continue2
-		&skip2 POP2 !{
-		&continue2 POP2 INC GTHk ?&>l2 }
-	NIP INC STHr POPr INC ,&year LDR2 SWP2 JMP2r
-
-@doty-year/<emit-gre> ( doty* year* -- )
-	doty-year/year-month-day #1a DEO2
-	#1a DEO2
-	JMP2r
-	OVR2 OVR2 doty-year/<dotw>
-	DUP2 <emit-dec2>
-	[ LIT2 "- 18 ] DEO
-	,&y STR2
-	STH2
-	#0c00
-	&>l
-		DUP [ LIT2 &y $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip
-		STH2k SUB2r !&continue
-		&skip POP2 !{
-		&continue POP2 INC GTHk ?&>l }
-	NIP INC <emit-dec>
-	[ LIT2 "- 18 ] DEO
-	STHr POPr INC !<emit-dec>
-
-@doty-year/<dotw> ( doty* year* -- )
-	POP2 POP2 JMP2r
-
-@year-month/days ( year* month -- days )
-	#00 OVR ;&lut ADD2 LDA SWP #01 NEQ ?{
-		STH
-		DUP2 year/is-leap STHr ADD }
-	NIP NIP JMP2r
-
-	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
-
 @year-month-day/dotw ( year* m d -- dotw )
 	( y -= m < 3; ) OVR STH
 	SWP2 #00 STHr #02 LTH SUB2 STH2
@@ -178,12 +138,46 @@
 
 	&lut [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
 
+@year-month/days ( year* month -- days )
+	#00 OVR ;&lut ADD2 LDA SWP #01 NEQ ?{
+		STH
+		DUP2 year/is-leap STHr ADD }
+	NIP NIP JMP2r
+
+	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
+
 @year/is-leap ( year* -- bool )
 	DUP2 #0190 DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
 	DUP2 #0064 DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
 	#0003 AND2 #0000 EQU2 JMP2r
 	&not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
+
+@doty-year/year-month-day ( doty* year* -- year* month day )
+	,&year STR2
+	STH2
+	#0c00
+	&>l2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
+		STH2k SUB2r !&continue2
+		&skip2 POP2 !{
+		&continue2 POP2 INC GTHk ?&>l2 }
+	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
+
+@dotw/<print> ( dotw -- )
+	#00 SWP #20 SFT2 ;&lut ADD2 !str/<print>
+
+	&lut [
+	"Sun $1 "Mon $1 "Tue $1 "Wed $1
+	"Thu $1 "Fri $1 "Sat $1 ]
+
+@month/<print> ( month -- )
+	#00 SWP #20 SFT2 ;&lut ADD2 !str/<print>
+
+	&lut [
+	"Jan $1 "Feb $1 "Mar $1 "Apr $1
+	"May $1 "Jun $1 "Jul $1 "Aug $1
+	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
 
 (
 @|Utils )
@@ -205,20 +199,17 @@
 (
 @|Stdlib )
 
-@<emit-dec2> ( short* -- )
-	#0064 DIV2k DUP <emit-dec>
-	MUL2 SUB2 NIP
+@dec/<print> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
-@<emit-dec> ( byte -- )
-	DUP #0a DIV <emit-num>
-	#0a DIVk MUL SUB
-	( >> )
-
-@<emit-num> ( num -- )
-	[ LIT "0 ] ADD #18 DEO
-	JMP2r
-
-@bytedec ( str* -- dec* )
+@dec/parse ( str* -- dec* )
 	LDA2
 	( a ) [ LIT "0 ] SUB SWP
 	( b ) [ LIT "0 ] SUB #0a MUL ADD #00 SWP JMP2r
@@ -258,28 +249,15 @@
 		LDAk ?{ INC2 JMP2r }
 		INC2 !&>wc
 
-@dec/<print> ( short* -- )
-	[ LIT2r ff00 ]
-	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
-	POP2
-	&>write
-		NIP #30 ADD #18 DEO
-		OVRr ADDr STHkr ?&>write
-	POP2r JMP2r
+(
+@|Assets )
 
 @dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> $1
 	&rss-version "<rss 20 "version="2.0"> $1
 	&title "XXIIVV $1
 	&desc "Journal 20 "Images $1
 	&no-picture "000 $1
-	&dotw-txt [
-	"Sun $1 "Mon $1 "Tue $1 "Wed $1
-	"Thu $1 "Fri $1 "Sat $1 ]
-	&months-txt [
-	"Jan $1 "Feb $1 "Mar $1 "Apr $1
-	"May $1 "Jun $1 "Jul $1 "Aug $1
-	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
+	&midnight "12:00:00 20 "-0000 $1
 
 @path/url "https://wiki.xxiivv.com/ $1
 	&diary "media/diary/ $1
