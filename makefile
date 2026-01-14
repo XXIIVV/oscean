@@ -11,6 +11,8 @@ run: bin/oscean.rom bin/arvelie.rom bin/directory.rom
 	@ ${EMU} bin/directory.rom docs/
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
+img: bin/img.rom
+	@ ${EMU} bin/img.rom
 clean:
 	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
 bal:
@@ -36,3 +38,6 @@ bin/arvelie.rom: src/arvelie.tal
 	@ ${ASM} src/arvelie.tal bin/arvelie.rom
 bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
+bin/img.rom: src/img.tal
+	@ ${ASM} src/img.tal bin/img.rom
+

@@ -1,0 +1,65 @@
+( Subversive )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|14 @YEAR
+|1000 @diary/buflen
+|1000 @incoming/buflen
+|2000 @lexicon/buflen
+
+|100
+
+@on-reset ( -> )
+	diaries/<parse>
+	BRK
+
+@diaries/<parse> ( -- )
+	#4000 .File/length DEO2
+	.YEAR
+	&>l-pages
+		#01 SUB DUP path-table-diary/make workarea/make
+		( uncap ) ;workarea/buf #0a00 str/<swap-char>
+		&>l-logs
+			DUP2 str/<print>
+			#0a18 DEO
+			str/cap str/cap str/cap GTH2k ?&>l-logs
+		POP2 POP2 DUP ?&>l-pages
+	POP JMP2r
+
+@path-table-diary/make ( id -- path* )
+	( x0 ) DUP #0a DIV LIT "0 ADD SWP
+	( 0x ) #0a DIVk MUL SUB LIT "0 ADD ,&id STR2
+	;&res JMP2r
+
+	&res "src/tables/diary/ &id $2 ".tsv $1
+
+@workarea/make ( path* -- to* from* )
+	.File/name DEO2
+	#0000 ;&buf SUB2 .File/length DEO2
+	;&buf .File/read DEO2
+	( clip ) #0000 ;&buf .File/success DEI2 ADD2 STA2
+	( range ) ;&buf .File/success DEI2 ADD2 ;&buf JMP2r
+
+@str/<print> ( str* -- )
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>wp
+
+@str/<swap-char> ( str* a b -- )
+	,&b STR
+	,&a STR
+	&>wsc
+		LDAk [ LIT &a $1 ] NEQ ?{
+			STH2k [ LIT &b $1 ] STH2r STA }
+		INC2 LDAk ?&>wsc
+	POP2 JMP2r
+
+@str/cap ( str* -- end* )
+	&>wc
+		LDAk ?{ INC2 JMP2r }
+		INC2 !&>wc
+
+@workarea/buf
+
