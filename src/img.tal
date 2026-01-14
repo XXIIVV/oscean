@@ -115,14 +115,52 @@
 	JMP2r
 
 @arvelie/<emit-gre> ( doty* year* -- )
-	#1a DEO2
-	#1a DEO2
+	DUP2 <emit-dec2>
+	[ LIT2 "- 18 ] DEO
+	,&y STR2
+	STH2
+	#0c00
+	&>l
+		DUP [ LIT2 &y $2 ] ROT diam #00 SWP DUP2 STH2kr GTH2 ?&skip
+		STH2k SUB2r !&continue
+		&skip POP2 !{
+		&continue POP2 INC GTHk ?&>l }
+	NIP INC <emit-dec>
+	[ LIT2 "- 18 ] DEO
+	STHr POPr INC !<emit-dec>
+
+@<emit-dec2> ( short* -- )
+	#0064 DIV2k DUP <emit-dec>
+	MUL2 SUB2 NIP
+
+@<emit-dec> ( byte -- )
+	DUP #0a DIV <emit-num>
+	#0a DIVk MUL SUB
+	( >> )
+
+@<emit-num> ( num -- )
+	[ LIT "0 ] ADD #18 DEO
 	JMP2r
 
 @bytedec ( str* -- dec* )
 	LDA2
 	( a ) [ LIT "0 ] SUB SWP
 	( b ) [ LIT "0 ] SUB #0a MUL ADD #00 SWP JMP2r
+
+@diam ( year* month -- days )
+	#00 OVR ;&lut ADD2 LDA SWP #01 NEQ ?{
+		STH
+		DUP2 year/is-leap STHr ADD }
+	NIP NIP JMP2r
+
+	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
+
+@year/is-leap ( year* -- bool )
+	DUP2 #0190 DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
+	DUP2 #0064 DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
+	#0003 AND2 #0000 EQU2 JMP2r
+	&not-leap POP2 #00 JMP2r
+	&leap POP2 #01 JMP2r
 
 (
 @|Utils )
