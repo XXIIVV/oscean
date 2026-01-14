@@ -4,9 +4,6 @@
 |a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |14 @YEAR
-|1000 @diary/buflen
-|1000 @incoming/buflen
-|2000 @lexicon/buflen
 
 |100
 
@@ -70,7 +67,7 @@
 	;tag/description </t>
 	( | pubdate )
 	;tag/pubdate <t>
-	DUP2 arvelie/<print>
+	DUP2 arvelie/year-month-day year-month-day/<print>
 	;tag/pubdate </t>
 	;tag/item </t>
 	<lb>
@@ -110,11 +107,42 @@
 	INC2 INC2 LDAk [ LIT "A ] SUB STH
 	INC2 bytedec #00 STHr #000e MUL2 ADD2 JMP2r
 
-@arvelie/<print> ( date* -- )
-	DUP2 /get-doty SWP2 /get-year /<emit-gre>
+@arvelie/year-month-day ( date* -- )
+	DUP2 /get-doty SWP2 /get-year !doty-year/year-month-day
 	JMP2r
 
-@arvelie/<emit-gre> ( doty* year* -- )
+@dotw/<print> ( dotw -- )
+	#00 SWP #20 SFT2 ;dict/dotw-txt ADD2 !str/<print>
+
+@month/<print> ( month -- )
+	#00 SWP #20 SFT2 ;dict/months-txt ADD2 !str/<print>
+
+@year-month-day/<print> ( year* month day -- )
+	OVR2 OVR2 year-month-day/dotw dotw/<print>
+	LIT2 ", 18 DEO
+	LIT2 20 18 DEO
+	#00 SWP dec/<print>
+	#2018 DEO
+	month/<print>
+	#2018 DEO
+	dec/<print>
+	JMP2r
+
+@doty-year/year-month-day ( doty* year* -- year* month day )
+	,&year STR2
+	STH2
+	#0c00
+	&>l2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
+		STH2k SUB2r !&continue2
+		&skip2 POP2 !{
+		&continue2 POP2 INC GTHk ?&>l2 }
+	NIP INC STHr POPr INC ,&year LDR2 SWP2 JMP2r
+
+@doty-year/<emit-gre> ( doty* year* -- )
+	doty-year/year-month-day #1a DEO2
+	#1a DEO2
+	JMP2r
 	OVR2 OVR2 doty-year/<dotw>
 	DUP2 <emit-dec2>
 	[ LIT2 "- 18 ] DEO
@@ -130,6 +158,9 @@
 	[ LIT2 "- 18 ] DEO
 	STHr POPr INC !<emit-dec>
 
+@doty-year/<dotw> ( doty* year* -- )
+	POP2 POP2 JMP2r
+
 @year-month/days ( year* month -- days )
 	#00 OVR ;&lut ADD2 LDA SWP #01 NEQ ?{
 		STH
@@ -138,7 +169,7 @@
 
 	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
 
-@dotw ( year* m d -- dotw )
+@year-month-day/dotw ( year* m d -- dotw )
 	( y -= m < 3; ) OVR STH
 	SWP2 #00 STHr #02 LTH SUB2 STH2
 	( t[m-1] + d ) #00 ROT ;&lut ADD2 LDA #00 SWP ROT #00 SWP ADD2
@@ -153,9 +184,6 @@
 	#0003 AND2 #0000 EQU2 JMP2r
 	&not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
-
-@doty-year/<dotw> ( doty* year* -- )
-	POP2 POP2 JMP2r
 
 (
 @|Utils )
@@ -229,6 +257,16 @@
 	&>wc
 		LDAk ?{ INC2 JMP2r }
 		INC2 !&>wc
+
+@dec/<print> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
 @dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> $1
 	&rss-version "<rss 20 "version="2.0"> $1
