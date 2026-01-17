@@ -2,7 +2,7 @@
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|14 @YEAR
+|15 @YEAR
 
 |100
 
@@ -56,6 +56,9 @@
 %log/has-no-picture ( log* -- log* t ) {
 	DUP2 #0006 ADD2 ;dict/no-picture str/cmp3 }
 
+%log/is-muted ( log* -- log* t ) {
+	DUP2 #0005 ADD2 LDA LIT ". EQU }
+
 @log/<emit> ( log* -- log* )
 	;tag/item <t>
 	( | title )
@@ -102,7 +105,7 @@
 		#01 SUB DUP path-table-diary/make workarea/make
 		( linecap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
-			log/has-no-picture ?{ log/<emit> }
+			log/has-no-picture ?{ log/is-muted ?{ log/<emit> } }
 			str/cap str/cap str/cap GTH2k ?&>l-logs
 		POP2 POP2 DUP ?&>l-pages
 	POP JMP2r
