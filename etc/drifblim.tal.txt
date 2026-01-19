@@ -15,7 +15,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;dict/reset scope/<set>
+	assembly/<init>
 	;src/on-console
 	( >> )
 
@@ -122,11 +122,14 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Jan 20 "2026 $2
+	( date ) "19 20 "Jan 20 "2026 $2
 
 
 
 ( Core )
+
+@assembly/<init> ( -- )
+	;dict/reset !scope/<set>
 
 @assembly/<resolve> ( -- )
 	( cap ) #0a token/<push-byte>
@@ -203,7 +206,7 @@
 	#20 !/<push-byte>
 
 @macros/<push-word> ( t* -- )
-	;/<push-byte> !hof/<each>
+	;/<push-byte> !for-each
 
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
@@ -225,7 +228,7 @@
 
 @macros/<write> ( t* macro* -- )
 	NIP2 token/<new>
-	str/cap ;token/<push-byte> !hof/<each>
+	str/cap ;token/<push-byte> !for-each
 
 (
 @|Token )
@@ -261,18 +264,17 @@
 	JMP2r
 
 @scope/<set> ( name* -- )
-	[ LIT2 -&buf _&ptr ] STR
+	DUP2 [ LIT2 -&buf _&ptr ] STR
 	&>w
 		LDAk [ LIT "/ ] EQU ?{
 			LDAk /<push-byte>
 			INC2 LDAk ?&>w }
-	POP2 ,&ptr LDR ,&anchor STR
-	JMP2r
+	POP2 ,&ptr LDR ,&anchor STR !syms/<new>
 
 @scope/make-name ( name* -- scope/label* )
 	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
-	;&buf SWP2 ;/<push-byte> !hof/<each>
+	;&buf SWP2 ;/<push-byte> !for-each
 
 (
 @|Runes )
@@ -305,7 +307,7 @@
 	/req-name syms/find-addr !head/<set-rel>
 
 	&toplab ( t* -- )
-	/req-name DUP2 scope/<set> !syms/<new>
+	/req-name !scope/<set>
 
 	&sublab ( t* -- )
 	scope/make-name !syms/<new>
@@ -449,8 +451,7 @@
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	name/<validate>
-	;/<push-byte> hof/<each>
-	#00
+	;/<push-byte> for-each #00
 	( >> )
 
 @syms/<push-byte> ( byte -- )
@@ -607,7 +608,7 @@
 @|Rom )
 
 @rom/<write-str> ( str* -- )
-	;/<write-byte> !hof/<each>
+	;/<write-byte> !for-each
 
 @rom/<write-opcode> ( str* -- )
 	opcodes/parse !/<write-byte>
@@ -658,7 +659,7 @@
 (
 @|Stdlib )
 
-@hof/<each> ( data* byte-fn* -- )
+@for-each ( data* byte-fn* -- )
 	STH2
 	&>w
 		LDAk DUP ?{ POP POP2 POP2r JMP2r }
@@ -753,7 +754,7 @@
 	POP2 POP2 POP2 JMP2r
 
 @err/<print> ( str* -- )
-	;/<emit> !hof/<each>
+	;/<emit> !for-each
 
 @err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
