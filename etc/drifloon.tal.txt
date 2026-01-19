@@ -86,7 +86,7 @@
 	( opc ) opcodes/is-opcode ?rom/<write-opcode>
 	LDZk runes/find INC2k ORA ?{
 		POP2
-		( mac ) DUP2 macros/find-name INC2k ORA ?macros/<write>
+		( mac ) macros/find-name INC2k ORA ?macros/<write>
 		POP2
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
@@ -111,8 +111,7 @@
 @|Macros )
 
 @macros/<latch> ( t* -- )
-	name/<validate>
-	/<push-word>
+	name/validate /<push-word>
 	#00 /<push-byte>
 	;&walk ;assembly/mode STA2
 	JMP2r
@@ -144,9 +143,8 @@
 	STA
 	JMP2r
 
-@macros/find-name ( name* -- <addr>* )
-	STH2
-	,&ptr LDR2 ;&mem
+@macros/find-name ( name* -- name* <addr>* )
+	STH2k ,&ptr LDR2 ;&mem
 	&>lf
 		DUP2 STH2kr str/cmp ?{
 			str/cap str/cap GTH2k ?&>lf
@@ -341,12 +339,12 @@
 (
 @|Name )
 
-@name/<validate> ( name* -- name* )
+@name/validate ( name* -- name* )
 	( not hex ) str/is-hex ?&fail
 	( not lambda ) LDAk LIT "{ EQU ?&fail
 	( not runic ) LDAk runes/find INC2 ORA ?&fail
-	( dup macros ) DUP2 macros/find-name INC2 ORA ?&dup
-	( dup symbol ) DUP2 syms/find-name INC2 ORA ?&dup
+	( dup macros ) macros/find-name INC2 ORA ?&dup
+	( dup symbol ) syms/find-name INC2 ORA ?&dup
 	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
 	&fail ( -- )
 	;dict/invalid ;dict/Name !err/<token>
@@ -364,7 +362,7 @@
 @|Syms )
 
 @syms/<new> ( name* -- )
-	DUP2 /find-name INC2k ORA ?{
+	/find-name INC2k ORA ?{
 		POP2 ;&ptr LDA2 refs/<record-scope>
 		.SymType/declared head/get !/<push-sym> }
 	( | name* sym* -- )
@@ -377,8 +375,7 @@
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
-	name/<validate>
-	;/<push-byte> for-each #00
+	name/validate ;/<push-byte> for-each #00
 	( >> )
 
 @syms/<push-byte> ( byte -- )
@@ -391,8 +388,7 @@
 	JMP2r
 
 @syms/find-name ( name* -- <sym>* )
-	STH2
-	,&ptr LDR2 ;&mem
+	STH2k ,&ptr LDR2 ;&mem
 	&>lfn
 		DUP2 #0003 ADD2 STH2kr str/cmp ?{
 			#0003 ADD2 str/cap GTH2k ?&>lfn
@@ -400,7 +396,7 @@
 	NIP2 POP2r JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
-	DUP2 /find-name INC2k ORA ?{
+	/find-name INC2k ORA ?{
 		( null* .. next* ) POP2 ,&ptr LDR2
 		( alloc ) SWP2 .SymType/used #ffff !/<push-sym> }
 	NIP2 JMP2r
@@ -409,7 +405,7 @@
 	str/is-hex ?str/hex
 	name/unpack /find-name /is-defined ?{
 		( ! ) ;dict/invalid ;dict/Symbol err/<token> }
-	/use LDA2 JMP2r
+	/use LDA2 NIP2 JMP2r
 
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
@@ -713,7 +709,7 @@
 	&zero-page "zero-page $1
 	&open "open $1
 	&trail ".. $1
-	&reset "RESET $1
+	&reset "Top $1
 
 (
 @|Buffers )
