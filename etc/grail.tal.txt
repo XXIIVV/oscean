@@ -1,4 +1,4 @@
-( )
+( MEDENAGAN )
 
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
@@ -21,9 +21,9 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | theme )
-	#2e5f .System/r DEO2
-	#2e59 .System/g DEO2
-	#2e56 .System/b DEO2
+	#e2cf .System/r DEO2
+	#e2c9 .System/g DEO2
+	#e2c6 .System/b DEO2
 	<load-theme>
 	( | size )
 	#0100 .Screen/width DEO2
@@ -41,10 +41,7 @@
 	POP2 BRK
 
 @on-mouse-down ( states* -> )
-	POP2
-	( | regions )
-	.Mouse/ly DEI DUP get-mode <set-mode>
-	( | setup )
+	POP2 .Mouse/ly DEI DUP get-mode <set-mode>
 	.Mouse/lx DEI SWP <start-stroke>
 	BRK
 
@@ -93,7 +90,7 @@
 
 @<validate-live> ( -- )
 	[ LITr 00 ] get-bounds
-	&>l ( -- )
+	&>l
 		LDA2k find-match #ffff EQU2 ?{ INCr }
 		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 STHkr ?&found
@@ -111,9 +108,9 @@
 	#02 !<draw-directions>
 
 @find-valid ( -- addr* )
-	;<push-direction>/ptr LDA2 ;directions SUB2 NIP ,&tlen STR
-	get-bounds
-	&>l ( -- )
+	;<push-direction>/ptr LDA2 ;directions SUB2 ,&tlen STR
+	POP get-bounds
+	&>l
 		LDA2k INC2 LDA INC [ LIT &tlen $1 ] NEQ ?{
 			LDA2k find-match INC2k ORA ?&found
 			POP2 }
@@ -126,7 +123,7 @@
 @find-match ( lib* -- ptr* )
 	INC2k INC2 STH2
 	;<push-direction>/ptr LDA2 ;directions
-	&>l ( -- )
+	&>l
 		LDAk LDAkr STHr NEQ ?&fail
 		INC2r INC2 GTH2k ?&>l
 	POP2 POP2 POP2r JMP2r
@@ -136,7 +133,7 @@
 
 @<start-stroke> ( x y -- )
 	<clear>
-	DUP2 #0a <draw-point>
+	DUP2 #0f <draw-point>
 	DUP2 ;<push-point>/last-pos STA2
 	#ff ;<push-point>/last-dir STA
 	<push-point>
@@ -152,7 +149,7 @@
 @get-direction ( x1 y1 -- color )
 	( 0 ) STH2k GTH
 	( 1 ) STH2kr abs GTH ADD
-	( 2 ) STH2r SWP abs SWP GTH ADD JMP2r
+	( 2 ) STHr STHr abs SWP GTH ADD JMP2r
 
 @get-mode ( y -- mode )
 	.Mouse/state DEI #02 LTH ?{ POP #03 JMP2r }
@@ -182,8 +179,7 @@
 			OVR2 #05 <draw-point> }
 		POP ,&last-dir STR
 		DUP2 ,&last-pos STR2 }
-	POP2 <validate-live>
-	JMP2r
+	POP2 !<validate-live>
 
 @<push-direction> ( dir -- )
 	[ LIT2 &ptr =directions ] STAk INC2 ,&ptr STR2
@@ -232,22 +228,18 @@
 	#00ec .Screen/y DEO2
 	[ LIT2 01 -Screen/auto ] DEO
 	;<push-direction>/ptr LDA2 ;directions
-	&>l ( -- )
+	&>l
 		EQU2k ?&end
 		LDAk #00 SWP #30 SFT2 ;arrows-icn ADD2 .Screen/addr DEO2
 		[ LIT2 &color $1 -Screen/sprite ] DEO
 		INC2 GTH2k ?&>l &end POP2 POP2 JMP2r
-
-@<draw-stroke> ( a* b* -- )
-	STH2
-	prom STH2r prom #01 !<draw-line>
 
 @<draw-point> ( x y color -- )
 	STH
 	prom #0002 SUB2 .Screen/y DEO2
 	#0002 SUB2 .Screen/x DEO2
 	;point-icn .Screen/addr DEO2
-	STHr .Screen/sprite DEO
+	[ LITr -Screen/sprite ] DEOr
 	JMP2r
 
 @<update-cursor> ( color addr* -- )
@@ -257,12 +249,18 @@
 	.Mouse/x DEI2 ,<draw-cursor>/x STR2
 	.Mouse/y DEI2 ,<draw-cursor>/y STR2
 	.Screen/addr DEO2
+	( >> )
 
 @<draw-cursor> ( color -- )
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
 	JMP2r
+
+@<draw-stroke> ( a* b* -- )
+	STH2
+	prom STH2r prom #01
+	( >> )
 
 @<draw-line> ( x1* y1* x2* y2* color -- )
 	,&color STR
@@ -296,7 +294,7 @@
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	[ LIT2 -System/debug -System/r ]
-	&>l ( -- )
+	&>l
 		;&buf .File/read DEO2
 		[ LIT2 00 -File/success-lb ] DEI EQU ?{
 			[ LIT2r &buf $2 ] STHk DEO2r
@@ -328,16 +326,8 @@
 	SWP2 SUB2 POP #07 SFT JMP2r
 
 @capitalize ( char -- char )
-	DUP [ LIT "a ] LTH ?&skip
-	DUP [ LIT "z ] GTH ?&skip
-	#20 SUB &skip JMP2r
-
-@<phex> ( short* -- )
-	SWP <phex>/b
-	&b ( -- )
-	DUP #04 SFT <phex>/c
-	&c ( -- )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	DUP [ LIT "a ] LTH ?{
+		DUP [ LIT "z ] GTH ?{ #20 SUB } }
 	JMP2r
 
 (
@@ -347,7 +337,7 @@
 
 @fill-icn [ ffff ffff ffff ffff ]
 
-@point-icn [ 2070 f870 2000 0000 ]
+@point-icn [ 0020 7020 0000 0000 ]
 
 @dash-icn [ ee00 0000 0000 0000 ]
 
@@ -366,8 +356,10 @@
 
 
 @lib
+
 (
 @|numbers )
+
 &0 "0 _{ -R -D -L -U } &0a "0 _{ -D -L -U -R }
 &1 "1 _{ -D -L -R } &1a "1 _{ -L -R -D }
 &2 "2 _{ -R -D -L -D -R } &2a "2 _{ -R -D -R }
@@ -378,8 +370,10 @@
 &7 "7 _{ -R -D }
 &8 "8 _{ -D -R -D -L -U -R -U -L } &8a "8 _{ -D -L -U -R -U -L }
 &9 "9 _{ -L -U -R -D } &9a "9 _{ -L -D -R -D }
+
 (
 @|alphabet )
+
 &a "a _{ -L -D -R -U -D }
 &b "b _{ -D -U -R -D -L }
 &c "c _{ -L -D -R }
@@ -406,15 +400,19 @@
 &x "x _{ -R -U -D } &xa "x _{ -R -U -L -D }
 &y "y _{ -D -U -D } &ya "y _{ -D -U -D -L }
 &z "z _{ -R -L -R } &za "z _{ -L -D -L }
+
 (
 @|special )
+
 &mrk "? _{ -R -D -L -D }
 &bsp 08 _{ -L }
 &wsp 20 _{ -R }
 &tab 09 _{ -U -R }
 &brk 0a _{ -D -R }
+
 (
 @|punctuation )
+
 &lth "< _{ -L -R }
 &gth "> _{ -R -L }
 &mul "* _{ -R -U -D }
@@ -443,8 +441,10 @@
 &braceb "} _{ -R -L -D }
 &dollar "$ _{ -L -D -R -D -L }
 &percent "% _{ -D -R -D }
+
 (
 @|control )
+
 &sela 06 _{ -U -R }
 &moveu 11 _{ -U }
 &moved 12 _{ -D }
