@@ -25,18 +25,26 @@ typedef Uint8 (*dei_handler)(void);
 Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
 static unsigned int uxn_eval(Uint16 pc);
 
-/* clang-format off */
-
 #define BANKS 0x10
-#define BANKS_CAP BANKS * 0x10000
-#define PEEK2(d) (*(d) << 8 | (d)[1])
-
-/* clang-format on */
+#define BANK_SZ 0x10000
+#define BANKS_CAP BANKS *BANK_SZ
 
 /*
 @|System ------------------------------------------------------------ */
 
 static char *system_boot_path;
+
+static inline Uint16
+peek2(const Uint8 *d)
+{
+	return ((Uint16)d[0] << 8) | d[1];
+}
+
+static inline void
+poke2(Uint8 *d, Uint16 v)
+{
+	d[0] = v >> 8, d[1] = v;
+}
 
 static void
 system_print(char *name, int r)
@@ -53,9 +61,9 @@ system_load(const char *rom_path)
 {
 	FILE *f = fopen(rom_path, "rb");
 	if(f) {
-		unsigned int i = 0, l = fread(ram + 0x100, 0x10000 - 0x100, 1, f);
+		unsigned int i = 0, l = fread(ram + 0x100, 1, BANK_SZ - 0x100, f);
 		while(l && ++i < BANKS)
-			l = fread(ram + i * 0x10000, 0x10000, 1, f);
+			l = fread(ram + i * BANK_SZ, BANK_SZ, 1, f);
 		fclose(f);
 	}
 	return !!f;
@@ -73,18 +81,17 @@ system_boot(char *rom_path, const unsigned int has_args)
 static void
 system_deo_expansion(void)
 {
-	const Uint16 exp = PEEK2(dev + 2);
+	const Uint16 exp = peek2(dev + 2);
 	Uint8 *aptr = ram + exp;
-	Uint16 length = PEEK2(aptr + 1);
-	unsigned int bank = PEEK2(aptr + 3) * 0x10000;
-	unsigned int addr = PEEK2(aptr + 5);
+	Uint16 length = peek2(aptr + 1);
+	unsigned int bank = peek2(aptr + 3) * BANK_SZ;
+	unsigned int addr = peek2(aptr + 5);
 	if(ram[exp] == 0x0) {
-		unsigned int dst_value = ram[exp + 7];
 		if(bank < BANKS_CAP)
-			memset(ram + bank + addr, dst_value, length);
+			memset(ram + bank + addr, ram[exp + 7], length);
 	} else if(ram[exp] == 1 || ram[exp] == 2) {
-		unsigned int dst_bank = PEEK2(aptr + 7) * 0x10000;
-		unsigned int dst_addr = PEEK2(aptr + 9);
+		unsigned int dst_bank = peek2(aptr + 7) * BANK_SZ;
+		unsigned int dst_addr = peek2(aptr + 9);
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
 	} else
@@ -121,7 +128,7 @@ console_input(int c, unsigned int type)
 
 /* clang-format off */
 
-static void console_deo_vector(void) { console_vector = PEEK2(&dev[0x10]); }
+static void console_deo_vector(void) { console_vector = peek2(&dev[0x10]); }
 static void console_deo_stdout(void) { fputc(dev[0x18], stdout), fflush(stdout); }
 static void console_deo_stderr(void) { fputc(dev[0x19], stderr), fflush(stderr); }
 static void console_deo_hb(void) { fprintf(stderr, "%02x", dev[0x1a]); }
@@ -195,7 +202,7 @@ put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, uns
 {
 	if(err) return put_fill(dest, len, '!');
 	if(dir) return put_fill(dest, len, '-');
-	if(capsize && size >= 0x10000) return put_fill(dest, len, '?');
+	if(capsize && size >= BANK_SZ) return put_fill(dest, len, '?');
 	return put_size(dest, len, size);
 }
 
@@ -231,12 +238,11 @@ put_fdir(Uint8 *dest, unsigned int len, const char *filepath, DIR *dir)
 	return p - dest;
 }
 
-static unsigned int
-is_dir_path(const char *p)
+static inline unsigned int
+path_is_dir(const char *p)
 {
-	const char *end = p;
-	while(*end) end++;
-	return end > p && end[-1] == '/';
+	size_t n = strlen(p);
+	return n && p[n - 1] == '/';
 }
 
 static unsigned int
@@ -282,7 +288,7 @@ file_init(unsigned int id, Uint16 addr)
 static unsigned int
 file_not_ready(unsigned int id)
 {
-	return ufs[id].filepath == 0;
+	return !ufs[id].filepath || !ufs[id].filepath[0];
 }
 
 static unsigned int
@@ -293,8 +299,8 @@ file_read(unsigned int id, Uint16 addr, unsigned int len)
 	unsigned int n;
 	if(file_not_ready(id))
 		return 0;
-	if(addr + len > 0x10000)
-		len = 0x10000 - addr;
+	if(addr + len > BANK_SZ)
+		len = BANK_SZ - addr;
 	if(ufs[id].state != FILE_READ && ufs[id].state != DIR_READ) {
 		file_reset(id);
 		if(stat(ufs[id].filepath, &st) == 0 && S_ISDIR(st.st_mode)) {
@@ -323,12 +329,12 @@ file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
 	unsigned int ret = 0;
 	if(file_not_ready(id))
 		return 0;
-	if(addr + len > 0x10000)
-		len = 0x10000 - addr;
+	if(addr + len > BANK_SZ)
+		len = BANK_SZ - addr;
 	file_write_dir(ufs[id].filepath);
 	if(ufs[id].state != FILE_WRITE && ufs[id].state != DIR_WRITE) {
 		file_reset(id);
-		if(is_dir_path(ufs[id].filepath))
+		if(path_is_dir(ufs[id].filepath))
 			ufs[id].state = DIR_WRITE;
 		else if((ufs[id].f = fopen(ufs[id].filepath, (flags & 0x01) ? "ab" : "wb")) != NULL)
 			ufs[id].state = FILE_WRITE;
@@ -348,8 +354,8 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 	struct stat st;
 	if(file_not_ready(id))
 		return 0;
-	if(addr + len > 0x10000)
-		len = 0x10000 - addr;
+	if(addr + len > BANK_SZ)
+		len = BANK_SZ - addr;
 	err = stat(ufs[id].filepath, &st);
 	dir = S_ISDIR(st.st_mode);
 	return put_stat(&ram[addr], len, st.st_size, err, dir, 0);
@@ -366,23 +372,23 @@ file_delete(unsigned int id)
 static void
 file_success(unsigned int port, unsigned int value)
 {
-	dev[port] = value >> 8, dev[port + 1] = value;
+	poke2(&dev[port], value);
 }
 
 /* clang-format off */
 
-static void filea_deo_vector(void) { rL1 = PEEK2(&dev[0xaa]); }
-static void filea_deo_stat(void) { file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1)); }
+static void filea_deo_vector(void) { rL1 = peek2(&dev[0xaa]); }
+static void filea_deo_stat(void) { file_success(0xa2, file_stat(0, peek2(&dev[0xa4]), rL1)); }
 static void filea_deo_delete(void) { file_success(0xa2, file_delete(0)); }
-static void filea_deo_name(void) { file_success(0xa2, file_init(0, PEEK2(&dev[0xa8]))); }
-static void filea_deo_read(void) { file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1)); }
-static void filea_deo_write(void) { file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7])); }
-static void fileb_deo_vector(void) { rL2 = PEEK2(&dev[0xba]); }
-static void fileb_deo_stat(void) { file_success(0xb2, file_stat(1, PEEK2(&dev[0xb4]), rL2)); }
+static void filea_deo_name(void) { file_success(0xa2, file_init(0, peek2(&dev[0xa8]))); }
+static void filea_deo_read(void) { file_success(0xa2, file_read(0, peek2(&dev[0xac]), rL1)); }
+static void filea_deo_write(void) { file_success(0xa2, file_write(0, peek2(&dev[0xae]), rL1, dev[0xa7])); }
+static void fileb_deo_vector(void) { rL2 = peek2(&dev[0xba]); }
+static void fileb_deo_stat(void) { file_success(0xb2, file_stat(1, peek2(&dev[0xb4]), rL2)); }
 static void fileb_deo_delete(void) { file_success(0xb2, file_delete(1)); }
-static void fileb_deo_name(void) { file_success(0xb2, file_init(1, PEEK2(&dev[0xb8]))); }
-static void fileb_deo_read(void) { file_success(0xb2, file_read(1, PEEK2(&dev[0xbc]), rL2)); }
-static void fileb_deo_write(void) { file_success(0xb2, file_write(1, PEEK2(&dev[0xbe]), rL2, dev[0xb7])); }
+static void fileb_deo_name(void) { file_success(0xb2, file_init(1, peek2(&dev[0xb8]))); }
+static void fileb_deo_read(void) { file_success(0xb2, file_read(1, peek2(&dev[0xbc]), rL2)); }
+static void fileb_deo_write(void) { file_success(0xb2, file_write(1, peek2(&dev[0xbe]), rL2, dev[0xb7])); }
 
 /*
 @|Datetime ---------------------------------------------------------- */
@@ -479,83 +485,74 @@ emu_deo(const Uint8 port, const Uint8 value)
 /*
 @|Uxn --------------------------------------------------------------- */
 
-#define REM *p -= 1 + _2;
+#define REM *p -= 1 + d;
 #define DEC s[--(*p)]
 #define INC s[(*p)++]
-#define MOV { if(_2) pc = a; else pc += (signed char)a; }
-#define JMP(x) { c = ram[pc] << 8, c |= ram[pc + 1]; pc += x + 2; }
-#define STK(m) Uint8 *s = stk[m], *p = &ptr[m];
-#define PO1(o) o = DEC;
-#define PO2(o) { PO1(o) o |= DEC << 8; }
-#define POx(o) { PO1(o) if(_2) o |= DEC << 8; }
-#define POt(o) if(_2) PO1(o[1]) PO1(o[0])
-#define PU1(i) INC = i;
-#define PU2(i) PU1(i >> 8) PU1(i)
-#define PUx(i) c = (i); if(_2) PU1(c >> 8) PU1(c)
-#define PUt(i) PU1(i[0]) if(_2) PU1(i[1])
-#define PUr(i) stk[!_r][ptr[!_r]++] = i;
-#define DEO(o,r) emu_deo(o, r[0]); if(_2) emu_deo(o + 1, r[1]);
-#define DEI(i,r) r[0] = emu_dei(i); if(_2) r[1] = emu_dei(i + 1);
-#define POK(o,r,m) ram[o] = r[0]; if(_2) ram[(o + 1) & m] = r[1];
-#define PEK(i,r,m) r[0] = ram[i]; if(_2) r[1] = ram[(i + 1) & m];
+#define FLIP { s = stk[!r], p = &ptr[!r]; }
+#define MOVE { if(d) pc = a; else pc += (signed char)a; }
+#define JUMP(x) { c = ram[pc] << 8, c |= ram[pc + 1]; pc += x + 2; }
+#define DROP(o,m) { o = DEC; if(m) o |= DEC << 8; }
+#define GRAB(o) if(d) o[1] = DEC; o[0] = DEC;
+#define PUSH(i,m) { if(m) c = (i), INC = c >> 8, INC = c; else INC = i; }
+#define TAKE(i) INC = i[0]; if(d) INC = i[1];
+#define DEVO(o,r) emu_deo(o, r[0]); if(d) emu_deo(o + 1, r[1]);
+#define DEVI(i,r) r[0] = emu_dei(i); if(d) r[1] = emu_dei(i + 1);
+#define POKE(o,r,m) ram[o] = r[0]; if(d) ram[(o + 1) & m] = r[1];
+#define PEEK(i,r,m) r[0] = ram[i]; if(d) r[1] = ram[(i + 1) & m];
 
 #define OPC(opc, A, B) {\
-	case 0x00|opc: {const int _2=0,_r=0;STK(_r)A B} goto step;\
-	case 0x20|opc: {const int _2=1,_r=0;STK(_r)A B} goto step;\
-	case 0x40|opc: {const int _2=0,_r=1;STK(_r)A B} goto step;\
-	case 0x60|opc: {const int _2=1,_r=1;STK(_r)A B} goto step;\
-	case 0x80|opc: {const int _2=0,_r=0;STK(_r)int k=*p; A *p=k;B} goto step;\
-	case 0xa0|opc: {const int _2=1,_r=0;STK(_r)int k=*p; A *p=k;B} goto step;\
-	case 0xc0|opc: {const int _2=0,_r=1;STK(_r)int k=*p; A *p=k;B} goto step;\
-	case 0xe0|opc: {const int _2=1,_r=1;STK(_r)int k=*p; A *p=k;B} goto step;}
+case 0x00|opc:case 0x40|opc:{const int d=0;A B} goto step;\
+case 0x20|opc:case 0x60|opc:{const int d=1;A B} goto step;\
+case 0x80|opc:case 0xc0|opc:{const int d=0;int k=*p; A *p=k;B} goto step;\
+case 0xa0|opc:case 0xe0|opc:{const int d=1;int k=*p; A *p=k;B} goto step;}
 
-static unsigned int
+static unsigned
 uxn_eval(Uint16 pc)
 {
 	Uint16 a, b, c, x[2], y[2], z[2];
-step:
-	switch(ram[pc++]) {
-	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: if(stk[0][--ptr[0]]) JMP(c) else pc += 2; goto step;
-	/* JMI */ case 0x40: JMP(c) goto step;
-	/* JSI */ case 0x60: { STK(1) JMP(0) PU2(pc) pc += c; } goto step;
-	/* LI2 */ case 0xa0: { STK(0) INC = ram[pc++]; INC = ram[pc++]; } goto step;
-	/* LIT */ case 0x80: { stk[0][ptr[0]++] = ram[pc++]; } goto step;
-	/* L2r */ case 0xe0: { STK(1) INC = ram[pc++]; INC = ram[pc++]; } goto step;
-	/* LIr */ case 0xc0: { stk[1][ptr[1]++] = ram[pc++]; } goto step;
-	/* INC */ OPC(0x01,POx(a),PUx(a + 1))
+step: {
+	Uint8 op = ram[pc++], r = (op >> 6) & 1, *s = stk[r], *p = &ptr[r];
+	switch(op) {
+	/* BRK */ case 0x00:return 1;
+	/* JCI */ case 0x20:if(DEC) JUMP(c) else pc += 2; goto step;
+	/* JMI */ case 0x40:JUMP(c) goto step;
+	/* JSI */ case 0x60:JUMP(0) INC = pc >> 8; INC = pc; pc += c; goto step;
+	/* LI2 */ case 0xa0:INC = ram[pc++];
+	/* LIT */ case 0x80:INC = ram[pc++]; goto step;
+	/* L2r */ case 0xe0:INC = ram[pc++];
+	/* LIr */ case 0xc0:INC = ram[pc++]; goto step;
+	/* INC */ OPC(0x01,DROP(a,d),PUSH(a + 1,d))
 	/* POP */ OPC(0x02,REM,(void)s;)
-	/* NIP */ OPC(0x03,POt(x) REM,PUt(x))
-	/* SWP */ OPC(0x04,POt(x) POt(y),PUt(x) PUt(y))
-	/* ROT */ OPC(0x05,POt(x) POt(y) POt(z),PUt(y) PUt(x) PUt(z))
-	/* DUP */ OPC(0x06,POt(x),PUt(x) PUt(x))
-	/* OVR */ OPC(0x07,POt(x) POt(y),PUt(y) PUt(x) PUt(y))
-	/* EQU */ OPC(0x08,POx(a) POx(b),PU1(b == a))
-	/* NEQ */ OPC(0x09,POx(a) POx(b),PU1(b != a))
-	/* GTH */ OPC(0x0a,POx(a) POx(b),PU1(b > a))
-	/* LTH */ OPC(0x0b,POx(a) POx(b),PU1(b < a))
-	/* JMP */ OPC(0x0c,POx(a),MOV)
-	/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) MOV)
-	/* JSR */ OPC(0x0e,POx(a),PUr(pc >> 8) PUr(pc) MOV)
-	/* STH */ OPC(0x0f,POt(x),PUr(x[0]) if(_2) PUr(x[1]))
-	/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff) PUt(x))
-	/* STZ */ OPC(0x11,PO1(a) POt(y),POK(a, y, 0xff))
-	/* LDR */ OPC(0x12,PO1(a),PEK(pc + (signed char)a, x, 0xffff) PUt(x))
-	/* STR */ OPC(0x13,PO1(a) POt(y),POK(pc + (signed char)a, y, 0xffff))
-	/* LDA */ OPC(0x14,PO2(a),PEK(a, x, 0xffff) PUt(x))
-	/* STA */ OPC(0x15,PO2(a) POt(y),POK(a, y, 0xffff))
-	/* DEI */ OPC(0x16,PO1(a),DEI(a, x) PUt(x))
-	/* DEO */ OPC(0x17,PO1(a) POt(y),DEO(a, y))
-	/* ADD */ OPC(0x18,POx(a) POx(b),PUx(b + a))
-	/* SUB */ OPC(0x19,POx(a) POx(b),PUx(b - a))
-	/* MUL */ OPC(0x1a,POx(a) POx(b),PUx(b * a))
-	/* DIV */ OPC(0x1b,POx(a) POx(b),PUx(a ? b / a : 0))
-	/* AND */ OPC(0x1c,POx(a) POx(b),PUx(b & a))
-	/* ORA */ OPC(0x1d,POx(a) POx(b),PUx(b | a))
-	/* EOR */ OPC(0x1e,POx(a) POx(b),PUx(b ^ a))
-	/* SFT */ OPC(0x1f,PO1(a) POx(b),PUx(b >> (a & 0xf) << (a >> 4)))
-	}
-	return 0;
+	/* NIP */ OPC(0x03,GRAB(x) REM,TAKE(x))
+	/* SWP */ OPC(0x04,GRAB(x) GRAB(y),TAKE(x) TAKE(y))
+	/* ROT */ OPC(0x05,GRAB(x) GRAB(y) GRAB(z),TAKE(y) TAKE(x) TAKE(z))
+	/* DUP */ OPC(0x06,GRAB(x),TAKE(x) TAKE(x))
+	/* OVR */ OPC(0x07,GRAB(x) GRAB(y),TAKE(y) TAKE(x) TAKE(y))
+	/* EQU */ OPC(0x08,DROP(a,d) DROP(b,d),PUSH(b == a,0))
+	/* NEQ */ OPC(0x09,DROP(a,d) DROP(b,d),PUSH(b != a,0))
+	/* GTH */ OPC(0x0a,DROP(a,d) DROP(b,d),PUSH(b > a,0))
+	/* LTH */ OPC(0x0b,DROP(a,d) DROP(b,d),PUSH(b < a,0))
+	/* JMP */ OPC(0x0c,DROP(a,d),MOVE)
+	/* JCN */ OPC(0x0d,DROP(a,d) DROP(b,0),if(b) MOVE)
+	/* JSR */ OPC(0x0e,DROP(a,d),FLIP PUSH(pc,1) MOVE)
+	/* STH */ OPC(0x0f,GRAB(x),FLIP PUSH(x[0],0) if(d) PUSH(x[1],0))
+	/* LDZ */ OPC(0x10,DROP(a,0),PEEK(a, x, 0xff) TAKE(x))
+	/* STZ */ OPC(0x11,DROP(a,0) GRAB(y),POKE(a, y, 0xff))
+	/* LDR */ OPC(0x12,DROP(a,0),PEEK(pc + (signed char)a, x, 0xffff) TAKE(x))
+	/* STR */ OPC(0x13,DROP(a,0) GRAB(y),POKE(pc + (signed char)a, y, 0xffff))
+	/* LDA */ OPC(0x14,DROP(a,1),PEEK(a, x, 0xffff) TAKE(x))
+	/* STA */ OPC(0x15,DROP(a,1) GRAB(y),POKE(a, y, 0xffff))
+	/* DEI */ OPC(0x16,DROP(a,0),DEVI(a, x) TAKE(x))
+	/* DEO */ OPC(0x17,DROP(a,0) GRAB(y),DEVO(a, y))
+	/* ADD */ OPC(0x18,DROP(a,d) DROP(b,d),PUSH(b + a,d))
+	/* SUB */ OPC(0x19,DROP(a,d) DROP(b,d),PUSH(b - a,d))
+	/* MUL */ OPC(0x1a,DROP(a,d) DROP(b,d),PUSH(b * a,d))
+	/* DIV */ OPC(0x1b,DROP(a,d) DROP(b,d),PUSH(a ? b / a : 0,d))
+	/* AND */ OPC(0x1c,DROP(a,d) DROP(b,d),PUSH(b & a,d))
+	/* ORA */ OPC(0x1d,DROP(a,d) DROP(b,d),PUSH(b | a,d))
+	/* EOR */ OPC(0x1e,DROP(a,d) DROP(b,d),PUSH(b ^ a,d))
+	/* SFT */ OPC(0x1f,DROP(a,0) DROP(b,d),PUSH(b >> (a & 0xf) << (a >> 4),d))
+	}} return 0;
 }
 
 /* clang-format on */
@@ -565,7 +562,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 20 Jan 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 21 Jan 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
