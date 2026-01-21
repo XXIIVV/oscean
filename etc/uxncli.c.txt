@@ -369,26 +369,22 @@ file_delete(unsigned int id)
 	return !unlink(ufs[id].filepath);
 }
 
-static void
-file_success(unsigned int port, unsigned int value)
-{
-	poke2(&dev[port], value);
-}
-
 /* clang-format off */
 
 static void filea_deo_vector(void) { rL1 = peek2(&dev[0xaa]); }
-static void filea_deo_stat(void) { file_success(0xa2, file_stat(0, peek2(&dev[0xa4]), rL1)); }
-static void filea_deo_delete(void) { file_success(0xa2, file_delete(0)); }
-static void filea_deo_name(void) { file_success(0xa2, file_init(0, peek2(&dev[0xa8]))); }
-static void filea_deo_read(void) { file_success(0xa2, file_read(0, peek2(&dev[0xac]), rL1)); }
-static void filea_deo_write(void) { file_success(0xa2, file_write(0, peek2(&dev[0xae]), rL1, dev[0xa7])); }
+static void filea_deo_stat(void) { poke2(&dev[0xa2], file_stat(0, peek2(&dev[0xa4]), rL1)); }
+static void filea_deo_delete(void) { poke2(&dev[0xa2], file_delete(0)); }
+static void filea_deo_name(void) { poke2(&dev[0xa2], file_init(0, peek2(&dev[0xa8]))); }
+static void filea_deo_read(void) { poke2(&dev[0xa2], file_read(0, peek2(&dev[0xac]), rL1)); }
+static void filea_deo_write(void) { poke2(&dev[0xa2], file_write(0, peek2(&dev[0xae]), rL1, dev[0xa7])); }
 static void fileb_deo_vector(void) { rL2 = peek2(&dev[0xba]); }
-static void fileb_deo_stat(void) { file_success(0xb2, file_stat(1, peek2(&dev[0xb4]), rL2)); }
-static void fileb_deo_delete(void) { file_success(0xb2, file_delete(1)); }
-static void fileb_deo_name(void) { file_success(0xb2, file_init(1, peek2(&dev[0xb8]))); }
-static void fileb_deo_read(void) { file_success(0xb2, file_read(1, peek2(&dev[0xbc]), rL2)); }
-static void fileb_deo_write(void) { file_success(0xb2, file_write(1, peek2(&dev[0xbe]), rL2, dev[0xb7])); }
+static void fileb_deo_stat(void) { poke2(&dev[0xb2], file_stat(1, peek2(&dev[0xb4]), rL2)); }
+static void fileb_deo_delete(void) { poke2(&dev[0xb2], file_delete(1)); }
+static void fileb_deo_name(void) { poke2(&dev[0xb2], file_init(1, peek2(&dev[0xb8]))); }
+static void fileb_deo_read(void) { poke2(&dev[0xb2], file_read(1, peek2(&dev[0xbc]), rL2)); }
+static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0xbe]), rL2, dev[0xb7])); }
+
+/* clang-format on */
 
 /*
 @|Datetime ---------------------------------------------------------- */

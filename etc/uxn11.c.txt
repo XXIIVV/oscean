@@ -44,7 +44,9 @@ static unsigned int uxn_eval(Uint16 pc);
 
 #define CLAMP(v, a, b) { if(v < a) v = a; else if(v >= b) v = b; }
 #define TWOS(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
-#define PEEK2(d) (*(d) << 8 | (d)[1])
+
+static inline Uint16 peek2(const Uint8 *d) { return ((Uint16)d[0] << 8) | d[1]; }
+static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
 
 /* clang-format on */
 
@@ -102,18 +104,17 @@ system_reboot(const unsigned int soft)
 static void
 system_deo_expansion(void)
 {
-	const Uint16 exp = PEEK2(dev + 2);
+	const Uint16 exp = peek2(dev + 2);
 	Uint8 *aptr = ram + exp;
-	Uint16 length = PEEK2(aptr + 1);
-	unsigned int bank = PEEK2(aptr + 3) * 0x10000;
-	unsigned int addr = PEEK2(aptr + 5);
+	Uint16 length = peek2(aptr + 1);
+	unsigned int bank = peek2(aptr + 3) * 0x10000;
+	unsigned int addr = peek2(aptr + 5);
 	if(ram[exp] == 0x0) {
-		unsigned int dst_value = ram[exp + 7];
 		if(bank < BANKS_CAP)
-			memset(ram + bank + addr, dst_value, length);
+			memset(ram + bank + addr, ram[exp + 7], length);
 	} else if(ram[exp] == 1 || ram[exp] == 2) {
-		unsigned int dst_bank = PEEK2(aptr + 7) * 0x10000;
-		unsigned int dst_addr = PEEK2(aptr + 9);
+		unsigned int dst_bank = peek2(aptr + 7) * 0x10000;
+		unsigned int dst_addr = peek2(aptr + 9);
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
 	} else
@@ -212,7 +213,7 @@ start_fork_pipe(void)
 {
 	pid_t pid;
 	pid_t parent_pid = getpid();
-	int addr = PEEK2(&dev[CMD_ADDR]);
+	int addr = peek2(&dev[CMD_ADDR]);
 	fflush(stdout);
 	if(child_mode & 0x08) {
 		dev[CMD_EXIT] = dev[CMD_LIVE] = 0x00;
@@ -329,7 +330,7 @@ console_close(void)
 
 static Uint8 console_dei_childlive(void) { check_child(); return dev[CMD_LIVE]; }
 static Uint8 console_dei_childexit(void) { check_child(); return dev[CMD_EXIT]; }
-static void console_deo_vector(void) { console_vector = PEEK2(&dev[0x10]); }
+static void console_deo_vector(void) { console_vector = peek2(&dev[0x10]); }
 static void console_deo_stdout(void) { fputc(dev[0x18], stdout), fflush(stdout); }
 static void console_deo_stderr(void) { fputc(dev[0x19], stderr), fflush(stderr); }
 static void console_deo_hb(void) { fprintf(stderr, "%02x", dev[0x1a]); }
@@ -561,9 +562,9 @@ static Uint8 screen_dei_ryhb(void) { return rY >> 8; }
 static Uint8 screen_dei_rylb(void) { return rY; }
 static Uint8 screen_dei_rahb(void) { return rA >> 8; }
 static Uint8 screen_dei_ralb(void) { return rA; }
-static void screen_deo_vector(void) { screen_vector = PEEK2(&dev[0x20]); }
-static void screen_deo_width(void) { screen_resize(PEEK2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
-static void screen_deo_height(void) { screen_resize(screen_width & 0xfff, PEEK2(&dev[0x24]) & 0xfff); }
+static void screen_deo_vector(void) { screen_vector = peek2(&dev[0x20]); }
+static void screen_deo_width(void) { screen_resize(peek2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
+static void screen_deo_height(void) { screen_resize(screen_width & 0xfff, peek2(&dev[0x24]) & 0xfff); }
 static void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; }
 static void screen_deo_x(void) { rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX); }
 static void screen_deo_y(void) { rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY); }
@@ -607,7 +608,7 @@ controller_key(Uint8 key)
 void
 controller_deo_vector(void)
 {
-	controller_vector = PEEK2(&dev[0x80]);
+	controller_vector = peek2(&dev[0x80]);
 }
 
 /*
@@ -650,7 +651,7 @@ mouse_scroll(Uint16 x, Uint16 y)
 void
 mouse_deo_vector(void)
 {
-	mouse_vector = PEEK2(&dev[0x90]);
+	mouse_vector = peek2(&dev[0x90]);
 }
 
 /*
@@ -887,26 +888,20 @@ file_delete(unsigned int id)
 	return !unlink(ufs[id].filepath);
 }
 
-static void
-file_success(unsigned int port, unsigned int value)
-{
-	dev[port] = value >> 8, dev[port + 1] = value;
-}
-
 /* clang-format off */
 
-static void filea_deo_vector(void) { rL1 = PEEK2(&dev[0xaa]); }
-static void filea_deo_stat(void) { file_success(0xa2, file_stat(0, PEEK2(&dev[0xa4]), rL1)); }
-static void filea_deo_delete(void) { file_success(0xa2, file_delete(0)); }
-static void filea_deo_name(void) { file_success(0xa2, file_init(0, PEEK2(&dev[0xa8]))); }
-static void filea_deo_read(void) { file_success(0xa2, file_read(0, PEEK2(&dev[0xac]), rL1)); }
-static void filea_deo_write(void) { file_success(0xa2, file_write(0, PEEK2(&dev[0xae]), rL1, dev[0xa7])); }
-static void fileb_deo_vector(void) { rL2 = PEEK2(&dev[0xba]); }
-static void fileb_deo_stat(void) { file_success(0xb2, file_stat(1, PEEK2(&dev[0xb4]), rL2)); }
-static void fileb_deo_delete(void) { file_success(0xb2, file_delete(1)); }
-static void fileb_deo_name(void) { file_success(0xb2, file_init(1, PEEK2(&dev[0xb8]))); }
-static void fileb_deo_read(void) { file_success(0xb2, file_read(1, PEEK2(&dev[0xbc]), rL2)); }
-static void fileb_deo_write(void) { file_success(0xb2, file_write(1, PEEK2(&dev[0xbe]), rL2, dev[0xb7])); }
+static void filea_deo_vector(void) { rL1 = peek2(&dev[0xaa]); }
+static void filea_deo_stat(void) { poke2(&dev[0xa2], file_stat(0, peek2(&dev[0xa4]), rL1)); }
+static void filea_deo_delete(void) { poke2(&dev[0xa2], file_delete(0)); }
+static void filea_deo_name(void) { poke2(&dev[0xa2], file_init(0, peek2(&dev[0xa8]))); }
+static void filea_deo_read(void) { poke2(&dev[0xa2], file_read(0, peek2(&dev[0xac]), rL1)); }
+static void filea_deo_write(void) { poke2(&dev[0xa2], file_write(0, peek2(&dev[0xae]), rL1, dev[0xa7])); }
+static void fileb_deo_vector(void) { rL2 = peek2(&dev[0xba]); }
+static void fileb_deo_stat(void) { poke2(&dev[0xb2], file_stat(1, peek2(&dev[0xb4]), rL2)); }
+static void fileb_deo_delete(void) { poke2(&dev[0xb2], file_delete(1)); }
+static void fileb_deo_name(void) { poke2(&dev[0xb2], file_init(1, peek2(&dev[0xb8]))); }
+static void fileb_deo_read(void) { poke2(&dev[0xb2], file_read(1, peek2(&dev[0xbc]), rL2)); }
+static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0xbe]), rL2, dev[0xb7])); }
 
 /* clang-format on */
 
