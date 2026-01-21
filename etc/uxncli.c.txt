@@ -485,11 +485,16 @@ emu_deo(const Uint8 port, const Uint8 value)
 /*
 @|Uxn --------------------------------------------------------------- */
 
+#define OPC(opc, A, B) {\
+	case 0x00|opc:case 0x40|opc:{const int d=0;A B} goto step;\
+	case 0x20|opc:case 0x60|opc:{const int d=1;A B} goto step;\
+	case 0x80|opc:case 0xc0|opc:{const int d=0,k=*p;A *p=k;B} goto step;\
+	case 0xa0|opc:case 0xe0|opc:{const int d=1,k=*p;A *p=k;B} goto step;}
 #define REM *p -= 1 + d;
 #define DEC s[--(*p)]
 #define INC s[(*p)++]
 #define FLIP { s = stk[!r], p = &ptr[!r]; }
-#define MOVE { if(d) pc = a; else pc += (signed char)a; }
+#define MOVE { pc = d ? a : pc + (signed char)a; }
 #define JUMP(x) { c = ram[pc] << 8, c |= ram[pc + 1]; pc += x + 2; }
 #define DROP(o,m) { o = DEC; if(m) o |= DEC << 8; }
 #define GRAB(o) if(d) o[1] = DEC; o[0] = DEC;
@@ -499,12 +504,6 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define DEVI(i,r) r[0] = emu_dei(i); if(d) r[1] = emu_dei(i + 1);
 #define POKE(o,r,m) ram[o] = r[0]; if(d) ram[(o + 1) & m] = r[1];
 #define PEEK(i,r,m) r[0] = ram[i]; if(d) r[1] = ram[(i + 1) & m];
-
-#define OPC(opc, A, B) {\
-case 0x00|opc:case 0x40|opc:{const int d=0;A B} goto step;\
-case 0x20|opc:case 0x60|opc:{const int d=1;A B} goto step;\
-case 0x80|opc:case 0xc0|opc:{const int d=0;int k=*p; A *p=k;B} goto step;\
-case 0xa0|opc:case 0xe0|opc:{const int d=1;int k=*p; A *p=k;B} goto step;}
 
 static unsigned
 uxn_eval(Uint16 pc)
@@ -517,9 +516,9 @@ step: {
 	/* JCI */ case 0x20:if(DEC) JUMP(c) else pc += 2; goto step;
 	/* JMI */ case 0x40:JUMP(c) goto step;
 	/* JSI */ case 0x60:JUMP(0) INC = pc >> 8; INC = pc; pc += c; goto step;
-	/* LI2 */ case 0xa0:INC = ram[pc++];
+	/* LI2 */ case 0xa0:INC = ram[pc++]; /* Fall-through */
 	/* LIT */ case 0x80:INC = ram[pc++]; goto step;
-	/* L2r */ case 0xe0:INC = ram[pc++];
+	/* L2r */ case 0xe0:INC = ram[pc++]; /* Fall-through */
 	/* LIr */ case 0xc0:INC = ram[pc++]; goto step;
 	/* INC */ OPC(0x01,DROP(a,d),PUSH(a + 1,d))
 	/* POP */ OPC(0x02,REM,(void)s;)
