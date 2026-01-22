@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+typedef signed char Sint8;
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 
@@ -24,20 +25,18 @@ emu_deo(const Uint8 port, const Uint8 value)
 }
 
 #define OPC(opc, A, B) {\
-	case 0x00|opc:case 0x40|opc:{const int d=0;A B} goto step;\
-	case 0x20|opc:case 0x60|opc:{const int d=1;A B} goto step;\
-	case 0x80|opc:case 0xc0|opc:{const int d=0,k=*p;A *p=k;B} goto step;\
-	case 0xa0|opc:case 0xe0|opc:{const int d=1,k=*p;A *p=k;B} goto step;}
-#define REM *p -= 1 + d;
+	case 0x00|opc:case 0x40|opc:{const int d=0;A B} break;\
+	case 0x20|opc:case 0x60|opc:{const int d=1;A B} break;\
+	case 0x80|opc:case 0xc0|opc:{const int d=0,k=*p;A *p=k;B} break;\
+	case 0xa0|opc:case 0xe0|opc:{const int d=1,k=*p;A *p=k;B} break;}
 #define DEC s[--(*p)]
 #define INC s[(*p)++]
 #define FLIP s = stk[!r], p = &ptr[!r];
-#define MOVE pc = d ? a : pc + (signed char)a;
 #define JUMP(x) c = ram[pc] << 8, c |= ram[pc + 1], pc += x + 2;
 #define DROP(o,m) o = DEC; if(m) o |= DEC << 8;
-#define GRAB(o) if(d) o[1] = DEC; o[0] = DEC;
+#define TAKE(o) if(d) o[1] = DEC; o[0] = DEC;
 #define PUSH(i,m) { if(m) c = (i), INC = c >> 8, INC = c; else INC = i; }
-#define TAKE(i) INC = i[0]; if(d) INC = i[1];
+#define GIVE(i) INC = i[0]; if(d) INC = i[1];
 #define DEVO(o,r) emu_deo(o, r[0]); if(d) emu_deo(o + 1, r[1]);
 #define DEVI(i,r) r[0] = emu_dei(i); if(d) r[1] = emu_dei(i + 1);
 #define POKE(o,r,m) ram[o] = r[0]; if(d) ram[(o + 1) & m] = r[1];
@@ -47,40 +46,40 @@ static unsigned
 uxn_eval(Uint16 pc)
 {
 	Uint16 a, b, c, x[2], y[2], z[2];
-step: {
+	for(;;) {
 	Uint8 op = ram[pc++], r = (op >> 6) & 1, *s = stk[r], *p = &ptr[r];
 	switch(op) {
 	/* BRK */ case 0x00:return 1;
-	/* JCI */ case 0x20:if(DEC) JUMP(c) else pc += 2; goto step;
-	/* JMI */ case 0x40:JUMP(c) goto step;
-	/* JSI */ case 0x60:JUMP(0) INC = pc >> 8; INC = pc; pc += c; goto step;
+	/* JCI */ case 0x20:if(DEC) JUMP(c) else pc += 2; break;
+	/* JMI */ case 0x40:JUMP(c) break;
+	/* JSI */ case 0x60:JUMP(0) INC = pc >> 8; INC = pc; pc += c; break;
 	/* LI2 */ case 0xa0:INC = ram[pc++]; /* Fall-through */
-	/* LIT */ case 0x80:INC = ram[pc++]; goto step;
+	/* LIT */ case 0x80:INC = ram[pc++]; break;
 	/* L2r */ case 0xe0:INC = ram[pc++]; /* Fall-through */
-	/* LIr */ case 0xc0:INC = ram[pc++]; goto step;
+	/* LIr */ case 0xc0:INC = ram[pc++]; break;
 	/* INC */ OPC(0x01,DROP(a,d),PUSH(a + 1,d))
-	/* POP */ OPC(0x02,REM,(void)s;)
-	/* NIP */ OPC(0x03,GRAB(x) REM,TAKE(x))
-	/* SWP */ OPC(0x04,GRAB(x) GRAB(y),TAKE(x) TAKE(y))
-	/* ROT */ OPC(0x05,GRAB(x) GRAB(y) GRAB(z),TAKE(y) TAKE(x) TAKE(z))
-	/* DUP */ OPC(0x06,GRAB(x),TAKE(x) TAKE(x))
-	/* OVR */ OPC(0x07,GRAB(x) GRAB(y),TAKE(y) TAKE(x) TAKE(y))
+	/* POP */ OPC(0x02,*p -= 1 + d;,{})
+	/* NIP */ OPC(0x03,TAKE(x) *p -= 1 + d;,GIVE(x))
+	/* SWP */ OPC(0x04,TAKE(x) TAKE(y),GIVE(x) GIVE(y))
+	/* ROT */ OPC(0x05,TAKE(x) TAKE(y) TAKE(z),GIVE(y) GIVE(x) GIVE(z))
+	/* DUP */ OPC(0x06,TAKE(x),GIVE(x) GIVE(x))
+	/* OVR */ OPC(0x07,TAKE(x) TAKE(y),GIVE(y) GIVE(x) GIVE(y))
 	/* EQU */ OPC(0x08,DROP(a,d) DROP(b,d),PUSH(b == a,0))
 	/* NEQ */ OPC(0x09,DROP(a,d) DROP(b,d),PUSH(b != a,0))
 	/* GTH */ OPC(0x0a,DROP(a,d) DROP(b,d),PUSH(b > a,0))
 	/* LTH */ OPC(0x0b,DROP(a,d) DROP(b,d),PUSH(b < a,0))
-	/* JMP */ OPC(0x0c,DROP(a,d),MOVE)
-	/* JCN */ OPC(0x0d,DROP(a,d) DROP(b,0),if(b) MOVE)
-	/* JSR */ OPC(0x0e,DROP(a,d),FLIP PUSH(pc,1) MOVE)
-	/* STH */ OPC(0x0f,GRAB(x),FLIP PUSH(x[0],0) if(d) PUSH(x[1],0))
-	/* LDZ */ OPC(0x10,DROP(a,0),PEEK(a, x, 0xff) TAKE(x))
-	/* STZ */ OPC(0x11,DROP(a,0) GRAB(y),POKE(a, y, 0xff))
-	/* LDR */ OPC(0x12,DROP(a,0),PEEK(pc + (signed char)a, x, 0xffff) TAKE(x))
-	/* STR */ OPC(0x13,DROP(a,0) GRAB(y),POKE(pc + (signed char)a, y, 0xffff))
-	/* LDA */ OPC(0x14,DROP(a,1),PEEK(a, x, 0xffff) TAKE(x))
-	/* STA */ OPC(0x15,DROP(a,1) GRAB(y),POKE(a, y, 0xffff))
-	/* DEI */ OPC(0x16,DROP(a,0),DEVI(a, x) TAKE(x))
-	/* DEO */ OPC(0x17,DROP(a,0) GRAB(y),DEVO(a, y))
+	/* JMP */ OPC(0x0c,DROP(a,d),pc = d ? a : pc + (Sint8)a;)
+	/* JCN */ OPC(0x0d,DROP(a,d) DROP(b,0),if(b) pc = d ? a : pc + (Sint8)a;)
+	/* JSR */ OPC(0x0e,DROP(a,d),FLIP PUSH(pc,1) pc = d ? a : pc + (Sint8)a;)
+	/* STH */ OPC(0x0f,TAKE(x),FLIP PUSH(x[0],0) if(d) PUSH(x[1],0))
+	/* LDZ */ OPC(0x10,DROP(a,0),PEEK(a, x, 0xff) GIVE(x))
+	/* STZ */ OPC(0x11,DROP(a,0) TAKE(y),POKE(a, y, 0xff))
+	/* LDR */ OPC(0x12,DROP(a,0),PEEK(pc + (Sint8)a, x, 0xffff) GIVE(x))
+	/* STR */ OPC(0x13,DROP(a,0) TAKE(y),POKE(pc + (Sint8)a, y, 0xffff))
+	/* LDA */ OPC(0x14,DROP(a,1),PEEK(a, x, 0xffff) GIVE(x))
+	/* STA */ OPC(0x15,DROP(a,1) TAKE(y),POKE(a, y, 0xffff))
+	/* DEI */ OPC(0x16,DROP(a,0),DEVI(a, x) GIVE(x))
+	/* DEO */ OPC(0x17,DROP(a,0) TAKE(y),DEVO(a, y))
 	/* ADD */ OPC(0x18,DROP(a,d) DROP(b,d),PUSH(b + a,d))
 	/* SUB */ OPC(0x19,DROP(a,d) DROP(b,d),PUSH(b - a,d))
 	/* MUL */ OPC(0x1a,DROP(a,d) DROP(b,d),PUSH(b * a,d))
