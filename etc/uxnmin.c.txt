@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-typedef signed char Sint8;
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 
@@ -32,6 +31,7 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define DEC s[--(*p)]
 #define INC s[(*p)++]
 #define FLIP s = stk[!r], p = &ptr[!r];
+#define RELA pc + (signed char)a
 #define JUMP(x) c = ram[pc] << 8, c |= ram[pc + 1], pc += x + 2;
 #define DROP(o,m) o = DEC; if(m) o |= DEC << 8;
 #define TAKE(o) if(d) o[1] = DEC; o[0] = DEC;
@@ -68,14 +68,14 @@ uxn_eval(Uint16 pc)
 	/* NEQ */ OPC(0x09,DROP(a,d) DROP(b,d),PUSH(b != a,0))
 	/* GTH */ OPC(0x0a,DROP(a,d) DROP(b,d),PUSH(b > a,0))
 	/* LTH */ OPC(0x0b,DROP(a,d) DROP(b,d),PUSH(b < a,0))
-	/* JMP */ OPC(0x0c,DROP(a,d),pc = d ? a : pc + (Sint8)a;)
-	/* JCN */ OPC(0x0d,DROP(a,d) DROP(b,0),if(b) pc = d ? a : pc + (Sint8)a;)
-	/* JSR */ OPC(0x0e,DROP(a,d),FLIP PUSH(pc,1) pc = d ? a : pc + (Sint8)a;)
+	/* JMP */ OPC(0x0c,DROP(a,d),pc = d ? a : RELA;)
+	/* JCN */ OPC(0x0d,DROP(a,d) DROP(b,0),if(b) pc = d ? a : RELA;)
+	/* JSR */ OPC(0x0e,DROP(a,d),FLIP PUSH(pc,1) pc = d ? a : RELA;)
 	/* STH */ OPC(0x0f,TAKE(x),FLIP PUSH(x[0],0) if(d) PUSH(x[1],0))
 	/* LDZ */ OPC(0x10,DROP(a,0),PEEK(a, x, 0xff) GIVE(x))
 	/* STZ */ OPC(0x11,DROP(a,0) TAKE(y),POKE(a, y, 0xff))
-	/* LDR */ OPC(0x12,DROP(a,0),PEEK(pc + (Sint8)a, x, 0xffff) GIVE(x))
-	/* STR */ OPC(0x13,DROP(a,0) TAKE(y),POKE(pc + (Sint8)a, y, 0xffff))
+	/* LDR */ OPC(0x12,DROP(a,0),PEEK(RELA, x, 0xffff) GIVE(x))
+	/* STR */ OPC(0x13,DROP(a,0) TAKE(y),POKE(RELA, y, 0xffff))
 	/* LDA */ OPC(0x14,DROP(a,1),PEEK(a, x, 0xffff) GIVE(x))
 	/* STA */ OPC(0x15,DROP(a,1) TAKE(y),POKE(a, y, 0xffff))
 	/* DEI */ OPC(0x16,DROP(a,0),DEVI(a, x) GIVE(x))
