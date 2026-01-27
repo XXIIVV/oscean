@@ -9,6 +9,7 @@
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 |0100 @WIDTH
+|00f0 @WIDTH-10
 |2000 @dir/SZ
 |2000 @folders/SZ
 |4000 @tracks/SZ
@@ -55,7 +56,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "6 20 "Jan 20 "2026 $2
+	( date ) "26 20 "Jan 20 "2026 $2
 
 (
 @|macros )
@@ -123,34 +124,16 @@
 	POP2 .Mouse/x DEI2
 	( | handlers )
 	DUP2 #0024 GTH2 ?{ POP2 BRK }
-	DUP2 #003c GTH2 ?{
-		controls/<toggle-repeat>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
-	DUP2 #0050 GTH2 ?{
-		controls/<decr-volume>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
-	DUP2 #0070 GTH2 ?{
-		<skip-prev>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
-	DUP2 #0080 GTH2 ?{
-		<send-pause>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
-	DUP2 #00ac GTH2 ?{
-		<skip-next>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
-	DUP2 #00c4 GTH2 ?{
-		controls/<incr-volume>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
-	DUP2 #00d8 GTH2 ?{
-		controls/<toggle-shuffle>
-		;on-mouse-locked .Mouse/vector DEO2
-		POP2 BRK }
+	DUP2 #003c GTH2 ?{ controls/<toggle-repeat> !/lock }
+	DUP2 #0050 GTH2 ?{ controls/<decr-volume> !/lock }
+	DUP2 #0070 GTH2 ?{ <skip-prev> !/lock }
+	DUP2 #0090 GTH2 ?{ <send-pause> !/lock }
+	DUP2 #00ac GTH2 ?{ <skip-next> !/lock }
+	DUP2 #00c4 GTH2 ?{ controls/<incr-volume> !/lock }
+	DUP2 #00d8 GTH2 ?{ controls/<toggle-shuffle> }
+	( >> )
+	&lock ( x* -> )
+	;on-mouse-locked .Mouse/vector DEO2
 	POP2 BRK
 
 	&seeker ( -> )
@@ -395,7 +378,7 @@
 
 @controls/<decr-volume> ( -- )
 	.&volume LDZ
-	( clamp ) DUP #00 NEQ ?{ POP JMP2r }
+	( clamp ) DUP ?{ POP JMP2r }
 	#01 SUB !/<set-volume>
 
 @controls/<incr-volume> ( -- )
@@ -523,8 +506,7 @@
 	( >> )
 
 @<fit-window> ( -- )
-	#00
-	( folders ) .lines/folders LDZ
+	( folders ) [ LIT2 00 -lines/folders ] LDZ
 	( tracks ) .lines/tracks LDZ ADD #18 min
 	( empty ) DUP #00 EQU ADD #40 SFT2
 	( padding ) #0020 ADD2
@@ -558,14 +540,6 @@
 
 	&hidden ( line* -- )
 	POP2 JMP2r
-
-@str-prefix ( a* b* -- len )
-	STH2
-	DUP2 ,&a0 STR2
-	&>loop
-		LDAk LDAkr STHr NEQk ?{
-			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
-	POP2 POP2r [ LIT2 &a0 $2 ] SUB2 NIP JMP2r
 
 @<post-refresh> ( -- )
 	common-folder-prefix .prefix/folders STZ
@@ -820,7 +794,7 @@
 			POPr [ LITr 05 ] }
 		( | gizmo )
 		[ LIT2 15 -Screen/auto ] DEO
-		;WIDTH #0010 SUB2 .Screen/x DEO2
+		;WIDTH-10 .Screen/x DEO2
 		.Screen/y DEI2
 		( ) #03c0 ;chicago/glyphs ADD2 .Screen/addr DEO2
 		DUPr [ LITr -Screen/sprite ] DEOr
@@ -982,11 +956,19 @@
 		INC2r INC2 LDAk ?&>wcpy
 	POP2 POP2r JMP2r
 
+@str-prefix ( a* b* -- len )
+	STH2
+	DUP2 ,&a0 STR2
+	&>loop
+		LDAk LDAkr STHr NEQk ?{
+			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>loop } }
+	POP2 POP2r [ LIT2 &a0 $2 ] SUB2 NIP JMP2r
+
 @str/lth ( a* b* -- a>b )
 	STH2
 	&>loop
 		LDAk LDAkr STHr SUBk ?{
-			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
+			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>loop } }
 	NIP2 LTH POP2r JMP2r
 
 @next-glyph ( addr* -- addr* )
@@ -1161,7 +1143,7 @@
 
 @chicago/get-str-width ( text* -- width* )
 	[ LIT2r 0000 ]
-	&>ww ( -- )
+	&>ww
 		/get-utf8-width STH2
 		( > ) ADD2r next-glyph LDAk ?&>ww
 	POP2 STH2r JMP2r
@@ -1212,10 +1194,9 @@
 @chicago/<draw-left-color> ( text* color -- )
 	,&color STR
 	[ LIT2 15 -Screen/auto ] DEO
-	;WIDTH #0010 SUB2 ,&bound STR2
-	&>wsc ( -- )
+	&>wsc
 		( | trim length )
-		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{
+		.Screen/x DEI2 [ LIT2 =WIDTH-10 ] LTH2 ?{
 			POP2 ;dict/ellipses /<draw-utf8>
 			/<draw-utf8>
 			POP2 JMP2r }
