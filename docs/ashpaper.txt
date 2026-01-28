@@ -1,0 +1,128 @@
+LANGUAGE SPECIFICATIONS
+_______________________________________________________________________________
+MEMORY
+This language makes use of two registers (register 0 and register 1),
+each of which can store one signed integer. It also makes use of a stack of
+unlimited size, which can also store signed integers.
+
+
+INSTRUCTIONS
+Every line of input text corresponds to exactly one instruction. The parser
+checks each line for the following features and compiles the line to the
+instruction listed first in the following list. In the summary of instructions,
+"the active register" refers to either register 0 or register 1 depending on
+whether the line deviates or not from the left margin. Thus, whitespace IS
+significant in both the placement of newlines and the presence of whitespace
+characters immediately following said newlines.
+
+1. End rhyme with previous line: If register 0 < register 1, push the number of
+syllables present in the previous line to the stack. Otherwise, push the number of
+syllables in the current line to the stack.
+2. "/" appears in line: If active register > number of syllables in line, goto
+line number indicated by non-active register.
+3. Capital letter appears within a word: Negate active register
+4. Capital letter appears at beginning of word: Multiply registers and store to
+active register
+5. "like" or "as" appears in line: Add registers and store in indicated
+register
+6. "?" appears in line: Print ascii character indicated by value of active
+register
+7. "." appears in line: Print value of active register
+8. "," appears in line: Pop stack and store in active register
+9. "-" appears in line: Push value of active register to stack
+10. Alliteration in consecutive words: Goto line indicated by active register
+11. Blank line: no-op
+12. Anything else: Store the number of syllables to the active register
+
+
+
+EXAMPLE
+_______________________________________________________________________________
+The following is an example text which implements a recursive algorithm for
+calculating factorials. By changing the number of syllables in the title, one
+can change the input number.
+
+
+other woodwork
+
+    like a folding
+   up, a
+  branch-work growth
+              of
+      AshPaper trees come together
+as we demand
+      perfect edges, impossible creases
+  a Scream of roots
+    toe-curled
+    inward
+gro(w/a)n
+    past lines of pebbles, into wellstones
+                              cracked. broken.
+perfect edges impossibly creased
+what's left of that?
+
+
+
+ANNOTATION
+_______________________________________________________________________________
+
+Here is the text again with explanations of what each line does.
+
+other woodwork   # Store number of syllables (4) in register 0 (indicated by no
+                 # deviation from left margin)
+    like a folding  # Add (keyword: like) register 0 to 1 and store in register
+                    # 1 (indicated by deviation from left margin)
+   up, a  # Pop (comma) the stack to register 1
+  branch-work growth # Push contents of register 1 to the stack
+              of  # Store number of syllables (1) in register 1
+      AshPaper trees come together  # Negate (capital within word) register 1
+as we demand  # Add (keyword: as) register 0 to register 1 and store in
+              # register 0
+      perfect edges, impossible creases  # Pop stack to register 1
+  a Scream of roots  # Multiply (capital in line) registers and store to
+                     # register 1
+    toe-curled  # Push register 1 to stack 
+    inward  # Store number of syllables (2) in register 1
+gro(w/a)n  # If register 0 > number of syllables (1), goto line number
+           # indicated by register 1
+    past lines of pebbles, into wellstones  # Pop stack, store in register 1
+                              cracked. broken. # Print value in register 1
+perfect edges impossibly creased  # Store number of syllables (10) in register
+                                  # 0
+what's left of that?  # Print ASCII character (newline) indicated by register 0
+
+
+
+EXECUTION
+_______________________________________________________________________________
+Here is the text as it is read by the machine during execution, with the state
+of the registers and stack following execution of each line.
+
+                                                   | Reg 0 | Reg 1 |  Stack  |
+                                                   |       |       |         | 
+                                                   |   0   |   0   |   [ ]   | 
+other woodwork                                     |   4   |   0   |   [ ]   |
+    like a folding                                 |   4   |   4   |   [ ]   |
+   up, a                                           |   4   |   4   |   [ ]   |
+  branch-work growth                               |   4   |   4   |   [4]   |
+              of                                   |   4   |   1   |   [4]   |
+      AshPaper trees come together                 |   4   |   -1  |   [4]   |
+as we demand                                       |   3   |   -1  |   [4]   |
+      perfect edges, impossible creases            |   3   |   4   |   [ ]   |
+  a Scream of roots                                |   3   |   12  |   [ ]   |
+    toe-curled                                     |   3   |   12  |   [12]  |
+    inward                                         |   3   |   2   |   [12]  |
+   up, a                                           |   3   |   12  |   [ ]   |
+  branch-work growth                               |   3   |   12  |   [12]  |
+              of                                   |   3   |   1   |   [12]  |
+      AllPaper trees come together                 |   3   |   -1  |   [12]  |
+as we demand                                       |   2   |   -1  |   [12]  |
+      perfect edges, impossible creases            |   2   |   12  |   [ ]   |
+  a Scream of roots                                |   2   |   24  |   [ ]   |
+    toe-curled                                     |   2   |   24  |   [24]  |
+    inward                                         |   2   |   2   |   [24]  |
+gro(w/a)n                                          |   2   |   2   |   [24]  |
+    past lines of pebbles, into wellstones         |   2   |   24  |   [ ]   |
+                              cracked. broken.     |   2   |   24  |   [ ]   |
+perfect edges impossibly creased                   |   10  |   24  |   [ ]   |
+what's left of that?                               |   10  |   24  |   [ ]   |
