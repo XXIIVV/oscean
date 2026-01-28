@@ -1,0 +1,57 @@
+( Ash The Paperboy )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+
+|100
+
+@on-reset ( -> )
+	;soundex/on-console .Console/vector DEO2
+	BRK
+
+@soundex/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		,&ptr LDR2 ;&d GTH2 ?{
+			.Console/read DEI chr/uc /parse BRK } }
+	( | Print result )
+	;&a LDA .Console/write DEO
+	;&b LDA .Console/write DEO
+	;&c LDA .Console/write DEO
+	;&d LDA .Console/write DEO
+	( lb ) [ LIT2 0a -Console/write ] DEO
+	( halt ) #800f DEO
+	BRK
+
+@soundex/parse ( c -- )
+	;&a ,&ptr LDR2 EQU2 ?{ /get-value !/<push> }
+	DUP /<push>
+	/get-value ,&last STR
+	JMP2r
+
+@soundex/<push> ( c -- )
+	( not nil ) DUP LIT "0 NEQ ?{
+		( reset last ) [ LIT2 00 _&last ] STR
+		POP JMP2r }
+	( not dup ) DUP [ LIT &last $1 ] NEQ ?{ POP JMP2r }
+	( record ) DUP ,&last STR
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@soundex/get-value ( chr -- res )
+	LIT "A SUB DUP #1a LTH ?{ POP LIT "0 JMP2r }
+	#00 SWP ;&lut ADD2 LDA JMP2r
+
+@soundex/lut [
+	"0 "1 "2 "3 "0 "1 "2 "0 "0 "2 "2 "4 "5 "5 "0 "1
+	"2 "6 "2 "3 "0 "1 "0 "2 "0 "2 ]
+
+@chr/uc ( c -- upper )
+	DUP LIT "a SUB #19 GTH ?{ #20 SUB }
+	JMP2r
+
+@soundex/buf
+	&a "0
+	&b "0
+	&c "0
+	&d "0
+
