@@ -1,15 +1,15 @@
-	( Left )
+( Left )
 
-|00 	@System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 	@Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
-|20 	@Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|80 	@Controller/vector $2 &button $1 &key $1
-|90 	@Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
-|a0 	@File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|0178 	@nav/width
-|0170 	@nav/width-8
-|0160 	@nav/width-inner
-|0017 	@glyph/sel
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|0178 @nav/width
+|0170 @nav/width-8
+|0160 @nav/width-inner
+|0017 @glyph/sel
 
 |000
 
@@ -60,7 +60,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "9 20 "Jan 20 "2026 $1 02
+	( date ) "31 20 "Jan 20 "2026 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -84,6 +84,14 @@
 	={ =dict/go
 	( - ) 01 "/ =path/pop-folder =dict/directory
 	( - ) 01 0d =path/push-selection =dict/selection }
+	={ =dict/find
+	( - ) 01 20 =search/capture-word =dict/symbol
+	( - ) 01 "f =search/capture =dict/selection }
+	={ =dict/select
+	( - ) 01 "a =sel/<select-all> =dict/all
+	( - ) 01 09 =sel/<select-word> =dict/word
+	( - ) 01 "l =sel/<select-line> =dict/line
+	( - ) 00 1b =reset-each =dict/reset }
 	={ =dict/format
 	( - ) 01 "t =format/strip =dict/strip
 	( - ) 01 "i =format/trim =dict/trim
@@ -93,14 +101,6 @@
 	( - ) 00 00 =format/uc =dict/uppercase
 	( - ) 00 09 =sel/<tab> =dict/tab
 	( - ) 04 09 =sel/<untab> =dict/untab }
-	={ =dict/select
-	( - ) 01 "a =sel/<select-all> =dict/all
-	( - ) 01 09 =sel/<select-word> =dict/word
-	( - ) 01 "l =sel/<select-line> =dict/line
-	( - ) 00 1b =reset-each =dict/reset }
-	={ =dict/find
-	( - ) 01 20 =search/capture-word =dict/symbol
-	( - ) 01 "f =search/capture =dict/selection }
 	={ =dict/view
 	( - ) 01 "h =highlight/toggle =dict/highlight
 	( - ) 05 "D =nav/toggle-categories =dict/categories
@@ -269,6 +269,9 @@
 	!/<set>
 	&reselect POP2 !/<select-word-at>
 
+@sel/<select-char> ( addr* -- )
+	INC2k !/<set>
+
 @sel/<select-word> ( -- )
 	sel/get-from
 	( >> )
@@ -386,7 +389,12 @@
 	[ LIT2 00 _&ptr ] LDR .&buf SUB JMP2r
 
 @search/inject ( -- )
-	;&buf !file/<inject>
+	sel/get-from ;&buf file/<inject>
+	sel/get-from SWP2
+	&>li
+		LDAk LIT "$ NEQ ?{ DUP2 sel/<select-char> }
+		INC2 GTH2k ?&>li
+	POP2 POP2 JMP2r
 
 @search/<draw-widget> ( -- )
 	caret/is-invisible ?{ ;&widget-fn #05 !widget/<draw> }
@@ -1229,11 +1237,6 @@
 
 	&get-latin ( addr* -- addr* glyph* )
 	LDA2k #c380 SUB2 #0030 MUL2 ;&latin-high ADD2 JMP2r
-
-	&get-blank ( addr* byte -- addr* glyph* )
-	DUP #09 NEQ ?{ POP ;&tab JMP2r }
-	DUP #0a NEQ ?{ POP ;&lb JMP2r }
-	POP ;&blank JMP2r
 
 @ank/get-strw ( str* -- width* )
 	[ LIT2r 0000 ]
@@ -2103,11 +2106,11 @@ b0b0 e080 8080 80e0 b0b0 b0e0 0000 0000
 0000 3f70 6060 6060 6266 6f6f 6662 6060
 6060 703f 0000 0000 0000 f038 1818 1818
 1818 d8d8 1818 1818 1818 38f0 0000 0000
-&tab
+( tab )
 0000 0000 0000 0000 0000 2000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
-&lb
+( brk )
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
