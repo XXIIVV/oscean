@@ -40,4 +40,3 @@ bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
 bin/img.rom: src/img.tal
 	@ ${ASM} src/img.tal bin/img.rom
-
