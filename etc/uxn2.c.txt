@@ -1195,6 +1195,14 @@ get_button(SDL_Event *event)
 }
 
 static Uint8
+get_mouse_button(Uint8 event)
+{
+	if(event == 2) return 4;
+	if(event == 4) return 2;
+	return event;
+}
+
+static Uint8
 get_button_joystick(SDL_Event *event)
 {
 	return 0x01 << (event->jbutton.button & 0x3);
@@ -1215,14 +1223,10 @@ get_key(SDL_Event *event)
 {
 	int sym = event->key.keysym.sym;
 	SDL_Keymod mods = SDL_GetModState();
-	if(sym < 0x20 || sym == SDLK_DELETE)
+	if(sym < 0x20 || sym < SDLK_a || sym == SDLK_DELETE)
 		return sym;
-	if(mods & KMOD_CTRL) {
-		if(sym < SDLK_a)
-			return sym;
-		else if(sym <= SDLK_z)
-			return sym - (mods & KMOD_SHIFT) * 0x20;
-	}
+	if(sym <= SDLK_z)
+		return sym - (mods & KMOD_SHIFT) * 0x20;
 	return 0x00;
 }
 
@@ -1243,9 +1247,9 @@ emu_event(void)
 		else if(event.type == SDL_MOUSEMOTION)
 			mouse_pos(event.motion.x, event.motion.y);
 		else if(event.type == SDL_MOUSEBUTTONUP)
-			mouse_up(SDL_BUTTON(event.button.button));
+			mouse_up(get_mouse_button(SDL_BUTTON(event.button.button)));
 		else if(event.type == SDL_MOUSEBUTTONDOWN)
-			mouse_down(SDL_BUTTON(event.button.button));
+			mouse_down(get_mouse_button(SDL_BUTTON(event.button.button)));
 		else if(event.type == SDL_MOUSEWHEEL)
 			mouse_scroll(event.wheel.x, event.wheel.y);
 		/* Audio */
@@ -1254,11 +1258,7 @@ emu_event(void)
 			uxn_eval(port_value[0] << 8 | port_value[1]);
 		}
 		/* Controller */
-		else if(event.type == SDL_TEXTINPUT) {
-			char *c;
-			for(c = event.text.text; *c; c++)
-				controller_key(*c);
-		} else if(event.type == SDL_KEYDOWN) {
+		else if(event.type == SDL_KEYDOWN) {
 			int ksym;
 			if(get_key(&event))
 				controller_key(get_key(&event));
@@ -1401,7 +1401,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 21 Jan 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 1 Feb 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

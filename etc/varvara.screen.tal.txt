@@ -1,0 +1,217 @@
+( Screen:
+	Draws a table of all possible sprite arrangements. )
+
+|00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1
+
+|0000
+
+	@center &x $2 &y $2
+
+|0100 ( -> )
+
+	( vector )
+	;on-frame .Screen/vector DEO2
+	( theme )
+	#f07f .System/r DEO2
+	#f0e0 .System/g DEO2
+	#f0c0 .System/b DEO2
+	( gba screen size 00f0 x 00a0 )
+	( nds screen size 0100 x 00c0 )
+	#0100 .Screen/width DEO2
+	#00b0 .Screen/height DEO2
+	( find screen center )
+	.Screen/width DEI2 #01 SFT2 .center/x STZ2
+	.Screen/height DEI2 #01 SFT2 .center/y STZ2
+	( draw )
+	draw-size
+	draw-sprites
+	draw-1bpp
+	draw-2bpp
+
+BRK
+
+(
+@|vectors )
+
+@on-frame ( -> )
+
+	( scroll background )
+	[ LIT2 &f $2 ] INC2k ,&f STR2
+		#01 SFT2
+		#001f AND2
+		#0040 SUB2
+			DUP2 .Screen/x DEO2
+			.Screen/y DEO2
+	;patt-icn draw-fill
+
+	.center/x LDZ2 #0070 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0048 SUB2 .Screen/y DEO2
+	;anim-chr ,&f LDR2 #00ff AND2 #02 SFT #07 AND #40 SFT ADD2 .Screen/addr DEO2
+	#8f .Screen/sprite DEO
+
+	draw-size
+	draw-sprites
+	draw-1bpp
+	draw-2bpp
+
+BRK
+
+(
+@|drawing )
+
+@draw-sprites ( -- )
+
+	( horizontal )
+	.center/x LDZ2 #0060 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0048 SUB2 .Screen/y DEO2
+	;font-icn .Screen/addr DEO2
+	#f6 .Screen/auto DEO
+	#05 .Screen/sprite DEO
+	( vertical )
+	.center/x LDZ2 #0070 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0038 SUB2 .Screen/y DEO2
+	;font-icn .Screen/addr DEO2
+	#f5 .Screen/auto DEO
+	#05 .Screen/sprite DEO
+	( table )
+	#00 .Screen/auto DEO
+	;preview-chr .Screen/addr DEO2
+	#00
+	&loop
+		( move ) #00 OVR #0f AND #30 SFT
+			.center/x LDZ2 #0060 SUB2 ADD2 .Screen/x DEO2
+		( move ) #00 OVR #f0 AND #01 SFT
+			.center/y LDZ2 #0038 SUB2 ADD2 .Screen/y DEO2
+		( draw ) DUP .Screen/sprite DEO
+		INC DUP ?&loop
+	POP
+
+JMP2r
+
+@draw-1bpp ( -- )
+
+	#1000
+	&loop
+		( color ) STHk
+		( y ) #00 OVR #42 SFT2
+			.center/y LDZ2 #0038 SUB2 ADD2 STH2
+		( x ) #00 OVR #03 AND #40 SFT2 #0040 ADD2
+			.center/x LDZ2 #0010 SUB2 ADD2
+		STH2r STHr #00 draw-circle
+		INC GTHk ?&loop
+	POP2
+
+JMP2r
+
+@draw-2bpp ( -- )
+
+	#1000
+	&loop
+		( color ) STHk
+		( y ) #00 OVR #42 SFT2
+			.center/y LDZ2 #0008 ADD2 ADD2 STH2
+		( x ) #00 OVR #03 AND #40 SFT2 #0040 ADD2
+			.center/x LDZ2 #0010 SUB2 ADD2
+		STH2r STHr #80 draw-circle
+		INC GTHk ?&loop
+	POP2
+
+JMP2r
+
+@draw-circle ( x* y* color depth -- )
+
+	ADD STH
+	;preview-chr .Screen/addr DEO2
+	.Screen/y DEO2
+	.Screen/x DEO2
+	#01 .Screen/auto DEO
+	STHr .Screen/sprite DEOk
+	#02 .Screen/auto DEO
+	SWP #10 ADD SWP DEOk
+	.Screen/x DEI2k #0008 SUB2 ROT DEO2
+	#01 .Screen/auto DEO
+	SWP #10 ADD SWP DEOk
+	SWP #10 ADD SWP DEO
+
+JMP2r
+
+@draw-fill ( patt* color -- )
+
+	.Screen/addr DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	.Screen/x DEI2 ,&anchor STR2
+	.Screen/width DEI2 #03 SFT2 NIP #08 ADD ,&x STR
+	.Screen/height DEI2 #03 SFT2 NIP #08 ADD #00
+	&h
+		DUP #02 SFT STH
+		[ LIT &x $1 ] #00
+		&w
+			DUP #02 SFT STHkr ADD #01 AND .Screen/sprite DEO
+			INC GTHk ?&w
+			.Screen/y DEI2k #0008 ADD2 ROT DEO2
+			[ LIT2 &anchor $2 ] .Screen/x DEO2
+		POP2 POPr
+		INC GTHk ?&h
+	POP2
+
+JMP2r
+
+@draw-size ( -- )
+
+	#01 .Screen/auto DEO
+	.center/x LDZ2 #0030 ADD2 .Screen/x DEO2
+	.center/y LDZ2 #0048 SUB2 .Screen/y DEO2
+	.Screen/width DEI2 draw-dec
+	;x-icn .Screen/addr DEO2
+	#01 .Screen/sprite DEO
+	.Screen/height DEI2
+
+@draw-dec ( short* -- )
+
+	#00 ,&z STR
+	#2710 draw-dec/parse
+	#03e8 draw-dec/parse
+	#0064 draw-dec/parse
+	#000a draw-dec/parse
+	NIP
+	&emit
+		DUP [ LIT &z $1 ] EQU ?&skip
+			#ff ,&z STR #00 OVR #30 SFT ;font-icn ADD2 .Screen/addr DEO2
+			#01 .Screen/sprite DEO
+			&skip
+	POP
+
+JMP2r
+	&parse DIV2k DUP ,&emit JSR MUL2 SUB2 JMP2r
+
+(
+@|assets )
+
+@patt-icn [
+	aa55 aa55 aa55 aa55 ]
+@x-icn [
+	0000 0018 1800 0000 ]
+@preview-chr [
+	0f38 675f dfbf bfbf 0007 1820 2344 4848 ]
+@font-icn ( 0-f ) [
+	007c 8282 8282 827c 0030 1010 1010 1010
+	007c 8202 7c80 80fe 007c 8202 1c02 827c
+	000c 1424 4484 fe04 00fe 8080 7c02 827c
+	007c 8280 fc82 827c 007c 8202 1e02 0202
+	007c 8282 7c82 827c 007c 8282 7e02 827c
+	007c 8202 7e82 827e 00fc 8282 fc82 82fc
+	007c 8280 8080 827c 00fc 8282 8282 82fc
+	007c 8280 f080 827c 007c 8280 f080 8080 [
+@anim-chr [
+	0000 0018 1800 0000 c381 0000 0000 81c3 
+	0000 183c 3c18 0000 0000 0000 0000 0000
+	0018 3c7e 7e3c 1800 0000 0000 0000 0000 
+	3c7e ffe7 e7ff 7e3c 0000 0018 1800 0000
+	ffff e7c3 c3e7 ffff 0000 183c 3c18 0000 
+	ffe7 c381 81c3 e7ff 0018 3c7e 7e3c 1800
+	c381 0000 0000 81c3 3c7e ffe7 e7ff 7e3c 
+	0000 0000 0000 0000 ffff e7c3 c3e7 ffff
+	0000 0000 0000 0000 ffe7 c381 81c3 e7ff ]
+
