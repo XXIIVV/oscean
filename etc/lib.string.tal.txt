@@ -1,0 +1,256 @@
+( lib.string )
+
+@on-reset ( -> )
+	;tests/end ;tests
+	&>l
+		LDA2k JSR2 test INC2 INC2 GTH2k ?&>l
+	POP2 POP2
+	( lb ) #0a18 DEO
+	( debugger ) #010e DEO
+	( exit ) #800f DEO
+	BRK
+
+@test ( f -- )
+	#30 ADD #18 DEO
+	JMP2r
+
+(
+@|tests )
+
+@tests ( .. )
+	=scmp/test-1 =scmp/test-2 =scmp/test-3 =scmp/test-4 ]
+	( shex ) [
+	=shex/test-0 =shex/test-1 =shex/test-2 =shex/test-3
+	=shex/test-4 =shex/test-5 =shex/test-6 =shex/test-7 ]
+	( sdec ) [
+	=sdec/test-0 =sdec/test-1 =sdec/test-2 =sdec/test-3
+	=sdec/test-4 =sdec/test-5 =sdec/test-6 =sdec/test-7 ]
+	( .. ) [
+	=mcmp/test-0 =mcmp/test-1 =mcmp/test-2 =mcmp/test-3
+	=mcmp/test-4 ]
+	( .. ) [
+	=test-scpy1 =test-dec1 =test-dec2 =test-dec3
+	=test-dec4 ]
+	( .. ) [ =chr/test ] &end $2
+
+@test-dec1 #0a18 DEO
+	;dict/dec1 sdec #1234 EQU2 JMP2r
+
+@test-dec2 ;dict/dec2 sdec #0123 EQU2 JMP2r
+
+@test-dec3 ;dict/dec3 sdec #0000 EQU2 JMP2r
+
+@test-dec4 ;dict/dec4 sdec #0000 EQU2 JMP2r
+
+@test-scpy1 #0a18 DEO
+	{ "hello 00 }
+	STH2kr ;&buf <scpy>
+	STH2r ;&buf scmp #01 EQU JMP2r
+	&buf $10
+
+(
+@|scmp )
+
+@scmp ( a* b* -- f )
+	STH2
+	&>l
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>l
+
+	&test-1 ( )
+	( a ) [ { "text 00 } STH2r ]
+	( b ) [ { "text 00 } STH2r ] scmp #01 EQU JMP2r
+
+	&test-2 ( )
+	( a ) [ { "text 00 } STH2r ]
+	( b ) [ { "te 00 } STH2r ] scmp #00 EQU JMP2r
+
+	&test-3 ( )
+	( a ) [ { "textext 00 } STH2r ]
+	( b ) [ { "text 00 } STH2r ] scmp #00 EQU JMP2r
+
+	&test-4 ( )
+	( a ) [ { 00 "ext 00 } STH2r ]
+	( b ) [ { "text 00 } STH2r ] scmp #00 EQU JMP2r
+
+@shex ( str* -- value* )
+	[ LIT2r 0000 ]
+	&>w
+		[ LITr 40 ] SFT2r LDAk chr/hex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&>w
+	POP2 STH2r JMP2r
+	&test-0 #00 [ #0a18 DEO ] JMP2r
+	&test-1 ;dict/0 shex #0000 EQU2 JMP2r
+	&test-2 ;dict/90 shex #0090 EQU2 JMP2r
+	&test-3 ;dict/0a shex #000a EQU2 JMP2r
+	&test-4 ;dict/9a shex #009a EQU2 JMP2r
+	&test-5 ;dict/01af shex #01af EQU2 JMP2r
+	&test-6 ;dict/1af0 shex #1af0 EQU2 JMP2r
+	&test-7 ;dict/1af shex #01af EQU2 JMP2r
+
+@sdec ( str* -- val* )
+	[ LIT2r 0000 ]
+	&>w
+		( val ) LDAk [ LIT "0 ] SUB #09 GTH ?{
+			( acc ) [ LIT2r 000a ] MUL2r
+			( mix ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
+			ADD2r INC2 LDAk ?&>w }
+	POP2 STH2r JMP2r
+	&test-0 #00 [ #0a18 DEO ] JMP2r
+	&test-1 ;dict/0 sdec #0000 EQU2 JMP2r
+	&test-2 ;dict/1 sdec #0001 EQU2 JMP2r
+	&test-3 ;dict/10 sdec #000a EQU2 JMP2r
+	&test-4 ;dict/90 sdec #005a EQU2 JMP2r
+	&test-5 ;dict/09 sdec #0009 EQU2 JMP2r
+	&test-6 ;dict/12340 sdec #3034 EQU2 JMP2r
+	&test-7 ;dict/65535 sdec #ffff EQU2 JMP2r
+
+(
+@|stdlib )
+
+@scap ( str* -- end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@slen ( str* -- len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
+
+@<scpy> ( src* dst* -- )
+	STH2
+	&w ( src* `dst* -- )
+	LDAk #00 STH2kr STA2
+	INC2r INC2 LDAk ?&w
+	POP2 POP2r JMP2r
+
+@<sput> ( chr str* -- )
+	STH2
+	#00 STH2r scap/ STA2
+	JMP2r
+
+@<sclr> ( str* -- )
+	STH2
+	#00 STH2r
+	&w ( -- )
+	STAk INC2 LDAk ?&w
+	STA
+	JMP2r
+
+@mcmp ( a* length* b* -- t )
+	STH2
+	OVR2 ADD2 SWP2
+	&>l
+		LDAk LDAkr STHr NEQ ?{ INC2 INC2r GTH2k ?&>l }
+	POP2r EQU2 JMP2r
+	&test-0 #00 [ #0a18 DEO ] JMP2r
+	&test-1 ;dict/12340 #0002 ;dict/12340 !mcmp
+	&test-2 ;dict/12340 #0005 ;dict/65535 mcmp #00 EQU JMP2r
+	&test-3 ;dict/1234 #0004 ;dict/12340 !mcmp
+	&test-4 ;dict/1234 #0005 ;dict/12340 mcmp #00 EQU JMP2r
+
+(
+@|chr )
+
+@chr/test ( -- value )
+	;&name str/<print>
+	( | lc )
+	LIT "a /lc LIT "a NEQ ?&fail
+	LIT "A /lc LIT "a NEQ ?&fail
+	LIT "Z /lc LIT "z NEQ ?&fail
+	LIT "[ /lc LIT "[ NEQ ?&fail
+	LIT "@ /lc LIT "@ NEQ ?&fail
+	( | uc )
+	LIT "A /uc LIT "A NEQ ?&fail
+	LIT "a /uc LIT "A NEQ ?&fail
+	LIT "z /uc LIT "Z NEQ ?&fail
+	LIT "[ /uc LIT "[ NEQ ?&fail
+	LIT "@ /uc LIT "@ NEQ ?&fail
+	( | hex )
+	LIT "0 /hex #00 NEQ ?&fail
+	LIT "1 /hex #01 NEQ ?&fail
+	LIT "9 /hex #09 NEQ ?&fail
+	LIT "a /hex #0a NEQ ?&fail
+	LIT "f /hex #0f NEQ ?&fail
+	LIT "g /hex #ff NEQ ?&fail
+	LIT 00 /hex #ff NEQ ?&fail
+	#01 JMP2r
+	&fail #00 JMP2r
+
+@chr/lc ( c -- lowercase )
+	DUP LIT "A SUB #19 GTH ?{ #20 ADD }
+	JMP2r
+
+@chr/uc ( c -- lowercase )
+	DUP LIT "a SUB #19 GTH ?{ #20 SUB }
+	JMP2r
+
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
+@chr/name 0a "chr: 20 $1
+
+(
+@|str )
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+(
+@|print )
+
+@<phex> ( short* -- )
+	SWP /b
+	&b ( byte -- )
+	DUP #04 SFT /c
+	&c ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@<pdec> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&>w
+		( short* size* `acc* -- ) DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&e
+		DUP [ LIT "0 ] ADD #19 DEO
+		INCr
+		&e ( short* size* `acc* -- )
+		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
+	POP2r POP2 POP2 JMP2r
+
+@<pmem> ( addr* -- )
+	#0000
+	&l ( -- )
+	ADD2k LDA <phex>/b
+	DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
+	INC NEQk ?&l
+	POP2 POP2 JMP2r
+
+(
+@|assets )
+
+@dict
+	&dec1 "4660 $1
+	&dec2 "291 $1
+	&dec3 "0 $1
+	&dec4 "q2x*63? $1
+	&hex1 "12c0 $1
+	&hex2 "34f $1
+	&hex3 "0 $1
+	&hex4 "q2x*63? $1
+	&0 "0 $1
+	&90 "90 $1
+	&0a "0a $1
+	&9a "9a $1
+	&01af "01af $1
+	&1af0 "1af0 $1
+	&1af "1af $1
+	&10 "10 $1
+	&1 "1 $1
+	&09 "09 $1
+	&1234 "1234 $1
+	&12340 "12340 $1
+	&65535 "65535 $1
+

@@ -1,0 +1,108 @@
+( lib.date )
+
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|100
+
+@on-reset ( -> )
+	( | Doty )
+	.DateTime/doty DEI2 #1a DEO2
+	#2018 DEO
+	.DateTime/year DEI2 .DateTime/month DEI .DateTime/day DEI year-month-day/doty #1a DEO2
+	#0a18 DEO
+	( | Date Format )
+	.DateTime/doty DEI2 .DateTime/year DEI2 doty-year/year-month-day year-month-day/<print>
+	#0a18 DEO
+	.DateTime/year DEI2 .DateTime/month DEI .DateTime/day DEI year-month-day/doty .DateTime/year DEI2 doty-year/year-month-day year-month-day/<print>
+	#0a18 DEO
+	BRK
+
+@year-month-day/<print> ( year* month day -- )
+	OVR2 OVR2 year-month-day/dotw dotw/<print>
+	LIT2 ", 18 DEO
+	#2018 DEO
+	#00 SWP dec/<print>
+	#2018 DEO
+	month/<print>
+	#2018 DEO !dec/<print>
+
+@year-month-day/doty ( year* month day -- doty* )
+	SWP2 ,&y STR2
+	( acc ) LITr 00 STH
+	#00
+	&>l
+		EQUk ?{
+			DUP [ LIT2 &y $2 ] ROT year-month/days STH2
+			ADD2r INC GTHk ?&>l }
+	POP STH2r #0001 SUB2 JMP2r
+
+@year-month-day/dotw ( year* m d -- dotw )
+	( y -= m < 3; ) OVR STH
+	SWP2 #00 STHr #02 LTH SUB2 STH2
+	( t[m-1] + d ) #00 ROT ;&lut ADD2 LDA #00 SWP ROT #00 SWP ADD2
+	( y + y/4 - y/100 + y/400 ) STH2kr STH2kr #02 SFT2 ADD2 STH2kr
+	( /100 ) #0064 DIV2 SUB2 STH2r #0190 DIV2 ADD2 ADD2
+	( % 7 ) #0007 DIV2k MUL2 SUB2 NIP JMP2r
+
+	&lut [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
+
+@year-month/days ( year* month -- days )
+	#00 OVR ;&lut ADD2 LDA SWP #01 NEQ ?{
+		STH
+		DUP2 year/is-leap STHr ADD }
+	NIP NIP JMP2r
+
+	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
+
+@year/is-leap ( year* -- bool )
+	DUP2 #0190 DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
+	DUP2 #0064 DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
+	#0003 AND2 #0000 EQU2 JMP2r
+	&not-leap POP2 #00 JMP2r
+	&leap POP2 #01 JMP2r
+
+@doty-year/year-month-day ( doty* year* -- year* month day )
+	,&year STR2
+	STH2
+	#0c00
+	&>l2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
+		STH2k SUB2r !&continue2
+		&skip2 POP2 !{
+		&continue2 POP2 INC GTHk ?&>l2 }
+	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
+
+@dotw/<print> ( dotw -- )
+	#00 SWP #20 SFT2 ;&lut ADD2 !str/<print>
+
+	&lut [
+	"Sun $1 "Mon $1 "Tue $1 "Wed $1
+	"Thu $1 "Fri $1 "Sat $1 ]
+
+@month/<print> ( month -- )
+	#00 SWP #20 SFT2 ;&lut ADD2 !str/<print>
+
+	&lut [
+	"Jan $1 "Feb $1 "Mar $1 "Apr $1
+	"May $1 "Jun $1 "Jul $1 "Aug $1
+	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
+
+(
+@|Helpers )
+
+@dec/<print> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
+
+@str/<print> ( str* -- )
+	&>wp
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>wp
+
