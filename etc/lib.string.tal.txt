@@ -1,5 +1,11 @@
 ( lib.string )
 
+|000
+
+	@ztr/buf $30 &cap
+
+|100
+
 @on-reset ( -> )
 	;tests/end ;tests
 	&>l
@@ -17,7 +23,8 @@
 (
 @|tests )
 
-@tests [ =chr/<test> =str/<test> ] &end $2
+@tests [
+	=chr/<test> =str/<test> =obj/<test> =ztr/<test> ] &end $2
 
 @chr/<test> ( -- value )
 	;&name str/<print>
@@ -80,6 +87,42 @@
 	&fail #00 JMP2r
 	&name 0a "str: 20 $1
 
+@ztr/<test> ( -- )
+	;&name str/<print>
+	( | len )
+	[ { "foo $1 } STH2r ] /<set>
+	[ { "foo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	( | push )
+	LIT "b /<push>
+	[ { "foob $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	/pop POP /pop POP
+	( | pop )
+	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	( | length )
+	LIT "a /<push>
+	/length #03 NEQ ?&fail
+	#01 JMP2r
+	&fail #00 JMP2r
+	&name 0a "ztr: 20 $1
+
+@obj/<test> ( -- )
+	;&name str/<print>
+	( | len )
+	[ { "foo $1 } STH2r ] /<set>
+	[ { "foo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	( | push )
+	LIT "b /<push>
+	[ { "foob $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	/pop POP /pop POP
+	( | pop )
+	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	( | length )
+	LIT "a /<push>
+	/length #0003 NEQ2 ?&fail
+	#01 JMP2r
+	&fail #00 JMP2r
+	&name 0a "obj: 20 $1
+
 (
 @|Str )
 
@@ -135,6 +178,74 @@
 	( nil ) POP #ff JMP2r
 
 (
+@|Ztr )
+
+@ztr/<set> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@ztr/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ]
+	( | catch overflow )
+	DUP .&cap NEQ ?{ POP POP2 JMP2r }
+	INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@ztr/length ( -- length )
+	,&ptr LDR .&buf SUB JMP2r
+
+@ztr/pop ( -- c )
+	[ LIT2 ff _&ptr ] LDR
+	( | TODO: Catch underflow )
+	ADD STHk ,&ptr STR
+	#00 STHkr STZ
+	STHr LDZ JMP2r
+
+@ztr/<print> ( -- )
+	.&buf
+	&>wp
+		LDZk DUP ?{ POP2 JMP2r }
+		#18 DEO
+		INC !&>wp
+
+(
+@|Obj )
+
+@obj/<set> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@obj/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ]
+	( | catch overflow )
+	DUP2 ;&cap NEQ2 ?{ POP2 POP2 JMP2r }
+	INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@obj/pop ( -- c )
+	,&ptr LDR2 #0001 SUB2
+	( | TODO: Catch underflow )
+	STH2k ,&ptr STR2
+	#00 STH2kr STA
+	STH2r LDA JMP2r
+
+@obj/length ( -- length* )
+	,&ptr LDR2 ;&buf SUB2 JMP2r
+
+@obj/<print> ( -- )
+	;&buf
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>wp
+
+(
 @|assets )
 
 @dict/0 "0 $1
@@ -149,4 +260,6 @@
 	&09 "09 $1
 	&12340 "12340 $1
 	&65535 "65535 $1
+
+@obj/buf $30 &cap
 

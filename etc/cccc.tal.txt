@@ -44,7 +44,7 @@
 	( name ) "CCCC 0a
 	( details ) "A 20 "Desktop 20 "Calculator 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "2 20 "Nov 20 "2025 $2
+	( date ) "7 20 "Feb 20 "2026 $2
 
 %MOD2 ( a* b* -- res* ) {
 	DIV2k MUL2 SUB2 }
@@ -90,7 +90,7 @@
 		#0008 ADD2 LDAk #00 EQU ?{
 			( decr time ) DUP2 LDAk #01 SUB ROT ROT STA
 			( release button ) LDAk ?{
-				DUP2 #0008 SUB2 #00 press-button/release } }
+				DUP2 #0008 SUB2 #00 button/<release> } }
 		INC2 GTH2k ?&>l
 	POP2 POP2 BRK
 
@@ -116,10 +116,20 @@
 
 @on-mouse/touch-bitpad ( x y -- )
 	POP2
-	( clamp ) .Mouse/x DEI2 #0070 SUB2 #005f LTH2 ?{ JMP2r }
+	( clamp ) .Mouse/x DEI2
+	( modes ) #0058 SUB2 DUP2 #000e LTH2 ?/touch-modes
+	#0018 SUB2 #005f LTH2 ?{ JMP2r }
 	#0001
 	( shift ) #000f .Mouse/x DEI2 #0070 SUB2 #0005 DIV2 DUP2 #0005 DIV2 SUB2 SUB2 #40 SFT NIP
 	( mask ) SFT2 .input/num LDZ2 EOR2 .input/num STZ2 !display/<draw>
+
+@on-mouse/touch-modes ( x* -- )
+	#0005 DIV2
+	( | Handlers )
+	DUP #00 NEQ ?{ mode/<toggle-dec> }
+	DUP #01 NEQ ?{ mode/<toggle-dot> }
+	DUP #02 NEQ ?{ mode/<toggle-fac> }
+	POP2 JMP2r
 
 @on-mouse/touch-fncpad ( x/3 y -> )
 	#01 SFT SWP #06 MUL ADD #00 SWP DUP ADD ;fncpad ADD2 LDA2 JMP2
@@ -138,10 +148,12 @@
 			INC2 INC2 INC2 GTH2k ?&>l &end POP2 POP2 }
 	POPr JMP2r
 
-@press-button ( button* -- )
+@button/<press> ( button* -- )
 	( set timer ) DUP2 #0008 ADD2 #04 ROT ROT STA
 	#01
-	&release ( button* state -- )
+	( >> )
+
+@button/<release> ( button* state -- )
 	STH
 	LDA2k .Screen/x DEO2
 	INC2 INC2 LDA2k .Screen/y DEO2
@@ -159,7 +171,8 @@
 	#08 ;buttons/mod pad/<draw>
 	#04 ;buttons/wst pad/<draw>
 	#10 ;buttons/num pad/<draw>
-	header/<draw> !display/<draw>
+	header/<draw>
+	( >> )
 
 @display/<draw> ( -- )
 	#0001 .Screen/x DEO2
@@ -174,7 +187,8 @@
 	STH2
 	#00
 	&>l
-		#00 OVR #0009 MUL2 STH2kr ADD2 #00 press-button/release INC GTHk ?&>l
+		#00 OVR #0009 MUL2 STH2kr ADD2 #00 button/<release>
+		INC GTHk ?&>l
 	POP2 POP2r JMP2r
 
 @draw-button-clr ( icon* state -- )
@@ -287,7 +301,9 @@
 @|Input )
 
 @input/<eval> ( -- )
-	;buttons/push press-button .&num LDZ2 #0001 stack/<push>
+	.&num LDZ2 ORA ?{ !stack/<reduce> }
+	;buttons/push button/<press>
+	.&num LDZ2 #0001 stack/<push>
 	#0000 .&num STZ2 !display/<draw>
 
 @input/<append> ( val -- )
@@ -295,11 +311,13 @@
 
 @input/<erase> ( -- )
 	.&num LDZ2 ORA ?{
-		;buttons/pop press-button .stack/length LDZ2 ORA #01 [ JCN JMP2r ] stack/pop POP2 .&num STZ2 !display/<draw> }
+		;buttons/pop button/<press>
+		.stack/length LDZ2 ORA #01 [ JCN JMP2r ] stack/pop POP2 .&num STZ2 !display/<draw> }
 	.&num LDZ2 #00 #0a10 mode/is-dec [ JMP SWP POP ] DIV2 .&num STZ2 !display/<draw>
 
 @input/<clear> ( -- )
-	;buttons/clr press-button stack/<clear>
+	;buttons/clr button/<press>
+	stack/<clear>
 	#0000 .&num STZ2 !display/<draw>
 
 @input/<draw> ( -- )
@@ -313,6 +331,8 @@
 	#0082 .Screen/y DEO2
 	;arrow-icn .Screen/addr DEO2
 	[ LIT2 00 -Screen/sprite ] DEO
+	( | modes )
+	mode/<draw>
 	( | binary )
 	[ LIT2 00 -Screen/auto ] DEO
 	#0070 .Screen/x DEO2
@@ -421,7 +441,41 @@
 	JMP2r
 
 (
-@|Mode[] )
+@|Mode )
+
+@mode/<draw> ( -- )
+	#0058 .Screen/x DEO2
+	#0082 .Screen/y DEO2
+	;mode/dec-icn .Screen/addr DEO2
+	#0a /is-dec #00 NEQ #0a MUL SUB .Screen/sprite DEO
+	.Screen/x DEI2k #0005 ADD2 ROT DEO2
+	;mode/dot-icn .Screen/addr DEO2
+	#0a /is-dot #00 NEQ #0a MUL SUB .Screen/sprite DEO
+	.Screen/x DEI2k #0005 ADD2 ROT DEO2
+	;mode/fac-icn .Screen/addr DEO2
+	#0a /is-exp #00 NEQ #0a MUL SUB .Screen/sprite DEO
+	JMP2r
+
+@mode/<toggle-dec> ( -- )
+	[ LIT2 01 _&value ] LDR EOR !/<set-mode>
+
+@mode/<toggle-dot> ( -- )
+	[ LIT2 02 _&value ] LDR EOR !/<set-mode>
+
+@mode/<toggle-fac> ( -- )
+	[ LIT2 04 _&value ] LDR EOR !/<set-mode>
+
+@mode/<set-dec> ( -- )
+	[ LIT2 01 _&value ] LDR ORA ,&value STR
+	display/<draw> !header/<draw>
+
+@mode/<set-hex> ( -- )
+	[ LIT2 fe _&value ] LDR AND
+	( >> )
+
+@mode/<set-mode> ( -- )
+	,&value STR
+	display/<draw> !header/<draw>
 
 @mode/is-dot ( -- b )
 	[ LIT2 02 _&value ] LDR AND JMP2r
@@ -436,15 +490,7 @@
 	[ LIT2 07 &value $1 ] INC AND ,&value STR
 	display/<draw>
 	header/<draw>
-	;buttons/mode !press-button
-
-@mode/<set-dec> ( -- )
-	[ LIT2 01 _&value ] LDR ORA ,&value STR
-	display/<draw> !header/<draw>
-
-@mode/<set-hex> ( -- )
-	[ LIT2 fe _&value ] LDR AND ,&value STR
-	display/<draw> !header/<draw>
+	;buttons/mode !button/<press>
 
 @mode/get-name ( -- )
 	[ LIT2 00 _&value ] LDR DUP ADD ;&lut ADD2 LDA2 JMP2r
@@ -491,6 +537,13 @@
 	#0000 .&length STZ2
 	JMP2r
 
+@stack/<reduce> ( -- )
+	/is-empty ?{
+		;buttons/mode button/<press>
+		( | reduce )
+		/pop OVR2 OVR2 gcd STH2k DIV2 SWP2 STH2r DIV2 SWP2 /<push> !display/<draw> }
+	JMP2r
+
 @stack/is-lt2 ( -- t )
 	.&length LDZ2 #0002 LTH2 JMP2r
 
@@ -503,8 +556,7 @@
 @stack/<push> ( num* den* -- )
 	OVR2 #0000 EQU2 ?{
 		ORAk #00 EQU ?{
-			( reduce ) OVR2 OVR2 gcd STH2k DIV2 SWP2 STH2r DIV2
-			( store ) .&length LDZ2 #20 SFT2 ;memory ADD2 STH2k STA2
+			SWP2 .&length LDZ2 #20 SFT2 ;memory ADD2 STH2k STA2
 			STH2r INC2 INC2 STA2
 			( inc ) .&length LDZ2k INC2 ROT STZ2
 			JMP2r } }
@@ -515,14 +567,16 @@
 	.&length LDZ2 #20 SFT2 ;memory ADD2 LDA2k SWP2 INC2 INC2 LDA2 JMP2r
 
 @stack/dup ( -- )
-	;buttons/dup press-button input/<eval>
+	;buttons/dup button/<press>
+	input/<eval>
 	/is-empty ?{
 		/pop OVR2 OVR2 /<push>
 		/<push> !display/<draw> }
 	JMP2r
 
 @stack/swp ( -- )
-	;buttons/swp press-button input/<eval>
+	;buttons/swp button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop /pop ROT2 STH2
 		ROT2 STH2r /<push>
@@ -530,16 +584,17 @@
 	JMP2r
 
 @stack/vid ( -- )
-	;buttons/vid press-button input/<eval>
+	;buttons/vid button/<press>
+	input/<eval>
 	/is-empty ?{
 		.&length LDZ2 #20 SFT2 #0002 SUB2 ;memory ADD2 LDA2 #0001 EQU2 ?{
 			/pop SWP2 #0001 /<push>
-			#0001 /<push>
-			display/<draw> } }
+			#0001 /<push> !display/<draw> } }
 	JMP2r
 
 @stack/inv ( -- )
-	;buttons/inv press-button input/<eval>
+	;buttons/inv button/<press>
+	input/<eval>
 	/is-empty ?{ /pop SWP2 /<push> !display/<draw> }
 	JMP2r
 
@@ -555,7 +610,8 @@
 	POP2 JMP2r
 
 @stack/add ( -- )
-	;buttons/add press-button input/<eval>
+	;buttons/add button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop ,&bd1 STR2
 		,&bn1 STR2
@@ -565,7 +621,8 @@
 	JMP2r
 
 @stack/sub ( -- )
-	;buttons/sub press-button input/<eval>
+	;buttons/sub button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop ,&bd2 STR2
 		,&bn2 STR2
@@ -575,7 +632,8 @@
 	JMP2r
 
 @stack/mul ( -- )
-	;buttons/mul press-button input/<eval>
+	;buttons/mul button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop ,&bd3 STR2
 		,&bn3 STR2
@@ -585,7 +643,8 @@
 	JMP2r
 
 @stack/div ( -- )
-	;buttons/div press-button input/<eval>
+	;buttons/div button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop ,&bd4 STR2
 		,&bn4 STR2
@@ -595,7 +654,8 @@
 	JMP2r
 
 @stack/and ( -- )
-	;buttons/and press-button input/<eval>
+	;buttons/and button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop ,&bd5 STR2
 		,&bn5 STR2
@@ -605,7 +665,8 @@
 	JMP2r
 
 @stack/ora ( -- )
-	;buttons/ora press-button input/<eval>
+	;buttons/ora button/<press>
+	input/<eval>
 	/is-lt2 ?{
 		/pop ,&bd6 STR2
 		,&bn6 STR2
@@ -615,13 +676,15 @@
 	JMP2r
 
 @stack/sfl ( -- )
-	;buttons/sfl press-button input/<eval>
+	;buttons/sfl button/<press>
+	input/<eval>
 	/is-empty ?{
 		/pop SWP2 DUP2 ADD2 SWP2 /<push> !display/<draw> }
 	JMP2r
 
 @stack/sfr ( -- )
-	;buttons/sfr press-button input/<eval>
+	;buttons/sfr button/<press>
+	input/<eval>
 	/is-empty ?{
 		/pop SWP2 #01 SFT2 SWP2 /<push> !display/<draw> }
 	JMP2r
@@ -644,7 +707,8 @@
 	&f #0f1c ;buttons/f !/<press>
 
 @put/<press> ( value note button* -- )
-	press-button note/<play>
+	button/<press>
+	note/<play>
 	( | ignore hex keys in dec mode )
 	DUP #09 GTH mode/is-dec AND ?{ !input/<append> }
 	POP JMP2r
@@ -852,7 +916,7 @@
 
 @fncpad
 	=input/<clear> =stack/swp =stack/dup =input/<erase> =input/<erase> =input/<erase>
-	=mode/<toggle> =stack/inv =stack/vid =input/<eval> =input/<eval> =input/<eval>
+	=stack/<reduce> =stack/inv =stack/vid =input/<eval> =input/<eval> =input/<eval>
 
 @numpad
 	=put/7 =put/8 =put/9 =put/f
@@ -884,7 +948,7 @@
 
 @layout [
 	=buttons/clr =input/<clear>
-	=buttons/mode =mode/<toggle>
+	=buttons/mode =stack/<reduce>
 	=buttons/7 =put/7
 	=buttons/8 =put/8
 	=buttons/9 =put/9
@@ -963,6 +1027,9 @@
 @bin-icn [ 6090 9090 9090 9060 60f0 f0f0 f0f0 f060 ]
 @caret-icn [ 0000 0018 3c66 4200 0000 0000 0000 0000 ]
 @arrow-icn [ 80c0 e0f0 f0e0 c080 ]
+@mode/dec-icn [ e090 9090 9090 90e0 ]
+@mode/dot-icn [ 1010 2020 4040 8080 ]
+@mode/fac-icn [ 7080 8080 e080 8080 ]
 
 @header/bg-chr [
 	0000 00ff 00ff 00ff ffff ff00 ff00 ff00

@@ -1,0 +1,42 @@
+( lib.random )
+
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|100
+
+@on-reset ( -> )
+	random/<init>
+	random/create hex/<print>
+	#0a18 DEO
+	BRK
+
+@random/<init> ( -- )
+	[ LIT2 00 -DateTime/second ] DEI
+	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
+	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
+	JMP2r
+
+@random/create ( -- number* )
+	[ LIT2 &x $2 ]
+	( ) DUP2 #50 SFT2 EOR2
+	( ) DUP2 #03 SFT2 EOR2
+	( ) [ LIT2 &y $2 ]
+	( ) DUP2 ,&x STR2
+	DUP2 #01 SFT2 EOR2 EOR2
+	( ) ,&y STR2k POP JMP2r
+
+(
+@|Helpers )
+
+@hex/<print> ( short* -- )
+	SWP /b
+	&b ( byte -- )
+	DUP #04 SFT /c
+	&c ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
