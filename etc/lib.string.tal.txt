@@ -83,6 +83,20 @@
 	;dict/09 /dec #0009 NEQ2 ?&fail
 	;dict/12340 /dec #3034 NEQ2 ?&fail
 	;dict/65535 /dec #ffff NEQ2 ?&fail
+	( | signed dec )
+	;dict/0 /dec-sign #0000 NEQ2 ?&fail
+	;dict/1 /dec-sign #0001 NEQ2 ?&fail
+	;dict/10 /dec-sign #000a NEQ2 ?&fail
+	;dict/90 /dec-sign #005a NEQ2 ?&fail
+	;dict/09 /dec-sign #0009 NEQ2 ?&fail
+	;dict/12340 /dec-sign #3034 NEQ2 ?&fail
+	;dict/32767 /dec-sign #7fff NEQ2 ?&fail
+	;dict/sub0 /dec-sign #0000 NEQ2 ?&fail
+	;dict/sub1 /dec-sign #ffff NEQ2 ?&fail
+	;dict/sub10 /dec-sign #fff6 NEQ2 ?&fail
+	;dict/sub127 /dec-sign #ff81 NEQ2 ?&fail
+	;dict/sub256 /dec-sign #ff00 NEQ2 ?&fail
+	;dict/sub32768 /dec-sign #8000 NEQ2 ?&fail
 	#01 JMP2r
 	&fail #00 JMP2r
 	&name 0a "str: 20 $1
@@ -131,7 +145,7 @@
 	INC2 !/cap
 
 @str/len ( str* -- len* )
-	STH2k str/cap STH2r SUB2 JMP2r
+	STH2k /cap STH2r SUB2 JMP2r
 
 @str/hex ( str* -- value* )
 	[ LIT2r 0000 ]
@@ -139,6 +153,11 @@
 		[ LITr 40 ] SFT2r LDAk chr/hex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>wh
 	POP2 STH2r JMP2r
+
+@str/dec-sign ( str* -- val* )
+	LDAk LIT "- NEQ ?{
+		INC2 /dec #0000 SWP2 SUB2 JMP2r }
+	( >> )
 
 @str/dec ( str* -- val* )
 	[ LIT2r 0000 ]
@@ -259,7 +278,14 @@
 	&1 "1 $1
 	&09 "09 $1
 	&12340 "12340 $1
+	&32767 "32767 $1
 	&65535 "65535 $1
+	&sub0 "-0 $1
+	&sub1 "-1 $1
+	&sub10 "-10 $1
+	&sub127 "-127 $1
+	&sub256 "-256 $1
+	&sub32768 "-32768 $1
 
 @obj/buf $30 &cap
 

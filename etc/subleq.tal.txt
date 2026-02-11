@@ -1,0 +1,101 @@
+( -leq )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@token/buf $40
+	@src/buf $40
+
+|100
+
+@on-reset ( -> )
+	;src/on-console .Console/vector DEO2
+	BRK
+
+(
+@|Parser )
+
+%buf/<put> ( value* addr* -- ) {
+	DUP2 ADD2 ;buf/mem ADD2 STA2 }
+
+%buf/get ( addr* -- value* ) {
+	DUP2 ADD2 ;buf/mem ADD2 LDA2 }
+
+@token/<push> ( c -- )
+	DUP #20 GTH ?{
+		POP [ LIT2 -&buf _&ptr ] STR
+		;&buf str/dec-sign [ LIT2 &addr $2 ] INC2k ,&addr STR2
+		( save ) buf/<put>
+		JMP2r }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI EQU ?{
+		/<load>
+		subleq/<eval>
+		#800f DEO
+		BRK }
+	.Console/read DEI [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@src/<load> ( -- )
+	;&buf .File/name DEO2
+	#0001 .File/length DEO2
+	&>s
+		;&c .File/read DEO2
+		.File/succ-lb DEI ?{ JMP2r }
+		[ LIT &c $1 ] token/<push> !&>s
+
+@str/dec-sign ( str* -- val* )
+	LDAk LIT "- NEQ ?{
+		INC2 str/dec #0000 SWP2 SUB2 JMP2r }
+	( >> )
+
+@str/dec ( str* -- val* )
+	[ LIT2r 0000 ]
+	&>wd
+		( val ) LDAk [ LIT "0 ] SUB #09 GTH ?{
+			( acc ) [ LIT2r 000a ] MUL2r
+			( mix ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
+			ADD2r INC2 LDAk ?&>wd }
+	POP2 STH2r JMP2r
+
+@chr/<put> ( c* -- )
+	#18 DEO
+	POP JMP2r
+
+@chr/get ( -> c* )
+	;&callback .Console/vector DEO2
+	BRK
+
+	&callback ( -- c* )
+	[ LIT2 00 -Console/read ] DEI JMP2r
+
+(
+@|Core )
+
+@subleq/<eval> ( -- )
+	#8000 #0000
+	&step ( to* from* -- )
+	INC2k INC2k ROT2 buf/get ROT2 buf/get
+	( send ) INC2k ORA ?{
+		POP2 buf/get chr/<put>
+		INC2 !&step }
+	( read ) OVR2 INC2 ORA ?{
+		chr/get SWP2 buf/<put>
+		POP2 INC2 !&step }
+	( m[b]* - m[a]* ) STH2k buf/get SWP2 buf/get SUB2
+	( m[b]* = r* ) DUP2 STH2r buf/<put>
+	ORAk #00 EQU ?{
+		OVR #80 AND ?{ POP2 INC2 !&step } }
+	POP2 buf/get GTH2k ?&step
+	POP2 POP2 JMP2r
+
+@buf/mem
+

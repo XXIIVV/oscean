@@ -157,7 +157,7 @@ typedef struct {
 } UxnFile;
 
 static UxnFile ufs[2];
-static unsigned int rL1, rL2;
+static int rL1, rL2;
 
 static void
 make_pathfile(char *pathbuf, const char *filepath, const char *basename)
@@ -288,18 +288,12 @@ file_init(unsigned int id, Uint16 addr)
 }
 
 static unsigned int
-file_not_ready(unsigned int id)
-{
-	return ufs[id].filepath == 0;
-}
-
-static unsigned int
 file_read(unsigned int id, Uint16 addr, unsigned int len)
 {
 	void *dest = &ram[addr];
 	struct stat st;
 	unsigned int n;
-	if(file_not_ready(id))
+	if(ufs[id].filepath == 0)
 		return 0;
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
@@ -329,7 +323,7 @@ static unsigned int
 file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
 {
 	unsigned int ret = 0;
-	if(file_not_ready(id))
+	if(ufs[id].filepath == 0)
 		return 0;
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
@@ -354,7 +348,7 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 {
 	unsigned int err, dir;
 	struct stat st;
-	if(file_not_ready(id))
+	if(ufs[id].filepath == 0)
 		return 0;
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
@@ -366,25 +360,27 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 static unsigned int
 file_delete(unsigned int id)
 {
-	if(file_not_ready(id))
+	if(ufs[id].filepath == 0)
 		return 0;
 	return !unlink(ufs[id].filepath);
 }
 
 /* clang-format off */
 
-static void filea_deo_vector(void) { rL1 = peek2(&dev[0xaa]); }
 static void filea_deo_stat(void) { poke2(&dev[0xa2], file_stat(0, peek2(&dev[0xa4]), rL1)); }
 static void filea_deo_delete(void) { poke2(&dev[0xa2], file_delete(0)); }
 static void filea_deo_name(void) { poke2(&dev[0xa2], file_init(0, peek2(&dev[0xa8]))); }
+static void filea_deo_length(void) { rL1 = peek2(&dev[0xaa]); }
 static void filea_deo_read(void) { poke2(&dev[0xa2], file_read(0, peek2(&dev[0xac]), rL1)); }
 static void filea_deo_write(void) { poke2(&dev[0xa2], file_write(0, peek2(&dev[0xae]), rL1, dev[0xa7])); }
-static void fileb_deo_vector(void) { rL2 = peek2(&dev[0xba]); }
 static void fileb_deo_stat(void) { poke2(&dev[0xb2], file_stat(1, peek2(&dev[0xb4]), rL2)); }
 static void fileb_deo_delete(void) { poke2(&dev[0xb2], file_delete(1)); }
 static void fileb_deo_name(void) { poke2(&dev[0xb2], file_init(1, peek2(&dev[0xb8]))); }
+static void fileb_deo_length(void) { rL2 = peek2(&dev[0xba]); }
 static void fileb_deo_read(void) { poke2(&dev[0xb2], file_read(1, peek2(&dev[0xbc]), rL2)); }
 static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0xbe]), rL2, dev[0xb7])); }
+
+/* clang-format on */
 
 /*
 @|Datetime ---------------------------------------------------------- */
@@ -448,13 +444,13 @@ static const deo_handler deo_handlers[256] = {
 	[0x19] = console_deo_stderr,
 	[0x1a] = console_deo_hb,
 	[0x1b] = console_deo_lb,
-	[0xab] = filea_deo_vector,
+	[0xab] = filea_deo_length,
 	[0xa5] = filea_deo_stat,
 	[0xa6] = filea_deo_delete,
 	[0xa9] = filea_deo_name,
 	[0xad] = filea_deo_read,
 	[0xaf] = filea_deo_write,
-	[0xbb] = fileb_deo_vector,
+	[0xbb] = fileb_deo_length,
 	[0xb5] = fileb_deo_stat,
 	[0xb6] = fileb_deo_delete,
 	[0xb9] = fileb_deo_name,
@@ -552,7 +548,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 29 Jan 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 11 Feb 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
