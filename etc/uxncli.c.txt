@@ -25,26 +25,22 @@ typedef Uint8 (*dei_handler)(void);
 
 Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
 static unsigned int uxn_eval(Uint16 pc);
+static int rL1, rL2;
+
+/* clang-format off */
 
 #define BANKS 0x10
 #define BANKS_CAP BANKS * 0x10000
+
+static inline Uint16 peek2(const Uint8 *d) { return ((Uint16)d[0] << 8) | d[1]; }
+static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
+
+/* clang-format on */
 
 /*
 @|System ------------------------------------------------------------ */
 
 static char *system_boot_path;
-
-static inline Uint16
-peek2(const Uint8 *d)
-{
-	return ((Uint16)d[0] << 8) | d[1];
-}
-
-static inline void
-poke2(Uint8 *d, Uint16 v)
-{
-	d[0] = v >> 8, d[1] = v;
-}
 
 static void
 system_print(char *name, int r)
@@ -118,13 +114,12 @@ static void system_deo_print(void) { system_print("WST", 0), system_print("RST",
 
 static unsigned int console_vector;
 
-static unsigned int
+static void
 console_input(int c, unsigned int type)
 {
-	if(c == EOF) c = 0, type = CONSOLE_END;
 	dev[0x12] = c, dev[0x17] = type;
-	if(console_vector) uxn_eval(console_vector);
-	return type != CONSOLE_END;
+	if(console_vector && !dev[0x0f])
+		uxn_eval(console_vector);
 }
 
 /* clang-format off */
@@ -157,7 +152,6 @@ typedef struct {
 } UxnFile;
 
 static UxnFile ufs[2];
-static int rL1, rL2;
 
 static void
 make_pathfile(char *pathbuf, const char *filepath, const char *basename)
@@ -474,6 +468,9 @@ emu_deo(const Uint8 port, const Uint8 value)
 
 /* clang-format off */
 
+/*
+@|Uxn --------------------------------------------------------------- */
+
 #define OPC(opc, A, B) {\
 	case 0x00|opc:case 0x40|opc:{const int d=0;A B} break;\
 	case 0x20|opc:case 0x60|opc:{const int d=1;A B} break;\
@@ -548,7 +545,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 11 Feb 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 20 Feb 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
