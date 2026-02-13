@@ -14,7 +14,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html" class="self">uxntal numbers</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_strings.html">uxntal strings</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul></ul></nav>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html" class="self">uxntal numbers</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_strings.html">uxntal strings</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_signed.html">uxntal signed</a></li></ul></nav>
 <main><h2>Uxntal Numbers</h2>
 
 <p>Uxntal uses <b>only</b> lowercase unsigned <a
@@ -35,6 +35,119 @@ of a sprite. It is either 2 or 4 characters in length.</li>
 <pre>
 #12 #34 LIT2 5678 ADD2 <span style="float:right">68 ac</span>
 </pre>
+
+<h2>Using and operating on negative numbers in Uxntal.</h2>
+
+<p>Uxn doesn't have built-in support for negative integers. However, you can
+emulate <a href='https://en.wikipedia.org/wiki/Signed_number_representations'
+target='_blank'>signed numbers</a> by treating some unsigned values as
+negative. For example, treating unsigned bytes as signed results in the
+following:</p>
+
+<table border='1' style='font-family:monospace'>
+	<tr>
+	<th>hex</th>
+	<td>00</td><td>01</td><td>02</td>
+	<td rowspan='3'></td>
+	<td>7e</td><td>7f</td><td><b>80</b></td><td>81</td><td>82</td>
+	<td rowspan='3'></td>
+	<td>fd</td><td>fe</td><td>ff</td>
+	</tr>
+	<tr>
+	<th>unsigned</th>
+	<td>0</td><td>1</td><td>2</td>
+	<td>126</td><td>127</td><td>128</td><td>129</td><td>130</td>
+	<td>253</td><td>254</td><td>255</td>
+	</tr>
+	<tr>
+	<th>signed</th>
+	<td>0</td><td>1</td><td>2</td>
+	<td>126</td><td>127</td><td>-128</td><td>-127</td><td>-126</td>
+	<td>-3</td><td>-2</td><td>-1</td>
+	</tr>
+</table>
+
+<p>The first 128 integers (0-127) are represented the same as unsigned and
+signed, but the latter 128 are different. The basic idea here is that for
+values greater than #7f (127) we subtract 256 to get their <i>signed value</i>:</p>
+
+<pre>signed = n < 128 ? n : n - 256</pre>
+
+<p>It turns out that many unsigned operations "work" even when treating the values
+as signed. (In other words, you get the same result as you would have using a
+language with signed integer types.) The following arithmetic instructions work
+correctly with "signed" values:</p>
+
+<pre>
+#13 #ff ADD returns #12
+#02 #03 SUB returns #ff
+#02 #ff MUL returns #fe
+</pre>
+
+<p>Be careful! The smallest negative value (-128 for bytes, -32768 for shorts)
+has no corresponding positive value. This means that some operations will
+not work as expected:</p>
+
+<pre>
+#80 #ff MUL returns #80 (-128 * -1 = -128)
+#00 #80 SUB returns #80 (0 - (-128) = -128)
+</pre>
+
+<p>Also, negative and positive values will "wrap around" in the usual way when
+dealing with two's-complement representations:</p>
+
+<pre>
+#7f #01 ADD returns #80 (127 + 1 = -128)
+#80 #01 SUB returns #7f (-128 - 1 = 127)
+#80 #80 ADD returns #00 (-128 + (-128) = 0)
+</pre>
+
+<p>Other instructions will not handle "negative" integers correctly. These
+routines will safely compare "signed" bytes:</p>
+
+<pre>
+@signed-lth ( x y -- res )
+	DUP2 #8080 AND2 EQU ?&diff LTH JMP2r &diff LTH #00 NEQ JMP2r
+
+@signed-gth ( x y -- res )
+	DUP2 #8080 AND2 EQU ?&diff GTH JMP2r &diff GTH #00 NEQ JMP2r
+</pre>
+
+<p>Similarly, division will not correctly handle signed values. The simplest
+way to handle this is to make both values non-negative, do unsigned
+division (i.e. DIV) and then set the correct sign at the end.</p>
+
+<pre>
+@abs ( x -- abs-x sign )
+	DUP #7f GTH #fe MUL INC STHk MUL STHr JMP2r
+
+@signed-div ( x y -- x/y )
+	abs STH SWP abs STH SWP DIV MULr STHr MUL JMP2r
+</pre>
+
+<p>The unsigned shift operator treats the sign bit like any other. This means
+shifting left will lose the sign bit (reversing the sign) and that shifting
+right will convert the sign bit into a value bit. Signed numbers will also need
+their own routines for decimal input and output, if those are required by your
+program.</p>
+
+<pre>
+@signed-print ( num -- )
+	( - ) DUP #80 LTH ?{ LIT "- #18 DEO #7f AND #80 SWP SUB }
+	( 100 ) DUP #64 DIV signed-print/emit
+	( 10 ) DUP #0a DIV signed-print/base
+	&base ( digit -- ) #0a DIVk MUL SUB
+	&emit ( digit -- ) LIT "0 ADD #18 DEO JMP2r
+</pre>
+
+<p>If you need a sign-aware shift you'll likely want to convert negatives to
+positive values, perform a shift, and then restore the sign. Keep in mind
+that -128 cannot be converted to a positive value, and may require special
+treatment.</p>
+
+<ul>
+	<li>Guide by <a href='http://plastic-idolatry.com/erik/nxu/math-notes.txt' target='_blank'>d_m</a></li>
+</ul>
 
 <ul></ul><p><b>incoming: </b><a href="uxntal.html" class="parent">uxntal</a> <a href="uxntal_opcodes.html">uxntal opcodes</a> <a href="uxntal_labels.html">uxntal labels</a> </p></main>
 <footer>
