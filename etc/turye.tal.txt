@@ -40,7 +40,7 @@
 	( name ) "Turye 0a
 	( details ) "A 20 "Font 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Feb 20 "2026 00
+	( date ) "14 20 "Feb 20 "2026 00
 	( data ) 02
 	( icon ) 83 =appicon
 	( mani ) 0a =manifest/dat
@@ -183,9 +183,9 @@
 	;data/widths ADD2 LDA #00 SWP JMP2r
 
 @glyph/get-offset ( x y -- offset* )
-	.&uf3 LDZ ?{
-		SWP #03 SFT #40 SFT ADD #00 SWP JMP2r }
-	SWP #03 SFT #18 MUL ADD #00 SWP JMP2r
+	SWP #03 SFT .&uf3 LDZ ?{
+		#40 SFT ADD #00 SWP JMP2r }
+	#18 MUL ADD #00 SWP JMP2r
 
 @glyph/get-row ( ascii* x y -- addr* )
 	/get-offset SWP2 /get-addr ADD2 JMP2r
@@ -194,23 +194,26 @@
 	[ LIT2 00 -glyph/sel ] LDZ
 	( >> )
 
-@glyph/get-pixel ( x y ascii* -- black )
-	OVR2 /get-row LDA ROT #07 AND #07 SWP SUB SFT #01 AND NIP JMP2r
+@glyph/get-pixel ( x y ascii* -- mask )
+	SWP2 OVR STH
+	/get-row LDA
+	( mask-x ) #80 STHr #07 AND SFT
+	( pixel ) AND JMP2r
 
 @glyph/<remove-pixel> ( x y ascii* -- )
 	SWP2 OVR STH
-	/get-row LDAk STHr
-	( mask-x ) #80 SWP #07 AND SFT #ff EOR
-	( OR ) AND STHk ROT ROT LDAk STH
+	/get-row LDAk
+	( mask-x ) #80 STHr #07 AND SFT
+	( pixel ) #ff EOR AND STHk ROT ROT LDAk STH
 	STA
 	NEQr STHr ?{ JMP2r }
 	src/change !<reqdraw>
 
 @glyph/<put-pixel> ( x y ascii* -- )
 	SWP2 OVR STH
-	/get-row LDAk STHr
-	( mask-x ) #80 SWP #07 AND SFT
-	( OR ) ORA STHk ROT ROT LDAk STH
+	/get-row LDAk
+	( mask-x ) #80 STHr #07 AND SFT
+	( pixel ) ORA STHk ROT ROT LDAk STH
 	STA
 	NEQr STHr ?{ JMP2r }
 	src/change !<reqdraw>
@@ -304,7 +307,7 @@
 
 @glyph/<incr-width> ( -- )
 	[ LIT2 00 -&sel ] LDZ ;data/widths ADD2 LDAk
-	( clamp ) DUP #18 NEQ ?{ POP POP2 JMP2r }
+	( clamp ) DUP /get-height NEQ ?{ POP POP2 JMP2r }
 	INC ROT ROT STA !<reqdraw>
 
 @glyph/<move-u> ( -- )
@@ -384,7 +387,7 @@
 	( | ver )
 	#1001
 	&>llh
-		DUP ;line-hor-icn/dotted /<draw-line-hor>
+		DUP #08 EQU ?{ DUP ;line-hor-icn/dotted /<draw-line-hor> }
 		INC GTHk ?&>llh
 	POP2
 	( | edges )
@@ -392,6 +395,7 @@
 	#10 ;line-ver-icn /<draw-line-ver>
 	[ LIT2 01 -Screen/pixel ] DEO
 	#00 ;line-hor-icn /<draw-line-hor>
+	#08 ;line-hor-icn/dashed /<draw-line-hor>
 	#10 ;line-hor-icn
 	( >> )
 
@@ -452,7 +456,10 @@
 
 @editor/<paint-at-mouse> ( -- )
 	( x ) .Mouse/x DEI2 #0008 SUB2 #03 SFT2 NIP
-	( y ) .Mouse/y DEI2 #001c SUB2 #03 SFT2 NIP [ LIT2 00 -glyph/sel ] LDZ
+	( clamp ) DUP glyph/get-height LTH ?{ POP JMP2r }
+	( y ) .Mouse/y DEI2 #001c SUB2 #03 SFT2 NIP
+	( clamp ) DUP glyph/get-height LTH ?{ POP2 JMP2r }
+	[ LIT2 00 -glyph/sel ] LDZ
 	( s ) [ LIT2 01 -Mouse/state ] DEI LTH ?glyph/<remove-pixel>
 	!glyph/<put-pixel>
 
@@ -476,7 +483,7 @@
 	&>hor
 		[ LIT2 &height $1 00 ]
 		&>ver
-			ROTk SWP #00 STHkr glyph/get-pixel #00 SWP #30 SFT2 ;pixel-icn ADD2 .Screen/addr DEO2
+			ROTk SWP #00 STHkr glyph/get-pixel #00 NEQ #00 SWP #30 SFT2 ;pixel-icn ADD2 .Screen/addr DEO2
 			[ LIT2 &color 09 -Screen/sprite ] DEO
 			POP INC GTHk ?&>ver
 		POP2
@@ -669,7 +676,7 @@
 ( @|utils )
 
 @header/is-within ( x* y* -- x* y* t )
-	DUP2 #0012 LTH2 JMP2r
+	DUP2 ;header/height LTH2 JMP2r
 
 @header/<bind> ( x* y* -- )
 	;&on-mouse .Mouse/vector DEO2
@@ -1045,6 +1052,7 @@
 
 @line-hor-icn [ ff00 0000 0000 0000 ]
 	&dotted [ aa00 0000 0000 0000 ]
+	&dashed [ ee00 0000 0000 0000 ]
 
 @header
 	&bg-chr [
