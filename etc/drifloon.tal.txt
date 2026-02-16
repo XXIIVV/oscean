@@ -27,10 +27,10 @@
 	JMP2r
 
 @rom/<emit> ( -- )
-	;dict/assembled err/<print>
-	;dict/in err/<print>
-	;head/boundary LDA2 DUP2 #00ff SUB2 err/<pdec>
-	;dict/bytes err/<print>
+	;dict/assembled info/<print>
+	;dict/in info/<print>
+	;head/boundary LDA2 DUP2 #00ff SUB2 info/<pdec>
+	;dict/bytes info/<print>
 	( | write )
 	;rom/mem ADD2 INC2 ;rom/output
 	&>l
@@ -41,7 +41,7 @@
 @runes/concat ( t* -- )
 	POP2 JMP2r
 
-@err/<emit> ( c -- )
+@info/<emit> ( c -- )
 	#19 DEO
 	JMP2r
 
@@ -61,9 +61,9 @@
 @assembly/<resolve> ( -- )
 	( cap ) #0a token/<push-byte>
 	,&mode LDR2 ;comment/assemble NEQ2 ?{
-		( ! ) ;dict/open ;dict/trail ;dict/Comment err/<generic> }
+		( ! ) ;dict/open ;dict/trail ;dict/Comment info/<generic> }
 	,&mode LDR2 ;macros/assemble NEQ2 ?{
-		( ! ) ;dict/open ;dict/trail ;dict/Macro err/<generic> }
+		( ! ) ;dict/open ;dict/trail ;dict/Macro info/<generic> }
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
@@ -138,7 +138,7 @@
 	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Macros err/<token> }
+		( ! ) ;dict/exceeded ;dict/Macros info/<token> }
 	,&ptr STR2
 	STA
 	JMP2r
@@ -171,7 +171,7 @@
 	[ LIT2 00 &ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
-		( ! ) ;dict/exceeded ;dict/Name err/<token> }
+		( ! ) ;dict/exceeded ;dict/Name info/<token> }
 	,&ptr STR
 	STZ2
 	JMP2r
@@ -183,7 +183,7 @@
 	[ LIT2 00 &ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
-		( ! ) ;dict/exceeded ;dict/Symbol err/<token> }
+		( ! ) ;dict/exceeded ;dict/Symbol info/<token> }
 	,&ptr STR
 	STZ2
 	JMP2r
@@ -262,7 +262,7 @@
 	/req-name !rom/<write-str>
 
 @runes/req-name ( str* -- str1* )
-	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Name !err/<token> }
+	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Name !info/<token> }
 	JMP2r
 
 @runes/lut [
@@ -332,7 +332,7 @@
 	,&ptr LDR2
 	( | check underflow )
 	DUP2 ;&mem NEQ2 ?{
-		( ! ) ;dict/invalid ;dict/Symbol err/<token> }
+		( ! ) ;dict/invalid ;dict/Symbol info/<token> }
 	#0002 SUB2 LDA2k /name syms/<new>
 	,&ptr STR2
 	JMP2r
@@ -351,10 +351,10 @@
 	( dup symbol ) syms/find-name INC2 ORA ?&dup
 	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
 	&fail ( -- )
-	;dict/invalid ;dict/Name !err/<token>
+	;dict/invalid ;dict/Name !info/<token>
 
 	&dup ( -- )
-	;dict/duplicate ;dict/Name !err/<token>
+	;dict/duplicate ;dict/Name !info/<token>
 
 @name/unpack ( name* -- name* )
 	LDAk [ LIT "{ ] EQU ?lambda/make-name
@@ -373,7 +373,7 @@
 	NIP2 DUP2 refs/<record-scope>
 	/is-declared ?{ head/get OVR2 STA2 !/<declare> }
 	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !err/<token>
+	( ! ) ;dict/duplicate ;dict/Symbol !info/<token>
 
 @syms/<push-sym> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -386,7 +386,7 @@
 	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Symbols err/<token> }
+		( ! ) ;dict/exceeded ;dict/Symbols info/<token> }
 	,&ptr STR2
 	STA
 	JMP2r
@@ -408,7 +408,7 @@
 @syms/find-addr ( name* -- <addr>* )
 	str/is-hex ?str/hex
 	name/unpack /find-name /is-defined ?{
-		( ! ) ;dict/invalid ;dict/Symbol err/<token> }
+		( ! ) ;dict/invalid ;dict/Symbol info/<token> }
 	/use LDA2 NIP2 JMP2r
 
 @syms/<emit> ( -- )
@@ -418,16 +418,16 @@
 			/is-used ?{
 				LDA2k #0100 EQU2 ?{
 					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-						;dict/unused err/<print>
-						DUP2 err/<print>
-						#0a err/<emit> }
+						;dict/unused info/<print>
+						DUP2 info/<print>
+						#0a info/<emit> }
 					POP2 } }
 			#0003 ADD2 str/cap !&>ls }
 	POP2 POP2 !rom/<emit>
 
 @syms/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far ;dict/Symbol !err/<token>
+	( ! ) ;dict/too-far ;dict/Symbol !info/<token>
 
 @syms/is-defined ( sym* -- sym* t )
 	INC2k ORA ?{ #00 JMP2r }
@@ -470,7 +470,7 @@
 	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/References err/<token> }
+		( ! ) ;dict/exceeded ;dict/References info/<token> }
 	,&ptr STR2
 	STA
 	JMP2r
@@ -497,7 +497,7 @@
 	,&ptr LDR2 ;&mem
 	&>l
 		EQU2k ?{
-			DUP2 ;err/ref STA2
+			DUP2 ;info/ref STA2
 			DUP2k #0004 ADD2 LDA2 JSR2
 			( ) #000a ADD2 !&>l }
 	POP2 POP2 JMP2r
@@ -507,7 +507,7 @@
 	( ref* sym* ) INC2k INC2 LDA2
 	( ref* sym/addr* ) LDA2
 	( ref* sym/addr* ) INC2k ORA ?{
-		( ! ) ;dict/invalid !err/<resolution> }
+		( ! ) ;dict/invalid !info/<resolution> }
 	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
@@ -524,7 +524,7 @@
 
 @refs/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far !err/<resolution>
+	( ! ) ;dict/too-far !info/<resolution>
 
 @refs/<record-scope> ( sym* -- )
 	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
@@ -548,7 +548,7 @@
 	str/is-hex #00 EQU ?{
 		str/len DUP #02 NEQ ?{ POP str/hex NIP !/<write-byte> }
 		#04 NEQ ?{ str/hex !/<write-short> } }
-	POP2 ;dict/invalid ;dict/Number !err/<token>
+	POP2 ;dict/invalid ;dict/Number !info/<token>
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
@@ -564,7 +564,7 @@
 	( | test zero-page )
 	OVR ?{
 		POP2 POP
-		( ! ) ;dict/zero-page ;dict/Writing !err/<token> }
+		( ! ) ;dict/zero-page ;dict/Writing !info/<token> }
 	!rom/<put>
 
 @head/get-inc ( -- addr* )
@@ -638,7 +638,7 @@
 (
 @|Error )
 
-@err/<token> ( adj* topic* -- )
+@info/<token> ( adj* topic* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
 		/<print>
@@ -649,7 +649,7 @@
 		;token/line LDA2 ;scope/buf !/<print-location> }
 	POP2 POP2 JMP2r
 
-@err/<resolution> ( adj* -- )
+@info/<resolution> ( adj* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
 		;dict/Reference /<print>
@@ -660,7 +660,7 @@
 		DUP2 #0008 ADD2 LDA2 SWP2 #0006 ADD2 LDA2 #0003 ADD2 !/<print-location> }
 	POP2 JMP2r
 
-@err/<print-location> ( line* scope* -- )
+@info/<print-location> ( line* scope* -- )
 	;dict/in /<print>
 	/<print>
 	LIT ": /<emit>
@@ -668,7 +668,7 @@
 	#0a /<emit>
 	JMP2r
 
-@err/<generic> ( adj* keyword* topic* -- )
+@info/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
 		[ LIT2 01 -System/state ] DEO
 		/<print>
@@ -680,10 +680,10 @@
 		JMP2r }
 	POP2 POP2 POP2 JMP2r
 
-@err/<print> ( str* -- )
+@info/<print> ( str* -- )
 	;/<emit> !for-each
 
-@err/<pdec> ( short* -- )
+@info/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
