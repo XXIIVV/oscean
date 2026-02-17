@@ -1,4 +1,4 @@
-( echo "foobar" | uxncli console.rom "baz" "qux" )
+( printf "ghi" | uxncli console.rom "abc" "def" )
 
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
@@ -11,18 +11,18 @@
 @on-console ( -> )
 	.Console/type DEI .Console/read DEI
 	( inc ) [ LIT2 &ptr =expect ] INC2k INC2 ,&ptr STR2
+	DUP2 ;expect/end EQU2 ?pass
 	LDA2 NEQ2 ?fail
-	[ LIT2 04 -Console/type ] DEI EQU ?pass
-	BRK
-
-@pass ( -> )
-	;dict/pass str/<print>
-	#800f DEO
 	BRK
 
 @fail ( -> )
 	;dict/fail str/<print>
 	#010f DEO
+	BRK
+
+@pass ( type read ptr* -> )
+	POP2 POP2 ;dict/pass str/<print>
+	#800f DEO
 	BRK
 
 (
@@ -37,8 +37,9 @@
 @|Data )
 
 @expect [
-	0262 0261 027a 030a 0271 0275 0278 040a
-	0166 016f 016f 0162 0161 0172 010a 0400 ]
+	02 "a 02 "b 02 "c 03 0a 02 "d 02 "e 02 "f 04 0a
+	01 "g 01 "h 01 "i ]
+	&end [ 04 0a ]
 
 @dict
 	&pass "Console: 20 "pass 0a $1
