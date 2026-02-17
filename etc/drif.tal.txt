@@ -1,0 +1,1575 @@
+( build: uxnasm src/drif.tal drif.rom
+| start: uxnemu drif.rom )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+(
+@|enums )
+
+|0012 @header/height
+
+|000
+
+	@src/buf $3f &cap $1
+	@dst/buf $3f &cap $1
+	@scope/buf $3f &cap $1
+	@token/buf $3f &cap $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	theme/<load>
+	#0110 #00d4 window/<set-size>
+	;src/on-console .Console/vector DEO2
+	<redraw-all>
+	;window/on-mouse .Mouse/vector DEO2
+	BRK
+
+@meta $1
+	( name ) "Drif 0a
+	( desc ) "Uxntal 20 "Assembler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "16 20 "Feb 20 "2026 $2
+
+(
+@|src-field )
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI !/on-push }
+	dst/<trap>
+	BRK
+
+@src/on-mouse ( -> )
+	cursor/<update>
+	.Mouse/state DEI ?{ BRK }
+	/<trap>
+	BRK
+
+@src/on-button ( -> )
+	.Controller/key DEI
+	( >> )
+
+@src/on-push ( c -> )
+	DUP #08 NEQ ?{ POP /<pop>
+		BRK }
+	DUP #09 NEQ ?{ POP dst/<trap>
+		BRK }
+	DUP #0d NEQ ?{ POP dst/<trap>
+		BRK }
+	DUP #1b NEQ ?{ POP window/<trap>
+		BRK }
+	DUP #1f GTH ?{ POP BRK }
+	[ LIT2 -&cap &ptr -&buf ]
+	( clamp ) NEQk ?{ POP POP2 BRK }
+	INCk ,&ptr STR
+	NIP STZ
+	/<validate>
+	BRK
+
+@src/<pop> ( -- )
+	[ LIT2 -&buf _&ptr ] LDR
+	( clamp ) NEQk ?{ POP2 JMP2r }
+	#01 SUB DUP ,&ptr STR
+	#00 SWP STZ
+	POP !/<validate>
+
+@src/is-inactive ( -- f )
+	;&on-button .Controller/vector DEI2 NEQ2 JMP2r
+
+@src/is-within ( x* y* -- x* y* true )
+	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00f5 LTH2 JMP2r }
+	#00 JMP2r
+
+@src/<bind> ( x* y* -- )
+	POP2 POP2 ;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@src/<trap> ( -- )
+	/is-inactive ?{ JMP2r }
+	;&on-console .Console/vector DEO2
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2 !<redraw>
+
+@src/<validate> ( -- )
+	asm/<validate>
+	( >> )
+
+@src/<draw> ( -- )
+	[ LIT2 &x 0008 ] .Screen/x DEO2
+	[ LIT2 &y 001c ] .Screen/y DEO2
+	/is-inactive ?{
+		;&buf ;&label #01 field/<draw-color>
+		[ LIT "| ] !chicago/<draw-char> }
+	.&buf ;&ptr LDA EQU ?{ ;&buf ;&label #01 !field/<draw-color> }
+	;&placeholder ;&label #02 !field/<draw-color>
+
+	&placeholder "source.tal $1
+	&label "Tal 20 "Source 20 "File: $1
+
+(
+@|dst-field )
+
+@dst/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI !/on-push }
+	asm/<trap>
+	BRK
+
+@dst/on-mouse ( -> )
+	cursor/<update>
+	.Mouse/state DEI ?{ BRK }
+	/<trap>
+	BRK
+
+@dst/on-button ( -> )
+	.Controller/key DEI
+	( >> )
+
+@dst/on-push ( c -> )
+	DUP #08 NEQ ?{ POP /<pop>
+		BRK }
+	DUP #09 NEQ ?{ POP src/<trap>
+		BRK }
+	DUP #0d NEQ ?{ POP asm/<trap>
+		BRK }
+	DUP #1b NEQ ?{ POP window/<trap>
+		BRK }
+	DUP #1f GTH ?{ POP BRK }
+	[ LIT2 -&cap &ptr -&buf ]
+	( clamp ) NEQk ?{ POP POP2 BRK }
+	INCk ,&ptr STR
+	NIP STZ
+	/<validate>
+	BRK
+
+@dst/<pop> ( -- )
+	[ LIT2 -&buf _&ptr ] LDR
+	( clamp ) NEQk ?{ POP2 JMP2r }
+	#01 SUB DUP ,&ptr STR
+	#00 SWP STZ
+	POP !/<validate>
+
+@dst/is-inactive ( -- f )
+	;&on-button .Controller/vector DEI2 NEQ2 JMP2r
+
+@dst/is-within ( x* y* -- x* y* true )
+	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00f5 LTH2 JMP2r }
+	#00 JMP2r
+
+@dst/<bind> ( x* y* -- )
+	POP2 POP2 ;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@dst/<trap> ( -- )
+	/is-inactive ?{ JMP2r }
+	;&on-console .Console/vector DEO2
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2 !<redraw>
+
+@dst/<validate> ( -- )
+	asm/<validate>
+	( >> )
+
+@dst/<draw> ( -- )
+	[ LIT2 &x 0008 ] .Screen/x DEO2
+	[ LIT2 &y 0052 ] .Screen/y DEO2
+	/is-inactive ?{
+		;&buf ;&label #01 field/<draw-color>
+		[ LIT "| ] !chicago/<draw-char> }
+	.&buf ;&ptr LDA EQU ?{ ;&buf ;&label #01 !field/<draw-color> }
+	;&placeholder ;&label #02 !field/<draw-color>
+
+	&placeholder "result.rom $1
+	&label "Rom 20 "Output 20 "File: $1
+
+(
+@|asm-button )
+
+@asm/on-button ( -> )
+	[ LIT2 0d -Controller/key ] DEI NEQ ?{ /<press> }
+	BRK
+
+@asm/on-frame ( -> )
+	LIT &f f0 INCk ,&f STR
+	?{ #0000 .Screen/vector DEO2
+		/<validate> }
+	BRK
+
+@asm/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	( | handlers )
+	DUP2 #0001 EQU2 ?&on-down
+	DUP2 #0100 EQU2 ?&on-up
+	POP2 BRK
+
+	&on-down ( states* -> )
+	POP2 ;&state LDA #02 AND #01 ORA /<set-state>
+	BRK
+
+	&on-up ( states* -> )
+	POP2 ;&state LDA #02 AND /<set-state>
+	<assemble>
+	BRK
+
+@asm/<trap> ( -- )
+	/is-inactive ?{ JMP2r }
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2 !<redraw>
+
+@asm/<validate> ( -- )
+	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #10 SFT
+	( >> )
+
+@asm/<set-state> ( state -- )
+	DUP ,&state LDR NEQ ?{ POP JMP2r }
+	,&state STR
+	( >> )
+
+@asm/<draw> ( -- )
+	[ LIT2 &x 0040 ] .Screen/x DEO2
+	[ LIT2 &y 0088 ] .Screen/y DEO2
+	;&label [ LIT &state $1 ] !button/<draw>
+
+	&label "Assemble $1
+
+@asm/<bind> ( x* y* -- )
+	POP2 POP2 ;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@asm/<press> ( -- )
+	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #10 SFT ?{ JMP2r }
+	#03 /<set-state>
+	#f0 ;&f STA
+	;&on-frame .Screen/vector DEO2 !<assemble>
+
+@asm/is-inactive ( -- f )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
+
+@asm/is-within ( x* y* -- x* y* true )
+	DUP2 ,&y LDR2 #0004 ADD2 SUB2 #0014 GTH2 ?{
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #0088 LTH2 JMP2r }
+	#00 JMP2r
+
+(
+@|info )
+
+@info/count-lines ( str* -- lines* )
+	;&buf [ LIT2r 0000 ]
+	&>l
+		LDAk DUP ?{ POP POP2 STH2r JMP2r }
+		#0a NEQ ?{ INC2r }
+		INC2 !&>l
+
+@info/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#00b8 .Screen/y DEO2
+	[ LIT2 83 -Screen/pixel ] DEO
+	#00b0 .Screen/y DEO2
+	#81d0 ;&frilhor-chr #01 <draw-times>
+	( | draw )
+	#0008 .Screen/x DEO2
+	#00bc .Screen/y DEO2
+	;&buf !chicago/<draw-left>
+
+@info/<emit> ( c -- )
+	#00 [ LIT2 &ptr =&buf ]
+	( clamp ) DUP2 ;&cap NEQ2 ?{ POP2 POP2 JMP2r }
+	INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+	&frilhor-chr [ 0000 83c7 ffff ffff 0000 0083 c7ff ffff ]
+	&buf "Ready. $100 &cap $1
+
+(
+@|builtins )
+
+@assembly/<clean> ( -- )
+	;lambda/mem #ffff ;lambda/mem SUB2 mem/<clear>
+	;lambda/mem ;lambda/ptr STA2
+	#0000 ;lambda/count STA2
+	#00 ;comment/depth STA
+	#00 ;macros/depth STA
+	#0001 ;token/line STA2
+	#0100 ;head/addr STA2
+	#0100 ;head/boundary STA2
+	;refs/mem ;refs/ptr STA2
+	;macros/mem ;macros/ptr STA2
+	;syms/mem ;syms/ptr STA2
+	;&mmu-wipe .System/expansion DEO2
+	standard/<latch>
+	#0100 head/<set> !assembly/<init>
+
+	&mmu-wipe [ 00 ffff 0001 0000 00 ]
+
+@<assemble> ( -- )
+	;info/buf ;info/ptr STA2
+	assembly/<clean>
+	;src/buf assembly/<handle-file>
+	assembly/<resolve>
+	#000f DEO !window/<resize>
+
+@runes/concat INC2
+	( >> )
+
+@assembly/<handle-file> ( f* -- )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	token/<new>
+	#0000
+	&>s
+		.System/state DEI ?&end
+		;&c .File/read DEO2
+		.File/success-lb DEI ?{
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/file info/<generic> }
+			&end ( i* -- )
+			POP2 JMP2r }
+		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
+
+@rom/<put> ( byte addr* -- )
+	,&dst STR2
+	,&v STR
+	;&mmu-put .System/expansion DEO2
+	JMP2r
+
+	&mmu-put [ 00 0001 0001 &dst $2 &v $1 ]
+	&mmu-get [ 01 0001 0001 &src $2 0000 =&buf ] &buf $1
+
+@rom/<emit> ( length* -- )
+	;dict/assembled info/<print>
+	#20 info/<emit>
+	;dst/buf info/<print>
+	;dict/in info/<print>
+	;head/boundary LDA2 DUP2 #00ff SUB2 info/<pdec>
+	;dict/bytes info/<print>
+	( | emit rom )
+	;dst/buf .File/name DEO2
+	#0001 .File/length DEO2
+	#00ff
+	&>ler
+		INC2 DUP2 ,&src STR2
+		;&mmu-get .System/expansion DEO2
+		;&buf .File/write DEO2
+		NEQ2k ?&>ler
+	POP2 POP2 JMP2r
+
+@<redraw-all> ( -- )
+	header/<draw>
+	( >> )
+
+@<redraw> ( -- )
+	src/<draw>
+	dst/<draw>
+	asm/<draw> !info/<draw>
+
+(
+@|GUIs )
+
+@field/<draw-color> ( src* label* color -- )
+	STH
+	[ LITr -Screen/x ] DEI2r #01 chicago/<draw-left-color>
+	[ LITr -Screen/x ] DEO2r
+	lb/<draw>
+	( | frame )
+	[ LIT2 35 -Screen/auto ] DEO
+	;&edge-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	#01e2 ;&core-icn #35 <draw-times-addr>
+	;&edge-icn .Screen/addr DEO2
+	[ LIT2 11 -Screen/sprite ] DEO
+	( | content )
+	.Screen/x DEI2k #00eb SUB2 ROT DEO2
+	.Screen/y DEI2k #0008 ADD2 ROT DEO2
+	STHr !chicago/<draw-left-color>
+
+@field/edge-icn [
+	0000 0000 7f40 4040 4040 4040 4040 4040
+	4040 4040 4040 4040 4040 407f 0000 0000 ]
+	&core-icn [
+	0000 0000 ff00 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 00ff 0000 0000 ]
+
+@button/<draw> ( name* state -- )
+	STHk #01 AND #00 SWP #50 SFT2 STH2
+	[ LIT2 35 -Screen/auto ] DEO
+	;&edge-chr STH2kr ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	#01f0 ;&core-chr STH2kr ADD2 #35 <draw-times-addr>
+	;&edge-chr STH2r ADD2 .Screen/addr DEO2
+	[ LIT2 11 -Screen/sprite ] DEO
+	( | content )
+	.Screen/y DEI2k #0008 ADD2 ROT DEO2
+	.Screen/x DEI2 #0038 SUB2 DUP2 .Screen/x DEO2
+	SWP2 #05 chicago/<draw-center-color>
+	( | hash )
+	#0040 SUB2 .Screen/x DEO2
+	STHr #02 AND ?{ #00f0 ;&hash-icn #11 !<draw-times-addr> }
+	JMP2r
+
+	&hash-icn [ aa55 aa55 aa55 aa55 ]
+
+@button/edge-chr [
+	0000 0000 030c 1126 2848 5050 5050 5050
+	5050 5050 5050 4828 2611 0c03 0000 0000
+	0000 0000 030c 1020 2040 4040 4040 4040
+	4040 4040 4040 4020 2010 0c03 0000 0000 ]
+	&core-chr [
+	0000 0000 ff00 ff00 0000 0000 0000 0000
+	0000 0000 0000 0000 00ff 00ff 0000 0000
+	0000 0000 ff00 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 00ff 0000 0000 ]
+
+(
+@|header )
+
+@header/is-within ( x* y* -- x* y* true )
+	DUP2 ;&height LTH2 JMP2r
+
+@header/<bind> ( x* y* -- )
+	POP2 POP2 ;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@header/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI
+	( | handlers )
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
+	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
+	DUP2 #0100 NEQ2 ?{ /<release-quit> }
+	,&last STR
+	POP BRK
+
+@header/outside-quit ( -- f )
+	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
+		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@header/<press-quit> ( -- )
+	;&button-down-icn !/<draw-button>
+
+@header/<release-quit> ( -- )
+	/outside-quit ?{ #800f DEO }
+	( >> )
+
+@header/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 85 -Screen/width ] DEI2 #03 SFT2 SUB ;&bg-chr #25 <draw-times-addr>
+	( | 1px right )
+	.Screen/width DEI2 #0001 SUB2 .Screen/x DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 a2 -Screen/pixel ] DEO
+	( | 1px left )
+	#0001 .Screen/x DEO2
+	[ LIT2 b2 -Screen/pixel ] DEO
+	( | title )
+	/<draw-title>
+	;&button-icn
+	( >> )
+
+@header/<draw-button> ( button* -- )
+	.Screen/addr DEO2
+	#0008 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@header/<draw-title> ( -- )
+	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	;dict/uxnasm #09 chicago/<draw-center-color>
+	.Screen/y DEI2k #0001 SUB2 ROT DEO2
+	;header/bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
+	DEO2
+	DEOr
+	JMP2r
+
+@header/bg-chr [
+	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
+	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
+	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
+	&button-icn [
+	0000 007f 4040 4040 4040 4040 407f 0000
+	0000 00f7 1017 1017 1017 1017 10f7 0000 ]
+	&button-down-icn [
+	0000 007f 4252 4a40 7840 4a52 427f 0000
+	0000 00f7 1057 9017 f017 9057 10f7 0000 ]
+
+(
+@|cursor )
+
+@cursor/<refocus> ( -- )
+	.Mouse/x DEI2 .Mouse/y DEI2
+	( | handlers )
+	header/is-within ?header/<bind>
+	src/is-within ?src/<bind>
+	dst/is-within ?dst/<bind>
+	asm/is-within ?asm/<bind>
+	;window/on-mouse .Mouse/vector DEO2
+	POP2 POP2 JMP2r
+
+@cursor/<update> ( -- )
+	/<refocus>
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( >> )
+
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+@cursor/up-chr [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+@cursor/down-chr [
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+(
+@|window )
+
+@window/<resize> ( -- )
+	#0110 #00c4 info/count-lines #40 SFT2 ADD2 window/<set-size> !<redraw-all>
+
+@window/<set-size> ( width* height* -- )
+	DUP2 .Screen/height DEI2 NEQ2 ?{
+		OVR2 .Screen/width DEI2 NEQ2 ?{ POP2 POP2 JMP2r } }
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	.Screen/width DEO2
+	JMP2r
+
+@window/toggle-shade ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
+	[ LIT2 &height $2 ] .Screen/height DEO2 !<redraw-all>
+
+@window/on-mouse ( -> )
+	cursor/<update>
+	.Mouse/state DEI ?{ BRK }
+	/<trap>
+	BRK
+
+@window/<trap> ( -- )
+	#0000 .Controller/vector DEO2 !<redraw>
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0ad #f0ef #f0be
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@<draw-times> ( color times addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@lb/<set> ( x* -- )
+	,&x STR2
+	JMP2r
+
+@lb/<draw> ( -- )
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	JMP2r
+
+@mem/<clear> ( src* len* -- )
+	,&length STR2
+	,&addr STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 00 &length $2 0000 &addr $2 00
+
+(
+@|chicago )
+
+@chicago/<draw-center-color> ( text* color -- )
+	STH
+	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	STHr
+	( >> )
+
+@chicago/<draw-left-color> ( text* color -- )
+	,&color STR
+	( >> )
+
+@chicago/<draw-left> ( str* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	#0008 lb/<set>
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		chicago/<draw-char>
+		INC2 !&>w
+
+@chicago/<draw-char> ( char -- )
+	DUP #0a NEQ ?{ POP !lb/<draw> }
+	/normalize
+	( ) DUP2 #20 SUB #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
+	( ) ;&widths ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+	( ) [ LIT2 &color 01 -Screen/sprite ] DEOk DEO
+	.Screen/x DEO2
+	JMP2r
+
+@chicago/normalize ( chr -- ascii* )
+	DUP #20 SUB #5f LTH ?{ POP #7f }
+	#00 SWP JMP2r
+
+@chicago/get-str-width ( text* -- width* )
+	[ LIT2r 0000 ]
+	&>ww
+		LDAk /normalize ;&widths ADD2 LDA LITr 00 STH
+		ADD2r INC2 LDAk ?&>ww
+	POP2 STH2r JMP2r
+
+@chicago/widths [
+	0000 0000 0000 0000 0008 0000 0000 0000
+	000b 0b09 0b00 0000 0000 0000 0000 0000
+	0406 070a 070b 0a03 0505 0707 0407 0407
+	0808 0808 0808 0808 0808 0404 0608 0608
+	0b08 0808 0807 0708 0806 0709 070c 0908
+	0808 0807 0608 080c 0808 0805 0705 0808
+	0608 0807 0808 0608 0804 0608 040c 0808
+	0808 0607 0608 080c 0808 0805 0505 0808 ]
+	&glyphs [
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3030 3030 3000 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0028 2828 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0909 3f12 127f 2424 0000 0000 0000
+	0000 0000 8000 0000 0000 0000 0000 0000
+	0000 1038 5470 7038 1c1c 5438 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3749 4a32 0404 090a 1211 0000 0000
+	0000 0000 0000 0000 8040 4080 0000 0000
+	0000 003c 6666 3067 6666 663c 0000 0000
+	0000 0000 0080 8000 0000 0000 0000 0000
+	0000 0040 4040 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 6060 6060 6060 6020 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 3030 3030 3030 3020 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0010 5438 5410 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0010 107c 1010 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 6060 2040 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 007c 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0404 0808 1010 2020 4040 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 3818 1818 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 4606 060c 1830 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0c18 3c06 0606 463c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0006 0e16 2646 7f06 0606 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 6060 7c06 0606 463c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3060 7c66 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0606 060c 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 663c 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 3e06 0c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0060 6000 0000 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0060 6000 0000 6060 2040 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1830 60c0 6030 1800 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 7e00 7e00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 c060 3018 3060 c000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 4606 0c18 1800 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1f20 4e52 524d 201f 0000 0000
+	0000 0000 0080 4040 4080 0000 0000 0000
+	0000 003c 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 6060 6060 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 6666 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6060 6078 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6060 6078 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 606e 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 000c 0c0c 0c0c cccc cc78 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0063 666c 7870 786c 6663 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6060 6060 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 6070 795f 4e44 4040 0000 0000
+	0000 0020 60e0 e060 6060 6060 0000 0000
+	0000 0041 6171 795d 4f47 4341 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0600 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0038 6460 7038 1c0c 4c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 00fc 3030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 6478 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 667f 0000 0000
+	0000 0060 6060 6060 6060 4080 0000 0000
+	0000 0066 6666 663c 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 663c 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0606 0c18 3060 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7060 6060 6060 6060 6060 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4040 2020 1010 0808 0404 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7030 3030 3030 3030 3030 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0008 1422 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 00ff 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 1000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 607c 6666 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 6460 6060 6438 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0006 063e 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3078 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 6666 6666 663e 0646 3c00
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 607c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 0060 6060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 0018 1818 1818 1818 1898 7000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6066 6c78 7078 6c66 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6060 6060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007f 6666 6666 6666 0000 0000
+	0000 0000 00c0 6060 6060 6060 0000 0000
+	0000 0000 007c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007c 6666 6666 667c 6060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 6666 6666 663e 0606 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 006c 7060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 6470 381c 4c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3078 3030 3030 3018 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 6478 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 667f 0000 0000
+	0000 0000 0060 6060 6060 4080 0000 0000
+	0000 0000 0066 6666 3c66 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 663e 0646 3c00
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007e 060c 1830 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 2020 2040 2020 2020 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2020 2020 2020 2020 2020 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 2020 2010 2020 2020 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0032 4c00 0000 0000 0000 0000
+	aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+(
+@|Assets )
+
+@fill-icn [ ffff ffff ffff ffff ffff ffff ffff ffff ]
+
+@dict/uxnasm 20 "Uxntal 20 "Assembler 20 $1
+	&file "File $1
+
+
+
+( Core )
+
+@assembly/<init> ( -- )
+	;dict/reset !scope/<set>
+
+@assembly/<resolve> ( -- )
+	( cap ) #0a token/<push-byte>
+	,&mode LDR2 ;comment/assemble NEQ2 ?{
+		( ! ) ;dict/open ;dict/trail ;dict/Comment info/<generic> }
+	,&mode LDR2 ;macros/assemble NEQ2 ?{
+		( ! ) ;dict/open ;dict/trail ;dict/Macro info/<generic> }
+	.System/state DEI ?{
+		refs/<resolve-all>
+		.System/state DEI ?{
+			[ LIT2 80 -System/state ] DEO !syms/<emit> } }
+	JMP2r
+
+@assembly/apply ( t* -- )
+	LDZk ?{ POP2 JMP2r }
+	[ LIT2 &mode =standard/assemble ] JMP2
+
+(
+@|Standard )
+
+@standard/<latch> ( -- )
+	;&assemble ;assembly/mode STA2
+	JMP2r
+
+@standard/assemble ( t* -- )
+	( hex ) str/is-hex ?rom/<write-rawhex>
+	( opc ) opcodes/is-opcode ?rom/<write-opcode>
+	LDZk runes/find INC2k ORA ?{
+		POP2
+		( mac ) macros/find-name INC2k ORA ?macros/<write>
+		POP2
+		( imm ) !runes/litjsi }
+	INC2 LDA2 JMP2
+
+(
+@|Comment )
+
+@comment/<latch> ( t* -- )
+	POP2 ;&assemble ;assembly/mode STA2
+	[ LIT2 01 _&depth ] STR
+	JMP2r
+
+@comment/assemble ( t* -- )
+	LDA2 DUP2 [ LITr &depth $1 ]
+	( a ) LIT2 "( $1 EQU2 [ STH ADDr ]
+	( b ) LIT2 ") $1 EQU2 [ STH SUBr ]
+	( . ) STHkr LITr _&depth STRr
+	?{ !standard/<latch> }
+	JMP2r
+
+(
+@|Macros )
+
+@macros/<latch> ( t* -- )
+	name/validate /<push-word>
+	#00 /<push-byte>
+	;&walk ;assembly/mode STA2
+	JMP2r
+
+	&walk ( t* -- )
+	LDA2 [ LIT2 "{ $1 ] NEQ2 ?{
+		;&assemble ;assembly/mode STA2
+		[ LIT2 01 _&depth ] STR }
+	JMP2r
+
+@macros/assemble ( t* -- )
+	LDA2k DUP2 [ LITr &depth $1 ]
+	( a ) LIT "{ EQU SWP LIT "{ EQU ORA [ STH ADDr ]
+	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
+	( . ) STHkr LITr _&depth STRr
+	?{ POP2 #00 /<push-byte> !standard/<latch> }
+	/<push-word>
+	#20 !/<push-byte>
+
+@macros/<push-word> ( t* -- )
+	;/<push-byte> !for-each
+
+@macros/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k
+	( | check overflow )
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/Macros info/<token> }
+	,&ptr STR2
+	STA
+	JMP2r
+
+@macros/find-name ( name* -- name* <addr>* )
+	STH2k ,&ptr LDR2 ;&mem
+	&>lf
+		DUP2 STH2kr str/cmp ?{
+			str/cap str/cap GTH2k ?&>lf
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@macros/<write> ( t* macro* -- )
+	NIP2 token/<new>
+	str/cap ;token/<push-byte> !for-each
+
+(
+@|Token )
+
+@token/<new> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
+	JMP2r
+
+@token/<push-byte> ( c -- )
+	DUP #20 GTH ?{
+		;&buf assembly/apply #0a NEQ ?{
+			[ LIT2 &line 0001 ] INC2 ,&line STR2 }
+		!/<new> }
+	[ LIT2 00 &ptr -&buf ] INCk
+	( | check overflow )
+	DUP .&cap LTH ?{
+		( ! ) ;dict/exceeded ;dict/Name info/<token> }
+	,&ptr STR
+	STZ2
+	JMP2r
+
+(
+@|Scope )
+
+@scope/<push-byte> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk
+	( | check overflow )
+	DUP .&cap LTH ?{
+		( ! ) ;dict/exceeded ;dict/Symbol info/<token> }
+	,&ptr STR
+	STZ2
+	JMP2r
+
+@scope/<set> ( name* -- )
+	DUP2 [ LIT2 -&buf _&ptr ] STR
+	&>w
+		LDAk [ LIT "/ ] EQU ?{
+			LDAk /<push-byte>
+			INC2 LDAk ?&>w }
+	POP2 ,&ptr LDR ,&anchor STR !syms/<new>
+
+@scope/make-name ( name* -- scope/label* )
+	INC2 [ LIT2 &anchor $1 _&ptr ] STR
+	[ LIT "/ ] /<push-byte>
+	;&buf SWP2 ;/<push-byte> !for-each
+
+(
+@|Runes )
+
+@runes/find ( char -- <addr>* )
+	STH
+	;&lut
+	&>w
+		LDAk STHkr EQU ?{
+			#0003 ADD2 LDAk ?&>w
+		POP2 #ffff }
+	POPr JMP2r
+
+@runes/ignore ( t* -- )
+	POP2 JMP2r
+
+	&lambda ( t* -- )
+	POP2 !lambda/pop
+
+	&coment ( t* -- )
+	!comment/<latch>
+
+	&macros ( t* -- )
+	/req-name !macros/<latch>
+
+	&padabs ( t* -- )
+	/req-name syms/find-addr !head/<set>
+
+	&padrel ( t* -- )
+	/req-name syms/find-addr !head/<set-rel>
+
+	&toplab ( t* -- )
+	/req-name !scope/<set>
+
+	&sublab ( t* -- )
+	scope/make-name !syms/<new>
+
+	&litrel ( t* -- )
+	#80 rom/<write-byte> &rawrel /req-name refs/get-rel !rom/<write-byte>
+
+	&litzep ( t* -- )
+	#80 rom/<write-byte> &rawzep /req-name refs/get-abs !rom/<write-byte>
+
+	&litabs ( t* -- )
+	#a0 rom/<write-byte> &rawabs /req-name refs/get-abs2 !rom/<write-short>
+
+	&litjci ( t* -- )
+	/req-name #20 !rom/<write-call>
+
+	&litjmi ( t* -- )
+	/req-name #40 !rom/<write-call>
+
+	&litjsi ( t* -- )
+	#60 !rom/<write-call>
+
+	&lithex ( t* -- )
+	/req-name !rom/<write-lithex>
+
+	&rawstr ( t* -- )
+	/req-name !rom/<write-str>
+
+@runes/req-name ( str* -- str1* )
+	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Name !info/<token> }
+	JMP2r
+
+@runes/lut [
+	"| =&padabs "$ =&padrel
+	"@ =&toplab "& =&sublab
+	", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep
+	"; =&litabs "= =&rawabs
+	"! =&litjmi "? =&litjci
+	"# =&lithex "" =&rawstr
+	"} =&lambda "~ =&concat
+	"( =&coment ") =&ignore
+	"[ =&ignore "] =&ignore "% =&macros ] $1
+
+(
+@|Opcodes )
+
+@opcodes/is-opcode ( str* -- str* bool )
+	DUP2 /parse #00 NEQ STH
+	DUP2 ;&brk str/cmp STHr ORA JMP2r
+
+@opcodes/parse ( str* -- byte )
+	[ LIT2r 1f00 ] ;&lut
+	&>w1
+		SWP2k #0003 SWP2 mem/cmp ?{
+			INCr #0003 ADD2 LDAk ?&>w1
+		POP2 POP2 POP2r #00 JMP2r }
+	POP2
+	( mask ) ANDr
+	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
+	( move ) #0003 ADD2
+	&>w2
+		LDAk #21 LTH ?{
+			( | parse modes )
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 !&r }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 !&r }
+			POP2 POPr #00 JMP2r
+			&r ORAr INC2 !&>w2 }
+	POP2 STHr JMP2r
+
+@opcodes/lut [
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT ]
+	&brk "BRK $1
+
+(
+@|Lambda )
+
+@lambda/make-name ( token* -- name* )
+	POP2 [ LIT2 &count $2 ] INC2k ,&count STR2
+	DUP2 [ LIT2 &ptr =&mem ] INC2k INC2 ,&ptr STR2
+	STA2
+	( >> )
+
+@lambda/name ( id* -- str* )
+	/name-part ROT /name-part ,&id1 STR2
+	,&id2 STR2
+	;&sym JMP2r
+
+@lambda/name-part ( id -- hexchar hexchar )
+	DUP #04 SFT hexc SWP !hexc
+
+@lambda/pop ( -- )
+	,&ptr LDR2
+	( | check underflow )
+	DUP2 ;&mem NEQ2 ?{
+		( ! ) ;dict/invalid ;dict/Symbol info/<token> }
+	#0002 SUB2 LDA2k /name syms/<new>
+	,&ptr STR2
+	JMP2r
+	&sym cebb
+	&id1 "..
+	&id2 ".. 00
+
+(
+@|Name )
+
+@name/validate ( name* -- name* )
+	( not hex ) str/is-hex ?&fail
+	( not lambda ) LDAk LIT "{ EQU ?&fail
+	( not runic ) LDAk runes/find INC2 ORA ?&fail
+	( dup macros ) macros/find-name INC2 ORA ?&dup
+	( dup symbol ) syms/find-name INC2 ORA ?&dup
+	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
+	&fail ( -- )
+	;dict/invalid ;dict/Name !info/<token>
+
+	&dup ( -- )
+	;dict/duplicate ;dict/Name !info/<token>
+
+@name/unpack ( name* -- name* )
+	LDAk [ LIT "{ ] EQU ?lambda/make-name
+	LDAk [ LIT "/ ] EQU ?scope/make-name
+	LDAk [ LIT "& ] EQU ?scope/make-name
+	JMP2r
+
+(
+@|Syms )
+
+@syms/<new> ( name* -- )
+	/find-name INC2k ORA ?{
+		POP2 ;&ptr LDA2 refs/<record-scope>
+		.SymType/declared head/get !/<push-sym> }
+	( | name* sym* -- )
+	NIP2 DUP2 refs/<record-scope>
+	/is-declared ?{ head/get OVR2 STA2 !/<declare> }
+	POP2
+	( ! ) ;dict/duplicate ;dict/Symbol !info/<token>
+
+@syms/<push-sym> ( name* type addr* -- )
+	( hb ) SWP /<push-byte>
+	( lb ) /<push-byte>
+	( type ) /<push-byte>
+	name/validate ;/<push-byte> for-each #00
+	( >> )
+
+@syms/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k
+	( | check overflow )
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/Symbols info/<token> }
+	,&ptr STR2
+	STA
+	JMP2r
+
+@syms/find-name ( name* -- <sym>* )
+	STH2k ,&ptr LDR2 ;&mem
+	&>lfn
+		DUP2 #0003 ADD2 STH2kr str/cmp ?{
+			#0003 ADD2 str/cap GTH2k ?&>lfn
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@syms/find-alloc ( name* -- <addr>* )
+	/find-name INC2k ORA ?{
+		( null* .. next* ) POP2 ,&ptr LDR2
+		( alloc ) SWP2 .SymType/used #ffff !/<push-sym> }
+	NIP2 JMP2r
+
+@syms/find-addr ( name* -- <addr>* )
+	str/is-hex ?str/hex
+	name/unpack /find-name /is-defined ?{
+		( ! ) ;dict/invalid ;dict/Symbol info/<token> }
+	/use LDA2 NIP2 JMP2r
+
+@syms/<emit> ( -- )
+	;&ptr LDA2 ;&mem
+	&>ls
+		EQU2k ?{
+			/is-used ?{
+				LDA2k #0100 EQU2 ?{
+					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+						;dict/unused info/<print>
+						DUP2 info/<print>
+						#0a info/<emit> }
+					POP2 } }
+			#0003 ADD2 str/cap !&>ls }
+	POP2 POP2 !rom/<emit>
+
+@syms/byte-distance ( addr* -- addr* )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
+	( ! ) ;dict/too-far ;dict/Symbol !info/<token>
+
+@syms/is-defined ( sym* -- sym* t )
+	INC2k ORA ?{ #00 JMP2r }
+	( >> )
+
+@syms/is-declared ( sym* -- sym* t )
+	INC2k INC2 LDA .SymType/declared AND JMP2r
+
+@syms/is-used ( sym* -- sym* t )
+	INC2k INC2 LDA .SymType/used AND JMP2r
+
+@syms/use ( sym* -- sym* )
+	INC2k INC2 STH2k LDA .SymType/used ORA STH2r STA
+	JMP2r
+
+@syms/<declare> ( sym* -- )
+	INC2 INC2 STH2k LDA .SymType/declared ORA STH2r STA
+	JMP2r
+
+(
+@|References )
+
+@refs/get-type ( token* type* -- addr* )
+	,&type STR2
+	name/unpack syms/find-alloc syms/is-declared ?{
+		DUP2 head/get
+		( addr* ) /<push-short>
+		( symbol* ) /<push-short>
+		( type-fn* ) [ LIT2 &type $2 ] /<push-short>
+		( scope* ) [ LIT2 &scope $2 ] /<push-short>
+		( line* ) ;token/line LDA2 /<push-short> }
+	( | mark as used )
+	syms/use LDA2 JMP2r
+
+@refs/<push-short> ( value* -- )
+	SWP /<push-byte>
+	( >> )
+
+@refs/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k
+	( | check overflow )
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/References info/<token> }
+	,&ptr STR2
+	STA
+	JMP2r
+
+@refs/get-abs ( label* -- addr )
+	;&handle-abs /get-type NIP JMP2r
+
+@refs/get-abs2 ( label* -- addr* )
+	;&handle-abs2 !/get-type
+
+@refs/get-rel ( label* -- distance )
+	;&handle-rel /get-type INC2k ORA ?{
+		( undefined ) POP2 #00 JMP2r }
+	head/get /get-distance syms/byte-distance NIP JMP2r
+
+@refs/get-rel2 ( label* -- distance* )
+	;&handle-rel2 /get-type head/get
+	( >> )
+
+@refs/get-distance ( a* b* -- distance* )
+	INC2 INC2 SUB2 JMP2r
+
+@refs/<resolve-all> ( -- )
+	,&ptr LDR2 ;&mem
+	&>l
+		EQU2k ?{
+			DUP2 ;info/ref STA2
+			DUP2k #0004 ADD2 LDA2 JSR2
+			( ) #000a ADD2 !&>l }
+	POP2 POP2 JMP2r
+
+@refs/resolve-sym ( ref* -- ref* sym/addr* )
+	LDA2k head/<set>
+	( ref* sym* ) INC2k INC2 LDA2
+	( ref* sym/addr* ) LDA2
+	( ref* sym/addr* ) INC2k ORA ?{
+		( ! ) ;dict/invalid !info/<resolution> }
+	( ref* sym/addr* ) JMP2r
+
+@refs/handle-abs ( ref* -- )
+	/resolve-sym NIP2 NIP !rom/<write-byte>
+
+@refs/handle-abs2 ( ref* -- )
+	/resolve-sym NIP2 !rom/<write-short>
+
+@refs/handle-rel ( ref* -- )
+	/resolve-sym SWP2 LDA2 /get-distance /byte-distance NIP !rom/<write-byte>
+
+@refs/handle-rel2 ( ref* -- )
+	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short>
+
+@refs/byte-distance ( addr* -- addr* )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
+	( ! ) ;dict/too-far !info/<resolution>
+
+@refs/<record-scope> ( sym* -- )
+	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
+	;refs/scope STA2
+	JMP2r
+
+(
+@|Rom )
+
+@rom/<write-str> ( str* -- )
+	;/<write-byte> !for-each
+
+@rom/<write-opcode> ( str* -- )
+	opcodes/parse !/<write-byte>
+
+@rom/<write-lithex> ( str* -- )
+	str/len #02 NEQ #50 SFT #80 ORA /<write-byte>
+	( >> )
+
+@rom/<write-rawhex> ( str* -- )
+	str/is-hex #00 EQU ?{
+		str/len DUP #02 NEQ ?{ POP str/hex NIP !/<write-byte> }
+		#04 NEQ ?{ str/hex !/<write-short> } }
+	POP2 ;dict/invalid ;dict/Number !info/<token>
+
+@rom/<write-call> ( str* opc -- )
+	/<write-byte>
+	refs/get-rel2
+	( >> )
+
+@rom/<write-short> ( short* -- )
+	SWP /<write-byte>
+	( >> )
+
+@rom/<write-byte> ( byte -- )
+	head/get-inc
+	( | test zero-page )
+	OVR ?{
+		POP2 POP
+		( ! ) ;dict/zero-page ;dict/Writing !info/<token> }
+	!rom/<put>
+
+@head/get-inc ( -- addr* )
+	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
+	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
+	JMP2r
+
+@head/get ( -- addr* )
+	,&addr LDR2 JMP2r
+
+@head/<set-rel> ( addr* -- )
+	/get ADD2
+	( >> )
+
+@head/<set> ( addr* -- )
+	,&addr STR2
+	JMP2r
+
+(
+@|Stdlib )
+
+@for-each ( data* byte-fn* -- )
+	STH2
+	&>w
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		STH2kr JSR2 INC2 !&>w
+
+@hexc ( hex -- char )
+	#0f AND #0a LTHk ?{
+		SUB [ LIT "a ] ADD JMP2r }
+	POP [ LIT "0 ] ADD JMP2r
+
+@chex ( addr* -- addr* <val> )
+	LDAk
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
+@str/hex ( str* -- value* )
+	[ LIT2r 0000 ]
+	&>wh
+		[ LITr 40 ] SFT2r chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&>wh
+	POP2 STH2r JMP2r
+
+@str/len ( str* -- str* length )
+	DUP2k /cap SWP2 INC2 SUB2 NIP JMP2r
+
+@str/is-hex ( str* -- str* f )
+	DUP2
+	&>wih
+		chex INC ?{ LDA #00 EQU JMP2r }
+		INC2 !&>wih
+
+@str/cap ( str* -- end* )
+	LDAk ?{ INC2 JMP2r }
+	INC2 !/cap
+
+@str/cmp ( a* b* -- bool )
+	DUP2k /cap SWP2 SUB2 SWP2
+	( >> )
+
+@mem/cmp ( a* length* b* -- t )
+	STH2
+	OVR2 ADD2 SWP2
+	&>l
+		EQU2k ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
+	POP2r EQU2 JMP2r
+
+(
+@|Error )
+
+@info/<token> ( adj* topic* -- )
+	.System/state DEI ?{
+		[ LIT2 01 -System/state ] DEO
+		/<print>
+		#20 /<emit>
+		/<print>
+		;dict/spacer /<print>
+		;token/buf /<print>
+		;token/line LDA2 ;scope/buf !/<print-location> }
+	POP2 POP2 JMP2r
+
+@info/<resolution> ( adj* -- )
+	.System/state DEI ?{
+		[ LIT2 01 -System/state ] DEO
+		;dict/Reference /<print>
+		#20 /<emit>
+		/<print>
+		;dict/spacer /<print>
+		[ LIT2 &ref $2 ] INC2k INC2 LDA2 #0003 ADD2 /<print>
+		DUP2 #0008 ADD2 LDA2 SWP2 #0006 ADD2 LDA2 #0003 ADD2 !/<print-location> }
+	POP2 JMP2r
+
+@info/<print-location> ( line* scope* -- )
+	;dict/in /<print>
+	/<print>
+	LIT ": /<emit>
+	/<pdec>
+	#0a /<emit>
+	JMP2r
+
+@info/<generic> ( adj* keyword* topic* -- )
+	.System/state DEI ?{
+		[ LIT2 01 -System/state ] DEO
+		/<print>
+		#20 /<emit>
+		SWP2 /<print>
+		;dict/spacer /<print>
+		/<print>
+		#0a /<emit>
+		JMP2r }
+	POP2 POP2 POP2 JMP2r
+
+@info/<print> ( str* -- )
+	;/<emit> !for-each
+
+@info/<pdec> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD /<emit>
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
+
+@dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
+	&unused "-- 20 "Unused
+	&spacer ": 20 $1
+	&References "References $1
+	&Reference "Reference $1
+	&Symbols "Symbols $1
+	&Symbol "Symbol $1
+	&Macros "Macros $1
+	&Macro "Macro $1
+	&Name "Name $1
+	&Number "Number $1
+	&Comment "Comment $1
+	&Writing "Writing $1
+	&exceeded "exceeded $1
+	&invalid "invalid $1
+	&duplicate "duplicate $1
+	&too-far "too 20 "far $1
+	&zero-page "zero-page $1
+	&open "open $1
+	&trail ".. $1
+	&reset "Top $1
+
+(
+@|Buffers )
+
+@lambda/mem $100
+
+@macros/mem ( name\0, value\0 )
+	$1000 &memend
+
+@refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
+	$3000 &memend
+
+@syms/mem ( addr*, SymType, name\0 )
+	$4800 &memend
+
+@rom/mem ( zeropage )
+	$100
+	&output
+(
+@|Enums )
+
+
+|00 @SymType/empty $1 &used $1 &declared
+
