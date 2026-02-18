@@ -33,10 +33,9 @@ emu_deo(const Uint8 port, const Uint8 value)
 	case 0xa0|opc: {const Uint8 d=1,r=0,k=ptr[0];A ptr[0]=k;B} break;\
 	case 0xc0|opc: {const Uint8 d=0,r=1,k=ptr[1];A ptr[1]=k;B} break;\
 	case 0xe0|opc: {const Uint8 d=1,r=1,k=ptr[1];A ptr[1]=k;B} break;}
-#define REM ptr[r] -= 1 + d;
 #define DEC(m) stk[m][--ptr[m]]
 #define INC(m) stk[m][ptr[m]++]
-#define IMM c = ram[pc++] << 8, c |= ram[pc++];
+#define IMM a = ram[pc++] << 8, a |= ram[pc++];
 #define MOV pc = d ? (Uint16)a : pc + (Sint8)a;
 #define POx(o,m) o = DEC(r); if(m) o |= DEC(r) << 8;
 #define PUx(i,m,s) if(m) c = (i), INC(s) = c >> 8, INC(s) = c; else INC(s) = i;
@@ -54,16 +53,16 @@ uxn_eval(Uint16 pc)
 	for(;;)
 	switch(ram[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: if(DEC(0)) { IMM pc += c; } else pc += 2; break;
-	/* JMI */ case 0x40: IMM pc += c; break;
-	/* JSI */ case 0x60: IMM INC(1) = pc >> 8, INC(1) = pc, pc += c; break;
+	/* JCI */ case 0x20: if(DEC(0)) { IMM pc += a; } else pc += 2; break;
+	/* JMI */ case 0x40: IMM pc += a; break;
+	/* JSI */ case 0x60: IMM PUx(pc, 1, 1) pc += a; break;
 	/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
 	/* LIT */ case 0x80: INC(0) = ram[pc++]; break;
 	/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
 	/* LIr */ case 0xc0: INC(1) = ram[pc++]; break;
 	/* INC */ OPC(0x01,POx(a,d),PUx(a + 1,d,r))
-	/* POP */ OPC(0x02,REM,{})
-	/* NIP */ OPC(0x03,GOT(x) REM,PUT(x,r))
+	/* POP */ OPC(0x02,ptr[r] -= 1 + d;,{})
+	/* NIP */ OPC(0x03,GOT(x) ptr[r] -= 1 + d;,PUT(x,r))
 	/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x,r) PUT(y,r))
 	/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y,r) PUT(x,r) PUT(z,r))
 	/* DUP */ OPC(0x06,GOT(x),PUT(x,r) PUT(x,r))
