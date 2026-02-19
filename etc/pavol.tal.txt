@@ -1,0 +1,210 @@
+( build: uxnasm src/pavol.tal pavol.ram
+| start: uxnemu pavol.rom )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $6 &scrolly &scrolly-hb $1 &scrolly-lb $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	theme/<load>
+	#0030 .Screen/width DEO2
+	#00e0 .Screen/height DEO2
+	;on-mouse .Mouse/vector DEO2
+	#10 volume/<draw>
+	BRK
+
+(
+@|Core )
+
+@on-mouse ( -> )
+	cursor/<update>
+	.Mouse/state DEI ?{ BRK }
+	#00a8 .Mouse/y DEI2 #0010 SUB2 SUB2 #03 SFT2 volume/<set>
+	POP BRK
+
+(
+@|Volume )
+
+@volume/<set> ( value -- )
+	DUP #15 LTH ?{ POP JMP2r }
+	DUP [ LIT &last 14 ] NEQ ?{ POP JMP2r }
+	DUP ,&last STR
+	DUP volume/<draw>
+	( | send )
+	#00 SWP DUP ADD ;&vol-lut ADD2 LDA2 .Console/addr DEO2
+	[ LIT2 03 -Console/mode ] DEO
+	[ LIT2 01 -Console/exec ] DEO
+	JMP2r
+
+	&vol-lut [
+	=dict/v00 =dict/v05 =dict/v10 =dict/v15
+	=dict/v20 =dict/v25 =dict/v30 =dict/v35
+	=dict/v40 =dict/v45 =dict/v50 =dict/v55
+	=dict/v60 =dict/v65 =dict/v70 =dict/v75
+	=dict/v80 =dict/v85 =dict/v90 =dict/v95
+	=dict/v100 ]
+
+@volume/<draw> ( value -- )
+	#0010 .Screen/x DEO2
+	#0008 .Screen/y DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	;&top-icn .Screen/addr DEO2
+	[ LIT2r 01 -Screen/sprite ] DEOkr
+	( | middle )
+	#eb
+	&>l
+		#00 OVR #01 AND #40 SFT2 ;&middle-icn ADD2 .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP
+	( | bottom )
+	;&bottom-icn .Screen/addr DEO2
+	DEOr
+	( | fill )
+	#0010 .Screen/x DEO2
+	#00 OVR #30 SFT #00b0 SWP2 SUB2 .Screen/y DEO2
+	[ LIT2 02 -Screen/auto ] DEO
+	;&fill-icn .Screen/addr DEO2
+	INCk #00
+	&>lf
+		[ LIT2 05 -Screen/sprite ] DEO
+		INC GTHk ?&>lf
+	POP2
+	( | select )
+	#00 OVR #30 SFT #00b0 SWP2 SUB2 .Screen/y DEO2
+	;&select-chr .Screen/addr DEO2
+	[ LIT2 85 -Screen/sprite ] DEO
+	( | value )
+	#00c0 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	#05 MUL DUP #64 NEQ ?{ POP #63 }
+	( >> )
+
+@font/<draw-dec> ( byte -- )
+	DUP #0a DIV /<draw-num>
+	#0a DIVk MUL SUB
+	( >> )
+
+@font/<draw-num> ( byte -- )
+	#00 SWP #40 SFT2 ;&digits ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	JMP2r
+
+(
+@|cursor )
+
+@cursor/<update> ( -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( >> )
+
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0ad #f0ef #f0be
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+@meta $1
+	( name ) "Pavol 0a
+	( details ) "PulseAudio 20 "Volume 20 "Control 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "18 20 "Feb 20 "2026 $1
+	( elements ) 00
+
+(
+@|Assets )
+
+@dict/v100 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "100% $1
+	&v95 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "95% $1
+	&v90 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "90% $1
+	&v85 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "85% $1
+	&v80 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "80% $1
+	&v75 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "75% $1
+	&v70 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "70% $1
+	&v65 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "65% $1
+	&v60 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "60% $1
+	&v55 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "55% $1
+	&v50 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "50% $1
+	&v45 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "45% $1
+	&v40 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "40% $1
+	&v35 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "35% $1
+	&v30 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "30% $1
+	&v25 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "25% $1
+	&v20 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "20% $1
+	&v15 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "15% $1
+	&v10 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "10% $1
+	&v05 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "5% $1
+	&v00 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "0% $1
+
+@volume/top-icn [ 0000 0000 0000 0010 0000 0000 0000 0000 ]
+	&middle-icn [
+	2828 2828 2828 2828 0000 0040 0000 0000
+	2828 2828 2828 2828 0000 0070 0000 0000 ]
+	&bottom-icn [ 1000 0000 0000 0000 0000 0000 0000 0000 ]
+	&select-chr [ 387c fefe fe7c 3800 0038 7c7c 7c38 0000 ]
+	&fill-icn [ 1010 1010 1010 1010 ]
+
+@cursor/up-chr [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+@cursor/down-chr [
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+@fill-icn [
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff ]
+
+@font/digits [
+	0018 2424 4242 4242 4242 4242 2424 1800
+	0010 7010 1010 1010 1010 1010 107c 0000
+	0018 2442 6202 0408 0810 2022 427e 0000
+	0038 4482 8202 0438 0402 8282 4438 0000
+	0008 1828 2848 4888 88fe 0808 083c 0000
+	00fc 8080 80b8 c482 0202 c282 4438 0000
+	003c 4246 8080 b8c4 8282 8282 4438 0000
+	00fe 8282 0404 0408 0808 0810 1010 1000
+	0038 4482 8282 4438 4482 8282 4438 0000
+	0038 4482 8282 8246 3a02 0282 4438 0000 ]
+
