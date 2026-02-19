@@ -9,6 +9,10 @@
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
+|000
+
+	@answer/buf
+
 |100
 
 @on-reset ( -> )
@@ -18,10 +22,18 @@
 	#00e0 .Screen/height DEO2
 	;on-mouse .Mouse/vector DEO2
 	#10 volume/<draw>
+	( | Request )
+	;answer/on-console .Console/vector DEO2
+	;dict/get .Console/addr DEO2
+	[ LIT2 02 -Console/mode ] DEO
+	[ LIT2 01 -Console/exec ] DEO
 	BRK
 
-(
-@|Core )
+@meta $1
+	( name ) "Pavol 0a
+	( details ) "PulseAudio 20 "Volume 20 "Control 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "19 20 "Feb 20 "2026 $2
 
 @on-mouse ( -> )
 	cursor/<update>
@@ -32,14 +44,33 @@
 (
 @|Volume )
 
+@answer/on-console ( -> )
+	.Console/read DEI
+	( | end )
+	DUP #0a NEQ ?{
+		;&buf /find-volume #0000 .Console/vector DEO2 }
+	( | push )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@answer/find-volume ( buf* -- )
+	( | find first slash )
+	&>w
+		LDAk LIT "/ EQU ?{ INC2 LDAk ?&>w }
+	( space ) INC2
+	( space ) INC2
+	( space ) LDAk #20 NEQ ?{ INC2 }
+	str/dec #0005 DIV2 NIP
+	( >> )
+
 @volume/<set> ( value -- )
 	DUP #15 LTH ?{ POP JMP2r }
-	DUP [ LIT &last 14 ] NEQ ?{ POP JMP2r }
+	DUP [ LIT &last ff ] NEQ ?{ POP JMP2r }
 	DUP ,&last STR
 	DUP volume/<draw>
 	( | send )
 	#00 SWP DUP ADD ;&vol-lut ADD2 LDA2 .Console/addr DEO2
-	[ LIT2 03 -Console/mode ] DEO
 	[ LIT2 01 -Console/exec ] DEO
 	JMP2r
 
@@ -140,12 +171,14 @@
 
 	&path ".theme $1
 
-@meta $1
-	( name ) "Pavol 0a
-	( details ) "PulseAudio 20 "Volume 20 "Control 0a
-	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Feb 20 "2026 $1
-	( elements ) 00
+@str/dec ( str* -- val* )
+	[ LIT2r 0000 ]
+	&>wd
+		( val ) LDAk [ LIT "0 ] SUB #09 GTH ?{
+			( acc ) [ LIT2r 000a ] MUL2r
+			( mix ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
+			ADD2r INC2 LDAk ?&>wd }
+	POP2 STH2r JMP2r
 
 (
 @|Assets )
@@ -171,6 +204,7 @@
 	&v10 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "10% $1
 	&v05 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "5% $1
 	&v00 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "0% $1
+	&get "pactl 20 "get-sink-volume 20 "@DEFAULT_SINK@ $1
 
 @volume/top-icn [ 0000 0000 0000 0010 0000 0000 0000 0000 ]
 	&middle-icn [
