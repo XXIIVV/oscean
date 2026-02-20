@@ -18,7 +18,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	.Console/type DEI ?{
-		;dict/usage <perr>
+		;dict/usage str/<print>
 		#010f DEO
 		BRK }
 	;src/on-console .Console/vector DEO2
@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Feb 20 "2026 $2
+	( date ) "20 20 "Feb 20 "2026 $2
 
 (
 @|Source )
@@ -56,10 +56,14 @@
 (
 @|Scope )
 
+@scope/length ( -- length* )
+	#00 ,&ptr LDR .&buf SUB JMP2r
+
 @scope/<set> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
-		LDAk /<push>
+		LDAk DUP LIT "/ NEQ ?{ POP POP2 JMP2r }
+		/<push>
 		INC2 LDAk ?&>w
 	LDA
 	( >> )
@@ -90,7 +94,8 @@
 
 	&append ( char -- )
 	;token slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
-	;token !sput
+	#00 ;token str/cap STA2
+	JMP2r
 
 @walk-comment ( t* -- )
 	;&c feof ?<sclr>
@@ -113,32 +118,34 @@
 	;rules2/end ;rules2
 	&>loop2
 		( a ) DUP2 ;token/last scmp-wild STH
-		scap/ INC2
+		str/cap INC2
 		( b ) DUP2 ;token scmp-wild STH
-		scap/ INC2 ANDr STHr #00 EQU ?{ LDA2k <print-warn2> }
+		str/cap INC2 ANDr STHr #00 EQU ?{ LDA2k <print-warn2> }
 		INC2 INC2 GTH2k ?&>loop2
 	POP2 POP2
 	( | 3 elements )
 	;rules3/end ;rules3
 	&>loop3
 		( a ) DUP2 ;token/last2 scmp-wild STH
-		scap/ INC2
+		str/cap INC2
 		( b ) DUP2 ;token/last scmp-wild STH
-		scap/ INC2
+		str/cap INC2
 		( c ) DUP2 ;token scmp-wild STH
-		scap/ INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
+		str/cap INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
 		INC2 INC2 GTH2k ?&>loop3
 	POP2 POP2
 	( | literal duplicates: #1234 #1234 )
 	;token is-static #00 EQU ?{
-		;token ;token/last scmp #00 EQU ?{ ;static-dup <print-warn2> } }
+		;token ;token/last str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
 	( | fall-through )
 	;token LDA [ LIT "@ NEQ ] ?{
 		;token/last is-jump #00 EQU ?{
-			;token INC2 ;token/last INC2 scmp #00 EQU ?{ ;fall-through <print-warn2> } } }
+			;token INC2 ;token/last INC2 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
 	( | dead-region )
 	;token/last is-jump/strict #00 EQU ?{
 		;token is-static ;token is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
+	( | use local )
+	;token is-local #00 EQU ?{ ;use-local <print-warn> }
 	;token/last ;token/last2 <scpy>
 	;token DUP2 ;token/last <scpy> !<sclr>
 
@@ -148,7 +155,7 @@
 	;token/last2 !<sclr>
 
 @include ( -- )
-	;token scap/ #000a SUB2 ;dict/assets-tal scmp ?{
+	;token str/cap #000a SUB2 ;dict/assets-tal str/cmp ?{
 		;token INC2 src/<set>
 		;src/buf .File/name DEO2
 		#0000 .stats/lines STZ2 }
@@ -166,8 +173,8 @@
 	POP2 #00 JMP2r
 
 @is-jump ( str* -- flag )
-	DUP2 ;brk scmp ?&pass
-	DUP2 ;jmp scmp3 ?&pass
+	DUP2 ;brk str/cmp ?&pass
+	DUP2 ;jmp str/cmp3 ?&pass
 	LDAk [ LIT "? ] EQU ?&pass
 	&strict ( str* -- flag )
 	LDAk [ LIT "! ] EQU ?&pass
@@ -213,14 +220,23 @@
 @is-opcode ( string* -- f )
 	LDAk LIT "? EQU ?&on-found
 	LDAk LIT "! EQU ?&on-found
-	DUP2 ;opcodes/brk scmp3 ?&on-found
+	DUP2 ;opcodes/brk str/cmp3 ?&on-found
 	,&t STR2
 	#2000
 	&>l
-		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?&on-found
+		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] str/cmp3 ?&on-found
 		INC GTHk ?&>l
 	POP2 #00 JMP2r
 	&on-found POP2 #01 JMP2r
+
+@is-ref-rune ( c -- t )
+	STH
+	;&runes
+	&>w
+		LDAk STHkr EQU ?{ INC2 LDAk ?&>w }
+	LDA STHr EQU JMP2r
+
+	&runes "|$!?.,;_-= $1
 
 @is-runic ( c -- t )
 	STH
@@ -231,6 +247,12 @@
 
 	&runes ""|{}%!?@#$%&().,;~ $1 &end
 
+@is-local ( str* -- t )
+	LDAk LIT "@ NEQ ?{ POP2 #00 JMP2r }
+	LDAk is-ref-rune #00 EQU ?{ INC2 }
+	DUP2 scope/length ADD2 LDA LIT "/ EQU ?{ POP2 #00 JMP2r }
+	;scope/buf !str/cmp-seg
+
 @scmp-wild ( a* b* -- flag )
 	OVR2 LDA [ LIT "{ ] EQU ?scmp-template
 	OVR2 LDA [ LIT "< ] EQU ?scmp-lut
@@ -240,9 +262,9 @@
 	SWP2 ,&t STR2
 	;dictionaries/end ;dictionaries
 	&>l
-		LDA2k [ LIT2 &t $2 ] scmp ?&dict-match
+		LDA2k [ LIT2 &t $2 ] str/cmp ?&dict-match
 		#0004 ADD2 GTH2k ?&>l
-	,&t LDR2 <pstr>
+	,&t LDR2 str/<print>
 	#0a18 DEO
 	POP2 POP2 POP2 #00 JMP2r
 
@@ -264,7 +286,7 @@
 	,&ptr LDR2 ;&mem EQU2k ?{
 		&>l
 			STH2kr OVR2 str/cmp ?&found
-			scap INC2 GTH2k ?&>l }
+			str/cap INC2 GTH2k ?&>l }
 	POP2 POP2 POP2r #00 JMP2r
 	&found POP2 POP2 POP2r #01 JMP2r
 
@@ -287,62 +309,62 @@
 	.stats/warnings LDZ2k INC2 ROT STZ2
 	[ LIT2 "- 19 ] DEOk DEO
 	#2019 DEO
-	;token <perr>
+	;token str/<print>
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
-	<perr>
+	str/<print>
 	[ LIT2 "" 19 ] DEO !<print-line>
 
 @<print-warn2> ( str* -- )
 	.stats/warnings LDZ2k INC2 ROT STZ2
 	[ LIT2 "- 19 ] DEOk DEO
 	#2019 DEO
-	;token/last <perr>
+	;token/last str/<print>
 	#2019 DEO
-	;token <perr>
+	;token str/<print>
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
-	<perr>
+	str/<print>
 	[ LIT2 "" 19 ] DEO !<print-line>
 
 @<print-warn3> ( str* -- )
 	.stats/warnings LDZ2k INC2 ROT STZ2
 	[ LIT2 "- 19 ] DEOk DEO
 	#2019 DEO
-	;token/last2 <perr>
+	;token/last2 str/<print>
 	#2019 DEO
-	;token/last <perr>
+	;token/last str/<print>
 	#2019 DEO
-	;token <perr>
+	;token str/<print>
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
-	<perr>
+	str/<print>
 	[ LIT2 "" 19 ] DEO
 
 @<print-line> ( -- )
-	;dict/in-txt <perr>
-	;scope/buf <perr>
-	;dict/at-txt <perr>
-	;src/buf <perr>
+	;dict/in-txt str/<print>
+	;scope/buf str/<print>
+	;dict/at-txt str/<print>
+	;src/buf str/<print>
 	[ LIT2 ": 19 ] DEO
 	.stats/lines LDZ2 INC2 <pdec>
 	#0a19 DEO
 	JMP2r
 
 @<print-summary> ( -- )
-	;dict/linted-txt <perr>
-	;src/buf <perr>
+	;dict/linted-txt str/<print>
+	;src/buf str/<print>
 	#2019 DEO
-	;dict/with-txt <perr>
+	;dict/with-txt str/<print>
 	#2019 DEO
 	.stats/tokens LDZ2 <pdec>
 	#2019 DEO
-	;dict/tokens-txt <perr>
+	;dict/tokens-txt str/<print>
 	[ LIT2 ", 19 ] DEO
 	#2019 DEO
 	.stats/warnings LDZ2 <pdec>
 	#2019 DEO
-	;dict/warnings-txt <perr>
+	;dict/warnings-txt str/<print>
 	#0a19 DEO
 	JMP2r
 
@@ -352,28 +374,40 @@
 @chr/is-uc ( c -- f )
 	[ LIT "A ] SUB #1a LTH JMP2r
 
-@str/cmp ( a* b* -- t )
+@str/cmp-seg ( a* b* -- f )
+	STH2
+	&>wcs
+		LDAk ?{ &ds POP2 LDAr STHr #00 EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&ds
+		INC2 INC2r !&>wcs
+
+@str/cmp ( a* b* -- f )
 	STH2
 	&>wc
-		LDAk LDAkr STHr NEQ ?{
-			INC2 INC2r LDAk ?&>wc
-		LDA LDAr STHr #0000 EQU2 JMP2r }
-	POP2 POP2r #00 JMP2r
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>wc
+
+@str/cap ( str* -- end* )
+	LDAk ?{ JMP2r }
+	INC2 !/cap
+
+@str/cmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 @feof ( addr* -: f )
 	.File/read DEO2
 	.File/success DEI2 #0000 EQU2 JMP2r
 
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
-
-@sput ( chr str* -- )
-	scap/ STA
-	JMP2r
-
 @slen ( str* -- len* )
-	DUP2 scap/ SWP2 SUB2 JMP2r
+	DUP2 str/cap SWP2 SUB2 JMP2r
 
 @scmp-star ( a* b* -- f )
 	STH2
@@ -391,13 +425,6 @@
 	| b* -- f )
 	POP2 POP2r #01 JMP2r
 
-@scmp ( a* b* -- f )
-	STH2
-	&>l
-		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
-		LDAk LDAkr STHr NEQ ?&d
-		INC2 INC2r !&>l
-
 @<sclr> ( str* -- )
 	#00 ROT ROT &w STAk INC2 LDAk ?&w
 	STA
@@ -408,16 +435,11 @@
 	INC2r INC2 LDAk ?&w
 	POP2 POP2r JMP2r
 
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
-
 @afnd ( array* target* -- <index>* )
 	STH2
 	&>w
-		DUP2 STH2kr scmp ?&end
-		scap/ INC2 LDAk ?&>w
+		DUP2 STH2kr str/cmp ?&end
+		str/cap INC2 LDAk ?&>w
 	POP2 #ffff &end POP2r JMP2r
 
 @<pdec> ( short* -- )
@@ -429,16 +451,6 @@
 		NIP #30 ADD #18 DEO
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
-
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 LDAk ?<pstr>
-	POP2 JMP2r
-
-@<perr> ( str* -- )
-	LDAk #19 DEO
-	INC2 LDAk ?<perr>
-	POP2 JMP2r
 
 
 
@@ -549,6 +561,7 @@
 @tailjump "Tailjump $1 ( should jump to tailcall )
 @fall-through "Fall-through $1 ( jumping to the next label )
 @dead-region "Dead-region $1 ( unlabeled content after jumps )
+@use-local "Use-local $1 ( should use local call )
 @hop "Hop $1 ( jci over jmi )
 @nested "Nested $1 ( nested square brackets )
 @cmporder "Static-order $1 ( postfix static )
