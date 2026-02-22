@@ -1255,10 +1255,14 @@ emu_event(void)
 			uxn_eval(port_value[0] << 8 | port_value[1]);
 		}
 		/* Controller */
-		else if(event.type == SDL_KEYDOWN) {
-			int ksym;
-			if(get_key(&event))
-				controller_key(get_key(&event));
+		else if(event.type == SDL_TEXTINPUT) {
+			char *c;
+			for(c = event.text.text; *c; c++)
+				controller_key(*c);
+		} else if(event.type == SDL_KEYDOWN) {
+			int ksym, key;
+			if((key = get_key(&event)) && (key < 0x20 || (SDL_GetModState() & KMOD_ALT) || (SDL_GetModState() & KMOD_CTRL)))
+				controller_key(key);
 			else if(get_button(&event))
 				controller_down(get_button(&event));
 			else if(event.key.keysym.sym == SDLK_F1)
@@ -1398,7 +1402,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 17 Feb 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 21 Feb 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
