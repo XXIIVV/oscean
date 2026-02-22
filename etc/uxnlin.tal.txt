@@ -89,12 +89,12 @@
 	DUP #0a NEQ ?{
 		.stats/lines LDZ2k INC2 ROT STZ2 }
 	DUP #20 GTH ?&append
-	POP ;token LDAk ?parse-token
+	POP ;piece-a/buf LDAk ?parse-token
 	POP2 JMP2r
 
 	&append ( char -- )
-	;token slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
-	#00 ;token str/cap STA2
+	;piece-a/buf slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
+	#00 ;piece-a/buf str/cap STA2
 	JMP2r
 
 @walk-comment ( t* -- )
@@ -117,46 +117,46 @@
 	( include ) LDA [ LIT "~ ] EQU ?include
 	;rules2/end ;rules2
 	&>loop2
-		( a ) DUP2 ;token/last scmp-wild STH
+		( a ) DUP2 ;piece-b/buf scmp-wild STH
 		str/cap INC2
-		( b ) DUP2 ;token scmp-wild STH
+		( b ) DUP2 ;piece-a/buf scmp-wild STH
 		str/cap INC2 ANDr STHr #00 EQU ?{ LDA2k <print-warn2> }
 		INC2 INC2 GTH2k ?&>loop2
 	POP2 POP2
 	( | 3 elements )
 	;rules3/end ;rules3
 	&>loop3
-		( a ) DUP2 ;token/last2 scmp-wild STH
+		( a ) DUP2 ;piece-c/buf scmp-wild STH
 		str/cap INC2
-		( b ) DUP2 ;token/last scmp-wild STH
+		( b ) DUP2 ;piece-b/buf scmp-wild STH
 		str/cap INC2
-		( c ) DUP2 ;token scmp-wild STH
+		( c ) DUP2 ;piece-a/buf scmp-wild STH
 		str/cap INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
 		INC2 INC2 GTH2k ?&>loop3
 	POP2 POP2
 	( | literal duplicates: #1234 #1234 )
-	;token is-static #00 EQU ?{
-		;token ;token/last str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
+	;piece-a/buf is-static #00 EQU ?{
+		;piece-a/buf ;piece-b/buf str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
 	( | fall-through )
-	;token LDA [ LIT "@ NEQ ] ?{
-		;token/last is-jump #00 EQU ?{
-			;token INC2 ;token/last INC2 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
+	;piece-a/buf LDA [ LIT "@ NEQ ] ?{
+		;piece-b/buf is-jump #00 EQU ?{
+			;piece-a/buf INC2 ;piece-b/buf INC2 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
 	( | dead-region )
-	;token/last is-jump/strict #00 EQU ?{
-		;token is-static ;token is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
+	;piece-b/buf is-jump/strict #00 EQU ?{
+		;piece-a/buf is-static ;piece-a/buf is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
 	( | use local )
-	;token is-local #00 EQU ?{ ;use-local <print-warn> }
-	;token/last ;token/last2 <scpy>
-	;token DUP2 ;token/last <scpy> !<sclr>
+	;piece-a/buf is-local #00 EQU ?{ ;use-local <print-warn> }
+	;piece-b/buf ;piece-c/buf <scpy>
+	;piece-a/buf DUP2 ;piece-b/buf <scpy> !<sclr>
 
 @reset ( -- )
-	;token <sclr>
-	;token/last <sclr>
-	;token/last2 !<sclr>
+	;piece-a/buf <sclr>
+	;piece-b/buf <sclr>
+	;piece-c/buf !<sclr>
 
 @include ( -- )
-	;token str/cap #000a SUB2 ;dict/assets-tal str/cmp ?{
-		;token INC2 src/<set>
+	;piece-a/buf str/cap #000a SUB2 ;dict/assets-tal str/cmp ?{
+		;piece-a/buf INC2 src/<set>
 		;src/buf .File/name DEO2
 		#0000 .stats/lines STZ2 }
 	!reset
@@ -309,7 +309,7 @@
 	.stats/warnings LDZ2k INC2 ROT STZ2
 	[ LIT2 "- 19 ] DEOk DEO
 	#2019 DEO
-	;token str/<print>
+	;piece-a/buf str/<print>
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
 	str/<print>
@@ -319,9 +319,9 @@
 	.stats/warnings LDZ2k INC2 ROT STZ2
 	[ LIT2 "- 19 ] DEOk DEO
 	#2019 DEO
-	;token/last str/<print>
+	;piece-b/buf str/<print>
 	#2019 DEO
-	;token str/<print>
+	;piece-a/buf str/<print>
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
 	str/<print>
@@ -331,11 +331,11 @@
 	.stats/warnings LDZ2k INC2 ROT STZ2
 	[ LIT2 "- 19 ] DEOk DEO
 	#2019 DEO
-	;token/last2 str/<print>
+	;piece-c/buf str/<print>
 	#2019 DEO
-	;token/last str/<print>
+	;piece-b/buf str/<print>
 	#2019 DEO
-	;token str/<print>
+	;piece-a/buf str/<print>
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
 	str/<print>
@@ -989,7 +989,9 @@
 (
 @|Buffers )
 
-@token $30 &last $30 &last2 $30
+@piece-a/buf $30
+@piece-b/buf $30
+@piece-c/buf $30
 
 @macros/mem $2000
 
