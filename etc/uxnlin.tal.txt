@@ -57,7 +57,7 @@
 @|Scope )
 
 @scope/length ( -- length* )
-	#00 ,&ptr LDR .&buf SUB JMP2r
+	[ LIT2 00 _&ptr ] LDR .&buf SUB JMP2r
 
 @scope/<set> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -93,17 +93,19 @@
 	POP2 JMP2r
 
 	&append ( char -- )
-	;piece-a/buf slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
+	;piece-a/buf str/len NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
 	#00 ;piece-a/buf str/cap STA2
 	JMP2r
 
 @walk-comment ( t* -- )
-	;&c feof ?<sclr>
+	;&c .File/read DEO2
+	;File/succ-lb DEI EQU ?<sclr>
 	[ LIT2 &c $1 "( ] INC NEQ ?walk-comment
 	!<sclr>
 
 @walk-block ( t* -- )
-	;&c feof ?<sclr>
+	;&c .File/read DEO2
+	;File/succ-lb DEI EQU ?<sclr>
 	[ LIT2 &c $1 "[ ] INC INC NEQ ?walk-block
 	reset !<sclr>
 
@@ -190,7 +192,7 @@
 	POP2 #00 JMP2r
 
 	&hex ( str* -- flag )
-	slen NIP #03 EQU JMP2r
+	str/len NIP #03 EQU JMP2r
 
 	&pass ( str* -- flag )
 	POP2 #01 JMP2r
@@ -208,7 +210,7 @@
 	POP2 #00 JMP2r
 
 	&hex ( str* -- flag )
-	slen NIP #05 EQU JMP2r
+	str/len NIP #05 EQU JMP2r
 
 	&pass ( str* -- flag )
 	POP2 #01 JMP2r
@@ -277,6 +279,21 @@
 	( ) DUP [ LIT "2 ] NEQ ?{ POP !is-litshort }
 	( ) DUP [ LIT "% ] NEQ ?{ POP !is-routine }
 	POP JMP2r
+
+@scmp-star ( a* b* -- f )
+	STH2
+	&>l
+		LDAk [ LIT "* ] EQU ?&pass
+		LDAkr [ LITr "* ] EQUr STHr ?&pass
+		LDAk LDAkr STHr ANDk #00 EQU ?&e
+		NEQk ?&e
+		POP2 INC2 INC2r !&>l
+
+	&e ( -- )
+	NIP2 POP2r EQU JMP2r
+
+	&pass ( a* . b* -- f )
+	POP2 POP2r #01 JMP2r
 
 (
 @|Macros )
@@ -347,7 +364,7 @@
 	;dict/at-txt str/<print>
 	;src/buf str/<print>
 	[ LIT2 ": 19 ] DEO
-	.stats/lines LDZ2 INC2 <pdec>
+	.stats/lines LDZ2 INC2 dec/<print>
 	#0a19 DEO
 	JMP2r
 
@@ -357,12 +374,12 @@
 	#2019 DEO
 	;dict/with-txt str/<print>
 	#2019 DEO
-	.stats/tokens LDZ2 <pdec>
+	.stats/tokens LDZ2 dec/<print>
 	#2019 DEO
 	;dict/tokens-txt str/<print>
 	[ LIT2 ", 19 ] DEO
 	#2019 DEO
-	.stats/warnings LDZ2 <pdec>
+	.stats/warnings LDZ2 dec/<print>
 	#2019 DEO
 	;dict/warnings-txt str/<print>
 	#0a19 DEO
@@ -402,32 +419,24 @@
 	#18 DEO
 	INC2 !/<print>
 
-@feof ( addr* -: f )
-	.File/read DEO2
-	.File/success DEI2 #0000 EQU2 JMP2r
+@str/len ( str* -- len* )
+	STH2k /cap STH2r SUB2 JMP2r
 
-@slen ( str* -- len* )
-	DUP2 str/cap SWP2 SUB2 JMP2r
+@dec/<print> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
-@scmp-star ( a* b* -- f )
-	STH2
-	&>l
-		LDAk [ LIT "* ] EQU ?&pass
-		LDAkr [ LITr "* ] EQUr STHr ?&pass
-		LDAk LDAkr STHr ANDk #00 EQU ?&e
-		NEQk ?&e
-		POP2 INC2 INC2r !&>l
-
-	&e ( -- )
-	NIP2 POP2r EQU JMP2r
-
-	&pass ( a*
-	| b* -- f )
-	POP2 POP2r #01 JMP2r
+(
+@|old )
 
 @<sclr> ( str* -- )
-	#00 ROT ROT &w STAk INC2 LDAk ?&w
-	STA
+	#0000 SWP2 STA2
 	JMP2r
 
 @<scpy> ( src* dst* -- )
@@ -441,16 +450,6 @@
 		DUP2 STH2kr str/cmp ?&end
 		str/cap INC2 LDAk ?&>w
 	POP2 #ffff &end POP2r JMP2r
-
-@<pdec> ( short* -- )
-	[ LIT2r ff00 ]
-	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
-	POP2
-	&>write
-		NIP #30 ADD #18 DEO
-		OVRr ADDr STHkr ?&>write
-	POP2r JMP2r
 
 
 
