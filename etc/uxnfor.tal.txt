@@ -176,8 +176,8 @@
 		LDAk [ LIT "{ ] EQU ?handle-lambda
 		LDAk [ LIT "} ] EQU ?handle-lambda-end
 		LDAk [ LIT "? ] EQU ?handle-jxi
-		DUP2 ;dict/jmp scmp3 ?handle-jmp
-		DUP2 ;dict/brk scmp3 ?handle-jmp
+		DUP2 ;dict/jmp str/cmp3 ?handle-jmp
+		DUP2 ;dict/brk str/cmp3 ?handle-jmp
 		LDAk [ LIT "! ] EQU ?handle-jmp
 		LDAk [ LIT "~ ] EQU ?handle-include }
 	LDAk #20 NEQ ?&collapse
@@ -196,9 +196,9 @@
 
 @handle-padabs ( addr* -- addr* )
 	#0a <emit>
-	INC2k slen #0004 NEQ2 ?{ #0a <emit> }
+	INC2k str/len #0004 NEQ2 ?{ #0a <emit> }
 	DUP2 wrew wrew INC2 LDA [ LIT ") ] NEQ ?{ #0a <emit> }
-	INC2k slen #0004 EQU2 ?{
+	INC2k str/len #0004 EQU2 ?{
 		[ LIT2 01 -nobrk ] STZ
 		<emit-word>/
 		<emit-space> !eval-scope/continue }
@@ -301,11 +301,11 @@
 	DUP2 wcap/ #0002 SUB2 LDA2 [ LIT "> ] EQU SWP [ LIT "> ] EQU ORA ?&pass
 	DUP2 ;dict/sth wcmp ?&special-opcode
 	DUP2 ;dict/sth2 wcmp ?&special-opcode
-	DUP2 ;dict/deo scmp3 ?&special-opcode
-	DUP2 ;dict/sta scmp3 ?&special-opcode
-	DUP2 ;dict/str scmp3 ?&special-opcode
-	DUP2 ;dict/stz scmp3 ?&special-opcode
-	DUP2 ;dict/jcn scmp3 ?&special-opcode
+	DUP2 ;dict/deo str/cmp3 ?&special-opcode
+	DUP2 ;dict/sta str/cmp3 ?&special-opcode
+	DUP2 ;dict/str str/cmp3 ?&special-opcode
+	DUP2 ;dict/stz str/cmp3 ?&special-opcode
+	DUP2 ;dict/jcn str/cmp3 ?&special-opcode
 	&ignore ( -- )
 	POP2 #00 JMP2r
 
@@ -439,14 +439,24 @@
 (
 @|stdlib )
 
-@slen ( str* -- len* )
-	DUP2 scap/ SWP2 SUB2 JMP2r
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP JMP2r }
+	#19 DEO
+	INC2 !/<print>
 
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
+@str/<print-word> ( str* -- )
+	LDAk DUP #20 GTH ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !/<print-word>
 
-@scmp3 ( a* b* -- f )
+@str/cap ( str* -- end* )
+	LDAk ?{ JMP2r }
+	INC2 !/cap
+
+@str/len ( str* -- len* )
+	STH2k /cap STH2r SUB2 JMP2r
+
+@str/cmp3 ( a* b* -- f )
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
@@ -472,16 +482,6 @@
 
 @wlen ( w* -- len* )
 	DUP2 wcap/ SWP2 SUB2 JMP2r
-
-@str/<print> ( str* -- )
-	LDAk DUP ?{ POP JMP2r }
-	#19 DEO
-	INC2 !/<print>
-
-@str/<print-word> ( str* -- )
-	LDAk DUP #20 GTH ?{ POP POP2 JMP2r }
-	#19 DEO
-	INC2 !/<print-word>
 
 (
 @|assets )

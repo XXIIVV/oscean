@@ -17,7 +17,7 @@
 |000
 
 	@selection $1 &track $1 &scroll $1
-	@lines &folders $1 &tracks $1
+	@lines/folders-tracks &folders $1 &tracks $1
 	@playing $1
 	@paused $1
 	@prefix/folders $1 &tracks $1
@@ -56,7 +56,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "28 20 "Jan 20 "2026 $2
+	( date ) "23 20 "Feb 20 "2026 $2
 
 (
 @|macros )
@@ -65,16 +65,16 @@
 	LTHk [ JMP SWP POP ] }
 
 %llen ( str* -- length* ) {
-	DUP2 lcap/ SWP2 SUB2 }
+	DUP2 str/next-line SWP2 SUB2 }
 
-%count-lines ( -- lines ) {
-	.lines LDZ2 ADD }
+%lines/count ( -- lines ) {
+	.lines/folders-tracks LDZ2 ADD }
 
 %is-folder ( line* -- line* f ) {
-	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU }
+	DUP2 str/next-line #0001 SUB2 LDA [ LIT "/ ] EQU }
 
 %is-mp3 ( line* -- line*f ) {
-	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext str/cmp3 }
+	DUP2 str/next-line #0003 SUB2 ;dict/mp3-ext str/cmp3 }
 
 @is-mp3-ext ( str* -- str* t )
 	LDA2k [ LIT2 ".m ] EQU2 ?{ #00 JMP2r }
@@ -143,7 +143,7 @@
 
 	&scroll ( distance -> )
 	.selection/scroll LDZ ADD INCk ?{ POP BRK }
-	count-lines #18 SUB
+	lines/count #18 SUB
 	( needs scroll ) DUP #80 LTH ?{ POP2 BRK }
 	( max scroll ) min .selection/scroll STZ
 	<redraw-dir>
@@ -257,12 +257,10 @@
 	#0a18 DEO
 	JMP2r
 
-@dict/volume "VOLUME 20 $1
-
 @<move> ( mod -- )
 	.selection LDZ ADD
 	( top ) INCk ?{ POP JMP2r }
-	( bottom ) DUP count-lines NEQ ?{ POP JMP2r }
+	( bottom ) DUP lines/count NEQ ?{ POP JMP2r }
 	( >> )
 
 @<select> ( id -- )
@@ -497,12 +495,14 @@
 	( | clean )
 	[ LIT2 00 -lines/folders ] STZ
 	[ LIT2 00 -lines/tracks ] STZ
-	( | parse )
-	;&buf
-	&>w
-		DUP2 <parse-line>
-		lcap/ INC2 LDAk ?&>w
-	POP2 <post-refresh>
+	.File/success DEI2 #0000 EQU2 ?{
+		( | parse )
+		;&buf
+		&>w
+			DUP2 <parse-line>
+			str/next-line INC2 LDAk ?&>w
+		POP2 }
+	<post-refresh>
 	( >> )
 
 @<fit-window> ( -- )
@@ -524,7 +524,7 @@
 	;folders/buf [ LIT2 00 -lines/folders ] LDZ
 	( | max folders = 3000 / 80 = 60 )
 	DUP #60 LTH ?{ POP POP2 JMP2r }
-	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
+	( CELLSIZE ) #70 SFT2 ADD2 str/<copy-line>
 	.lines/folders LDZ INC .lines/folders STZ
 	JMP2r
 
@@ -534,7 +534,7 @@
 	;tracks/buf [ LIT2 00 -lines/tracks ] LDZ
 	( | max tracks = 80 )
 	DUP #80 LTH ?{ POP JMP2r }
-	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
+	( CELLSIZE ) #70 SFT2 ADD2 str/<copy-line>
 	.lines/tracks LDZ INC .lines/tracks STZ
 	JMP2r
 
@@ -581,16 +581,16 @@
 	POP2 POP2 JMP2r
 
 @common-folder-prefix ( -- len )
-	[ LIT2 01 -lines/folders ] LDZ LTH ?{ #00 JMP2r }
+	[ LIT2 03 -lines/folders ] LDZ LTH ?{ #00 JMP2r }
 	;folders/buf DUP2 [ LIT2 00 -lines/folders ] LDZ #70 SFT2 ADD2 !common-prefix-0
 
 @common-track-prefix ( -- len )
-	[ LIT2 01 -lines/tracks ] LDZ LTH ?{ #00 JMP2r }
+	[ LIT2 03 -lines/tracks ] LDZ LTH ?{ #00 JMP2r }
 	;tracks/buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2
 	( >> )
 
 @common-prefix-0 ( first* limit* -- len )
-	SWP2 DUP2k str-len STH
+	SWP2 DUP2k str/len STH
 	,&s0 STR2
 	#0080 ADD2
 	&>loop
@@ -726,7 +726,7 @@
 	#001a [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
 	.Screen/y DEO2
 	( | empty )
-	count-lines ?{
+	lines/count ?{
 		#0008 .Screen/x DEO2
 		;dict/empty #05 !chicago/<draw-left-color> }
 	( | folders )
@@ -833,7 +833,7 @@
 			#0001 .Screen/x DEO2
 			#001a .Screen/y DEO2
 			#01 ;chicago/color STA
-			#04 SFT2 #00 ;id3/title str-len MOD2 ;id3/title STH2k next-nth-glyph #01 chicago/<draw-left-color>
+			#04 SFT2 #00 ;id3/title str/len MOD2 ;id3/title STH2k utf8/next-nth #01 chicago/<draw-left-color>
 			.Screen/x DEI2k #0004 ADD2 ROT DEO2
 			STH2r #01 !chicago/<draw-left-color> }
 		POP2 }
@@ -937,11 +937,11 @@
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
-@str-len ( a* -- len )
+@str/len ( a* -- len )
 	[ LITr 00 ]
-	&>loop
+	&>l
 		LDAk ?{ POP2 STHr JMP2r }
-		INCr next-glyph !&>loop
+		INCr utf8/next !&>l
 
 @str/<print> ( str* -- )
 	&>w
@@ -951,10 +951,31 @@
 
 @str/<copy> ( src* dst* -- )
 	STH2
-	&>wcpy
+	&>wc
 		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>wcpy
+		INC2r INC2 LDAk ?&>wc
 	POP2 POP2r JMP2r
+
+@str/<copy-line> ( src* dst* -- )
+	STH2
+	&>wcl
+		LDAk #1f GTH ?{
+			POP2 #00 STH2r STA
+			JMP2r }
+		LDAk #00 STH2kr STA2
+		INC2r INC2 !&>wcl
+
+@str/lth ( a* b* -- a>b )
+	STH2
+	&>ll
+		LDAk LDAkr STHr SUBk ?{
+			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>ll } }
+	NIP2 LTH POP2r JMP2r
+
+@str/next-line ( str* -- next-line* )
+	&>wnl
+		LDAk #0b LTH ?{ INC2 !&>wnl }
+	JMP2r
 
 @str-prefix ( a* b* -- len )
 	STH2
@@ -964,41 +985,19 @@
 			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>loop } }
 	POP2 POP2r [ LIT2 &a0 $2 ] SUB2 NIP JMP2r
 
-@str/lth ( a* b* -- a>b )
-	STH2
-	&>loop
-		LDAk LDAkr STHr SUBk ?{
-			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>loop } }
-	NIP2 LTH POP2r JMP2r
-
-@next-glyph ( addr* -- addr* )
+@utf8/next ( addr* -- addr* )
 	&>w
-		INC2 LDAk
-		( utf8 ) #06 SFT #02 EQU ?&>w
+		INC2 LDAk #06 SFT #02 EQU ?&>w
 	JMP2r
 
-@next-nth-glyph ( offset* text* -- text* )
+@utf8/next-nth ( offset* text* -- text* )
 	STH2
 	DUP2r #0000 EQU2k ?{
 		&>l
-			STH2r next-glyph LDAk ?{ POP2 STH2kr }
+			STH2r /next LDAk ?{ POP2 STH2kr }
 			STH2
 			INC2 GTH2k ?&>l }
 	POP2 POP2 STH2r POP2r JMP2r
-
-@lcap ( str* -- next-line* )
-	&>w
-		LDAk #0a EQU ?{ INC2 & LDAk ?&>w }
-	JMP2r
-
-@<lcpy> ( src* dst* -- )
-	STH2
-	&w ( -- )
-	LDAk #1f GTH ?{
-		POP2 #00 STH2r STA
-		JMP2r }
-	LDAk #00 STH2kr STA2
-	INC2r INC2 !&w
 
 @dec/<print> ( short* -- )
 	#000a SWP2 [ LITr ff ]
@@ -1029,6 +1028,7 @@
 	&no-artist "Unknown 20 "Artist $1
 	&no-album "Unknown 20 "Album $1
 	&ellipses "... 20 $1
+	&volume "VOLUME 20 $1
 
 
 
@@ -1145,7 +1145,7 @@
 	[ LIT2r 0000 ]
 	&>ww
 		/get-utf8-width STH2
-		( > ) ADD2r next-glyph LDAk ?&>ww
+		( > ) ADD2r utf8/next LDAk ?&>ww
 	POP2 STH2r JMP2r
 
 @chicago/<draw-timestamp> ( -- )
@@ -1203,7 +1203,7 @@
 		( | trim mp3 )
 		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext str/cmp3 ?&end }
 		/<draw-utf8>
-		next-glyph LDAk ?&>wsc &end POP2 JMP2r
+		utf8/next LDAk ?&>wsc &end POP2 JMP2r
 
 @chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
@@ -1260,8 +1260,8 @@
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	.File/success-lb DEI ?{ !theme/<reset> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
 
 	&path ".theme $1
 
