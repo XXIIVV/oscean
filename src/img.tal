@@ -13,6 +13,9 @@
 (
 @|Framework )
 
+%MOD2 ( a* b* -- a%b* ) {
+	DIV2k MUL2 SUB2 }
+
 %<lb> ( -- ) {
 	#0a18 DEO }
 
@@ -138,12 +141,15 @@
 	<ws> !dec/<print>
 
 @year-month-day/dotw ( year* m d -- dotw )
-	( y -= m < 3; ) OVR STH
-	SWP2 #00 STHr #02 LTH SUB2 STH2
-	( t[m-1] + d ) #00 ROT ;&lut ADD2 LDA #00 SWP ROT #00 SWP ADD2
-	( y + y/4 - y/100 + y/400 ) STH2kr STH2kr #02 SFT2 ADD2 STH2kr
-	( /100 ) #0064 DIV2 SUB2 STH2r #0190 DIV2 ADD2 ADD2
-	( % 7 ) #0007 DIV2k MUL2 SUB2 NIP JMP2r
+	OVR #01 GTH ?{
+		( m < 3 ) SWP2 #0001 SUB2 SWP2 }
+	STH2
+	( y* y/4* ) DUP2 #02 SFT2
+	( y* y/4-y/100* ) OVR2 #0064 DIV2 SUB2
+	( y+y/4-y/100+y/400* ) OVR2 #0190 DIV2 ADD2 ADD2
+	( y+y/4-y/100+y/400+d* ) #00 STHr ADD2
+	( y+y/4-y/100+y/400+d+lut[m]* ) #0000 STHr ;&lut ADD2 LDA ADD2
+	( % 7 ) #0007 MOD2 NIP JMP2r
 
 	&lut [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
 
@@ -156,8 +162,8 @@
 	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
 
 @year/is-leap ( year* -- bool )
-	DUP2 #0190 DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
-	DUP2 #0064 DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
+	DUP2 #0190 MOD2 #0000 EQU2 ?&leap
+	DUP2 #0064 MOD2 #0000 EQU2 ?&not-leap
 	#0003 AND2 #0000 EQU2 JMP2r
 	&not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
@@ -285,5 +291,4 @@
 	&cdata-b "]]> $1
 
 @workarea/buf
-
 
