@@ -60,7 +60,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "11 20 "Feb 20 "2026 $1 02
+	( date ) "23 20 "Feb 20 "2026 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -264,8 +264,8 @@
 
 @sel/<select-symbol-at> ( addr* -- )
 	DUP2 find-prev-special/ SWP2 find-next-special/
-	( ) OVR2 sel/get-from EQU2 STH
-	DUP2 sel/get-to EQU2 STHr AND ?&reselect
+	( ) OVR2 /get-from EQU2 STH
+	DUP2 /get-to EQU2 STHr AND ?&reselect
 	!/<set>
 	&reselect POP2 !/<select-word-at>
 
@@ -273,7 +273,7 @@
 	INC2k !/<set>
 
 @sel/<select-word> ( -- )
-	sel/get-from
+	/get-from
 	( >> )
 
 @sel/<select-word-at> ( addr* -- )
@@ -286,21 +286,21 @@
 	.&a LDZ2 .&b LDZ2 EQU2 JMP2r
 
 @sel/<expand> ( -- )
-	( a ) sel/get-from find-line-start
-	( b ) sel/get-to find-line-end !/<set>
+	( a ) /get-from find-line-start
+	( b ) /get-to find-line-end !/<set>
 
 @sel/<select-all> ( -- )
 	textarea/get-range !/<set>
 
 @sel/<select-line> ( -- )
-	sel/get-from find-line-start sel/get-to find-line-end INC2 !sel/<set>
+	/get-from find-line-start /get-to find-line-end INC2 !sel/<set>
 
 @sel/<set-any> ( addr* -- )
 	[ LIT2 04 -Controller/button ] DEI EQU ?sel/<set-b>
 	!sel/<set-a>
 
 @sel/<reset> ( -- )
-	sel/get-from
+	/get-from
 	( >> )
 
 @sel/<set-a> ( addr* -- )
@@ -330,20 +330,20 @@
 	textarea/follow wrap/update !reqdraw-both
 
 @sel/<erase> ( -- )
-	sel/get-from-to !textarea/<erase>
+	/get-from-to !textarea/<erase>
 
 @sel/<tab> ( -- )
 	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<insert>
-	sel/has-length ?{ #09 !<insert-char> }
+	/has-length ?{ #09 !<insert-char> }
 	!format/tab
 
 @sel/<untab> ( -- )
-	sel/has-length ?{ #09 !<insert-char> }
+	/has-length ?{ #09 !<insert-char> }
 	!format/untab
 
 @sel/<draw-widget> ( -- )
 	caret/is-invisible ?{
-		sel/get-to-from SUB2 DUP2 #001f GTH2 ?{ POP2 JMP2r }
+		/get-to-from SUB2 DUP2 #001f GTH2 ?{ POP2 JMP2r }
 		;&widget-fn #05 !widget/<draw> }
 	JMP2r
 	&widget-fn #04 !ank/<draw-dec>
@@ -539,11 +539,11 @@
 	LDAk #06 SFT #02 EQU }
 
 @utf8/prev ( addr* -- addr* )
-	#0001 SUB2 utf8/cont ?&prev
+	#0001 SUB2 /cont ?&prev
 	JMP2r
 
 @utf8/next ( addr* -- addr* )
-	INC2 utf8/cont ?&next
+	INC2 /cont ?&next
 	JMP2r
 
 (
@@ -816,11 +816,11 @@
 	.Mouse/y DEI2 #0028 SUB2 #0018 DIV2 NIP
 	( | mouse2 )
 	SWP #01 NEQ ?&on-touch2
-	.&scroll LDZ ADD nav/<select-marker>
+	.&scroll LDZ ADD /<select-marker>
 	BRK
 
 	&on-touch2 ( y -> )
-	nav/id-to-addr addr-to-line scrollbar/<set-y>
+	/id-to-addr addr-to-line scrollbar/<set-y>
 	BRK
 
 @nav/<mod-y> ( y -- )
@@ -864,7 +864,7 @@
 
 @nav/<update> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
-	.nav/symbol LDZ ?&<update-symbol>
+	.&symbol LDZ ?&<update-symbol>
 	.search/buf LDZ ?&<update-search>
 	.textarea/eof LDZ2 get-scroll-addr find-first-marker
 	&>lu
@@ -902,7 +902,7 @@
 @nav/<redraw> ( -- )
 	.&visible LDZ ?{ !scrollbar/<draw> }
 	( | clear )
-	;nav/width .Screen/x DEO2
+	;&width .Screen/x DEO2
 	#0028 .Screen/y DEO2
 	[ LIT2 90 -Screen/pixel ] DEO
 	scrollbar/<draw>
@@ -933,7 +933,7 @@
 	DUP #02 SFT .Screen/sprite DEO
 	( | text )
 	STHk ;ank/color-utf8 STA
-	LDZ2k .nav/symbol LDZ ?{ find-prev-spacer }
+	LDZ2k .&symbol LDZ ?{ find-prev-spacer }
 	( spacer ) LDA2k [ LIT2 "@| ] NEQ2 ?{ INC2 INC2 }
 	( | label )
 	&>w
@@ -986,10 +986,10 @@
 	sel/get-from /addr-to-id
 	&>l
 		#01 SUB DUP /id-to-addr INC2 LDA [ LIT "| ] EQU ?&>l
-	!nav/<select-marker>
+	!/<select-marker>
 
 @nav/<next-marker> ( -- )
-	sel/get-from nav/addr-to-id
+	sel/get-from /addr-to-id
 	&>lnm
 		INC DUP /id-to-addr INC2 LDA [ LIT "| ] EQU ?&>lnm
 	( >> )
@@ -1242,7 +1242,7 @@
 	[ LIT2r 0000 ]
 	&>w
 		LDAk ?{ POP2 STH2r JMP2r }
-		ank/get-width STH2
+		/get-width STH2
 		ADD2r INC2 !&>w
 
 @ank/<draw-range-color> ( to* from* color -- )
@@ -1261,7 +1261,7 @@
 		/draw-utf8 utf8/next !&>wd
 
 @ank/draw-utf8 ( addr* -- addr* )
-	[ LITr -Screen/x ] DEI2r ank/get-width STH2
+	[ LITr -Screen/x ] DEI2r /get-width STH2
 	( glyph* ) /get-addr .Screen/addr DEO2
 	( draw2 ) [ LIT2r &color-utf8 01 -Screen/sprite ] DEOkr
 	( tab width ) LDAk #09 NEQ [ DEOkr? DEOr ] ADD2r [ LITr -Screen/x ] DEO2r
@@ -1269,7 +1269,7 @@
 
 @ank/draw-utf8ul ( addr* color -- addr* )
 	,&color-ul STR
-	[ LITr -Screen/x ] DEI2r ank/get-width STH2
+	[ LITr -Screen/x ] DEI2r /get-width STH2
 	( glyph* ) /get-addr .Screen/addr DEO2
 	( draw2 ) [ LIT2r &color-ul 01 -Screen/sprite ] DEOkr
 	( tab width ) LDAk #09 NEQ [ DEOkr? DEOr ]

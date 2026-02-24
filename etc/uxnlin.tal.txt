@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "20 20 "Feb 20 "2026 $2
+	( date ) "23 20 "Feb 20 "2026 $2
 
 (
 @|Source )
@@ -201,7 +201,7 @@
 	LDAk ?{ POP2 #00 JMP2r }
 	LDAk chr/is-uc ?{
 		LDAk is-runic ?{
-			DUP2 macros/find ?{ POP2 #01 JMP2r } } }
+			DUP2 macros/exists ?{ POP2 #01 JMP2r } } }
 	POP2 #00 JMP2r
 
 @is-litshort ( str* -- flag )
@@ -298,7 +298,8 @@
 (
 @|Macros )
 
-@macros/find ( str* -- found )
+@macros/exists ( str* -- true )
+	LDAk LIT "/ NEQ ?{ name/unpack }
 	STH2
 	,&ptr LDR2 ;&mem EQU2k ?{
 		&>l
@@ -317,6 +318,24 @@
 @macros/<push> ( c -- )
 	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
+	JMP2r
+
+@name/unpack ( str* -- buf* )
+	;&buf SWP2 ;scope/buf /<set> !/<push-str>
+
+@name/<set> ( str* -- )
+	;&buf ,&ptr STR2
+	( >> )
+
+@name/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@name/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
 	JMP2r
 
 (
@@ -991,6 +1010,7 @@
 @piece-a/buf $30
 @piece-b/buf $30
 @piece-c/buf $30
+@name/buf $100
 
 @macros/mem $2000
 
