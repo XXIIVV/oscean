@@ -238,7 +238,7 @@
 	#0018 .Screen/y DEO2
 	[ LIT2 02 -Screen/auto ] DEO
 	;port-icn .Screen/addr DEO2
-	[ LIT2r 00 -Screen/sprite ] #1000
+	[ LIT2r 00 -Screen/sprite ] #2000
 	&>lio
 		DEOkr
 		INC GTHk ?&>lio
@@ -250,13 +250,13 @@
 
 @world/<save> ( -- )
 	;&path .File/name DEO2
-	#1000 .File/length DEO2
+	#0800 .File/length DEO2
 	;get-addr2/current LDA2 .File/write DEO2
 	JMP2r
 
 @world/<open> ( -- )
 	;&path .File/name DEO2
-	#1000 .File/length DEO2
+	#0800 .File/length DEO2
 	;get-addr2/current LDA2 .File/read DEO2
 	JMP2r
 
@@ -377,6 +377,7 @@
 	/<copy> !cursor/<erase>
 
 @snarf/<push> ( c -- )
+	DUP LIT "0 NEQ ?{ POP #20 }
 	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA
 	JMP2r
@@ -400,6 +401,7 @@
 
 @snarf/<put> ( color -- )
 	DUP #0a EQU ?{
+		DUP #20 NEQ ?{ POP LIT "0 }
 		LIT "0 SUB LIT &x $1 INCk ,&x STR
 		[ LIT &y $1 ] world/<set-cell>
 		JMP2r }
