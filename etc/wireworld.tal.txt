@@ -4,218 +4,80 @@
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller &vector $2 &button $1 &key $1 &func $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &modx $2 &mody $2
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
-	@color/value $1
+	@cursor/color $1 &from &x1 $1 &y1 $1 &to &x2 $1 &y2 $1
 	@timer/play $1
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	( | theme )
-	#07fe .System/r DEO2
-	#07c6 .System/g DEO2
-	#0fc6 .System/b DEO2
+	theme/<load>
 	( | size )
 	#0200 .Screen/width DEO2
-	#0100 .Screen/height DEO2
+	#0110 .Screen/height DEO2
 	( | vectors )
 	;on-frame .Screen/vector DEO2
-	;on-mouse .Mouse/vector DEO2
 	;on-button .Controller/vector DEO2
+	menu/<focus>
 	( | init )
-	ui/<draw>
+	menu/<draw>
 	world/<init>
 	timer/<toggle>
-	#01 color/<set>
+	#01 cursor/<set-color>
 	BRK
 
 @meta $1
 	( name ) "Wireworld 0a
 	( desc ) "Celluar 20 "Automata 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Apr 20 "2025 $1 00
+	( date ) "26 20 "Feb 20 "2026 $1 00
 
 @on-frame ( -> )
 	[ LIT2 00 -Mouse/state ] DEI NEQ ?{
 		[ LIT2 00 -timer/play ] LDZ EQU ?{
 			[ LIT2 03 &f $1 ] INCk ,&f STR
-			( every 4th ) AND ?{ run } } }
-	BRK
-
-@on-mouse ( -> )
-	cursor/<update>
-	.Mouse/state DEI ?{ BRK }
-	.Mouse/y DEI2 #0019 LTH2 ?&on-menu
-	( color ) .color/value LDZ .Mouse/state DEI #01 GTH #00 EQU MUL STHk
-	( color x* y* ) .Mouse/x DEI2 #03 SFT2 .Mouse/y DEI2 #03 SFT2
-	( color x* y* color ) OVR2 OVR2 get-addr/ LDA STHr NEQ ?{ POP2 POP2 POP BRK }
-	( color x* y* ) NIP ROT POP <set-cell>
+			( every 4th ) AND ?{ world/<eval> } } }
+	[ LIT &req $1 ] ?{ BRK }
 	world/<draw>
+	[ LIT2 00 _&req ] STR
 	BRK
-
-	&on-menu ( -> )
-	.Mouse/x DEI2 #03 SFT2 NIP
-	( ) DUP #01 NEQ ?{ #01 color/<set> }
-	( ) DUP #02 NEQ ?{ #02 color/<set> }
-	( ) DUP #03 NEQ ?{ #03 color/<set> }
-	( ) DUP #05 NEQ ?{
-		timer/<toggle>
-		[ LIT2 00 -Mouse/state ] DEO }
-	POP BRK
 
 @on-button ( -> )
 	.Controller/button DEI2
+	( | modes )
+	DUP2 [ LIT2 01 "x ] NEQ2 ?{ snarf/<cut> }
+	DUP2 [ LIT2 01 "c ] NEQ2 ?{ snarf/<copy> }
+	DUP2 [ LIT2 01 "v ] NEQ2 ?{ snarf/<paste> }
+	DUP2 [ LIT2 01 "a ] NEQ2 ?{ cursor/<select-all> }
+	DUP2 [ LIT2 01 "s ] NEQ2 ?{ world/<save> }
+	DUP2 [ LIT2 01 "o ] NEQ2 ?{ world/<open> }
 	( | keys )
 	( ) DUP #20 NEQ ?{ timer/<toggle> }
-	( ) DUP #08 NEQ ?{ world/<reset> }
+	( ) DUP #08 NEQ ?{ cursor/<erase> }
+	( ) DUP #1b NEQ ?{ cursor/<deselect> }
 	POP
 	( | buttons )
-	( ) [ #01 ] NEQk NIP ?{ #01 color/<set> }
-	( ) [ #02 ] NEQk NIP ?{ #02 color/<set> }
-	( ) [ #04 ] NEQk NIP ?{ #03 color/<set> }
-	( ) [ #08 ] NEQk NIP ?{ world/<reset> }
-	POP BRK
-
-(
-@|core )
-
-@get-addr ( x y -- addr* )
-	SWP #0000 ROT SWP2 SWP & #60 SFT2 ADD2 [ LIT2 &current =world/mem ] ADD2 JMP2r
-
-@<set-cell> ( cell x y -- addr* )
-	get-addr STA
-	JMP2r
-
-@run ( -- )
-	;cell-icn .Screen/addr DEO2
-	#2000
-	&>ver ( -- )
-		DUP ,&y STR
-		STHk #4000
-		&>hor ( -- )
-			DUP ,&x STR
-			( x,y ) DUP STHkr
-			( cell ) DUP2 get-addr STH2k LDA
-			( update ) transform
-			( draw ) STHk #00 EQU ?{
-				( x ) [ LIT2 00 &x $1 ] #30 SFT2 .Screen/x DEO2
-				( x ) [ LIT2 00 &y $1 ] #30 SFT2 .Screen/y DEO2
-				DUPr [ LITr -Screen/sprite ] DEOr }
-			STHr STH2r [ LIT2 &future 1000 ] ADD2 STA
-			INC GTHk ?&>hor
-		POP2 POPr INC GTHk ?&>ver
-	POP2
-	( | Swap worlds )
-	;get-addr/current LDA2 ;run/future LDA2 STH2k ADD2 ;get-addr/current STA2
-	#0000 STH2r SUB2 ;run/future STA2
-	JMP2r
-
-@transform ( xy* cell -- cell )
-	DUP ?{ NIP NIP JMP2r }
-	DUP #03 NEQ ?{ POP POP2 #02 JMP2r }
-	DUP #02 NEQ ?{ POP POP2 #01 JMP2r }
-	DUP #01 NEQ ?{
-		POP LITr 00 DUP2 #01 SUB get-addr
-		( tl ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
-		( tc ) INC2 LDAk #03 [ NEQ JMP INCr ]
-		( tr ) INC2 LDA #03 [ NEQ JMP INCr ] DUP2 get-addr
-		( ml ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
-		( mr ) INC2 INC2 LDA #03 [ NEQ JMP INCr ] INC get-addr
-		( bl ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
-		( bc ) INC2 LDAk #03 [ NEQ JMP INCr ]
-		( br ) INC2 LDA #03 [ NEQ JMP INCr ]
-		( .. ) STHkr #02 EQU STHr #01 EQU ORA DUP ADD INC JMP2r }
-	( unknown ) NIP NIP JMP2r
-
-(
-@|drawing )
-
-@ui/<draw> ( -- )
-	[ LIT2 01 -Screen/auto ] DEO
-	#0008 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
-	;cell-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
-	[ LIT2 02 -Screen/sprite ] DEO
-	[ LIT2 03 -Screen/sprite ] DEO
-	#0000 .Screen/x DEO2
-	#0017 .Screen/y DEO2
-	#00
-	&>l ( -- )
-		[ LIT2 01 -Screen/pixel ] DEO
-		[ LIT2 00 -Screen/pixel ] DEO
-		INC DUP ?&>l
-	POP JMP2r
-
-@world/<reset> ( -- )
-	;&memend ;&mem
-	&>loop ( -- )
-		#0000 OVR2 STA2
-		INC2 INC2 GTH2k ?&>loop
-	POP2 POP2 run
-	( >> )
-
-@world/<draw> ( -- )
-	( | clear )
-	#0000 .Screen/x DEO2
-	#0018 .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	( | paint )
-	;cell-icn .Screen/addr DEO2
-	#0800 #0000
-	&>l ( -- )
-		DUP2 ;get-addr/current LDA2 ADD2 LDA STHk #00 EQU ?{
-			DUP2 #003f AND2 #30 SFT2 .Screen/x DEO2
-			DUP2 #36 SFT2 .Screen/y DEO2
-			DUPr [ LITr -Screen/sprite ] DEOr }
-		POPr INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
-@world/<init> ( -- )
-	#01 #1010 <set-cell>
-	#01 #110f <set-cell>
-	#02 #120f <set-cell>
-	#03 #130f <set-cell>
-	#01 #1410 <set-cell>
-	#01 #1111 <set-cell>
-	#01 #1211 <set-cell>
-	#01 #1311 <set-cell>
-	#01 #1410 <set-cell>
-	#01 #1510 <set-cell>
-	#01 #1610 <set-cell>
-	( | up )
-	#01 #170f <set-cell>
-	#01 #180e <set-cell>
-	#01 #190d <set-cell>
-	#01 #190c <set-cell>
-	#01 #180b <set-cell>
-	#01 #190b <set-cell>
-	#01 #1a0b <set-cell>
-	#01 #180a <set-cell>
-	#01 #1a0a <set-cell>
-	#01 #1909 <set-cell>
-	#01 #1908 <set-cell>
-	#01 #1907 <set-cell>
-	( | down )
-	#01 #1711 <set-cell>
-	#01 #1812 <set-cell>
-	#01 #1913 <set-cell>
-	#01 #1914 <set-cell>
-	#01 #1815 <set-cell>
-	#01 #1a15 <set-cell>
-	#01 #1816 <set-cell>
-	#01 #1916 <set-cell>
-	#01 #1a16 <set-cell>
-	#01 #1917 <set-cell>
-	#01 #1918 <set-cell>
-	#01 #1919 <set-cell>
-	JMP2r
-
-(
-@|Objects )
+	( ) DUP #08 NEQ ?{ world/<reset> }
+	( ) DUP #10 NEQ ?{
+		.cursor/from LDZ2 #01 SUB cursor/<set-from> }
+	( ) DUP #20 NEQ ?{ .cursor/from LDZ2 INC cursor/<set-from> }
+	( ) DUP #40 NEQ ?{
+		.cursor/from LDZ2 #0100 SUB2 cursor/<set-from> }
+	( ) DUP #80 NEQ ?{
+		.cursor/from LDZ2 #0100 ADD2 cursor/<set-from> }
+	( ) DUP #14 NEQ ?{
+		.cursor/to LDZ2 #01 SUB cursor/<set-to> }
+	( ) DUP #24 NEQ ?{ .cursor/to LDZ2 INC cursor/<set-to> }
+	( ) DUP #44 NEQ ?{
+		.cursor/to LDZ2 #0100 SUB2 cursor/<set-to> }
+	( ) DUP #84 NEQ ?{
+		.cursor/to LDZ2 #0100 ADD2 cursor/<set-to> }
+	POP cursor/<update>
+	BRK
 
 @timer/<toggle> ( -- )
 	.&play LDZk #00
@@ -228,38 +90,416 @@
 	EQU SWP STZ
 	JMP2r
 
-@color/<set> ( color -- )
-	DUP .&value LDZ NEQ ?{ POP JMP2r }
-	.&value STZ
+(
+@|Menu )
+
+@menu/<focus> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@menu/on-mouse ( -> )
+	cursor/<update>
+	.Mouse/state DEI ?{ BRK }
+	.Mouse/x DEI2 #03 SFT2 NIP
+	( ) DUP #01 NEQ ?{ #01 cursor/<set-color> }
+	( ) DUP #02 NEQ ?{ #02 cursor/<set-color> }
+	( ) DUP #03 NEQ ?{ #03 cursor/<set-color> }
+	( ) DUP #05 NEQ ?{
+		timer/<toggle>
+		[ LIT2 00 -Mouse/state ] DEO }
+	POP BRK
+
+@menu/<draw> ( -- )
+	[ LIT2 01 -Screen/auto ] DEO
+	#0008 .Screen/x DEO2
+	#0007 .Screen/y DEO2
+	;cell-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	[ LIT2 02 -Screen/sprite ] DEO
+	[ LIT2 03 -Screen/sprite ] DEO
+	( | dash )
+	#0000 .Screen/x DEO2
+	#0016 .Screen/y DEO2
+	#0200 #0000
+	&>l
+		DUP #01 AND .Screen/pixel DEO
+		INC2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+(
+@|World )
+
+@world/get-cell ( x y -- value )
+	get-addr LDA JMP2r
+
+%world/<set-cell> ( cell x y -- ) {
+	get-addr STA }
+
+@get-addr ( x y -- addr* )
+	SWP #0000 ROT SWP2 SWP
+	( >> )
+
+@get-addr2 ( x* y* -- addr* )
+	#60 SFT2 ADD2 [ LIT2 &current =world/mem ] ADD2 JMP2r
+
+@world/transform ( xy* cell -- cell )
+	DUP ?{ NIP NIP JMP2r }
+	DUP #03 NEQ ?{ POP POP2 #02 JMP2r }
+	#02 NEQ ?{ POP2 #01 JMP2r }
+	LITr 00 DUP2 #01 SUB get-addr
+	( tl ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
+	( tc ) INC2 LDAk #03 [ NEQ JMP INCr ]
+	( tr ) INC2 LDA #03 [ NEQ JMP INCr ] DUP2 get-addr
+	( ml ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
+	( mr ) INC2 INC2 LDA #03 [ NEQ JMP INCr ] INC get-addr
+	( bl ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
+	( bc ) INC2 LDAk #03 [ NEQ JMP INCr ]
+	( br ) INC2 LDA #03 [ NEQ JMP INCr ]
+	( .. ) STHkr #02 EQU STHr #01 EQU ORA DUP ADD INC JMP2r
+
+@world/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 04 -Controller/button ] DEI EQU ?&on-mouse-select
+	.Mouse/state DEI ?{ BRK }
+	( brush ) .cursor/color LDZ .Mouse/state DEI #01 GTH #00 EQU MUL STHk
+	( brush x* y* ) .Mouse/x DEI2 #03 SFT2 .Mouse/y DEI2 #0018 SUB2 #03 SFT2
+	( brush x* y* brush ) OVR2 OVR2 get-addr2 LDA STHr NEQ ?{ POP2 POP2 POP BRK }
+	( brush x* y* ) NIP ROT POP /<set-cell>
+	/<req-draw>
+	BRK
+
+@world/on-mouse-select ( -> )
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	DUP2 #0001 NEQ2 ?{
+		( | down )
+		POP2 cursor/get-pos cursor/<set-from>
+		BRK }
+	DUP2 #0101 NEQ2 ?{
+		( | drag )
+		POP2 cursor/get-pos cursor/<set-to>
+		BRK }
+	POP2 BRK
+
+@world/<eval> ( -- )
+	;cell-icn .Screen/addr DEO2
+	#2000
+	&>ver
+		STHk #4000
+		&>hor
+			( x,y ) DUP STHkr
+			( cell ) DUP2 get-addr STH2k LDA
+			( update ) /transform
+			( draw ) STH2r [ LIT2 &future 1000 ] ADD2 STA
+			INC GTHk ?&>hor
+		POP2 POPr INC GTHk ?&>ver
+	POP2
+	( | Read IO )
+	#2000
+	&>io
+		#3f OVR /get-cell #03 NEQ ?{
+			DUP LIT "a ADD #18 DEO }
+		INC GTHk ?&>io
+	POP2
+	( | Swap worlds )
+	;get-addr2/current LDA2 ;&future LDA2 STH2k ADD2 ;get-addr2/current STA2
+	#0000 STH2r SUB2 ;&future STA2
+	( >> )
+
+@world/<req-draw> ( -- )
+	#01 ;on-frame/req STA
+	JMP2r
+
+@world/<reset> ( -- )
+	;&memend ;&mem
+	&>loop
+		#0000 OVR2 STA2
+		INC2 INC2 GTH2k ?&>loop
+	POP2 POP2 /<eval>
+	( >> )
+
+@world/<draw> ( -- )
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | paint )
+	[ LIT2 01 -Screen/auto ] DEO
+	;cell-icn .Screen/addr DEO2
+	#0800 #0000
+	&>l
+		DUP2 ;get-addr2/current LDA2 ADD2 LDA STHk #00 EQU ?{
+			DUP2 #003f AND2 #30 SFT2 .Screen/x DEO2
+			DUP2 #36 SFT2 #0018 ADD2 .Screen/y DEO2
+			DUPr [ LITr -Screen/sprite ] DEOr }
+		POPr INC2 GTH2k ?&>l
+	POP2 POP2 cursor/<draw-selection>
+	( | draw I/O )
+	.Screen/width DEI2 #0008 SUB2 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	[ LIT2 02 -Screen/auto ] DEO
+	;port-icn .Screen/addr DEO2
+	[ LIT2r 00 -Screen/sprite ] #1000
+	&>lio
+		DEOkr
+		INC GTHk ?&>lio
+	POP2 POP2r JMP2r
+
+@world/<focus> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@world/<save> ( -- )
+	;&path .File/name DEO2
+	#1000 .File/length DEO2
+	;get-addr2/current LDA2 .File/write DEO2
+	JMP2r
+
+@world/<open> ( -- )
+	;&path .File/name DEO2
+	#1000 .File/length DEO2
+	;get-addr2/current LDA2 .File/read DEO2
+	JMP2r
+
+	&path "wire.world $1
+
+@world/<init> ( -- )
+	#01 #1010 /<set-cell>
+	#01 #110f /<set-cell>
+	#02 #120f /<set-cell>
+	#03 #130f /<set-cell>
+	#01 #1410 /<set-cell>
+	#01 #1111 /<set-cell>
+	#01 #1211 /<set-cell>
+	#01 #1311 /<set-cell>
+	#01 #1410 /<set-cell>
+	#01 #1510 /<set-cell>
+	#01 #1610 /<set-cell>
+	( | up )
+	#01 #170f /<set-cell>
+	#01 #180e /<set-cell>
+	#01 #190d /<set-cell>
+	#01 #190c /<set-cell>
+	#01 #180b /<set-cell>
+	#01 #190b /<set-cell>
+	#01 #1a0b /<set-cell>
+	#01 #180a /<set-cell>
+	#01 #1a0a /<set-cell>
+	#01 #1909 /<set-cell>
+	#01 #1908 /<set-cell>
+	#01 #1907 /<set-cell>
+	( | down )
+	#01 #1711 /<set-cell>
+	#01 #1812 /<set-cell>
+	#01 #1913 /<set-cell>
+	#01 #1914 /<set-cell>
+	#01 #1815 /<set-cell>
+	#01 #1a15 /<set-cell>
+	#01 #1816 /<set-cell>
+	#01 #1916 /<set-cell>
+	#01 #1a16 /<set-cell>
+	#01 #1917 /<set-cell>
+	#01 #1918 /<set-cell>
+	#01 #1919 /<set-cell>
+	JMP2r
+
+(
+@|Cursor )
+
+@cursor/get-size ( -- xy )
+	.&x2 LDZ .&x1 LDZ SUB .&y2 LDZ .&y1 LDZ SUB JMP2r
+
+@cursor/get-pos ( -- xy )
+	( x ) .Mouse/x DEI2 #03 SFT2 NIP
+	( y ) .Mouse/y DEI2 #0018 SUB2 #03 SFT2 NIP JMP2r
+
+@cursor/<set-from> ( xy -- )
+	DUP2 .&from STZ2
+	#0101 ADD2 .&to STZ2 !world/<req-draw>
+
+@cursor/<deselect> ( -- )
+	#0000 .&from STZ2 !world/<req-draw>
+
+@cursor/<set-to> ( x y -- )
+	DUP2 .&to LDZ2 NEQ2 ?{ POP2 JMP2r }
+	DUP .&y1 LDZ GTH ?{ POP .&y1 LDZ }
+	OVR .&x1 LDZ GTH ?{ NIP .&x1 LDZ SWP }
+	.&to STZ2 !world/<req-draw>
+
+@cursor/<set-color> ( brush -- )
+	DUP .&color LDZ NEQ ?{ POP JMP2r }
+	.&color STZ
 	( >> )
 
 @cursor/<update> ( -- )
-	#40 /<draw>
+	.Mouse/state DEI ?{ /<refocus> }
+	#40 ;&fill-icn /<draw>
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
-	[ LIT2 40 -color/value ] LDZ ADD
+	[ LIT2 40 -&color ] LDZ ADD
+	( mode ) ;&sprite-icn [ LIT2 04 -Controller/button ] DEI NEQ ?{ #0008 ADD2 }
 	( >> )
 
-@cursor/<draw> ( color -- )
-	;&sprite-icn .Screen/addr DEO2
+@cursor/<draw> ( brush addr* -- )
+	.Screen/addr DEO2
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
 	JMP2r
 
-@cursor/sprite-icn [ 80c0 e0f0 f8e0 1000 ]
+@cursor/<refocus> ( -- )
+	.Mouse/y DEI2 #0018 LTH2 ?{ !world/<focus> }
+	!menu/<focus>
+
+@cursor/<draw-selection> ( -- )
+	.&from LDZ2 ORA ?{ JMP2r }
+	;&x1 LDZ #30 SFT2 .Screen/x DEO2
+	;&y1 LDZ #30 SFT2 #0018 ADD2 .Screen/y DEO2
+	/get-size ;frame1-chr !frame/<draw>
+
+@cursor/<erase> ( -- )
+	.&y2 LDZ .&y1 LDZ
+	&>vc
+		.&x2 LDZ .&x1 LDZ
+		&>hc
+			ROTk #00 ROT ROT world/<set-cell>
+			POP INC GTHk ?&>hc
+		POP2 INC GTHk ?&>vc
+	POP2 JMP2r
+
+@cursor/<select-all> ( -- )
+	#0004 .&from STZ2
+	#4024 .&to STZ2 !world/<req-draw>
 
 (
-@|assets )
+@|Snarf )
 
-@cell-icn [ 7cfe fefe fefe 7c00 ]
+@snarf/<cut> ( -- )
+	/<copy> !cursor/<erase>
 
-@toggle-icn [ 6666 6666 6666 6600 4666 767e 7666 4600 ]
+@snarf/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
 
-@world/mem $2000
-	&memend ( I live in the atom with the happy protons and neutrons.
+@snarf/<copy> ( -- )
+	;&buf ,&ptr STR2
+	.cursor/y2 LDZ .cursor/y1 LDZ
+	&>v
+		.cursor/x2 LDZ .cursor/x1 LDZ
+		&>h
+			ROTk world/get-cell LIT "0 ADD /<push>
+			POP INC GTHk ?&>h
+		#0a /<push>
+		POP2 INC GTHk ?&>v
+	POP2
+	( | save )
+	;&path .File/name DEO2
+	;&ptr LDA2 ;&buf SUB2 .File/length DEO2
+	;&buf .File/write DEO2
+	JMP2r
+
+@snarf/<put> ( color -- )
+	DUP #0a EQU ?{
+		LIT "0 SUB LIT &x $1 INCk ,&x STR
+		[ LIT &y $1 ] world/<set-cell>
+		JMP2r }
+	POP
+	( | linebreak )
+	LIT &anchor $1 ,&x STR
+	,&y LDR INC ,&y STR
+	JMP2r
+
+@snarf/<paste> ( -- )
+	;&path .File/name DEO2
+	#0001 .File/length DEO2
+	.cursor/x1 LDZ DUP ,&anchor STR
+	,&x STR
+	.cursor/y1 LDZ ,&y STR
+	&>s
+		;&c .File/read DEO2
+		.File/success-lb DEI ?{ JMP2r }
+		[ LIT &c $1 ] /<put> !&>s
+
+@snarf/path ".snarf $1
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#07fe #07c6 #0fc6
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
+
+	&path ".theme $1
+
+(
+@|assets ) ( I live in the atom with the happy protons and neutrons.
 	| I'm also so negative all the freakin time.
 	| What do I do?
 	| How do I find peace? )
 
+@frame/<draw> ( w h chr* -- )
+	STH2
+	,&h STR
+	,&w STR
+	.Screen/x DEI2 DUP2 #0008 SUB2 .Screen/x DEO2
+	.Screen/y DEI2 #0008 SUB2 DUP2 .Screen/y DEO2
+	( ul ) #00 STH2kr #05 /single
+	( uu ) ] LIT &w $1 ] #00 STH2kr #0008 ADD2 #01 /repeat
+	( ur ) #10 STH2kr #06 /single
+	( rr ) [ LIT &h $1 ] #00 STH2kr #0010 ADD2 #02 /repeat #0008 ADD2 .Screen/y DEO2
+	#0008 SUB2 .Screen/x DEO2
+	( ll ) ,&h LDR #10 STH2kr #0010 ADD2 #02 /repeat
+	( dl ) #20 STH2kr #01 /single
+	( bb ) ,&w LDR #20 STH2kr #0008 ADD2 #01 /repeat
+	( dr ) #30 STH2r #00 !&single
+
+	&repeat ( times color addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	STH
+	#00
+	&>l
+		STHkr /paint INC GTHk ?&>l
+	POP2 POPr JMP2r
+
+	&single ( color addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	( >> )
+	&paint ( mask -- )
+	#0a ORA .Screen/sprite DEO
+	JMP2r
+
+@frame1-chr [
+	0000 0000 0000 0001 0000 0000 0000 ff00
+	4040 4040 4040 4040 ]
+
+@cursor/sprite-icn [ 80c0 e0f0 f8e0 1000 ]
+	&select-icn [ 80c0 e0f0 f8e2 1502 ]
+	&fill-icn [ ffff ffff ffff ffff ]
+
+@cell-icn [ 187e 7eff ff7e 7e18 ]
+
+@port-icn [ 0000 183c 3c18 0000 ]
+
+@toggle-icn [ 6666 6666 6666 6600 4666 767e 7666 4600 ]
+
+@snarf/buf $1000
+
+@world/mem $2000 &memend
 
