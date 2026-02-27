@@ -27,7 +27,7 @@ bag left after the last application is the output of a program.</p>
 (3 (2 ())) <i>; 6</i>
 </pre>
 
-<p>Bags may include unreduced fractions, which are applied when possible or destroyed.</p>
+<p>Bags may include unreduced fractions, which are applied whenever possible from the deepest nesting upward.</p>
 
 <pre>
 (3/2 2)       <i>; (3/2 2) -> 3</i>
@@ -39,7 +39,7 @@ bag left after the last application is the output of a program.</p>
 
 <pre>
 (2/3/5 3 5)   <i>; (2/3/5 3 5) -> (2/3 3) -> 2</i>
-((5/3 2)/7 7) <i>; ((5/3 2)/7 7) -> 2</i>
+((5/3 3)/7 7) <i>; ((5/3 3)/7 7) -> (5/3 3) -> 5</i>
 (3/2/2/2 2^4) <i>; (3/2/2/2 2^4) -> (3/2/2 2^3) -> (3/2 2^2) -> (2 3)</i>
 </pre>
 
@@ -67,7 +67,6 @@ bag left after the last application is the output of a program.</p>
 ('1/3 3^2)
 ('1/3 3)
 ('1/3)
-()
 </pre>
 
 <p>The evaluation can be summarized as trying to apply fractions until none remains.</p>
@@ -79,7 +78,41 @@ bag left after the last application is the output of a program.</p>
 <i>bar, baz, foo..</i>
 </pre>
 
+<h3>Sesame Seeds</h3>
+
+<p>As if the section above wasn't experimental enough, what follows is even less settled. One of the interesting thing is to consider to what happens to a fraction that fails to be applied and falls through to the bag above. Its application is delayed, we can think of this as a <i>thunk</i>.</p>
+<pre>
+((3/4 2) 2) <i>; The inner bag cannot be reduced.</i>
+(3/4 2^2)   <i>; It composes with the outer bag.</i>
+3           <i>; It is applied.</i>
+</pre>
+
+<p>The inverse situation is where a fraction waits for the bag above to pop.</p>
+
+<pre>
+(3/5 (2 5)) <i>; The inner bag cannot be reduced.</i>
+(3/5 2 5)   <i>; The inner bag pops.</i>
+(2 3)       <i>; It is applied.</i>
+</pre>
+
+<p>Something more interesting is when a bag contains multiple fractions, one might wonder in which order they should be applied. Fractions always compose first before application.</p>
+
+<pre>
+(2/3 2/5 3 5) <i>; Two fractions in the bag.</i>
+(4/15 3 5)    <i>; The two fractions are composed before application.</i>
+2^2           <i>; It is applied.</i>
+</pre>
+
+<p>Now, what is the two fractions are quoted? The also compose. This opens the possiblity of generating fractions on demand, making the program somewhat self-modifiable.</p>
+<pre>
+('2/3 '2/5 3 5) <i>; Two quoted fractions in the bag.</i>
+('4/15 3 5)     <i>; Two quoted fractions in the bag.</i>
+('4/15 4)       <i>; It is applied.</i>
+</pre>
+
+<p>Now you might wonder, how does a quoted integer, like <code>'2</code>, works? To be frank, I don't know, I truly don't.</p>
+
 <img src='../media/refs/urbicande.png' style='float:right'/>
+
 <p>Implementation and details will be added soon, I wrote all this, as if in a fever, on the night of
 Halloween and expanded on it over the winter.</p>
-
