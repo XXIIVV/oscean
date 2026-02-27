@@ -1,18 +1,17 @@
 <h2>Gödel's bag, Gödel's bag, <br />Gödel's bag.</h2>
 
-<p><b>Bägel</b> is a programming language where functions return multisets(bags)
-and compose by multiplication. Every item is a bag of factors and every
-function a multiplicative transformation. Think <a
+<p><b>Bägel</b> is a programming language where data is encoded as multisets(unordered bags of things)
+and compose by multiplication. Think <a
 href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or
 a strange <a href='lisp.html'>Lisp</a> in which cons cells are unordered
 lists.</p>
 
 <q>In this mirror world, order does not matter, only presence and reduction.</q>
 
-<h3>Primitives</h3>
+<h3>Basics</h3>
 
 <p>Parentheses denotes a bag, which may contain items or other bags. The final
-bag left after the reduction is the output of a program.</p>
+bag left after the last application is the output of a program.</p>
 <pre>
 <i>; This is a comment</i>
 
@@ -28,95 +27,59 @@ bag left after the reduction is the output of a program.</p>
 (3 (2 ())) <i>; 6</i>
 </pre>
 
-<p>Items in a bag are written as unreduced fractions. Non-numeric symbols are bound to prime factors beyond the highest utilized factor in a program.</p>
-<pre>
-(125 1/5)             <i>; 5^3 * 1/5 = 5^2</i>
-(2 3/2)               <i>; 2 * 3/2 = 3</i>
-(5 1/5)               <i>; ()</i>
-fizz/2^3 buzz/3^5 2^4 <i>; 2 fizz buzz/3^5</i>
-</pre>
-
-<h3>Intersection</h3>
-
-<p>The <b>intersection operator</b> <code>(% a b c..)</code> returns the <a href='primes.html#gcd'>GCD</a> of all arguments.</p>
-<pre>
-(% 6 15)    <i>; 2 * [3] % [3] * 5 = 3</i>
-(% 6 7)     <i>; 2 * 3 % 7 = Empty[1]</i>
-(2 (% 6 2)) <i>; 2 * (2 * 3 % 3) = 2^2</i>
-</pre>
-
-<p>This is the only building block needed for conditionals, the intersection yields a register mask that can be used to reduce the bag one way or another.</p>
+<p>Bags may include unreduced fractions, which are applied when possible or destroyed.</p>
 
 <pre>
-(% 2 (x 5/2)) <i>; if x2 then 5, otherwise ()</i>
-(% 6 (x 5/6)) <i>; if x2 && x3 then 5, otherwise ()</i>
-(% x (x 5/11)) <i>; if !x11 then x, otherwise ()</i>
+(3/2 2)       <i>; (3/2 2) -> 3</i>
+(3/5 125)     <i>; (1/5 5^3) -> (1/5 3 5^2)</i>
+(1/5 (5/7 7)) <i>; (1/5 (5/7 7)) -> (1/5 5) -> ()</i>
 </pre>
 
-<h3>Function</h3>
-<p>The <b>function operator</b> <code>(λ fn)</code> tries to apply a transformation until it stabilizes, in other words, until no more reduction can occur.</p>
+<p>Fractions may put other fractions in the bag.</p>
 
 <pre>
-(λ 3/2 (2 2))       <i>; (2 3), (3 3).</i>
-(λ 5/3 (3 3 3 7))   <i>; (3 3 5 7), (3 5 5 7), (5 5 5 7).</i>
-(% 2 (λ 1/2 2^5))   <i>; 2 for odd, () for even.</i>
+(2/3/5 3 5)   <i>; (2/3/5 3 5) -> (2/3 3) -> 2</i>
+((5/3 2)/7 7) <i>; ((5/3 2)/7 7) -> 2</i>
+(3/2/2/2 2^4) <i>; (3/2/2/2 2^4) -> (3/2/2 2^3) -> (3/2 2^2) -> (2 3)</i>
 </pre>
 
-<p>For example, to count until 5, a fraction containing the boundary of the iteration can halt the transformation.</p>
-<pre>
-(λ 2/1 3/2^5)
-</pre>
-<pre style='margin-top:-29px'>
-(λ 2/1 3/2^4)
-(λ 2/1 3/2^3)
-(λ 2/1 3/2^2)
-(λ 2/1 3/2^1)
-3
-</pre>
-
-<p>The <b>named operator</b> <code>(name λ fn)</code> allows for recursion and for symbols to operate as functions.</p>
+<p>Non-numeric symbols are automatically assigned an unused prime factor in the program, making it possible to operate on symbols.</p>
 
 <pre>
-(double λ 9/2)      
-</pre>
-<pre style='margin-top:-29px'>
-2^2 3 double/3
-2^2 (λ 9/2) 
-2 3^2 (λ 9/2)  
-3^4
+(red green blue)          <i>; A bag with 3 colors</i>
+((black white)/red red^2) <i>; ((black white)/red red^2) -> (red black white)</i>
+(fizz/2^3 2 2 2)          <i>; (fizz/2^3 2 2 2) -> fizz</i>
 </pre>
 
-<!--
+<p>All logic is done by attempting the application of fractions. The input of a program is the initial content of the bag, the output, its final state.</p>
+<pre>
+(true/(x y) x y)    <i>; if(x && y) return bag/x/y * true</i>
+(2/5/true true) <i>; if(true) bag /= true, if(5) return bag/5 * 2</i>
+</pre>
 
-<h3>Factorial</h3>
+<h3>Quotations</h3>
+
+<p>A quoted member in a fraction represents the unapplied fraction itself which is put back in the bag whole after application, this is the mechanism through which recursion is made.</p>
 
 <pre>
-(<b>fact</b> λ (n acc)
-   (? (% n 2)
-      (fact (n 1/2) (acc n))
-      acc))
-
-(fact (2^3) 1) <i>; 2^8 = 256</i>
+('1/3 3^4) <i>; Loop for 3^n times</i>
+('1/3 3^3)
+('1/3 3^2)
+('1/3 3)
+('1/3)
+()
 </pre>
 
-<h3>FizzBuzz</h3>
-<p>Symbols within double-quotes create new symbols instead of references, this
-allows for ordering the items that remain in the bag for the output.</p>
+<p>The evaluation can be summarized as trying to apply fractions until none remains.</p>
 <pre>
-(<b>fizzbuzz</b> λ (num acc)
-	(? (% num 2^100)
-		(? (% acc (2^3 3^5))
-			((fizzbuzz (num 2) (acc 1/2^3 1/3^5)) ("FizzBuzz"))
-			(? (% acc 2^3)
-				((fizzbuzz (num 2) (acc 1/2^3 3)) ("Fizz"))
-				(? (% acc 3^5)
-					((fizzbuzz (num 2) (acc 2 1/3^5)) ("Buzz"))
-					((fizzbuzz (num 2) (acc 2 3)) ("#num")))))
-		()))
-
-(fizzbuzz (2) (2 3))
+('bar/foo 'baz/bar 'foo/baz foo) <i>; Cycle through 3 states indefinitely</i>
+('bar/foo 'baz/bar 'foo/baz bar)
+('bar/foo 'baz/bar 'foo/baz baz)
+('bar/foo 'baz/bar 'foo/baz foo)
+<i>bar, baz, foo..</i>
 </pre>
--->
 
+<img src='../media/refs/urbicande.png' style='float:right'/>
 <p>Implementation and details will be added soon, I wrote all this, as if in a fever, on the night of
-Halloween.</p>
+Halloween and expanded on it over the winter.</p>
+
