@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Feb 20 "2026 $2
+	( date ) "28 20 "Feb 20 "2026 $2
 
 (
 @|Source )
@@ -140,9 +140,13 @@
 	;piece-a/buf is-static #00 EQU ?{
 		;piece-a/buf ;piece-b/buf str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
 	( | fall-through )
-	;piece-a/buf LDA [ LIT "@ NEQ ] ?{
+	;piece-a/buf LDA [ LIT "@ ] NEQ ?{
 		;piece-b/buf is-jump #00 EQU ?{
 			;piece-a/buf INC2 ;piece-b/buf INC2 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
+	( | unnamed buffer )
+	;piece-a/buf LDA [ LIT "$ ] NEQ ?{
+		;piece-b/buf is-label ?{
+			;piece-b/buf LDA LIT "" EQU ?{ ;unnamed-buf <print-warn2> } } }
 	( | dead-region )
 	;piece-b/buf is-jump/strict #00 EQU ?{
 		;piece-a/buf is-static ;piece-a/buf is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
@@ -165,6 +169,12 @@
 
 (
 @|helpers )
+
+@is-label ( str* -- flag )
+	LDAk LIT "@ EQU ?{
+		LDAk LIT "& EQU ?{
+			LDAk LIT "} EQU ?{ POP2 #00 JMP2r } } }
+	POP2 #01 JMP2r
 
 @is-scope ( str* -- flag )
 	LDAk [ LIT "@ ] NEQ ?&fail
@@ -570,6 +580,7 @@
 @keep "Unkept $1 ( opcode should use non-destructive keep mode )
 @unsafe "Unsafe $1 ( bitwise opcode used in relative jump )
 @unstashed "Unstashed $1 ( literal was created on the wrong stack )
+@unnamed-buf "Unnamed-buffer $1 ( buffer has no label )
 @latestack "Late-stack $1 ( arithmetic performed after stashing )
 @eagerstack "Eager-stack $1 ( arithmetic performed before stashing )
 @tokenlen "Token-length $1 ( token is longer than 24 characters )
