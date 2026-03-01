@@ -1,7 +1,6 @@
 (* uxnmin.ml -- Javier B. Torres <lobo@quiltro.org>
-   This file is under the public domain. 
-
-   ocamlopt uxnmin.ml -o uxnmin *)
+   This file is under the public domain. *)
+(* ocamlopt uxnmin.ml -o uxnmin *)
 
 (* Wrapping read/write utilities *)
 let uint8_to_int8 i = (i lsl (Sys.int_size - 8)) asr (Sys.int_size - 8)
@@ -237,7 +236,8 @@ let dispatch (pc : int) =
               else Bytes.set_uint8 ram addr v
           | 0x16 (* DEI *) ->
               let port = popbyte mode stk in
-              push mode stk (dei port)
+              pushbyte mode stk (dei port);
+              if short then pushbyte mode stk (dei Int.(logand (port + 1) 255))
           | 0x17 (* DEO *) ->
               let port = popbyte mode stk in
               let value = pop mode stk in
