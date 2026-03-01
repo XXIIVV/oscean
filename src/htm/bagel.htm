@@ -10,24 +10,24 @@ lists.</p>
 
 <h3>Basics</h3>
 
-<p>Parentheses denotes a bag, which may contain whole numbers, fractions or other bags. The order of items in a bag does not matter.</p>
+<p>Parentheses denotes an unordered collection of things, which may contain whole numbers, fractions or other bags. The order in a bag does not matter.</p>
 <pre>
 <i>; This is a comment</i>
 
 ()          <i>; Empty(1), identity</i>
-(2)         <i>; 2</i>
+(2^2)       <i>; 4</i>
 (2 (3))     <i>; 6</i>
 (3 (2 5/2)) <i>; 15</i>
 </pre>
 
-<p>The evaluation consists of applying fractions on whole numbers starting at the deepest nested level upward until the bag stabilizes. The bag left after the last application is the output of a program.</p>
+<p>Evaluation consists of applying fractions on whole numbers starting at the deepest nesting level outward until the bag stabilizes. The bag left after the last application is the output of a program.</p>
 <pre>
 (3/2 2)       <i>; (3/2 2) -> 3</i>
-(3/5 125)     <i>; (1/5 5^3) -> (1/5 3 5^2)</i>
+(3/5 5^3)     <i>; (1/5 5^3) -> (1/5 3 5^2)</i>
 (1/5 (5/7 7)) <i>; (1/5 (5/7 7)) -> (1/5 5) -> ()</i>
 </pre>
 
-<p>Fractions do not fall through to the outer bag if application fails.</p>
+<p>A fractions does not fall through to the outer bag if application fails.</p>
 <pre>
 ((3/4 2) 2) <i>; The inner bag cannot be reduced.</i>
 4           <i>; The fraction 3/4 is discarded.</i>
@@ -42,12 +42,10 @@ lists.</p>
 
 <p>When a bag contains multiple fractions, fractions are composed before application.</p>
 <pre>
-(2/3 2/5 3 5) <i>; Two fractions in the bag</i>
-(4/15 3 5)    <i>; The two fractions are composed before application</i>
-4             <i>; Application</i>
+(2/3 2/5 3 5) <i>; (2/3 2/5 3 5) -> (4/15 3 5) -> 4</i>
 </pre>
 
-<p>Non-numeric symbols are assigned an unused prime factor in the program.</p>
+<p>Non-numeric symbols are assigned an unused prime factor in the program and represent whole numbers.</p>
 <pre>
 (red green blue)          <i>; A bag with 3 colors</i>
 ((black white)/red red^2) <i>; ((black white)/red red^2) -> (red black white)</i>
@@ -56,10 +54,10 @@ lists.</p>
 
 <h3>Quotations</h3>
 
-<p>A quoted fraction is kept after application, this is the mechanism through which recursion is made.</p>
+<p>A quoted fraction is kept after application, this mechanism allows for recursion. In the following example, 3 drains into 5 until exhaustion.</p>
 
 <pre>
-('5/3 3^4)     <i>; Drain 3 into 5</i>
+('5/3 3^4)
 ('5/3 3^3 5)
 ('5/3 3^2 5^2)
 ('5/3 3 5^3)
@@ -67,10 +65,10 @@ lists.</p>
 5^4
 </pre>
 
-<p>Quoted fractions also compose, non-quoted fractions will compose with quoted fraction. The resulting fraction will be a quotation.</p>
+<p>Quoted fractions also compose, non-quoted fractions will compose with quoted fractions, the resulting fraction will always be a quotation.</p>
 <pre>
-('2/3 '2/5 3^2 5^2) <i>; Two quoted fractions in the bag.</i>
-('4/15 3^2 5^2)     <i>; The two fractions are composed before application</i>
+('2/3 '2/5 3^2 5^2)
+('4/15 3^2 5^2)
 ('4/15 2^2 3 5)
 ('4/15 2^4)
 2^4
@@ -96,7 +94,7 @@ false
 
 <p>The fraction <code>'y/x</code> drains <code>x</code> into <code>y</code>, effectively finding the sum:</p>
 <pre>
-('y/x x^3 y^2)
+('y/x x^3 y^2) <i>; 3 + 2</i>
 ('y/x x^2 y^3)
 ('y/x x y^4)
 ('y/x y^5)
@@ -105,7 +103,7 @@ y^5
 
 <p>The fraction <code>'1/(x y)</code> finds the difference, and the outer bag moves the result into a third symbol:</p>
 <pre>
-('result/x ('1/(x y) x^4 y^2))
+('result/x ('1/(x y) x^4 y^2)) <i>; 4 - 2</i>
 ('result/x ('1/(x y) x^3 y))
 ('result/x ('1/(x y) x^2))
 ('result/x x^2)
