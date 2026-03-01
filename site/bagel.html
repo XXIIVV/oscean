@@ -44,84 +44,67 @@ lists.</p>
 (1/5 (5/7 7)) <i>; (1/5 (5/7 7)) -> (1/5 5) -> ()</i>
 </pre>
 
-<p>When a bag contains multiple fractions, fractions always compose first before application.</p>
+<p>Fractions do not fall to the outer bag after failed application.</p>
 <pre>
-(2/3 2/5 3 5) <i>; Two fractions in the bag.</i>
-(4/15 3 5)    <i>; The two fractions are composed before application.</i>
-2^2           <i>; It is applied.</i>
+((3/4 2) 2) <i>; The inner bag cannot be reduced.</i>
+4           <i>; The fraction is discarded.</i>
 </pre>
 
-<p>Fractions may put other fractions in the bag.</p>
+<p>Fractions may output other fractions.</p>
 <pre>
 (2/3/5 3 5)   <i>; (2/3/5 3 5) -> (2/3 3) -> 2</i>
 ((5/3 3)/7 7) <i>; ((5/3 3)/7 7) -> (5/3 3) -> 5</i>
-(3/2/2/2 2^4) <i>; (3/2/2/2 2^4) -> (3/2/2 2^3) -> (3/2 2^2) -> (2 3)</i>
+(3/2/2/2 2^4) <i>; (3/2/2/2 2^4) -> (3/2/2 2^3) -> (3/2 2^2) -> 6</i>
 </pre>
 
-<p>Non-numeric symbols are automatically assigned an unused prime factor in the program, making it possible to operate on symbols.</p>
+<p>When a bag contains multiple fractions, fractions are composed before application.</p>
+<pre>
+(2/3 2/5 3 5) <i>; Two fractions in the bag</i>
+(4/15 3 5)    <i>; The two fractions are composed before application</i>
+4             <i>; Application</i>
+</pre>
+
+<p>Non-numeric symbols are assigned an unused prime factor in the program.</p>
 <pre>
 (red green blue)          <i>; A bag with 3 colors</i>
 ((black white)/red red^2) <i>; ((black white)/red red^2) -> (red black white)</i>
 (fizz/2^3 2 2 2)          <i>; (fizz/2^3 2 2 2) -> fizz</i>
 </pre>
 
-<h3>Delayed Evaluation</h3>
-
-<p>Nested fraction in bags that can no longer be reduced fall to their outer scope. Its application is delayed, we can think of this as a <i>thunk</i>.</p>
+<p>All logic is done via the application of fractions.</p>
 <pre>
-((3/4 2) 2) <i>; The inner bag cannot be reduced.</i>
-(3/4 4)     <i>; It composes with the outer bag.</i>
-3           <i>; It is applied.</i>
+(false/x (false/y (true/(x y) x y)))
+(false/x (false/y true))
+(false/x true)
+true
 </pre>
-
-<p>The inverse situation is where a fraction waits for the bag above to pop.</p>
-<pre>
-(3/5 (2 5)) <i>; The inner bag cannot be reduced.</i>
-(3/5 2 5)   <i>; The inner bag pops.</i>
-(2 3)       <i>; It is applied.</i>
-</pre>
-
-<p>All logic is done by attempting the application of fractions. The input of a program is the initial content of the bag, the output, its final state.</p>
-<pre>
-(true/(x y) x y)    <i>; if(x && y) return bag/x/y * true</i>
-(2/5/true true) <i>; if(true) bag /= true, if(5) return bag/5 * 2</i>
+<pre style='margin-top:-29px'>
+(false/x (false/y (true/(x y) y)))
+(false/x (false/y y))
+(false/x false)
+false
 </pre>
 
 <h3>Quotations</h3>
 
-<p>A quoted member in a fraction represents the unapplied fraction itself which is put back in the bag whole after application, this is the mechanism through which recursion is made.</p>
+<p>A quoted fraction it kept after application, this is the mechanism through which recursion is made.</p>
 
 <pre>
-('1/3 3^4) <i>; Loop for 3^n times</i>
-('1/3 3^3)
-('1/3 3^2)
-('1/3 3)
-('1/3)
+('5/3 3^4)     <i>; Drain 3 into 5</i>
+('5/3 3^3 5)
+('5/3 3^2 5^2)
+('5/3 3 5^3)
+('5/3 5^4)
+5^4
 </pre>
 
-<p>The evaluation can be summarized as trying to apply fractions until none remains.</p>
+<p>Quoted fractions also compose, non-quoted fractions will compose with quoted fraction, keeping the quotation.</p>
 <pre>
-('bar/foo 'baz/bar 'foo/baz foo) <i>; Cycle through 3 states indefinitely</i>
-('bar/foo 'baz/bar 'foo/baz bar)
-('bar/foo 'baz/bar 'foo/baz baz)
-('bar/foo 'baz/bar 'foo/baz foo)
-<i>bar, baz, foo..</i>
-</pre>
-
-<p>Now, what is the two fractions are quoted? The also compose. This opens the possiblity of generating fractions on demand, making the program somewhat self-modifiable.</p>
-<pre>
-('2/3 '2/5 3 5) <i>; Two quoted fractions in the bag.</i>
-('4/15 3 5)     <i>; Two quoted fractions in the bag.</i>
-('4/15 4)       <i>; It is applied.</i>
-</pre>
-
-<p>Now, what does a quoted integer, like <code>'2</code>, do? To be frank, I'm not sure, but it might just be the only way that quoted fractions can be destroyed.</p>
-
-<pre>
-('2/3 3^2 '3) <i>; A quoted fraction and a quoted integer.</i>
-('2/3 2 3 '3) <i>; A 3 becomes a 2.</i>
-('2/3 4 '3)   <i>; A 3 becomes a 2.</i>
-4             <i>; The quoted 3 consumes the quoted fraction.</i>
+('2/3 '2/5 3^2 5^2) <i>; Two quoted fractions in the bag.</i>
+('4/15 3^2 5^2)     <i>; The two fractions are composed before application</i>
+('4/15 2^2 3 5)
+('4/15 2^4)
+2^4
 </pre>
 
 <img src='../media/refs/urbicande.png' style='float:right'/>
