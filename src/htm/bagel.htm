@@ -14,16 +14,16 @@ lists.</p>
 <pre>
 <i>; This is a comment</i>
 
-()			<i>; Empty(1), identity</i>
-(x^3)		 <i>; -> (x x x)</i>
-(2 (y))	   <i>; -> (2 y)</i>
+()			  <i>; Empty(1), identity</i>
+(x^3)		  <i>; -> (x x x)</i>
+(2 (y))	      <i>; -> (2 y)</i>
 (3 (2 5/2) 7) <i>; -> (3 5 7)</i>
 </pre>
 
 <p>Evaluation consists of applying fractions on whole numbers starting at the deepest nesting level outward until the bag stabilizes.</p>
 <pre>
-(3/2 2)	   <i>; -> 3</i>
-(3/5 5^3)	 <i>; -> (3 5^2)</i>
+(3/2 2)	      <i>; -> 3</i>
+(3/5 5^3)	  <i>; -> (3 5^2)</i>
 (1/5 (5/7 7)) <i>; -> (1/5 5) -> ()</i>
 </pre>
 
@@ -33,10 +33,10 @@ lists.</p>
 (1/5 1/7 5)   <i>; -> (1/35 5) -> 5</i>
 </pre>
 
-<p>A fractions does not fall through to the outer bag if application fails. If a fraction inside a bag cannot be applied, it is discarded during the reduction.</p>
+<p>A fraction is applied if the bag in which it is being applied includes the denominator. If a fraction inside a bag cannot be applied, it is discarded during the reduction. A fractions does not fall through to the outer bag if application fails. </p>
 <pre>
 ((3/4 2) 2) <i>; -> (2^2)</i>
-(1/4 3)	 <i>; -> 3</i>
+(1/4 3)	    <i>; -> 3</i>
 </pre>
 
 <h3>Logic</h3>
@@ -83,7 +83,7 @@ false
 
 <h3>Quoted Fractions</h3>
 
-<p>A quoted fraction is kept after application, this mechanism allows for recursion, for example, to transform an item into another until exhaustion.</p>
+<p>A quoted fraction is applied repeatedly until exhaustion of the denominator in the bag in which it is applied, this mechanism allows for recursion.</p>
 
 <pre>
 ('blue/red red^3)	  <i>; while(red--) blue++;</i>
@@ -104,7 +104,7 @@ blue^3
 
 <h3>Arithmetic</h3>
 
-<p>The fraction <code>'y/x</code> drains <code>x</code> into <code>y</code>, effectively finding the sum:</p>
+<p>The fraction <code>'y/x</code> drains <code>x</code> into <code>y</code>, effectively finding the sum by resource transfer.</p>
 <pre>
 ('y/x x^3 y^2) <i>; 3 + 2</i>
 ('y/x x^2 y^3)
@@ -139,12 +139,10 @@ neg^2
 
 <p>Specific items can be injected inside quoted fractions during recursion to create a mechanism similar to functions. In the following example, the fizzbuzz fraction will have at the <code>?symbol</code> locations the amount of these items from the location where the fraction was applied.</p>
 <pre>
-(
-	'(
-		(fizz/f^3 
-			(buzz/b^5 
-				(fizzbuzz/(f^3 b^5) ?f ?b))) f b)/i
-	f b i^100)
+'(
+	(fizz/f^3 
+		(buzz/b^5 
+			(fizzbuzz/(f^3 b^5) ?f ?b))) f b)/i
 </pre>
 
 <p>The previous program encodes the following function:</p>
