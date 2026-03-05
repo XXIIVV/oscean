@@ -142,24 +142,27 @@
 	;dict/reset !scope/<set>
 
 @assembly/<resolve> ( -- )
-	,&mode LDR2 ;comment/assemble NEQ2 ?{
+	,&+mode LDR2 ;comment/assemble NEQ2 ?{
 		( ! ) ;dict/open ;dict/Comment info/<error-token> }
-	,&mode LDR2 ;macros/assemble NEQ2 ?{
+	,&+mode LDR2 ;macros/assemble NEQ2 ?{
 		( ! ) ;dict/open ;dict/Macro info/<error-token> }
 	error/get ?{ refs/<resolve-all>
 		error/get ?{ !syms/<emit> } }
 	JMP2r
 
+@assembly/<set> ( mode* -- )
+	,&+mode STR2
+	JMP2r
+
 @assembly/apply ( t* -- )
 	LDZk ?{ POP2 JMP2r }
-	[ LIT2 &mode =standard/assemble ] JMP2
+	[ LIT2 &+mode =standard/assemble ] JMP2
 
 (
 @|Standard )
 
 @standard/<latch> ( -- )
-	;&assemble ;assembly/mode STA2
-	JMP2r
+	;&assemble !assembly/<set>
 
 @standard/assemble ( t* -- )
 	( hex ) str/is-hex ?rom/<write-rawhex>
@@ -175,15 +178,14 @@
 @|Comment )
 
 @comment/<latch> ( t* -- )
-	POP2 ;&assemble ;assembly/mode STA2
-	[ LIT2 01 _&depth ] STR
-	JMP2r
+	POP2 [ LIT2 01 _&+depth ] STR
+	;&assemble !assembly/<set>
 
 @comment/assemble ( t* -- )
-	LDA2 DUP2 [ LITr &depth $1 ]
+	LDA2 DUP2 [ LITr &+depth $1 ]
 	( a ) LIT2 "( $1 EQU2 [ STH ADDr ]
 	( b ) LIT2 ") $1 EQU2 [ STH SUBr ]
-	( . ) STHkr LITr _&depth STRr
+	( . ) STHkr LITr _&+depth STRr
 	?{ !standard/<latch> }
 	JMP2r
 
@@ -193,20 +195,19 @@
 @macros/<latch> ( t* -- )
 	name/validate /<push-word>
 	#00 /<push-byte>
-	;&walk ;assembly/mode STA2
-	JMP2r
+	;&walk !assembly/<set>
 
 	&walk ( t* -- )
 	LDA2 [ LIT2 "{ $1 ] NEQ2 ?{
-		;&assemble ;assembly/mode STA2
-		[ LIT2 01 _&depth ] STR }
+		[ LIT2 01 _&+depth ] STR
+		;&assemble !assembly/<set> }
 	JMP2r
 
 @macros/assemble ( t* -- )
-	LDA2k DUP2 [ LITr &depth $1 ]
+	LDA2k DUP2 [ LITr &+depth $1 ]
 	( a ) LIT "{ EQU SWP LIT "{ EQU ORA [ STH ADDr ]
 	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
-	( . ) STHkr LITr _&depth STRr
+	( . ) STHkr LITr _&+depth STRr
 	?{ POP2 #00 /<push-byte> !standard/<latch> }
 	/<push-word>
 	#20 !/<push-byte>
@@ -215,16 +216,16 @@
 	;/<push-byte> !for-each
 
 @macros/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k
+	[ LIT2 &+ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/Macros info/<error-token> }
-	,&ptr STR2
+	,&+ptr STR2
 	STA
 	JMP2r
 
 @macros/find-name ( name* -- name* <addr>* )
-	name/unpack STH2k ,&ptr LDR2 ;&mem
+	name/unpack STH2k ,&+ptr LDR2 ;&mem
 	&>lf
 		DUP2 STH2kr str/cmp ?{
 			str/cap str/cap GTH2k ?&>lf
@@ -239,7 +240,7 @@
 @|Token )
 
 @token/<new> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 -&buf _&+ptr ] STR
 	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
@@ -248,11 +249,11 @@
 		;&buf assembly/apply #0a NEQ ?{
 			[ LIT2 &line 0001 ] INC2 ,&line STR2 }
 		!/<new> }
-	[ LIT2 00 &ptr -&buf ] INCk
+	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
 		( ! ) ;dict/exceeded ;dict/Name info/<error-token> }
-	,&ptr STR
+	,&+ptr STR
 	STZ2
 	JMP2r
 
@@ -260,24 +261,24 @@
 @|Scope )
 
 @scope/<push-byte> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk
+	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
 		( ! ) ;dict/exceeded ;dict/Symbol info/<error-token> }
-	,&ptr STR
+	,&+ptr STR
 	STZ2
 	JMP2r
 
 @scope/<set> ( name* -- )
-	DUP2 [ LIT2 -&buf _&ptr ] STR
+	DUP2 [ LIT2 -&buf _&+ptr ] STR
 	&>w
 		LDAk [ LIT "/ ] EQU ?{
 			LDAk /<push-byte>
 			INC2 LDAk ?&>w }
-	POP2 ,&ptr LDR ,&anchor STR !syms/<new>
+	POP2 ,&+ptr LDR ,&+anchor STR !syms/<new>
 
 @scope/make-name ( name* -- scope/label* )
-	INC2 [ LIT2 &anchor $1 _&ptr ] STR
+	INC2 [ LIT2 &+anchor $1 _&+ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	;&buf SWP2 ;/<push-byte> !for-each
 
@@ -355,7 +356,7 @@
 	"# =&lithex "" =&rawstr
 	"} =&lambda "~ =&concat
 	"( =&coment ") =&ignore
-	"[ =&ignore "] =&ignore "% =&macros ] $1
+	"[ =&ignore "] =&ignore "% =&macros ] 00
 
 (
 @|Opcodes )
@@ -396,7 +397,7 @@
 
 @lambda/make-name ( token* -- name* )
 	POP2 [ LIT2 &count $2 ] INC2k ,&count STR2
-	DUP2 [ LIT2 &ptr =&mem ] INC2k INC2 ,&ptr STR2
+	DUP2 [ LIT2 &+ptr =&mem ] INC2k INC2 ,&+ptr STR2
 	STA2
 	( >> )
 
@@ -409,12 +410,12 @@
 	DUP #04 SFT hexc SWP !hexc
 
 @lambda/pop ( -- )
-	,&ptr LDR2
+	,&+ptr LDR2
 	( | check underflow )
 	DUP2 ;&mem NEQ2 ?{
 		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
 	#0002 SUB2 LDA2k /name syms/<new>
-	,&ptr STR2
+	,&+ptr STR2
 	JMP2r
 	&sym cebb
 	&id1 "..
@@ -608,7 +609,7 @@
 
 @refs/<record-scope> ( sym* -- )
 	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
-	;refs/scope STA2
+	;&scope STA2
 	JMP2r
 
 (
@@ -645,7 +646,7 @@
 	OVR ?{
 		POP2 POP
 		( ! ) ;dict/zero-page ;dict/Writing !info/<error-token> }
-	!rom/<put>
+	!/<put>
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
@@ -762,33 +763,33 @@
 	POP2r JMP2r
 
 @error/<set> ( -- )
-	[ LIT2 01 _&code ] STR
+	[ LIT2 01 _&+code ] STR
 	JMP2r
 
 @error/get ( -- err )
-	[ LIT &code $1 ] JMP2r
+	[ LIT &+code $1 ] JMP2r
 
-@dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
+@dict/assembled "Assembled 00 &in 20 "in 20 00 &bytes 20 "bytes. 0a 00
 	&unused "-- 20 "Unused
-	&spacer ": 20 $1
-	&References "References $1
-	&Reference "Reference $1
-	&Symbols "Symbols $1
-	&Symbol "Symbol $1
-	&Macros "Macros $1
-	&Macro "Macro $1
-	&Name "Name $1
-	&Number "Number $1
-	&Comment "Comment $1
-	&Writing "Writing $1
-	&exceeded "exceeded $1
-	&invalid "invalid $1
-	&duplicate "duplicate $1
-	&too-far "too 20 "far $1
-	&zero-page "zero-page $1
-	&open "open $1
-	&trail ".. $1
-	&reset "Top $1
+	&spacer ": 20 00
+	&References "References 00
+	&Reference "Reference 00
+	&Symbols "Symbols 00
+	&Symbol "Symbol 00
+	&Macros "Macros 00
+	&Macro "Macro 00
+	&Name "Name 00
+	&Number "Number 00
+	&Comment "Comment 00
+	&Writing "Writing 00
+	&exceeded "exceeded 00
+	&invalid "invalid 00
+	&duplicate "duplicate 00
+	&too-far "too 20 "far 00
+	&zero-page "zero-page 00
+	&open "open 00
+	&trail ".. 00
+	&reset "Top 00
 
 (
 @|Buffers )
