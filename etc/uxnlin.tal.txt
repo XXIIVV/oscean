@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "28 20 "Feb 20 "2026 $2
+	( date ) "5 20 "Mar 20 "2026 $2
 
 (
 @|Source )
@@ -57,15 +57,15 @@
 @|Scope )
 
 @scope/length ( -- length* )
-	[ LIT2 00 _&ptr ] LDR .&buf SUB JMP2r
+	[ LIT2 00 _&ptr ] LDR .&buf SUB #0001 SUB2 JMP2r
 
 @scope/<set> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
-		LDAk DUP LIT "/ NEQ ?{ POP POP2 JMP2r }
-		/<push>
-		INC2 LDAk ?&>w
-	LDA
+		LDAk LIT "/ EQU ?{
+			LDAk /<push>
+			INC2 LDAk ?&>w }
+	POP2 #00
 	( >> )
 
 @scope/<push> ( c -- )
@@ -115,7 +115,7 @@
 	LDAk [ LIT "% ] NEQ ?{ INC2k macros/<push-str> }
 	( blank ) LDAk #00 EQU ?<sclr>
 	( token count ) .stats/tokens LDZ2k INC2 ROT STZ2
-	( new scope ) DUP2 is-scope #00 EQU ?{ INC2k scope/<set> }
+	( new scope ) DUP2 is-new-scope #00 EQU ?{ INC2k scope/<set> }
 	( include ) LDA [ LIT "~ ] EQU ?include
 	;rules2/end ;rules2
 	&>loop2
@@ -150,6 +150,8 @@
 	( | dead-region )
 	;piece-b/buf is-jump/strict #00 EQU ?{
 		;piece-a/buf is-static ;piece-a/buf is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
+	( | use private )
+	;piece-a/buf is-calling-local #00 EQU ?{ ;call-private <print-warn> }
 	( | use local )
 	;piece-a/buf is-local #00 EQU ?{ ;use-local <print-warn> }
 	;piece-b/buf ;piece-c/buf <scpy>
@@ -176,13 +178,17 @@
 			LDAk LIT "} EQU ?{ POP2 #00 JMP2r } } }
 	POP2 #01 JMP2r
 
-@is-scope ( str* -- flag )
+@is-new-scope ( str* -- flag )
 	LDAk [ LIT "@ ] NEQ ?&fail
 	INC2k LDA chr/is-uc ?&fail
 	POP2 #01 JMP2r
 
 	&fail ( str* -- flag )
 	POP2 #00 JMP2r
+
+@is-inside-scope ( str* -- str* flag )
+	DUP2 ;scope/buf str/cmp-seg ?{ #00 JMP2r }
+	DUP2 scope/length ADD2 LDA LIT "/ EQU JMP2r
 
 @is-jump ( str* -- flag )
 	DUP2 ;brk str/cmp ?&pass
@@ -262,8 +268,15 @@
 @is-local ( str* -- t )
 	LDAk LIT "@ NEQ ?{ POP2 #00 JMP2r }
 	LDAk is-ref-rune #00 EQU ?{ INC2 }
-	DUP2 scope/length ADD2 LDA LIT "/ EQU ?{ POP2 #00 JMP2r }
+	is-inside-scope ?{ POP2 #00 JMP2r }
 	;scope/buf !str/cmp-seg
+
+@is-calling-local ( str* -- f )
+	&>w
+		LDA2k LIT2 "/+ NEQ2 ?{ POP2 #01 JMP2r }
+		INC2 LDAk ?&>w
+	POP2 #00 JMP2r
+	JMP2r
 
 @scmp-wild ( a* b* -- flag )
 	OVR2 LDA [ LIT "{ ] EQU ?scmp-template
@@ -595,6 +608,7 @@
 @nested "Nested $1 ( nested square brackets )
 @cmporder "Static-order $1 ( postfix static )
 @rune "Incompatible 20 "runes $1
+@call-private "Private-call $1
 
 (
 @|specifics )
