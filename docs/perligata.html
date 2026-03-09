@@ -1,0 +1,1966 @@
+<html>
+<center>
+<h1>
+Lingua::Romana::Perligata -- Perl for the XXI-imum Century</h1></center>
+
+<center>
+<h2>
+Damian Conway</h2></center>
+
+<center>
+<h3>
+School of Computer Science and Software Engineering<br>
+Monash University<br>
+Clayton 3168, Australia</h3></center>
+
+<center>
+<h3>
+<tt><a href="https://web.archive.org/web/20100227083305/mailto:damian@csse.monash.edu.au">mailto:damian@csse.monash.edu.au<br>
+</a><a href="https://web.archive.org/web/20100227083305/http://www.csse.monash.edu.au/~damian">http://www.csse.monash.edu.a
+u/~damian</a></tt></h3></center>
+
+<h1>
+
+<hr width="100%"><a name="Abstract"></a>Abstract</h1>
+This paper describes a Perl module -- Lingua::Romana::Perligata -- that
+makes it possible to write Perl programs in Latin. A plausible rationale
+for wanting to do such a thing is provided, along with a comprehensive
+overview of the syntax and semantics of Latinized Perl. The paper also
+explains the special source filtering and parsing techniques required to
+efficiently interpret a programming language in which the syntax is (largely)
+non-positional.
+<p>
+</p><hr>
+<h1>
+<a name="Introduction"></a>Introduction</h1>
+Compared to other languages (both modern and ancient), English has a comparatively
+weak lexical structure. Much of the grammatical load of an English sentence
+is carried by positional cues. A statement such as ``The boy gave the dog
+the food'' only makes sense because of the convention that the subject
+precedes the verb, which precedes the indirect object, which precedes the
+direct object. Changing the order -- ``The food gave the boy the dog''
+-- changes the meaning.
+<p>Most programming languages use similar positional grammatical cues.
+The operation <tt>$maximum = $next</tt> is very different in meaning from
+<tt>$next
+= $maximum</tt>. Likewise, the function call <tt>push @my_assets, @your_money</tt>
+is not the same as <tt>push @your_money, @my_assets</tt>.
+</p><p>Generally speaking, older natural languages have richer lexical structures
+(such as inflexions for noun number and case) and therefore rely less on
+word order. For example, in Latin the statements <i>Puer dedit cani escam</i>
+and
+<i>Escam dedit puer cani</i> both mean ``The boy gave the dog the food''.
+Indeed, the more usual word order would be reverse Polish, with the verb
+coming last: <i>Puer cani escam dedit</i>.
+</p><p>This flexibility is possible because Latin uses inflexion, not position,
+to denote lexical roles. The lack of a suffix denotes that the boy (<i>puer</i>)
+is the subject; the <i>-i</i> ending indicates that the dog (<i>cani</i>)
+is the indirect object; whilst the <i>-am</i> ending indicates that the
+food (<i>escam</i>) is the direct object.
+</p><p>To say ``The food gave the boy the dog'', one might write: <i>Puero
+canem esca dedit</i>. Here, the <i>-o</i> ending denotes that the boy is
+now the indirect object, the <i>-em</i> ending indicates that the dog has
+become the direct object, whilst the <i>-a</i> ending indicates that the
+food is the subject.
+<br> 
+<br> 
+</p><h1>
+<a name="A_less_positional_programming_la"></a>A less positional programming
+language</h1>
+There is no reason why programming languages could not also use inflexions,
+rather than position, to denote lexical roles. Perl already makes some
+use of this idea by requiring different prefixes to denote differing types
+of symbols: <tt>$</tt> to denote a scalar, <tt>@</tt> to denote an array,
+<tt>&amp;</tt>
+to denote a subroutine, etc.
+<p>Indeed, there is no reason why certain built-in functions, such as
+<tt>bless</tt>,
+or the block form of <tt>map</tt>, or even <tt>push</tt> could not allow
+their arguments to be specified in any order, at least in cases where the
+prefixes (or the lack thereof) make the roles of each argument unambiguous:
+</p><pre>        my $obj = bless 'Classname', \%obj;</pre>
+
+<pre>        @squares = map @numbers {$_**2};</pre>
+
+<pre>        push ('Moe', 'Larry', 'Curly') =&gt; @stooges;</pre>
+Moreover, since the function names themselves are unambiguous in their
+role, there is no reason why their position need be fixed either:
+<pre>        @squares = @numbers map {$_**2};</pre>
+
+<pre>        ('Moe', 'Larry', 'Curly') =&gt; @stooges push;</pre>
+Perl already allows a modicum of this flexibility in the form of statement
+modifiers:
+<pre>        if ($next &gt; $max) { $max = $next }</pre>
+
+<pre>        # ...is the same as...</pre>
+
+<pre>        $max = $next if $next &gt; $max;</pre>
+This paper describes a new module -- Lingua::Romana::Perligata -- that
+explores an alternative syntactic binding for Perl, using inflexions based
+on classical Latin grammar. These inflexions subsume the function of the
+standard Perl <tt>$</tt>/<tt>@</tt>/<tt>%</tt>/<tt>&amp;</tt> prefixes
+and support the new concept of <i>semantic roles</i>, which allows far
+greater freedom in the specification of functions, operations, and their
+respective arguments.
+<br> 
+<br> 
+<h1>
+<a name="Semantic_roles"></a>Semantic roles</h1>
+Most of Perl's rich variety of operators provide an assignment variant:
+<tt>+=</tt>
+for <tt>+</tt>, <tt>.=</tt> for <tt>.</tt>, <tt>||=</tt> for <tt>||</tt>,
+etc. Thus, nearly half of Perl's operators produce some change in one of
+their arguments. Likewise, many built-in Perl functions (<tt>push</tt>,
+<tt>pop</tt>,
+<tt>open</tt>, etc.) modify one of their arguments.
+<p>In both cases, the operand or argument to be modified is denoted positionally
+-- it is always the left operand or the first argument. Furthermore this
+argument is always ``implicitly enreferenced'', as if it had a <tt>\$</tt>
+or <tt>\@</tt> prototype.
+</p><p>Thus, in Perl, operands and arguments have one of two semantic roles:
+target or data. A target is passed by reference and is modified during
+the evaluation of an operation or function. Data are passed by value (though
+that value itself may be a reference) and they control or ``fuel'' the
+modification of the target.
+</p><p>In this model, it is possible to recast almost all built-in Perl functions
+and operations as procedures of exactly two arguments: a single reference
+(the target) and a single list (the data):
+</p><pre>        _sysopen( -target=&gt;\*FILE, -data=&gt;[$filename,$mode,$perms] );</pre>
+
+<pre>        _push( -target=&gt;\@stooges, -data=&gt;['Moe', 'Larry', 'Curly'] );</pre>
+
+<pre>        _pop( -target=&gt;\@stack, -data=&gt;[] );
+        
+        _assign( -target=&gt;\$max, -data=&gt;[$nextval] )
+                if _num_less_than( -target=&gt;undef, -data=&gt;[$max, $nextval] );</pre>
+
+<pre>        _assign( -target=&gt;\$now, -data=&gt;[ _time(-target=&gt;undef, -data=&gt;[]) ]);</pre>
+Note that, for many functions, either or both of these two standard arguments
+may be null.
+<br> 
+<br> 
+<h1>
+<a name="Mapping_the_model_to_Latin"></a>Mapping the model to Latin</h1>
+To map this simplified model of Perl onto an inflexion-based syntax, it
+is necessary to choose an inflexion scheme that differentiates the three
+components of each function: name, target, and data.
+<p>Consider the assignment of a list to an array:
+</p><pre>        @gunslingers = ( @good, @bad, $Ugly );</pre>
+In semantic role notation that is:
+<pre>        _assign( -target=&gt;\@gunslingers, -data=&gt;[@good, @bad, $Ugly] );</pre>
+In English, this would be expressed:
+<pre>        Assign gunslingers goodies and baddies and Mr Ugly.</pre>
+The imperative verb ``assign'' specifies the action to be performed. The
+noun ``gunslingers'' specifies the indirect (or dative) object of the action.
+In other words, it is the recipient of the effect of the action -- the
+target. The phrase ``goodies and baddies and uglies'' specifies the direct
+object of the action -- that which is to be assigned. In other words, the
+data. The direct and indirect objects are only distinguished by the order
+in which they appear: indirect object first.
+<p>The English version also uses a plural inflexion on ``goodies'' and
+``baddies'', much in the same way that Perl uses the <tt>@</tt> prefix
+to indicate the multiplicity of the objects involved.
+</p><p>In Latin, the same instruction would be (loosely) rendered:
+</p><pre>        Bonos tum malos tum Foedum pugnatoribus da.</pre>
+Here the direct objects are <i>bonos</i> (``the good (people)'', accusative
+plural), <i>malos</i> (``the bad (people)'', accusative plural) and <i>Foedum</i>
+(``Mr Ugly'', accusative singular). The indirect object is
+<i>pugnatoribus</i>
+(``fighters'', dative plural) and the verb is <i>da</i> (``give'', present
+imperative). The conjunction <i>tum</i> means ``and then'', and conveys
+the significance of the order of the direct objects.
+<p>Unlike the English ``-s'' ending, the various Latin suffixes (<i>-os</i>,
+<i>-um</i>,
+<i>-ibus</i>)
+specify both the number and the role (or ``case'') of the nouns they inflect.
+This means that the positions of the various objects, and indeed of the
+verb itself, do not matter. The same sentence could equally well be written:
+</p><pre>        Pugnatoribus da bonos tum malos tum Foedum.</pre>
+or
+<pre>        Da bonos tum malos tum Foedum pugnatoribus.</pre>
+Semantically, all of these variants (and any other permutations of the
+verb and its objects) are equivalent to the same target/data model:
+<pre>        _assign( -target=&gt;\@gunslingers, -data=&gt;[@good, @bad, $Ugly] );</pre>
+and hence are equivalent to the standard Perl:
+<pre>        @gunslingers = ( @good, @bad, $Ugly );</pre>
+Thus it is possible to write Perl programs in Latin.
+<br> 
+<br> 
+<h1>
+<a name="Lingua_Romana_Perligata"></a>Lingua::Romana::Perligata</h1>
+The Lingua::Romana::Perligata module provides the necessary translation
+services to allow Perl programs to be written using a syntactic binding
+(<i>perligatus</i>) modelled on the ancient <i>lingua Romana</i>. To distinguish
+it from regular Perl, this binding -- and any code specified in it -- is
+henceforth referred to as ``Perligata''.
+<br> 
+<br> 
+<h2>
+<a name="Variables"></a>Variables</h2>
+To simplify the mind-numbingly complex rules of declension and conjugation
+that govern inflexions in Latin, Perligata treats all user-defined scalar
+and array variables as neuter nouns of the second declension -- singular
+for scalars, plural for arrays. This minimizes the number of suffixes that
+must be remembered.
+<p>Hashes represent something of a difficulty in Perligata, as Latin lacks
+an obvious way of distinguishing these ``plural'' variables from arrays.
+The solution that has been adopted is to depart from the second declension
+and represent hashes as masculine plural nouns of the fourth declension.
+</p><p>Hence, the type and role of all types variables are specified by their
+number and case, as indicated in Table 1.
+</p><p>When elements of arrays and hashes are referred to directly in Perl,
+the prefix of the container changes from <tt>@</tt> or <tt>%</tt> to <tt>$</tt>.
+So it should not be surprising that Perligata also makes use of a different
+inflexion to distinguish these cases.
+</p><p>Indexing operations such as <tt>$array[$elem]</tt> or <tt>$hash{$key}</tt>
+might be translated as ``elem of array'' or ``key of hash''. This suggests
+that when arrays or hashes are indexed, their names should be rendered
+in the genitive (or possessive) case. Multi-level indexing operations (<tt>$array[$row][$column]</tt>)
+mean ``column of row of array'', and hence the first indexing variable
+must also be rendered in the genitive. Table 1 also summarizes this role.
+</p><center><table border="" bordercolor="#ffffff">
+<caption><b>Table 1: Perligata variables</b></caption>
+
+<tbody><tr>
+<td width="20%">
+<center><b>Perligata</b></center>
+</td><td width="42%">
+<center><b>Number, Case, and Declension</b></center>
+</td><td width="17%">
+<center><b>Perl</b></center>
+</td><td width="21%">
+<center><b>Role</b></center>
+</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nextum</i></td><td width="42%">accusative singular 2nd</td><td width="17%">$next</td><td width="21%">scalar data</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nexta</i></td><td width="42%">accusative plural 2nd</td><td width="17%">@next</td><td width="21%">array data</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nextus</i></td><td width="42%">accusative plural 4th</td><td width="17%">%next</td><td width="21%">hash data</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nexto</i></td><td width="42%">dative singular 2nd</td><td width="17%">\$next</td><td width="21%">scalar target</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nextis</i></td><td width="42%">dative plural 2nd</td><td width="17%">\@next</td><td width="21%">array target</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nextibus</i></td><td width="42%">dative plural 4th</td><td width="17%">\%next</td><td width="21%">hash target</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nexti</i></td><td width="42%">genitive singular 2nd</td><td width="17%">[$next]</td><td width="21%">indexed scalar</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nextorum</i></td><td width="42%">genitive plural 2nd</td><td width="17%">$next[]</td><td width="21%">indexed array</td>
+</tr>
+
+<tr>
+<td width="20%"><i>nextuum</i></td><td width="42%">genitive plural 4th</td><td width="17%">$next{}</td><td width="21%">indexed hash</td>
+</tr>
+</tbody></table></center>
+
+<p>In other words, scalars are always singular nouns, arrays and hashes
+are always plural (but of different declensions), and the case of the noun
+specifies its role: accusative for data, dative for target, genitive when
+being indexed.
+</p><p>The common punctuation variables <tt>$_</tt> and <tt>@_</tt> are special
+cases.
+<tt>$_</tt> is often the value under implicit consideration (e.g.
+in pattern matches, or <tt>for</tt> loops) and so it is rendered as ``this
+thing'': <i>hoc</i> in the data role, <i>huic</i> in the target role, <i>huius</i>
+when indexed.
+</p><p>Similarly, <tt>@_</tt> is implicitly the list of things passed into
+a subroutine, and so is rendered as ``these things'': <i>haec</i> in the
+data role, <i>his</i> in the target role, <i>horum</i> when indexed.
+</p><p>Other punctuation variables take the Latin forms of their English.pm
+equivalents (see Appendix A), often with a large measure of poetic licence.
+For example, in Perligata, <tt>$/</tt> is rendered as <i>ianitorem</i>
+or ``gatekeeper''.
+</p><p>The ``numeral'' variables -- <tt>$1</tt>, <tt>$2</tt>, etc. -- are rendered
+as synthetic compounds: <i>parprimum</i> (``the equal of the first''),
+<i>parsecundum</i>
+(``the equal of the second''), etc. When indexed, they take their genitive
+forms:
+<i>parprimi</i>, <i>parsecundi</i>, etc. Since they cannot be directly
+modified as the target of an action, they have no dative forms.
+<br> 
+<br> 
+</p><h3>
+<a name="C_my_C_our_and_C_local_"></a><tt>my</tt>, <tt>our</tt>, and <tt>local</tt></h3>
+In Perligata, the <tt>my</tt> modifier is rendered -- not surprisingly
+-- by the first person possessive pronouns: <i>meo</i> (conferring a scalar
+context) and <i>meis</i> (for a list context). Note that the modifier is
+always applied to a dative, and hence is itself declined in that case.
+Thus:
+<pre>        meo varo haec da.                # my $var = @_;
+        meis varo haec da.               # my ($var) = @_
+        meis varis haec da.              # my @var = @_;</pre>
+Similarly the <tt>our</tt> modifier is rendered as <i>nostro</i> or <i>nostris</i>,
+depending on the desired context.
+<p>The Perl <tt>local</tt> modifier is <i>loco</i> or <i>locis</i> in Perligata:
+</p><pre>        loco varo haec da.               # local $var = @_;
+        locis varo haec da.              # local ($var) = @_
+        locis varis haec da.             # local @var = @_;</pre>
+This is particularly felicitous: not only is <i>loco</i> the Latin term
+from which the word ``local'' derives, it also means ``in place of'' (as
+in:
+<i>in loco parentis</i>). This meaning is much closer to the actual
+behaviour of the <tt>local</tt> modifier, namely to temporarily install
+a new symbol table entry in place of the current one.
+<p>
+</p><hr>
+<h2>
+<a name="Subroutines"></a>Subroutines</h2>
+Functions, operators, and user-defined subroutines are represented as verbs
+or, in some situations, verbal nouns. Here, the inflexion of the verb determines
+not only its semantic role, but also its call context.
+<p>User-defined subroutines are the simplest group. To avoid ambiguity,
+they are all treated as verbs of the third conjugation. Table 2 illustrates
+the various usages for a user-defined subroutine <tt>count()</tt>.
+</p><center><table border="">
+<caption><b>Table 2: Perligata subroutines</b></caption>
+
+<tbody><tr>
+<td width="21%">
+<center><b>Perligata</b></center>
+</td><td width="28%">
+<center><b>Number, Mood, etc</b></center>
+</td><td width="19%">
+<center><b>Perl</b></center>
+</td><td width="17%">
+<center><b>Role</b></center>
+</td><td width="14%">
+<center><b>Context</b></center>
+</td>
+</tr>
+
+<tr>
+<td width="21%"><i>countere</i></td><td width="28%">infinitive</td><td width="19%">sub count</td><td width="17%">definition</td><td width="14%">-</td>
+</tr>
+
+<tr>
+<td width="21%"><i>counte</i></td><td width="28%">imperative sing.</td><td width="19%">count()</td><td width="17%">call</td><td width="14%">void</td>
+</tr>
+
+<tr>
+<td width="21%"><i>countementum</i></td><td width="28%">acc. sing. resultant</td><td width="19%">count()</td><td width="17%">call-data</td><td width="14%">scalar</td>
+</tr>
+
+<tr>
+<td width="21%"><i>countementa</i></td><td width="28%">acc. plur. resultant</td><td width="19%">count()</td><td width="17%">call-data</td><td width="14%">list</td>
+</tr>
+
+<tr>
+<td width="21%"><i>countemento</i></td><td width="28%">dat. sing. resultant</td><td width="19%">count()</td><td width="17%">call-target</td><td width="14%">scalar</td>
+</tr>
+
+<tr>
+<td width="21%"><i>countementis</i></td><td width="28%">dat. plur. resultant</td><td width="19%">count()</td><td width="17%">call-target </td><td width="14%">list</td>
+</tr>
+</tbody></table></center>
+
+<p>The use of the infinitive as a subroutine definition is obvious:
+<i>accipere</i>
+would tell Perligata how ``to accept''; <i>spernere</i>, how ``to reject''.
+So <i>countere</i> specifies how ``to count''.
+</p><p>The use of the imperative for void context is also straightforward:
+<i>accipe</i>
+commands Perligata to ``accept!'', <i>sperne</i> tells it to ``reject!'',
+and <i>counte</i> bids it ``count!''. In each case, an instruction is being
+given (and in a void context too, so no backchat is expected).
+</p><p>Handling scalar and list contexts is a little more challenging. The
+corresponding Latin must still have verbal properties, since an action
+is being performed upon objects. But it must also have the characteristics
+of a noun, since the result of the call will itself be used as the object
+(i.e. target or data) of some other verb. Fortunately, Latin has a rich
+assortment of verbal nouns -- far more than English -- that could fill
+this role.
+</p><p>Since it is the result of the subroutine call that is of interest here,
+the best solution was to use the <i>-ementum</i> suffix, which specifies
+the (singular, accusative) outcome of an action. This corresponds to the
+result of a subroutine called in a scalar context and used as data. For
+a list data context, the plural suffix <i>-ementa</i> is used, and for
+targets, the dative forms are used: <i>-emento</i> and <i>-ementis</i>.
+Note that these endings are completely consistent with those in Table 1.
+<br> 
+<br> 
+</p><h2>
+<a name="Built_in_functions_and_operators"></a>Built-in functions and operators</h2>
+Built-in operators and functions could have followed the same pattern as
+subroutines. For example <tt>shift</tt> might have been <i>shifte</i> in
+a void context, <i>shiftementa</i> when used as data in an array context,
+<i>shiftemento</i>
+when used as a target in a scalar context, etc.
+<p>However, Latin already has a perfectly good verb with the same meaning
+as
+<tt>shift</tt>: <i>decapitare</i> (``to behead''). Unfortunately, this
+verb is of the first conjugation, not the second, and hence has the imperative
+form <i>decapita</i>, which makes it look like a Perligata array in a data
+role.
+</p><p>Orthogonality has never been Perl's highest design criterion, so Perligata
+follows suit by eschewing bland consistency in favour of aesthetics. All
+Perligata keywords -- including function and operator names -- are therefore
+specified as correct Latin verbs, of whatever conjugation is required.
+Table 3 shows a selection of these, whilst Appendix A contains the full
+list of Perligata keywords.
+</p><center><table border="">
+<caption><b>Table 3: Sample Perligata built-in functions and operators </b></caption>
+
+<tbody><tr>
+<td width="20%">
+<center><b>Operator/ function</b></center>
+</td><td width="20%">
+<center><b>Rendered as</b></center>
+</td><td width="20%">
+<center><b>Void context</b></center>
+</td><td width="20%">
+<center><b>Scalar data</b></center>
+</td><td width="20%">
+<center><b>List data</b></center>
+</td>
+</tr>
+
+<tr>
+<td width="20%">+</td><td width="20%">"add"</td><td width="20%"><i>adde</i></td><td width="20%"><i>addementum</i></td><td width="20%"><i>addementa </i></td>
+</tr>
+
+<tr>
+<td width="20%">=</td><td width="20%">"give"</td><td width="20%"><i>da</i></td><td width="20%"><i>damentum</i></td><td width="20%"><i>damenta </i></td>
+</tr>
+
+<tr>
+<td width="20%">.</td><td width="20%">"conjoin"</td><td width="20%"><i>sere</i></td><td width="20%"><i>serementum</i></td><td width="20%"><i>serementa </i></td>
+</tr>
+
+<tr>
+<td width="20%">..</td><td width="20%">"enlist"</td><td width="20%"><i>conscribe</i></td><td width="20%"><i>conscribementum</i></td><td width="20%"><i>conscribementa </i></td>
+</tr>
+
+<tr>
+<td width="20%">shift</td><td width="20%">"behead"</td><td width="20%"><i>decapita</i></td><td width="20%"><i>decapitamentum</i></td><td width="20%"><i>decapitamenta </i></td>
+</tr>
+
+<tr>
+<td width="20%">push</td><td width="20%">"stack"</td><td width="20%"><i>cumula</i></td><td width="20%"><i>cumulamentum</i></td><td width="20%"><i>cumulamenta </i></td>
+</tr>
+
+<tr>
+<td width="20%">pop</td><td width="20%">"unstack"</td><td width="20%"><i>decumula</i></td><td width="20%"><i>decumulamentum</i></td><td width="20%"><i>decumulamenta </i></td>
+</tr>
+
+<tr>
+<td width="20%">grep</td><td width="20%">"winnow"</td><td width="20%"><i>vanne</i></td><td width="20%"><i>vannementum</i></td><td width="20%"><i>vannementa </i></td>
+</tr>
+
+<tr>
+<td width="20%">print</td><td width="20%">"write"</td><td width="20%"><i>scribe</i></td><td width="20%"><i>scribementum</i></td><td width="20%"><i>scribementa </i></td>
+</tr>
+
+<tr>
+<td width="20%">write</td><td width="20%">"write under"</td><td width="20%"><i>subscribe</i></td><td width="20%"><i>subscribementum</i></td><td width="20%"><i>subscribementa </i></td>
+</tr>
+
+<tr>
+<td width="20%">die</td><td width="20%">"die"</td><td width="20%"><i>mori</i></td><td width="20%"><i>morimentum</i></td><td width="20%"><i>morimenta </i></td>
+</tr>
+</tbody></table></center>
+
+<p>Note, however, that consistency has not been entirely forsaken. The
+back-formations of inflexions for scalar and list context are entirely
+regular, and consistent with those for user-defined subroutines (Table
+2).
+</p><p>A few Perl built-in functions -- <tt>pos</tt>, <tt>substr</tt>, <tt>keys</tt>
+-- can be used as lvalues. That is, they can be the target of some other
+action (typically of an assignment). In Perligata such cases are written
+in the dative singular (since the lvalues are always scalar). Note too
+that, because an assignment to an lvalue function modifies its first argument,
+that argument must be a target too, and hence must be written in the dative
+as well.
+</p><p>Thus:
+</p><pre>        nexto stringum reperimentum da.     # $next = pos $string;
+        nextum stringo reperimento da.      # pos $string = $next;</pre>
+
+<pre>        inserto stringum tum unum tum duo excerpementum da.
+                                    # $insert = substr($string,1,2);
+        insertum stringo unum tum duo excerpemento da.
+                                    # substr($string,1,2) = $insert;</pre>
+
+<pre>        keyis hashus nominamentum da        # @keys = keys %hash;
+        keya hashibus nominamento da        # keys %hash = @keys;</pre>
+
+<hr>
+<h2>
+<a name="Blocks_and_control_structures"></a>Blocks and control structures</h2>
+Natural languages generally use some parenthetical device -- such as parentheses,
+commas, or (as here) dashes -- to group and separate collections of phrases
+or statements.
+<p>Some such mechanism would be an obvious choice for denoting Perligata
+code blocks, but there is a more aesthetically pleasing solution. Perl's
+block delimiters (<tt>{</tt>..<tt>}</tt>) have two particularly desirable
+properties: they are individually short, and collectively symmetrical.
+It was considered important to retain those characteristics in Perligata.
+</p><p>In Latin, the word <i>sic</i> has a sense that means ``as follows''.
+Happily, its contranym, <i>cis</i>, has the meaning (among others) ``to
+here''. The allure of this kind of wordplay being impossible to resist,
+Perligata delimits blocks of statements with these two words. For example:
+</p><pre>        sic                                     # {
+            loco ianitori.                     #   local $/;
+            dato fonti perlegementum da.        #   $data = &lt;DATA&gt;;
+        cis                                     # }</pre>
+Control structures in Perligata are rendered as conditional clauses, as
+they are in Latin, English, and Perl. And as in those other languages,
+they may precede or follow the code blocks they control. Table 4 summarizes
+the control structures Perligata provides.
+<center><table border="">
+<caption><b>Table 4: Perligata control structures</b></caption>
+
+<tbody><tr>
+<td width="53%">
+<center><b>Perligata</b></center>
+</td><td width="47%">
+<center><b>Perl</b></center>
+</td>
+</tr>
+
+<tr>
+<td width="53%"><i>si ... fac</i></td><td width="47%">if ... </td>
+</tr>
+
+<tr>
+<td width="53%"><i>nisi ... fac</i></td><td width="47%">unless ... </td>
+</tr>
+
+<tr>
+<td width="53%"><i>dum ... fac</i></td><td width="47%">while ...</td>
+</tr>
+
+<tr>
+<td width="53%"><i>donec ... fac</i></td><td width="47%">until ...</td>
+</tr>
+
+<tr>
+<td width="53%"><i>per (quisque) ... in
+... fac</i></td><td width="47%">for(each) ... </td>
+</tr>
+
+<tr>
+<td width="53%"><i>posterus</i></td><td width="47%">next </td>
+</tr>
+
+<tr>
+<td width="53%"><i>ultimus</i></td><td width="47%">last </td>
+</tr>
+
+<tr>
+<td width="53%"><i>reconatus</i></td><td width="47%">redo </td>
+</tr>
+
+<tr>
+<td width="53%"><i>confectus</i></td><td width="47%">continue </td>
+</tr>
+</tbody></table></center>
+
+<p>The trailing <i>fac</i> is the imperative form of <i>facere</i> (``to
+do'') and is used as a delimiter on the control statement's condition.
+</p><p>The choice of <i>dum</i> and <i>donec</i> is completely arbitrary, since
+Latin does not distinguish ``while'' and ``until'' as abstractions in the
+way English does. <i>Dum</i> and <i>donec</i> each mean both ``while''
+and ``until'', and Latin relies on context (i.e. semantics) to distinguish
+them. This is impractical for Perligata, so it always treats <i>dum</i>
+as <tt>while</tt> and
+<i>donec</i> as <tt>until</tt>. This choice was made
+in order to favour the shorter term for the more common type of loop.
+</p><p>The choice of <i>confectus</i> for <tt>continue</tt> seeks to convey
+the function of the control structure, not the literal meaning of the English
+word. That is, a <tt>continue</tt> block specifies how to complete (<i>conficere</i>)
+an iteration.
+</p><p>Perligata only supports the pure iterative form of <tt>for(each)</tt>,
+not the C-like three-part syntax. Because:
+</p><pre>        foreach $var (@list)...</pre>
+means ``for each variable in the list...'', the scalar variable must be
+in the accusative (as it is governed by the preposition ``for''), and the
+list must be in the ablative (denoting inclusion). Fortunately, in the
+second declension, the inflexion for ablatives is exactly the same as for
+datives, giving:
+<pre>        per quisque varum in listis...</pre>
+This means that no extra inflexions have to be learned just to use the
+<i>per</i>
+loop. Better still, the list (<i>listis</i>) looks like a Perligata array
+variable in a target role, which it clearly is, since its contents may
+be modified within the loop.
+<br> 
+<br> 
+<h2>
+<a name="Miscellaneous_other_features"></a>Miscellaneous other features</h2>
+ 
+<h3>
+<a name="Numbers"></a>Numbers</h3>
+Numeric literals in Perligata are rendered by Roman numerals -- <i>I</i>,
+<i>II</i>,
+<i>III</i>,
+<i>IV</i>...<i>XV</i>...<i>XLII</i>, etc. However, the first 10 numbers
+may also be referred to by name: <i>unum</i>, <i>duo</i>, <i>tres</i>,
+<i>quattuor</i>,
+<i>quinque</i>,
+<i>sex</i>, <i>septem</i>, <i>octo</i>, <i>novem</i>, <i>decem</i>. Zero,
+for which there is no Latin numeral, is rendered by <i>nullum</i> (``no-one'').
+<i>Nihil</i> (``nothing'') might have been a closer rendering, but it is
+indeclinable and hence indistinguishable in the accusative and genitive.
+<p>When a numeric literal is used in an indexing operation, it must be
+an ordinal (``first of'', ``second of'', etc). The first ten ordinals are
+named: <i>primum</i>, <i>secundum</i>, <i>tertium</i>, <i>quartum</i>,
+<i>quintum</i>,
+<i>sextum</i>,
+<i>septimum</i>, <i>octavum</i>, <i>nonum</i>, <i>decimum</i> (in the accusative,
+of course, since they are always data). Ordinals greater than ten are represented
+by their corresponding numeral with the suffix
+<i>-imum</i>: <i>XVimum</i>
+(``15th''), <i>XLIIimum</i> (``42nd''), etc. By analogy, ordinal zero is
+rendered by the invented form <i>nullimum</i>.
+</p><p>In a multi-level indexing operation, ordinals may need to be specified
+in the genitive: <i>nulli</i>, <i>primi</i>, <i>secundi</i>, <i>tertii</i>,
+<i>quarti</i>...<i>XVimi</i>...<i>XLIIimi</i>,
+etc.
+</p><p>For example:
+</p><pre>        $unimatrix[1][3][9][7];</pre>
+would be:
+<pre>        septimum noni tertii primi unimatrixorum
+        # seventh of ninth of third of first of unimatrix</pre>
+Note that the order of the genitives is significant here, and is the reverse
+of that required in Perl.
+<p>Floating point numbers are expressed in Perligata as Latin fractions:
+</p><pre>        unum quartum                    # 0.25
+        MMMCXLI Mimum                 # 3.141</pre>
+Note that the numerator is always cardinal and the denominator ordinal
+(``one fourth'', ``3141 1000ths''). Technically, both should also be in
+the feminine gender -- <i>una quarta</i>, <i>MMMCXLI Mimae</i> -- but
+this Latin rule is not enforced in Perligata.
+<br> 
+<br> 
+<h3>
+<a name="Strings"></a>Strings</h3>
+Classical Latin does not use punctuation to denote direct quotation. Instead
+the verb <i>inquit</i> (``said'') is used to report a direct utterance.
+Hence in Perligata, a literal character string is constructed, not with
+quotation marks, but by invoking the verbal noun
+<i>inquementum</i> (``the
+result of saying''), with a data list of literals to be interpolated. For
+example:
+<pre>        print STDOUT 'Enter next word:';</pre>
+becomes:
+<pre>        Enter tum next tum word inquementum tum biguttam egresso scribe.</pre>
+Note that the arguments to <i>inquementum</i> are special in that they
+are treated as literals. Punctuation strings have special names, such as
+<i>lacunam</i>
+(``a hole'' -&gt; space), <i>stadium</i> (``a stride'' -&gt; tabspace), <i>novumversum</i>
+(``new verse'' -&gt; newline), or <i>biguttam</i> (``two spots'' -&gt; colon).
+<p>Perligata does not provide an interpolated quotation mechanism. Instead,
+variables must be concatenated into a string. So:
+</p><pre>        print STDERR "You entered $word\n";</pre>
+becomes:
+<pre>        You tum entered inquementum tum wordum tum novumversum oraculo scribe.</pre>
+ 
+<h3>
+<a name="References"></a>References</h3>
+To create a reference to a variable in a data role (target role variables
+are automatically enreferenced), the variable is prefaced with the preposition
+<i>ad</i>
+(``to''). To create a reference to a subroutine, the associated verb is
+inflected with the accusative suffix <i>-torem</i> (``one who...'') to
+produce the corresponding noun-of-agency.
+<p>For example:
+</p><pre>        val inquementum datuum ad datum da.       # $dat{val} = \$data;
+        arg inquementum datuum ad arga da.        # $dat{arg} = \@arg;
+        act inquementum datuum functorem da.      # $dat{act} = \&amp;func;</pre>
+A special case of this construction is the anonymous subroutine constructor
+<i>factorem</i>
+(``one who does...''), which is the equivalent of
+<tt>sub {...}</tt> in
+Perl:
+<pre>        anonymo da factorem sic haec mori cis.    # $anon = sub { die @_ };</pre>
+As in Perl, such subroutines may be invoked by concatenating a call specifier
+to the name of the variable holding the reference:
+<pre>        anonymume nos tum morituri inquementum.   # &amp;$anon('Nos morituri');</pre>
+Note that the variable holding the reference (<i>anonymum</i>) is being
+used as data, so it is named in the accusative.
+<p>In the few cases where a subroutine reference can be the target of an
+action, the dative suffix (<i>-tori</i>) is used instead:
+</p><pre>        benedictum functori classum.              # bless \&amp;func, $class;
+        benedictum factori sic mori cis classum.  # bless sub{die}, $class;</pre>
+ 
+<h3>
+<a name="Boolean_logic"></a>Boolean logic</h3>
+Perl's logical conjunctive and disjunctive operators come in two precedences,
+and curiously, so do those of Latin. The higher precedence Perl operators
+--
+<tt>&amp;&amp;</tt> and <tt>||</tt> -- are represented in Perligata
+by the emphatic Latin conjunctions <i>atque</i> and <i>vel</i> respectively.
+The lower precedence operators -- <tt>and</tt> and <tt>or</tt> -- are represented
+by the unemphatic conjunctive suffixes <i>-que</i> and <i>-ve</i>. Hence:
+<pre>	resulto damentum foundum atque defum.    # $result = $found &amp;&amp; $def;
+        resulto damentum foundum defumque.       # $result = $found and $def;
+        resulto damentum foundum vel defum.      # $result = $found || $def;
+        resulto damentum foundum defumve.        # $result = $found or $def;</pre>
+Note that, as in Latin, the suffix of the unemphatic conjunction is always
+appended to the first word after the point at which the conjunction would
+appear in English. Thus:
+<pre>        $result = $val or max($1,$2);</pre>
+is rendered as:
+<pre>        resulto damentum valum parprimumve tum parsecundum maxementum.</pre>
+Proper Latinate comparisons would be odious in Perligata, because they
+require their first argument to be expressed in the nominative and would
+themselves have to be indicative. This would, of course, improve the positional
+independence of the language even further, allowing:
+<pre>        si valus praecedit datum...              # if $val &lt; $dat...
+        si praecedit datum valus...              # if $val &lt; $dat...
+        si datum valus praecedit...              # if $val &lt; $dat...</pre>
+Unfortunately, it also introduces another set of case inflexions and another
+verbal suffix. Worse, it would mean that noun suffixes are no longer unambiguous.
+In the 2nd declension, the nominative plural ends in the same <i>-i</i>
+as the genitive singular, and the nominative singular ending (<i>-us</i>)
+is the same as the accusative plural suffix for the fourth declension.
+So if nominatives were used, scalars could no longer always be distinguished
+from arrays or from hashes, except by context.
+<p>To avoid these problems, Perligata represents the equality and simple
+inequality operators by three pairs of verbal nouns as described in Table
+5.
+</p><center><table border="">
+<caption><b>Table 5: Perligata comparison operators</b></caption>
+
+<tbody><tr>
+<td width="32%">
+<center><b>Perligata</b></center>
+</td><td width="49%">
+<center><b>Meaning</b></center>
+</td><td width="19%">
+<center><b>Perl</b></center>
+</td>
+</tr>
+
+<tr>
+<td width="32%"><i>aequalitam</i></td><td width="49%">"equality (of...)"</td><td width="19%">== </td>
+</tr>
+
+<tr>
+<td width="32%"><i>aequalitas</i></td><td width="49%">"equalities (of...)"</td><td width="19%">eq </td>
+</tr>
+
+<tr>
+<td width="32%"><i>praestantiam</i></td><td width="49%">"precedence (of...)"</td><td width="19%">&lt;</td>
+</tr>
+
+<tr>
+<td width="32%"><i>praestantias</i></td><td width="49%">"precedences (of...)"</td><td width="19%">lt </td>
+</tr>
+
+<tr>
+<td width="32%"><i>comparitiam</i></td><td width="49%">"comparison (of...)"</td><td width="19%">&lt;=&gt; </td>
+</tr>
+
+<tr>
+<td width="32%"><i>comparitias</i></td><td width="49%">"comparisons (of...)"</td><td width="19%">cmp </td>
+</tr>
+</tbody></table></center>
+
+<p>Each operator takes two data arguments, which it compares:
+</p><pre>        si valum tum datum aequalitam...               # if $val == $dat...
+        si valum praestantias datum...                 # if $val lt $dat...
+        digere sic aum comparitiam bum cis lista.      # sort {$a&lt;=&gt;$b} @list;</pre>
+Note that although <i>digere</i> looks like an infinitive (i.e. a subroutine
+definition) it is in fact the imperative of <i>digerere</i> (``to sort'')
+and is the Perligata keyword for <tt>sort</tt>. The philosophically inclined
+might choose to think of the confusion this engenders as a form of Instant
+Justice visited upon those who use <tt>sort</tt> in a void context.
+<p>The effects of the other comparison operators -- <tt>&amp;gt;</tt>,
+<tt>&amp;lt;=</tt>,
+<tt>!=</tt>,
+<tt>ne</tt>, <tt>ge</tt>, etc. -- are all achieved by appropriate ordering
+of the two arguments and combination with the the logical negation operator
+<i>non</i>:
+</p><pre>        si valum datum non aequalitam...         # if $val != $dat...
+        si datum praestantiam valum...           # if $val &gt; $dat...
+        si valum non praestantias datum...       # if $val ge $dat...</pre>
+
+<hr>
+<h3>
+<a name="Packages_and_classes"></a>Packages and classes</h3>
+The Perligata keyword to declare a package is <i>domus</i>, literally ``the
+house of''. In this context, the name of the class follows the keyword
+and is treated as a literal; as if it were the data argument of an
+<i>inquementum</i>.
+<p>To explicitly specify a variable or subroutine as belonging to a package,
+the preposition <i>intra</i> (``within'') is used. To call a subroutine
+as a method of a particular package (or of an object), the preposition
+<i>apud</i>
+(``of the house of'') is used.
+</p><p>The Perl <tt>bless</tt> function is <i>benedice</i> in Perligata, but
+almost invariably used in the scalar data role: <i>benedictum</i>.
+</p><p>Thus:
+</p><pre>        domus Specimen.                        # package Specimen;</pre>
+
+<pre>        newere                                      # sub new
+        sic                                         # {
+            meis datibus.                           #   my %data;
+            counto intra Specimen
+                postincresce.                       #   $Specimen::count++;
+            datibus nullum horum benedictum.        #   bless \%data, $_[0];
+        cis                                         # }</pre>
+
+<pre>        printere                                    # sub print
+        sic                                         # {
+            modus tum indefinitus inquementum mori. #   die 'method undefined';
+        cis                                         # }</pre>
+
+<pre>        domus princeps.                             # package main;</pre>
+
+<pre>        meo objecto da                              # my $object =
+                newementum apud Specimen.      #       Specimen-&gt;new;</pre>
+
+<pre>        printe apud objectum;                       # $object-&gt;print;</pre>
+ 
+<h1>
+<a name="Putting_it_all_together_a_Gre"></a>Putting it all together --
+a Greek algorithm in Latin</h1>
+The Sieve of Eratosthenes is one of oldest well-known algorithms. As the
+better part of Roman culture was ``borrowed'' from the Greeks, it is perhaps
+fitting that the first ever Perligata program should be as well:
+<pre>        #! /usr/local/bin/perl -w</pre>
+
+<pre>        use Lingua::Romana::Perligata;</pre>
+
+<pre>        maximum inquementum tum biguttam egresso scribe.
+        meo maximo vestibulo perlegamentum da.
+        da duo tum maximum conscribementa meis listis.</pre>
+
+<pre>        dum listis decapitamentum damentum nexto
+            fac sic
+                nextum tum novumversum scribe egresso.
+                lista sic hoc recidementum nextum cis vannementa da listis.
+            cis.</pre>
+The <tt>use Lingua::Romana::Perligata</tt> statement causes the remainder
+of the program to be translated into the following Perl:
+<pre>        print STDOUT 'maximum:';                  
+        my $maxim = &lt;STDIN&gt;;                     
+        my (@list) = (2..$maxim);</pre>
+
+<pre>        while ($next = shift @list)             
+            {
+                print STDOUT $next, "\n";
+                @list = grep {$_ % $next} @list; 
+            }</pre>
+Note in the very last Perligata statement (<i>lista sic hoc...da listis</i>)
+that the use of inflexion distinguishes the <tt>@list</tt> that is <tt>grep</tt>'ed
+(<i>lista</i>) from the <tt>@list</tt> that is assigned to (<i>listis</i>),
+even though each is at the ``wrong'' end of the statement, compared with
+the Perl version.
+<br> 
+<br> 
+<h1>
+<a name="The_implementation_of_the_Lingua"></a>The implementation of the
+Lingua::Romana::Perligata module</h1>
+The module itself is a very simple example of a source filter, and makes
+use of Paul Marquess's Filter::Util::Call module. The Perligata parser
+is invoked from a single subroutine, which is called as a filter on the
+source code, as described in the following sections.
+<br> 
+<br> 
+<h2>
+<a name="Filtering"></a>Filtering</h2>
+The Filter::Util::Call module greatly simplifies the task of pre-filtering
+source code. A filtering module that uses Filter::Util::Call simply adds
+the command <tt>filter_add({})</tt> to its
+<tt>import</tt> subroutine.
+Then when the filtering module is itself used in some code, Filter::Util::Call
+looks in the filtering module's namespace for a subroutine called <tt>filter</tt>,
+which it calls. That <tt>filter</tt> subroutine can access the source code
+from the file that called the filtering module, and can modify that code
+as appropriate. Whatever string is in the variable <tt>$_</tt> when the
+<tt>filter</tt>
+subroutine returns is passed to the compiler as the final program source.
+<br> 
+<br> 
+<h2>
+<a name="Tokenization"></a>Tokenization</h2>
+For Lingua::Romana::Perligata, the <tt>filter</tt> subroutine conforms
+to the usual structure of a grammar-based parser/translator. It first invokes
+a tokenizer to break the Perligata source code into a sequence of tokens.
+<p>The tokenizer is very simple: it just splits the source on whitespace
+or on a period, and then classifies each word in the resulting list by
+matching it against a series of increasingly general patterns. Keywords
+are tested first, followed by numbers and numerals, punctuation variables,
+user-defined functions in scalar and list contexts, user-defined subroutines
+in void contexts, variables in a target role (i.e. datives), and finally
+variables in a data role (accusatives),
+</p><p>As each word is classified, it is converted to an object of the corresponding
+token type -- Keyword, Number, Var, Sub, etc. Each object stores the original
+word and its corresponding Perl construct. For example, the sequence <i>dum
+maxo maxa maxamentum damentum</i> would yield a list equivalent to:
+</p><pre>        (
+            bless({ raw=&gt;'dum',        perl=&gt;'while' }, 'Conditional'     ),
+            bless({ raw=&gt;'maxo',       perl=&gt;'$max'  }, 'Noun_Dative'     ),
+            bless({ raw=&gt;'maxa',       perl=&gt;'@max'  }, 'Noun_Accusative' ),
+            bless({ raw=&gt;'maxamentum', perl=&gt;'&amp;max'  }, 'Verb_Resultative'),
+            bless({ raw=&gt;'da',         perl=&gt;'='     }, 'Verb_Imperative  ),
+        )</pre>
+These objects then form a stream of tokens that is passed to the parser.
+<br> 
+<br> 
+<h2>
+<a name="Parsing"></a>Parsing</h2>
+The position-independence of much of the Perligata grammar makes the task
+of parsing it quite challenging when using standard tools, which are typically
+predicated on lexical components appearing in rigidly defined sequences.
+<p>For example, to write a rule that matches Perligata subroutine calls,
+the following is required:
+</p><pre>        Action: Dative AccusativeList Verb
+              | AccusativeList Dative Verb
+              | AccusativeList Verb Dative
+              | Dative Verb AccusativeList
+              | Verb Dative AccusativeList
+              | Verb AccusativeList Dative
+              | Accusative Verb Accusative
+              | Dative Verb
+              | AccusativeList Verb
+              | Verb Dative
+              | Verb AccusativeList
+              | Verb</pre>
+The difficulties are further compounded by the fact that targets and data
+can also be (the results of) other position-independent subroutine calls.
+<p>This produces a left-recursive grammar with an unusually large number
+of shift/reduce and reduce/reduce ambiguities (over 100 of each), which
+makes the grammar very sensitive to subrule precedence and to the ordering
+of productions within each rule. Appendix B shows the full grammar.
+</p><p>To cope efficiently with these constraints, an <tt>LALR(1)</tt> parser
+was built using François Désarménien's excellent Parse::Yapp
+module.
+<br> 
+<br> 
+</p><h2>
+<a name="Translation_and_execution"></a>Translation and execution</h2>
+Each rule of the Perligata grammar contains an embedded action. Collectively
+these actions construct a full parse tree for the source code as the grammar
+parses it. Each node in the tree is a blessed object belonging to a class
+that represents the corresponding Perl construct. For example, after it
+has been parsed, the fragment <i>dum maxo maxa maxamentum damentum</i> will have
+been converted to the following tree:
+<pre>        bless( {
+            condition =&gt;
+              bless( {
+                 target =&gt;
+                    bless( { raw =&gt; 'maxo', perl =&gt; '$max' }, 'Var_Target'),
+                 data =&gt;
+                    bless( {
+                       raw  =&gt; 'maxamentum', perl =&gt; '&amp;max',
+                       data =&gt; [
+                          bless( { raw=&gt;'maxa', perl=&gt;'@max'  }, 'Var_Data'),
+                       ],
+                    }, 'SubCall'),
+                }, 'Assignment'),
+             block =&gt;
+                undef,
+        }, 'WhileLoop');</pre>
+Once the tree is constructed, the equivalent Perl code is obtained by calling
+the method <tt>codify()</tt> on the root node of the tree. This recursively
+invokes the <tt>codify()</tt> methods of all the subnodes in the tree,
+each of which returns a string containing a Perl code fragment corresponding
+to the subtree at that node. By concatenating these fragments, a string
+containing the full Perl program is generated. This string is assigned
+to <tt>$_</tt> at the end of the <tt>filter()</tt> subroutine, to be compiled
+and executed automatically by Filter::Util::Call.
+<br> 
+<br> 
+<h1>
+<a name="Conclusion"></a>Conclusion</h1>
+Latin is a surprisingly good fit for Perl. The rich case structure provides
+an abundance of plausible mappings for Perl data types and subroutine calls,
+especially when Perl's own eclectic syntax and semantics are mapped onto
+the more regular ``action/target/data'' model.
+<p>The use of inflexion to denote semantic roles in a programming language
+offers an interesting variation from the ubiquity of positional syntax,
+replacing the requirement to recall syntactic rules with the requirement
+to remember suffixes. Which of these two tasks is easier will probably
+vary from programmer to programmer.
+</p><p>With the release of this module on the CPAN, the author looks forward
+to the advent of truly epic Perl poetry.
+<br> 
+<br> 
+</p><h1>
+<a name="Acknowledgements"></a>Acknowledgements</h1>
+Special thanks to John Crossley, Tom Christiansen, and Bennett Todd, for
+their invaluable feedback and suggestions. And my enduring gratitude to
+David Secomb and Deane Blackman for their patience in helping me struggle
+with the perplexities of the <i>lingua Romana</i>.
+<p>
+</p><hr>
+<h1>
+<a name="Appendix_A_Perligata_dictionary"></a>Appendix A: Perligata dictionary</h1>
+This appendix lists the complete Perligata vocabulary, except for Roman
+numerals (<i>I</i>, <i>II</i>, <i>III</i>, etc.)
+<p>In each of the following tables, the three columns are always the same:
+``Perl construct'', ``Perligata equivalent'', ``Literal meaning of Perligata
+equivalent''.
+</p><p>Generally, only the accusative form is shown for nouns and adjectives,
+and only the imperative for verbs.
+<br> 
+<br> 
+<br> 
+<br> 
+</p><p>Table A1: Values and variables
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="20%">0</td><td width="31%"><i>nullum</i></td><td colspan="2" width="49%">"no-one"</td>
+</tr>
+
+<tr>
+<td width="20%">1</td><td width="31%"><i>unum</i></td><td colspan="2" width="49%">"one"</td>
+</tr>
+
+<tr>
+<td width="20%">2</td><td width="31%"><i>duo</i></td><td colspan="2" width="49%">"two"</td>
+</tr>
+
+<tr>
+<td width="20%">3</td><td width="31%"><i>tres</i></td><td colspan="2" width="49%">"three"</td>
+</tr>
+
+<tr>
+<td width="20%">4</td><td width="31%"><i>quattuor</i></td><td colspan="2" width="49%">"four"</td>
+</tr>
+
+<tr>
+<td width="20%">5</td><td width="31%"><i>quinque</i></td><td colspan="2" width="49%">"five"</td>
+</tr>
+
+<tr>
+<td width="20%">6</td><td width="31%"><i>sex</i></td><td colspan="2" width="49%">"six"</td>
+</tr>
+
+<tr>
+<td width="20%">7</td><td width="31%"><i>septem</i></td><td colspan="2" width="49%">"seven"</td>
+</tr>
+
+<tr>
+<td width="20%">8</td><td width="31%"><i>octo</i></td><td colspan="2" width="49%">"eight"</td>
+</tr>
+
+<tr>
+<td width="20%">9</td><td width="31%"><i>novem</i></td><td colspan="2" width="49%">"nine"</td>
+</tr>
+
+<tr>
+<td width="20%">10</td><td width="31%"><i>decem</i></td><td colspan="2" width="49%">"ten"</td>
+</tr>
+
+<tr>
+<td width="20%">1/2</td><td width="31%"><i>secundum</i></td><td colspan="2" width="49%">"second"</td>
+</tr>
+
+<tr>
+<td width="20%">1/3</td><td width="31%"><i>tertium</i></td><td colspan="2" width="49%">"third"</td>
+</tr>
+
+<tr>
+<td width="20%">1/4</td><td width="31%"><i>quartum</i></td><td colspan="2" width="49%">"fourth"</td>
+</tr>
+
+<tr>
+<td width="20%">1/5</td><td width="31%"><i>quintum</i></td><td colspan="2" width="49%">"fifth"</td>
+</tr>
+
+<tr>
+<td width="20%">1/6</td><td width="31%"><i>sextum</i></td><td colspan="2" width="49%">"sixth"</td>
+</tr>
+
+<tr>
+<td width="20%">1/7</td><td width="31%"><i>septimum</i></td><td colspan="2" width="49%">"seventh"</td>
+</tr>
+
+<tr>
+<td width="20%">1/8</td><td width="31%"><i>octavum</i></td><td colspan="2" width="49%">"eighth"</td>
+</tr>
+
+<tr>
+<td width="20%">1/9</td><td width="31%"><i>nonum</i></td><td colspan="2" width="49%">"ninth"</td>
+</tr>
+
+<tr>
+<td width="20%">1/10</td><td width="31%"><i>decimum</i></td><td colspan="2" width="49%">"tenth"</td>
+</tr>
+
+<tr>
+<td width="20%">$1</td><td width="31%"><i>parprimum</i></td><td colspan="2" width="49%">"equal of
+the first"</td>
+</tr>
+
+<tr>
+<td width="20%">$2</td><td width="31%"><i>parsecundum</i></td><td colspan="2" width="49%">"equal of
+the first"</td>
+</tr>
+
+<tr>
+<td width="20%">$3</td><td width="31%"><i>partertium</i></td><td colspan="2" width="49%">"equal of
+the third"</td>
+</tr>
+
+<tr>
+<td width="20%">$4</td><td width="31%"><i>parquartum</i></td><td colspan="2" width="49%">"equal of
+the fourth"</td>
+</tr>
+
+<tr>
+<td width="20%">$5</td><td width="31%"><i>parquintum</i></td><td colspan="2" width="49%">"equal of
+the fifth"</td>
+</tr>
+
+<tr>
+<td width="20%">$6</td><td width="31%"><i>parsextum</i></td><td colspan="2" width="49%">"equal of
+the sixth"</td>
+</tr>
+
+<tr>
+<td width="20%">$7</td><td width="31%"><i>parseptimum</i></td><td colspan="2" width="49%">"equal of
+the seventh"</td>
+</tr>
+
+<tr>
+<td width="20%">$8</td><td width="31%"><i>paroctavum</i></td><td colspan="2" width="49%">"equal of
+the eighth"</td>
+</tr>
+
+<tr>
+<td width="20%">$9</td><td width="31%"><i>parnonum</i></td><td colspan="2" width="49%">"equal of
+the ninth"</td>
+</tr>
+
+<tr>
+<td width="20%">$10</td><td width="31%"><i>pardecimum</i></td><td colspan="2" width="49%">"equal of
+the tenth"</td>
+</tr>
+
+<tr>
+<td width="20%">$/</td><td width="31%"><i>ianitorem</i></td><td colspan="2" width="49%">"gatekeeper"</td>
+</tr>
+
+<tr>
+<td width="20%">$#var</td><td width="31%"><i>admeta</i></td><td colspan="2" width="49%">"measure out"</td>
+</tr>
+
+<tr>
+<td width="20%">$_</td><td colspan="2" width="33%"><i>hoc/huic</i></td><td width="47%">"this thing"</td>
+</tr>
+
+<tr>
+<td width="20%">@_</td><td colspan="2" width="33%"><i>his/horum</i></td><td width="47%">"these things"</td>
+</tr>
+
+<tr>
+<td width="20%">":"</td><td colspan="2" width="33%"><i>biguttam</i></td><td width="47%">"two spots"</td>
+</tr>
+
+<tr>
+<td width="20%">" "</td><td colspan="2" width="33%"><i>lacunam</i></td><td width="47%">"a gap"</td>
+</tr>
+
+<tr>
+<td width="20%">"\t"</td><td colspan="2" width="33%"><i>stadium</i></td><td width="47%">"a stride"</td>
+</tr>
+
+<tr>
+<td width="20%">"\n"</td><td colspan="2" width="33%"><i>novumversum</i></td><td width="47%">"new line"</td>
+</tr>
+
+<tr>
+<td width="20%">local</td><td colspan="2" width="33%"><i>loco</i></td><td width="47%">"in place of"</td>
+</tr>
+
+<tr>
+<td width="20%">my</td><td colspan="2" width="33%"><i>meo</i></td><td width="47%">"my"</td>
+</tr>
+
+<tr>
+<td width="20%">our</td><td colspan="2" width="33%"><i>nostro</i></td><td width="47%">"our"</td>
+</tr>
+
+<tr>
+<td width="20%">main</td><td colspan="2" width="33%"><i>princeps</i></td><td width="47%">"principal"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<br> 
+<br> 
+<p>Table A2: Quotelike operators
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="28%">''</td><td width="32%"><i>inque</i></td><td width="40%">"say"</td>
+</tr>
+
+<tr>
+<td width="28%">q//</td><td width="32%"><i>inque</i></td><td width="40%">"say"</td>
+</tr>
+
+<tr>
+<td width="28%">m//</td><td width="32%"><i>compara</i></td><td width="40%">"match"</td>
+</tr>
+
+<tr>
+<td width="28%">s///</td><td width="32%"><i>substitue</i></td><td width="40%">"substitute"</td>
+</tr>
+
+<tr>
+<td width="28%">tr///</td><td width="32%"><i>converte</i></td><td width="40%">"translate"</td>
+</tr>
+
+<tr>
+<td width="28%">y///</td><td width="32%"><i>converte</i></td><td width="40%">"translate"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<br> 
+<br> 
+<p>Table A3: Mathematical operators and functions
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="20%">+</td><td width="29%"><i>adde</i></td><td width="51%">"add"</td>
+</tr>
+
+<tr>
+<td width="20%">-</td><td width="29%"><i>deme</i></td><td width="51%">"subtract"</td>
+</tr>
+
+<tr>
+<td width="20%">-</td><td width="29%"><i>nega</i></td><td width="51%">"negate"</td>
+</tr>
+
+<tr>
+<td width="20%">*</td><td width="29%"><i>multiplica</i></td><td width="51%">"multiply"</td>
+</tr>
+
+<tr>
+<td width="20%">/</td><td width="29%"><i>divide</i></td><td width="51%">"divide"</td>
+</tr>
+
+<tr>
+<td width="20%">%</td><td width="29%"><i>recide</i></td><td width="51%">"lop off"</td>
+</tr>
+
+<tr>
+<td width="20%">**</td><td width="29%"><i>eleva</i></td><td width="51%">"raise"</td>
+</tr>
+
+<tr>
+<td width="20%">++</td><td width="29%"><i>preincresce</i></td><td width="51%">"increase beforehand"</td>
+</tr>
+
+<tr>
+<td width="20%">++</td><td width="29%"><i>postincresce</i></td><td width="51%">"increase afterwards"</td>
+</tr>
+
+<tr>
+<td width="20%">--</td><td width="29%"><i>predecresce</i></td><td width="51%">"decrease beforehand"</td>
+</tr>
+
+<tr>
+<td width="20%">--</td><td width="29%"><i>postdecresce</i></td><td width="51%">"decrease afterwards"</td>
+</tr>
+
+<tr>
+<td width="20%">abs</td><td width="29%"><i>priva</i></td><td width="51%">"strip from"</td>
+</tr>
+
+<tr>
+<td width="20%">atan2</td><td width="29%"><i>angula</i></td><td width="51%">"create an angle"</td>
+</tr>
+
+<tr>
+<td width="20%">sin</td><td width="29%"><i>oppone</i></td><td width="51%">"oppose"</td>
+</tr>
+
+<tr>
+<td width="20%">cos</td><td width="29%"><i>accuba</i></td><td width="51%">"lie beside"</td>
+</tr>
+
+<tr>
+<td width="20%">int</td><td width="29%"><i>decolla</i></td><td width="51%">"behead"</td>
+</tr>
+
+<tr>
+<td width="20%">log</td><td width="29%"><i>succide</i></td><td width="51%">"log a tree"</td>
+</tr>
+
+<tr>
+<td width="20%">sqrt</td><td width="29%"><i>fode</i></td><td width="51%">"root into"</td>
+</tr>
+
+<tr>
+<td width="20%">rand</td><td width="29%"><i>conice</i></td><td width="51%">"guess, cast lots"</td>
+</tr>
+
+<tr>
+<td width="20%">srand</td><td width="29%"><i>prosemina</i></td><td width="51%">"to scatter seed"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<br> 
+<br> 
+<p>Table A4: Logical and comparison operators
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="17%">!</td><td width="34%"><i>non</i></td><td width="49%">"general negation"</td>
+</tr>
+
+<tr>
+<td width="17%">&amp;&amp;</td><td width="34%"><i>atque</i></td><td width="49%">"empathic and"</td>
+</tr>
+
+<tr>
+<td width="17%">||</td><td width="34%"><i>vel</i></td><td width="49%">"emphatic or"</td>
+</tr>
+
+<tr>
+<td width="17%">and</td><td width="34%"><i>-que</i></td><td width="49%">"and"</td>
+</tr>
+
+<tr>
+<td width="17%">or</td><td width="34%"><i>-ve</i></td><td width="49%">"or"</td>
+</tr>
+
+<tr>
+<td width="17%">&lt;</td><td width="34%"><i>praestantiam</i></td><td width="49%">"precedence of"</td>
+</tr>
+
+<tr>
+<td width="17%">lt</td><td width="34%"><i>praestantias</i></td><td width="49%">"precedences of"</td>
+</tr>
+
+<tr>
+<td width="17%">&lt;=&gt;</td><td width="34%"><i>comparitiam</i></td><td width="49%">"comparison of"</td>
+</tr>
+
+<tr>
+<td width="17%">cmp</td><td width="34%"><i>comparitias</i></td><td width="49%">"comparisons of"</td>
+</tr>
+
+<tr>
+<td width="17%">==</td><td width="34%"><i>aequalitam</i></td><td width="49%">"equality of"</td>
+</tr>
+
+<tr>
+<td width="17%">eq</td><td width="34%"><i>aequalitas</i></td><td width="49%">"equalities of"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<p>Table A5: Strings
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="30%">chomp</td><td width="24%"><i>morde</i></td><td width="45%">"bite"</td>
+</tr>
+
+<tr>
+<td width="30%">chop</td><td width="24%"><i>praecide</i></td><td width="45%">"cut short"</td>
+</tr>
+
+<tr>
+<td width="30%">chr</td><td width="24%"><i>inde</i></td><td width="45%">"give a name to"</td>
+</tr>
+
+<tr>
+<td width="30%">hex</td><td width="24%"><i>senidemi</i></td><td width="45%">"sixteen at a time"</td>
+</tr>
+
+<tr>
+<td width="30%">oct</td><td width="24%"><i>octoni</i></td><td width="45%">"eight at a time"</td>
+</tr>
+
+<tr>
+<td width="30%">ord</td><td width="24%"><i>numera</i></td><td width="45%">"number"</td>
+</tr>
+
+<tr>
+<td width="30%">lc</td><td width="24%"><i>deminue</i></td><td width="45%">"diminish"</td>
+</tr>
+
+<tr>
+<td width="30%">lcfirst</td><td width="24%"><i>minue</i></td><td width="45%">"diminish"</td>
+</tr>
+
+<tr>
+<td width="30%">uc</td><td width="24%"><i>amplifica</i></td><td width="45%">"increase"</td>
+</tr>
+
+<tr>
+<td width="30%">ucfirst</td><td width="24%"><i>amplia</i></td><td width="45%">"increase"</td>
+</tr>
+
+<tr>
+<td width="30%">quotemeta</td><td width="24%"><i>excipe</i></td><td width="45%">"make an exception"</td>
+</tr>
+
+<tr>
+<td width="30%">crypt</td><td width="24%"><i>huma</i></td><td width="45%">"inter"</td>
+</tr>
+
+<tr>
+<td width="30%">length</td><td width="24%"><i>meta</i></td><td width="45%">"measure"</td>
+</tr>
+
+<tr>
+<td width="30%">pos</td><td width="24%"><i>reperi</i></td><td width="45%">"locate"</td>
+</tr>
+
+<tr>
+<td width="30%">pack</td><td width="24%"><i>convasa</i></td><td width="45%">"pack baggage"</td>
+</tr>
+
+<tr>
+<td width="30%">unpack</td><td width="24%"><i>deconvasa</i></td><td width="45%">"unpack"</td>
+</tr>
+
+<tr>
+<td width="30%">split</td><td width="24%"><i>scinde</i></td><td width="45%">"split"</td>
+</tr>
+
+<tr>
+<td width="30%">study</td><td width="24%"><i>stude</i></td><td width="45%">"study"</td>
+</tr>
+
+<tr>
+<td width="30%">index</td><td width="24%"><i>scruta</i></td><td width="45%">"search"</td>
+</tr>
+
+<tr>
+<td width="30%">join</td><td width="24%"><i>coniunge</i></td><td width="45%">"join"</td>
+</tr>
+
+<tr>
+<td width="30%">substr</td><td width="24%"><i>excerpe</i></td><td width="45%">"extract"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<br> 
+<br> 
+<p>Table A6: Scalars, arrays, and hashes
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="24%">defined</td><td width="22%"><i>confirma</i></td><td colspan="2" width="54%">"verify"</td>
+</tr>
+
+<tr>
+<td width="24%">undef</td><td width="22%"><i>iani</i></td><td colspan="2" width="54%">"empty, make
+void"</td>
+</tr>
+
+<tr>
+<td width="24%">scalar</td><td width="22%"><i>secerna</i></td><td colspan="2" width="54%">"to distinguish,
+isolate"</td>
+</tr>
+
+<tr>
+<td width="24%">reset</td><td width="22%"><i>lusta</i></td><td colspan="2" width="54%">"cleanse"</td>
+</tr>
+
+<tr>
+<td width="24%">pop</td><td colspan="2" width="23%"><i>decumula</i></td><td width="53%">"unstack"</td>
+</tr>
+
+<tr>
+<td width="24%">push</td><td colspan="2" width="23%"><i>cumula</i></td><td width="53%">"stack"</td>
+</tr>
+
+<tr>
+<td width="24%">shift</td><td colspan="2" width="23%"><i>decapita</i></td><td width="53%">"behead"</td>
+</tr>
+
+<tr>
+<td width="24%">unshift</td><td colspan="2" width="23%"><i>capita</i></td><td width="53%">"crown"</td>
+</tr>
+
+<tr>
+<td width="24%">splice</td><td colspan="2" width="23%"><i>iunge</i></td><td width="53%">"splice"</td>
+</tr>
+
+<tr>
+<td width="24%">grep</td><td colspan="2" width="23%"><i>vanne</i></td><td width="53%">"winnow"</td>
+</tr>
+
+<tr>
+<td width="24%">map</td><td colspan="2" width="23%"><i>applica</i></td><td width="53%">"apply to"</td>
+</tr>
+
+<tr>
+<td width="24%">sort</td><td colspan="2" width="23%"><i>digere</i></td><td width="53%">"sort"</td>
+</tr>
+
+<tr>
+<td width="24%">reverse</td><td colspan="2" width="23%"><i>retexe</i></td><td width="53%">"reverse"</td>
+</tr>
+
+<tr>
+<td width="24%">delete</td><td colspan="2" width="23%"><i>dele</i></td><td width="53%">"delete"</td>
+</tr>
+
+<tr>
+<td width="24%">each</td><td colspan="2" width="23%"><i>quisque</i></td><td width="53%">"each"</td>
+</tr>
+
+<tr>
+<td width="24%">exists</td><td colspan="2" width="23%"><i>adfirma</i></td><td width="53%">"confirm"</td>
+</tr>
+
+<tr>
+<td width="24%">keys</td><td colspan="2" width="23%"><i>nomina</i></td><td width="53%">"name" </td>
+</tr>
+
+<tr>
+<td width="24%">values</td><td colspan="2" width="23%"><i>argue</i></td><td width="53%">"to disclose the contents"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<br> 
+<br> 
+<p>Table A7: I/O related
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="27%">open</td><td width="18%"><i>evolute</i></td><td width="56%">"open a book"</td>
+</tr>
+
+<tr>
+<td width="27%">close</td><td width="18%"><i>claude</i></td><td width="56%">"close a book"</td>
+</tr>
+
+<tr>
+<td width="27%">eof</td><td width="18%"><i>extremus</i></td><td width="56%">"end of"</td>
+</tr>
+
+<tr>
+<td width="27%">read</td><td width="18%"><i>lege</i></td><td width="56%">"read"</td>
+</tr>
+
+<tr>
+<td width="27%">getc</td><td width="18%"><i>sublege</i></td><td width="56%">"pick up something"</td>
+</tr>
+
+<tr>
+<td width="27%">&lt;&gt;/readline</td><td width="18%"><i>perlege</i></td><td width="56%">"read through"</td>
+</tr>
+
+<tr>
+<td width="27%">print</td><td width="18%"><i>scribe</i></td><td width="56%">"write"</td>
+</tr>
+
+<tr>
+<td width="27%">printf</td><td width="18%"><i>describe</i></td><td width="56%">"describe"</td>
+</tr>
+
+<tr>
+<td width="27%">sprintf</td><td width="18%"><i>rescribe</i></td><td width="56%">"rewrite"</td>
+</tr>
+
+<tr>
+<td width="27%">write</td><td width="18%"><i>subscribe</i></td><td width="56%">"write under"</td>
+</tr>
+
+<tr>
+<td width="27%">format</td><td width="18%"><i>pinge</i></td><td width="56%">"paint"</td>
+</tr>
+
+<tr>
+<td width="27%">formline</td><td width="18%"><i>distingue</i></td><td width="56%">"intersperse"</td>
+</tr>
+
+<tr>
+<td width="27%">pipe</td><td width="18%"><i>inriga</i></td><td width="56%">"irrigate"</td>
+</tr>
+
+<tr>
+<td width="27%">tell</td><td width="18%"><i>enunta</i></td><td width="56%">"tell"</td>
+</tr>
+
+<tr>
+<td width="27%">seek</td><td width="18%"><i>conquire</i></td><td width="56%">"to seek out"</td>
+</tr>
+
+<tr>
+<td width="27%">STDIN</td><td width="18%"><i>vestibulo</i></td><td width="56%">"an entrance"</td>
+</tr>
+
+<tr>
+<td width="27%">STDOUT</td><td width="18%"><i>egresso</i></td><td width="56%">"an exit"</td>
+</tr>
+
+<tr>
+<td width="27%">STDERR</td><td width="18%"><i>oraculo</i></td><td width="56%">"a place were doom is
+pronounced"</td>
+</tr>
+
+<tr>
+<td width="27%">DATA</td><td width="18%"><i>fonti</i></td><td width="56%">"a well-spring"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<br> 
+<br> 
+<p>Table A8: Control
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="22%"><tt>{</tt>...}</td><td width="26%"><i>sic...cis</i></td><td width="53%">"as follows...to here"</td>
+</tr>
+
+<tr>
+<td width="22%">do</td><td width="26%"><i>fac</i></td><td width="53%">"do"</td>
+</tr>
+
+<tr>
+<td width="22%">sub {...}</td><td width="26%"><i>factorem sic...cis</i></td><td width="53%">"one who does as follows...to
+here"</td>
+</tr>
+
+<tr>
+<td width="22%">eval</td><td width="26%"><i>aestima</i></td><td width="53%">"evaluate"</td>
+</tr>
+
+<tr>
+<td width="22%">exit</td><td width="26%"><i>exi</i></td><td width="53%">"exit"</td>
+</tr>
+
+<tr>
+<td width="22%">for</td><td width="26%"><i>per</i></td><td width="53%">"for"</td>
+</tr>
+
+<tr>
+<td width="22%">foreach</td><td width="26%"><i>per quisque</i></td><td width="53%">"for each"</td>
+</tr>
+
+<tr>
+<td width="22%">goto</td><td width="26%"><i>adi</i></td><td width="53%">"go to"</td>
+</tr>
+
+<tr>
+<td width="22%">if</td><td width="26%"><i>si</i></td><td width="53%">"if"</td>
+</tr>
+
+<tr>
+<td width="22%">return</td><td width="26%"><i>redde</i></td><td width="53%">"return"</td>
+</tr>
+
+<tr>
+<td width="22%">unless</td><td width="26%"><i>nisi</i></td><td width="53%">"if not"</td>
+</tr>
+
+<tr>
+<td width="22%">until</td><td width="26%"><i>donec</i></td><td width="53%">"until"</td>
+</tr>
+
+<tr>
+<td width="22%">while</td><td width="26%"><i>dum</i></td><td width="53%">"while"</td>
+</tr>
+
+<tr>
+<td width="22%">wantarray</td><td width="26%"><i>deside</i></td><td width="53%">"want"</td>
+</tr>
+
+<tr>
+<td width="22%">last</td><td width="26%"><i>ultimus</i></td><td width="53%">"final"</td>
+</tr>
+
+<tr>
+<td width="22%">next</td><td width="26%"><i>posterus</i></td><td width="53%">"following"</td>
+</tr>
+
+<tr>
+<td width="22%">redo</td><td width="26%"><i>reconatus</i></td><td width="53%">"trying again"</td>
+</tr>
+
+<tr>
+<td width="22%">continue</td><td width="26%"><i>confectus</i></td><td width="53%">"complete"</td>
+</tr>
+
+<tr>
+<td width="22%">die</td><td width="26%"><i>mori</i></td><td width="53%">"die"</td>
+</tr>
+
+<tr>
+<td width="22%">warn</td><td width="26%"><i>mone</i></td><td width="53%">"warn"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<p>Table A9: Packages, classes, and modules
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="27%">-&gt;</td><td width="23%"><i>apud</i></td><td width="49%">"of the house of"</td>
+</tr>
+
+<tr>
+<td width="27%">::</td><td width="23%"><i>intra</i></td><td width="49%">"within"</td>
+</tr>
+
+<tr>
+<td width="27%">bless</td><td width="23%"><i>benedice</i></td><td width="49%">"bless"</td>
+</tr>
+
+<tr>
+<td width="27%">caller</td><td width="23%"><i>memora</i></td><td width="49%">"recount a history"</td>
+</tr>
+
+<tr>
+<td width="27%">package</td><td width="23%"><i>domus</i></td><td width="49%">"house of "</td>
+</tr>
+
+<tr>
+<td width="27%">ref</td><td width="23%"><i>agnosce</i></td><td width="49%">"identify"</td>
+</tr>
+
+<tr>
+<td width="27%">tie</td><td width="23%"><i>liga</i></td><td width="49%">"tie"</td>
+</tr>
+
+<tr>
+<td width="27%">tied</td><td width="23%"><i>exhibe</i></td><td width="49%">"display something"</td>
+</tr>
+
+<tr>
+<td width="27%">untie</td><td width="23%"><i>solve</i></td><td width="49%">"to untie"</td>
+</tr>
+
+<tr>
+<td width="27%">require</td><td width="23%"><i>require</i></td><td width="49%">"require"</td>
+</tr>
+
+<tr>
+<td width="27%">use</td><td width="23%"><i>ute</i></td><td width="49%">"use"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<p>Table A10: System and filesystem interaction
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="26%">chdir</td><td width="23%"><i>demigrare</i></td><td width="51%">"migrate"</td>
+</tr>
+
+<tr>
+<td width="26%">chmod</td><td width="23%"><i>permitte</i></td><td width="51%">"permit"</td>
+</tr>
+
+<tr>
+<td width="26%">chown</td><td width="23%"><i>vende</i></td><td width="51%">"sell"</td>
+</tr>
+
+<tr>
+<td width="26%">fcntl</td><td width="23%"><i>modera</i></td><td width="51%">"control"</td>
+</tr>
+
+<tr>
+<td width="26%">flock</td><td width="23%"><i>confluee</i></td><td width="51%">"flock together"</td>
+</tr>
+
+<tr>
+<td width="26%">glob</td><td width="23%"><i>inveni</i></td><td width="51%">"search"</td>
+</tr>
+
+<tr>
+<td width="26%">ioctl</td><td width="23%"><i>impera</i></td><td width="51%">"command"</td>
+</tr>
+
+<tr>
+<td width="26%">link</td><td width="23%"><i>copula</i></td><td width="51%">"link"</td>
+</tr>
+
+<tr>
+<td width="26%">unlink</td><td width="23%"><i>decopula</i></td><td width="51%">"unlink"</td>
+</tr>
+
+<tr>
+<td width="26%">mkdir</td><td width="23%"><i>aedifica</i></td><td width="51%">"build"</td>
+</tr>
+
+<tr>
+<td width="26%">rename</td><td width="23%"><i>renomina</i></td><td width="51%">"rename"</td>
+</tr>
+
+<tr>
+<td width="26%">rmdir</td><td width="23%"><i>excide</i></td><td width="51%">"raze"</td>
+</tr>
+
+<tr>
+<td width="26%">stat</td><td width="23%"><i>exprime</i></td><td width="51%">"describe"</td>
+</tr>
+
+<tr>
+<td width="26%">truncate</td><td width="23%"><i>trunca</i></td><td width="51%">"shorten"</td>
+</tr>
+
+<tr>
+<td width="26%">alarm</td><td width="23%"><i>terre</i></td><td width="51%">"frighten"</td>
+</tr>
+
+<tr>
+<td width="26%">dump</td><td width="23%"><i>mitte</i></td><td width="51%">"drop"</td>
+</tr>
+
+<tr>
+<td width="26%">exec</td><td width="23%"><i>commuta</i></td><td width="51%">"transform"</td>
+</tr>
+
+<tr>
+<td width="26%">fork</td><td width="23%"><i>furca</i></td><td width="51%">"fork"</td>
+</tr>
+
+<tr>
+<td width="26%">kill</td><td width="23%"><i>interfice</i></td><td width="51%">"kill"</td>
+</tr>
+
+<tr>
+<td width="26%">sleep</td><td width="23%"><i>dormi</i></td><td width="51%">"sleep"</td>
+</tr>
+
+<tr>
+<td width="26%">system</td><td width="23%"><i>obsecra</i></td><td width="51%">"entreat a higher power"</td>
+</tr>
+
+<tr>
+<td width="26%">umask</td><td width="23%"><i>dissimula</i></td><td width="51%">"mask"</td>
+</tr>
+
+<tr>
+<td width="26%">wait</td><td width="23%"><i>manta</i></td><td width="51%">"wait for"</td>
+</tr>
+</tbody></table></center>
+
+<br> 
+<p>Table A11: Miscellaneous operators
+<br> 
+</p><center><table border="">
+<tbody><tr>
+<td width="20%">,</td><td width="37%"><i>tum</i></td><td width="43%">"and then"</td>
+</tr>
+
+<tr>
+<td width="20%">.</td><td width="37%"><i>sere</i></td><td width="43%">"conjoin"</td>
+</tr>
+
+<tr>
+<td width="20%">..</td><td width="37%"><i>conscribe</i></td><td width="43%">"enlist"</td>
+</tr>
+
+<tr>
+<td width="20%">\</td><td width="37%"><i>ad</i></td><td width="43%">"towards"</td>
+</tr>
+
+<tr>
+<td width="20%">=</td><td width="37%"><i>da</i></td><td width="43%">"give"</td>
+</tr>
+</tbody></table></center>
+
+<p>
+</p><hr>
+<h1>
+Appendix B: Perligata grammar</h1>
+
+<pre>Script:         Statement(s)
+
+Statement       ( Conditional | Imperative | Data | Target ) '.'
+
+Conditional:      Control Block
+                | Imperative Control
+
+Control:          'dum'   Data  'fac'                      # while
+                | 'donec' Data  'fac'                      # until
+                | 'si'    Data  'fac'                      # if
+                | 'nisi'  Data  'fac'                      # unless
+                | /per (quisque)?/ NOUN_ACCUSATIVE(?)
+                                   'in' Target 'fac'       # foreach A (B)
+
+Block:            'sic'  Script  'cis'
+
+Imperative:       Data Verb Data
+                | Target Datalist Verb
+                | Datalist Target Verb
+                | Datalist Verb Target(?)
+                | Target Verb Datalist(?)
+                | Verb Target Datalist(?)
+                | Verb Datalist Target(?)
+                | Verb
+
+Target:           NOUN_DATIVE
+                | POSSESSIVE  NOUN_DATIVE               # my $A, local @B, etc.
+                | Block
+                | Data  Resultative_dative  Data
+                | Target  Datalist  Resultative_dative
+                | Datalist  Target  Resultative_dative
+                | Datalist  Resultative_dative  Target(?)
+                | Target  Resultative_dative  Datalist(?)
+                | Resultative_dative  Target  Datalist(?)
+                | Resultative_dative  Datalist(?)  Target(?)
+                | Target  'intra'  Accusative           # B::A
+                | Target  'apud'  Dative                # B-&gt;A
+                | Target NOUN_GENITIVE                  # B[A]
+                | 'factori' Block                       # sub {...}
+
+Accusative:       NOUN_ACCUSATIVE
+                | 'ad'  Accusative                      # \A
+                | Accusative  'intra'  Accusative       # B::A
+                | Accusative  'apud'  Accusative        # B-&gt;A
+                | Accusative  NOUN_GENITIVE             # B[A]
+                | 'factorem' Block                      # sub {...}
+
+Data:             Accusative
+                | 'nega'  Data                          # -A
+                | 'non'  Data                           # !A
+                | Data  Resultative_accusative  Data
+                | Target  Datalist  Resultative_accusative
+                | Datalist  Target  Resultative_accusative
+                | Datalist  Resultative_accusative  Target(?)
+                | Target  Resultative_accusative  Datalist(?)
+                | Resultative_accusative  Target  Datalist(?)
+                | Resultative_accusative  Datalist(?)  Target(?)
+
+Verb:             VERB
+                | Verb  'intra'  Accusative             # B::A()
+                | Verb  'apud'  Dative                  # B-&gt;A()
+
+Resultative_dative:              
+                  RESULTATIVE_DATIVE
+                | Resultative_dative  'intra'  Accusative       
+                | Resultative_dative  'apud'  Dative
+
+Resultative_accusative:          
+                  RESULTATIVE_DATIVE
+                | Resultative_accusative  'intra'  Accusative   
+                | Resultative_accusative  'apud'  Dative        
+
+Datalist:         Datalist  'tum'  Data
+                | Data</pre>
+
+
+
+
+</body></html>
