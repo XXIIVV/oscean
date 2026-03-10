@@ -14,7 +14,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="self">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="self">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html">rejoice</a></li></ul></nav>
 <main><h2>Concatenative languages use juxtaposition of expressions for function composition.</h2>
 
 <img src="../media/refs/chesshire_head.png" width='140' style='float:right;margin-left:30px' class='nodark'>
@@ -653,7 +653,130 @@ showpage
 	<li><a href='https://www.math.ubc.ca/~cass/graphics/manual/' target='_blank'>tutorials</a></li>
 </ul>
 
-<ul></ul><p><b>incoming: </b><a href="binary.html">binary</a> <a href="fractran.html">fractran</a> <a href="thuesday.html">thuesday</a> <a href="uxntal.html">uxntal</a> <a href="uxn_devlog.html">uxn devlog</a> <a href="2026.html">2026</a> <a href="2024.html">2024</a> </p></main>
+<h2>Rejoice!</h2>
+
+<p><b>Rejoice</b> is a concatenative programming language where data is encoded as multisets(unordered bags of things) and compose by multiplication. Think <a
+href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or
+a strange <a href='forth.html'>Forth</a> in which the program state is a bag.</p>
+
+<h3>Basics</h3>
+
+<p>The program state is a bag of unordered things, transformations are represented as fractions where the denominator indicates things to remove from the bag, and the numerator, things to add.</p>
+<pre>
+[red green blue] yellow/[green blue]
+[red yellow]
+</pre>
+
+<p>Evaluation consists of applying fractions from left to right, each to exhaustion, until the bag stabilizes.</p>
+<pre>
+[blue^3] black/pink white/blue red/white^3
+[blue^3] white/blue red/white^3
+[blue^2 white] white/blue red/white^3
+[blue white^2] white/blue red/white^3
+[white^3] red/white^3
+[red]
+</pre>
+
+<h3>Logic</h3>
+
+<p>Rejoice For example here is a <b>NOT</b> logic gate, notice the <code>a</code> resource.</p>
+<pre>
+[false not] true/[false not] false/[true not]
+true false/[true not]
+true
+</pre>
+<pre style='margin-top:-29px'>
+[true not] true/[false not] false/[true not]
+[true not] false/[true not]
+false
+</pre>
+
+<p>Building on this idea, we can make a <b>OR</b> gate.</p>
+<pre>
+[x y or] true/[x y or] true/[x or] true/[y or] false/[or]
+true true/[x or] true/[y or] false/[or]
+true true/[y or] false/[or]
+true false/[or]
+true
+</pre>
+<pre style='margin-top:-29px'>
+[or] true/[x y or] true/[x or] true/[y or] false/[or]
+[or] true/[x or] true/[y or] false/[or]
+[or] true/[y or] false/[or]
+[or] false/[or]
+false
+</pre>
+
+<h3>Arithmetic</h3>
+
+<p>The fraction <code>x/y</code> drains <code>y</code> into <code>x</code>, effectively finding the sum by resource transfer. The <b>sum</b>:</p>
+<pre>
+[x^2 y^3] x/y
+[x^3 y^2] x/y
+[x^4 y] x/y
+[x^5]
+</pre>
+
+<p>The fraction <code>1/(x y)</code> finds the <b>difference</b> between two symbols, but the program must handle positive and negative results:</p>
+<pre>
+[x^4 y^2] 1/[x y] pos/x neg/y
+[x^3 y] 1/[x y] pos/x neg/y
+[x^2] 1/[x y] pos/x neg/y
+[x^2] pos/x neg/y
+[x pos] pos/x neg/y
+[pos^2] neg/y
+[pos^2]
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^4] 1/[x y] pos/x neg/y
+[x y^3] 1/[x y] pos/x neg/y
+[y^2] 1/[x y] pos/x neg/y
+[y^2] pos/x neg/y
+[y^2] neg/y
+[y neg] neg/y
+[neg^2] neg/y
+[neg^2]
+</pre>
+
+<h3>Functions</h3>
+
+<p>TODO..</p>
+
+<pre>
+: AND ( x y -- bool ) and true/[and x y] false/[and x] false/[and y] ;
+</pre>
+<pre style='margin-top:-29px'>
+x y AND
+x y and true/[and x y] false/[and x] false/[and y] false/[and] 
+true false/[and x] false/[and y] false/[and] 
+true false/[and y] false/[and] 
+true false/[and] 
+true
+</pre>
+
+<h3>Loops</h3>
+
+<p>TODO..</p>
+
+<pre>
+: loop ( -- ) x done/x^4 [x^2 loop]/x ;</pre>
+<pre style='margin-top:-29px'>
+x loop
+x done/x^4 [x^2 loop]/x
+x [x^2 loop]/x
+x^2 loop
+x^2 done/x^4 [x^2 loop]/x
+x^2 [x^2 loop]/x
+x^3 loop
+x^3 done/x^4 [x^2 loop]/x
+x^3 [x^2 loop]/x
+x^4 loop
+x^4 done/x^4 [x^2 loop]/x
+done [x^2 loop]/x
+done
+</pre>
+
+<p>Super rough draft.. come back later.</p><ul></ul><p><b>incoming: </b><a href="binary.html">binary</a> <a href="fractran.html">fractran</a> <a href="thuesday.html">thuesday</a> <a href="uxntal.html">uxntal</a> <a href="uxn_devlog.html">uxn devlog</a> <a href="2026.html">2026</a> <a href="2024.html">2024</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
 	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>

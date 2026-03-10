@@ -1,0 +1,153 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property='og:type' content='website'/>
+<meta property='og:site_name' content='XXIIVV'/>
+<meta property='og:description' content="By Devine Lu Linvega"/>
+<meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<link href="../links/main.css" type="text/css" rel="stylesheet">
+<link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<link href="../links/img.xml" type="application/rss+xml" rel="alternate" title="XXIIVV" />
+<meta property="og:title" content="rejoice"/>
+<meta property="og:url" content="https://wiki.xxiivv.com/site/rejoice.html"/>
+<meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<title>XXIIVV &mdash; rejoice</title>
+</head>
+<body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
+<nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="self">rejoice</a></li></ul><ul></ul></nav>
+<main><h2>Rejoice!</h2>
+
+<p><b>Rejoice</b> is a concatenative programming language where data is encoded as multisets(unordered bags of things) and compose by multiplication. Think <a
+href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or
+a strange <a href='forth.html'>Forth</a> in which the program state is a bag.</p>
+
+<h3>Basics</h3>
+
+<p>The program state is a bag of unordered things, transformations are represented as fractions where the denominator indicates things to remove from the bag, and the numerator, things to add.</p>
+<pre>
+[red green blue] yellow/[green blue]
+[red yellow]
+</pre>
+
+<p>Evaluation consists of applying fractions from left to right, each to exhaustion, until the bag stabilizes.</p>
+<pre>
+[blue^3] black/pink white/blue red/white^3
+[blue^3] white/blue red/white^3
+[blue^2 white] white/blue red/white^3
+[blue white^2] white/blue red/white^3
+[white^3] red/white^3
+[red]
+</pre>
+
+<h3>Logic</h3>
+
+<p>Rejoice For example here is a <b>NOT</b> logic gate, notice the <code>a</code> resource.</p>
+<pre>
+[false not] true/[false not] false/[true not]
+true false/[true not]
+true
+</pre>
+<pre style='margin-top:-29px'>
+[true not] true/[false not] false/[true not]
+[true not] false/[true not]
+false
+</pre>
+
+<p>Building on this idea, we can make a <b>OR</b> gate.</p>
+<pre>
+[x y or] true/[x y or] true/[x or] true/[y or] false/[or]
+true true/[x or] true/[y or] false/[or]
+true true/[y or] false/[or]
+true false/[or]
+true
+</pre>
+<pre style='margin-top:-29px'>
+[or] true/[x y or] true/[x or] true/[y or] false/[or]
+[or] true/[x or] true/[y or] false/[or]
+[or] true/[y or] false/[or]
+[or] false/[or]
+false
+</pre>
+
+<h3>Arithmetic</h3>
+
+<p>The fraction <code>x/y</code> drains <code>y</code> into <code>x</code>, effectively finding the sum by resource transfer. The <b>sum</b>:</p>
+<pre>
+[x^2 y^3] x/y
+[x^3 y^2] x/y
+[x^4 y] x/y
+[x^5]
+</pre>
+
+<p>The fraction <code>1/(x y)</code> finds the <b>difference</b> between two symbols, but the program must handle positive and negative results:</p>
+<pre>
+[x^4 y^2] 1/[x y] pos/x neg/y
+[x^3 y] 1/[x y] pos/x neg/y
+[x^2] 1/[x y] pos/x neg/y
+[x^2] pos/x neg/y
+[x pos] pos/x neg/y
+[pos^2] neg/y
+[pos^2]
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^4] 1/[x y] pos/x neg/y
+[x y^3] 1/[x y] pos/x neg/y
+[y^2] 1/[x y] pos/x neg/y
+[y^2] pos/x neg/y
+[y^2] neg/y
+[y neg] neg/y
+[neg^2] neg/y
+[neg^2]
+</pre>
+
+<h3>Functions</h3>
+
+<p>TODO..</p>
+
+<pre>
+: AND ( x y -- bool ) and true/[and x y] false/[and x] false/[and y] ;
+</pre>
+<pre style='margin-top:-29px'>
+x y AND
+x y and true/[and x y] false/[and x] false/[and y] false/[and] 
+true false/[and x] false/[and y] false/[and] 
+true false/[and y] false/[and] 
+true false/[and] 
+true
+</pre>
+
+<h3>Loops</h3>
+
+<p>TODO..</p>
+
+<pre>
+: loop ( -- ) x done/x^4 [x^2 loop]/x ;</pre>
+<pre style='margin-top:-29px'>
+x loop
+x done/x^4 [x^2 loop]/x
+x [x^2 loop]/x
+x^2 loop
+x^2 done/x^4 [x^2 loop]/x
+x^2 [x^2 loop]/x
+x^3 loop
+x^3 done/x^4 [x^2 loop]/x
+x^3 [x^2 loop]/x
+x^4 loop
+x^4 done/x^4 [x^2 loop]/x
+done [x^2 loop]/x
+done
+</pre>
+
+<p>Super rough draft.. come back later.</p><ul></ul></main>
+<footer>
+	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
+	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
+	<a href="devine_lu_linvega.html">Devine Lu Linvega</a> <span> &bull; 2008-2026</span>
+	<div class="right"><a href="about.html#license">BY-NC-SA 4.0</a>
+		<a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.png" alt="CreativeCommons"/></a>
+		<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/rotonde.png" alt="Webring"/></a>
+		<a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.png" alt="Merveilles"/></a>
+	</div>
+	<hr/>
+</footer>
+</body></html>
