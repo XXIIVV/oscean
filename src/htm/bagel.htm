@@ -20,23 +20,30 @@ lists.</p>
 (3 (2 5/2) 7) <i>; -> (3 5 7)</i>
 </pre>
 
-<p>Evaluation consists of applying fractions on whole numbers starting at the deepest nesting level outward until the bag stabilizes.</p>
+<p>Evaluation consists of applying fractions on whole numbers, locally until exhaustion, starting at the deepest nesting level outward until the bag stabilizes.</p>
 <pre>
 (3/2 2)	      <i>; -> 3</i>
-(3/5 5^3)     <i>; -> (3 5^2)</i>
+(5/3 2 3 3)   <i>; -> (5/3 2 3 3) -> (5/3 2 3 5) -> (2 5 5)</i>
 (1/5 (5/7 7)) <i>; -> (1/5 5) -> ()</i>
 </pre>
 
 <p>If a bag contains multiple fractions, the fractions are composed before application.</p>
 <pre>
-(2/3 2/5 3 5) <i>; -> (4/15 3 5) -> 4</i>
+(2/3 2/5 3 5) <i>; -> (4/15 3 5) -> (2 2)</i>
 (1/5 1/7 5)   <i>; -> (1/35 5) -> 5</i>
 </pre>
 
 <p>A fraction is applied if the bag in which it is being applied includes the denominator. If a fraction inside a bag cannot be applied, it is discarded during the reduction. A fractions does not fall through to the outer bag if application fails. </p>
 <pre>
-((3/4 2) 2) <i>; -> (2^2)</i>
+((3/4 2) 2) <i>; -> (2 2)</i>
 (1/4 3)	    <i>; -> 3</i>
+</pre>
+
+<p>A fraction may also output other fractions or other bags.</p>
+<pre>
+(2/3/5 3 5)   <i>; -> (2/3 3) -> 2</i>
+((5/3 3)/7 7) <i>; -> (5/3 3) -> 5</i>
+(3/2/2/2 2^4) <i>; -> (3/2/2 2^3) -> (3/2 2^2) -> 6</i>
 </pre>
 
 <h3>Logic</h3>
@@ -81,68 +88,46 @@ true
 false
 </pre>
 
-<h3>Quoted Fractions</h3>
-
-<p>A quoted fraction is applied repeatedly until exhaustion of the denominator in the bag in which it is applied, this mechanism allows for recursion.</p>
-
-<pre>
-('blue/red red^3)      <i>; while(red--) blue++;</i>
-('blue/red red^2 blue)
-('blue/red red blue^2)
-('blue/red blue^3)
-blue^3
-</pre>
-
-<p>Quoted fractions also compose, non-quoted fractions will compose with quoted fractions, the resulting fraction will always be a quotation.</p>
-<pre>
-('2/3 '2/5 3^2 5^2)
-('4/15 3^2 5^2)
-('4/15 2^2 3 5)
-('4/15 2^4)
-2^4
-</pre>
-
 <h3>Arithmetic</h3>
 
-<p>The fraction <code>'y/x</code> drains <code>x</code> into <code>y</code>, effectively finding the sum by resource transfer.</p>
+<p>The fraction <code>y/x</code> drains <code>x</code> into <code>y</code>, effectively finding the sum by resource transfer.</p>
 <pre>
-('y/x x^3 y^2) <i>; 3 + 2</i>
-('y/x x^2 y^3)
-('y/x x y^4)
-('y/x y^5)
+(y/x x^3 y^2) <i>; 3 + 2</i>
+(y/x x^2 y^3)
+(y/x x y^4)
+(y/x y^5)
 y^5
 </pre>
 
-<p>The fraction <code>'1/(x y)</code> finds the difference between two symbols, but the program must handle positive and negative results:</p>
+<p>The fraction <code>1/(x y)</code> finds the difference between two symbols, but the program must handle positive and negative results:</p>
 <pre>
-('neg/y ('pos/x ('1/(x y) x^4 y^2))) <i>; 4 - 2</i>
-('neg/y ('pos/x ('1/(x y) x^3 y)))
-('neg/y ('pos/x ('1/(x y) x^2)))
-('neg/y ('pos/x x^2))                <i>; drain x into pos</i>
-('neg/y ('pos/x x pos))
-('neg/y ('pos/x pos^2))
-('neg/y pos^2)
+(neg/y (pos/x (1/(x y) x^4 y^2))) <i>; 4 - 2</i>
+(neg/y (pos/x (1/(x y) x^3 y)))
+(neg/y (pos/x (1/(x y) x^2)))
+(neg/y (pos/x x^2))               <i>; drain x into pos</i>
+(neg/y (pos/x x pos))
+(neg/y (pos/x pos^2))
+(neg/y pos^2)
 pos^2
 </pre>
 <pre style='margin-top:-29px'>
-('neg/y ('pos/x ('1/(x y) x^2 y^4))) <i>; 2 - 4</i>
-('neg/y ('pos/x ('1/(x y) x y^3)))
-('neg/y ('pos/x ('1/(x y) y^2)))
-('neg/y ('pos/x y^2))                <i>; drain y into neg</i>
-('neg/y y^2)
-('neg/y y neg)
-('neg/y neg^2)
+(neg/y (pos/x (1/(x y) x^2 y^4))) <i>; 2 - 4</i>
+(neg/y (pos/x (1/(x y) x y^3)))
+(neg/y (pos/x (1/(x y) y^2)))
+(neg/y (pos/x y^2))               <i>; drain y into neg</i>
+(neg/y y^2)
+(neg/y y neg)
+(neg/y neg^2)
 neg^2
 </pre>
 
-<h3>Quoted Arguments</h3>
+<h3>Complex Fractions</h3>
 
-<p>Specific items can be injected inside quoted fractions during recursion to create a mechanism similar to function arguments. In the following example, the fraction will remove the items from the location where the fraction was applied, and inject them inside the fraction at <code>%symbol</code>.</p>
+<p>Specific items can be injected inside fractions during recursion to create a mechanism similar to function arguments. In the following example, the fraction will remove the items from the location where the fraction was applied, and inject them inside the fraction at <code>%symbol</code>.</p>
 <pre>
-'(
-	(fizz/f^3 
-		(buzz/b^5 
-			(fizzbuzz/(f^3 b^5) %f %b))) f b)/i
+((fizz/f^3 
+	(buzz/b^5 
+		(fizzbuzz/(f^3 b^5) %f %b))) f b)/i
 </pre>
 <pre style='margin-top:-29px'>
 while(i--) {
@@ -155,24 +140,6 @@ while(i--) {
 		buzz++, b -= 5;
 }
 </pre>
-
-<h3>Macros</h3>
-
-<p>Macros are named fractions added to the dictionary of symbols, instead of expanding to a prime, this symbol will be expanded to a fraction.</p>
-<pre>
-:sub('neg/y ('pos/x ('1/(x y) %x %y)))
-
-(sub x^5 y^3)
-</pre>
-
-<!--
-<p>Fractions may also output other bags.</p>
-<pre>
-(2/3/5 3 5)   <i>; -> (2/3 3) -> 2</i>
-((5/3 3)/7 7) <i>; -> (5/3 3) -> 5</i>
-(3/2/2/2 2^4) <i>; -> (3/2/2 2^3) -> (3/2 2^2) -> 6</i>
-</pre>
--->
 
 <img src='../media/refs/urbicande.png' style='float:right'/>
 
