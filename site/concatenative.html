@@ -655,125 +655,152 @@ showpage
 
 <h2>Rejoice!</h2>
 
-<p><b>Rejoice</b> is a concatenative programming language where data is encoded as multisets(unordered bags of things) and compose by multiplication. Think <a
+<p><b>Rejoice</b> is a concatenative programming language where data is encoded as multisets and compose by multiplication. Think <a
 href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or
-a strange <a href='forth.html'>Forth</a> in which the program state is a bag.</p>
+a strange <a href='forth.html'>Forth</a> in which the program state is unordered.</p>
 
 <h3>Basics</h3>
 
 <p>The program state is a bag of unordered things, transformations are represented as fractions where the denominator indicates things to remove from the bag, and the numerator, things to add.</p>
 <pre>
-[red green blue] yellow/[green blue]
-[red yellow]
+<i>( a comment )</i>
+
+<b>red green blue</b>  yellow/[green blue]
+<b>red yellow</b>
 </pre>
 
 <p>Evaluation consists of applying fractions from left to right, each to exhaustion, until the bag stabilizes.</p>
 <pre>
-[blue^3] black/pink white/blue red/white^3
-[blue^3] white/blue red/white^3
-[blue^2 white] white/blue red/white^3
-[blue white^2] white/blue red/white^3
-[white^3] red/white^3
-[red]
+<b>blue^3</b>        black/pink white/blue red/white^3
+<b>blue^3</b>        white/blue red/white^3
+<b>blue^2 white</b>  white/blue red/white^3
+<b>blue white^2</b>  white/blue red/white^3
+<b>white^3</b>       red/white^3
+<b>red</b>
+</pre>
+
+<p>A fraction can put another fraction in the bag.</p>
+<pre>
+<b>x</b>  [y z/y]/x 
+<b>y</b>  z/y
+<b>z</b>
 </pre>
 
 <h3>Logic</h3>
 
 <p>Rejoice For example here is a <b>NOT</b> logic gate, notice the <code>a</code> resource.</p>
 <pre>
-[false not] true/[false not] false/[true not]
-true false/[true not]
-true
+<b>false not</b>  true/[false not] false/[true not]
+<b>true</b>       false/[true not]
+<b>true</b>
 </pre>
 <pre style='margin-top:-29px'>
-[true not] true/[false not] false/[true not]
-[true not] false/[true not]
-false
+<b>true not</b>  true/[false not] false/[true not]
+<b>true not</b>  false/[true not]
+<b>false</b>
 </pre>
 
 <p>Building on this idea, we can make a <b>OR</b> gate.</p>
 <pre>
-[x y or] true/[x y or] true/[x or] true/[y or] false/[or]
-true true/[x or] true/[y or] false/[or]
-true true/[y or] false/[or]
-true false/[or]
-true
+<b>x y or</b>  true/[x y or] true/[x or] true/[y or] false/or
+<b>true</b>    true/[x or] true/[y or] false/or
+<b>true</b>    true/[y or] false/or
+<b>true</b>    false/or
+<b>true</b>
 </pre>
 <pre style='margin-top:-29px'>
-[or] true/[x y or] true/[x or] true/[y or] false/[or]
-[or] true/[x or] true/[y or] false/[or]
-[or] true/[y or] false/[or]
-[or] false/[or]
-false
+<b>or</b>     true/[x y or] true/[x or] true/[y or] false/or
+<b>or</b>     true/[x or] true/[y or] false/or
+<b>or</b>     true/[y or] false/or
+<b>or</b>     false/or
+<b>false</b>
 </pre>
 
 <h3>Arithmetic</h3>
 
 <p>The fraction <code>x/y</code> drains <code>y</code> into <code>x</code>, effectively finding the sum by resource transfer. The <b>sum</b>:</p>
 <pre>
-[x^2 y^3] x/y
-[x^3 y^2] x/y
-[x^4 y] x/y
-[x^5]
+<b>x^2 y^3</b>  x/y
+<b>x^3 y^2</b>  x/y
+<b>x^4 y</b>    x/y
+<b>x^5</b>
 </pre>
 
 <p>The fraction <code>1/(x y)</code> finds the <b>difference</b> between two symbols, but the program must handle positive and negative results:</p>
 <pre>
-[x^4 y^2] 1/[x y] pos/x neg/y
-[x^3 y] 1/[x y] pos/x neg/y
-[x^2] 1/[x y] pos/x neg/y
-[x^2] pos/x neg/y
-[x pos] pos/x neg/y
-[pos^2] neg/y
-[pos^2]
+<b>x^4 y^2</b>  1/[x y] pos/x neg/y
+<b>x^3 y</b>    1/[x y] pos/x neg/y
+<b>x^2</b>      1/[x y] pos/x neg/y
+<b>x^2</b>      pos/x neg/y
+<b>x pos</b>    pos/x neg/y
+<b>pos^2</b>    neg/y
+<b>pos^2</b>
 </pre>
 <pre style='margin-top:-29px'>
-[x^2 y^4] 1/[x y] pos/x neg/y
-[x y^3] 1/[x y] pos/x neg/y
-[y^2] 1/[x y] pos/x neg/y
-[y^2] pos/x neg/y
-[y^2] neg/y
-[y neg] neg/y
-[neg^2] neg/y
-[neg^2]
+<b>x^2 y^4</b>  1/[x y] pos/x neg/y
+<b>x y^3</b>    1/[x y] pos/x neg/y
+<b>y^2</b>      1/[x y] pos/x neg/y
+<b>y^2</b>      pos/x neg/y
+<b>y^2</b>      neg/y
+<b>y neg</b>    neg/y
+<b>neg^2</b>    neg/y
+<b>neg^2</b>
+</pre>
+
+<p>To <b>double</b> the value of a symbol:</p>
+<pre>
+<b>x^3</b>      r^2/x
+<b>x^2 r^2</b>  r^2/x
+<b>x r^4</b>    r^2/x
+<b>r^6</b>      r^2/x
+<b>r^6</b>
+</pre>
+
+<p>To <b>divide</b> by three:</p>
+<pre>
+<b>x^7</b>        res/x^3 rem/x
+<b>x^4 res</b>    res/x^3 rem/x
+<b>x res^2</b>    res/x^3 rem/x
+<b>x res^2</b>    rem/x
+<b>res^2 rem</b>
 </pre>
 
 <h3>Functions</h3>
 
-<p>TODO..</p>
+<p>Functions are symbols to be replaced by the body of their definition. A definition starts with colon, and ends with a semi-colon. The definition comment indicates the state of the bag before and after the transformation.</p>
 
 <pre>
-: AND ( x y -- bool ) and true/[and x y] false/[and x] false/[and y] ;
+: And? ( x y -- bool ) <b>a</b> true/[a x y] false/[a x] false/[a y] false/a ;
 </pre>
 <pre style='margin-top:-29px'>
-x y AND
-x y and true/[and x y] false/[and x] false/[and y] false/[and] 
-true false/[and x] false/[and y] false/[and] 
-true false/[and y] false/[and] 
-true false/[and] 
-true
+<b>x y And?</b>
+<b>x y a</b>     true/[a x y] false/[a x] false/[a y] false/a 
+<b>true</b>      false/[a x] false/[a y] false/a 
+<b>true</b>      false/[a y] false/a 
+<b>true</b>      false/a 
+<b>true</b>
 </pre>
 
 <h3>Loops</h3>
 
-<p>TODO..</p>
+<p>A function can include its own name in the definition, allowing for loops:</p>
 
 <pre>
-: loop ( -- ) x done/x^4 [x^2 loop]/x ;</pre>
+: loop ( x -- ) <b>x</b> done/x^4 [x^2 loop]/x ;</pre>
 <pre style='margin-top:-29px'>
-x loop
-x done/x^4 [x^2 loop]/x
-x [x^2 loop]/x
-x^2 loop
-x^2 done/x^4 [x^2 loop]/x
-x^2 [x^2 loop]/x
-x^3 loop
-x^3 done/x^4 [x^2 loop]/x
-x^3 [x^2 loop]/x
-x^4 loop
-x^4 done/x^4 [x^2 loop]/x
-done [x^2 loop]/x
-done
+<b>x loop</b>
+<b>x</b>         done/x^4 [x^2 loop]/x
+<b>x</b>         [x^2 loop]/x
+<b>x^2 loop</b>
+<b>x^2</b>       done/x^4 [x^2 loop]/x
+<b>x^2</b>       [x^2 loop]/x
+<b>x^3 loop</b>
+<b>x^3</b>       done/x^4 [x^2 loop]/x
+<b>x^3</b>       [x^2 loop]/x
+<b>x^4 loop</b>
+<b>x^4</b>       done/x^4 [x^2 loop]/x
+<b>done</b>      [x^2 loop]/x
+<b>done</b>
 </pre>
 
 <p>Super rough draft.. come back later.</p><ul></ul><p><b>incoming: </b><a href="binary.html">binary</a> <a href="fractran.html">fractran</a> <a href="thuesday.html">thuesday</a> <a href="uxntal.html">uxntal</a> <a href="uxn_devlog.html">uxn devlog</a> <a href="2026.html">2026</a> <a href="2024.html">2024</a> </p></main>
