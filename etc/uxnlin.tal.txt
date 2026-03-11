@@ -508,7 +508,11 @@
 	=any1-11-lut =any1-11-lut/lut
 	=ari1-2x-lut =ari1-2x-lut/lut
 	=ari2-2x-lut =ari2-2x-lut/lut
+	=logic =logic/lut
 	&end
+
+@logic "<logic> $1 &lut [
+	"GTH $1 "LTH $1 "EQU $1 "NEQ $1 ]
 
 @any-1x-lut "<any-1x> $1 &lut [ ( consume 1 byte )
 	"INC $1 "DUP $1 "POP $1 ] $1
@@ -699,6 +703,14 @@
 	@bitora "ORA2 20 "ORA $1
 	@bitand "AND2 20 "AND $1
 	@biteor "EOR2 20 "EOR $1
+	@popdup "POP 20 "DUP $1
+	@popdup2 "POP2 20 "DUP2 $1
+	@dupeor "DUP 20 "EOR $1
+	@dupeor2 "DUP2 20 "EOR2 $1
+	@swp "SWP $1
+	@swp2 "SWP2 $1
+	@neq "NEQ $1
+	@equ "EQU $1
 
 (
 @|rules )
@@ -763,6 +775,17 @@
 	"#00 $1 "SFT2 $1 =redundance
 	"SWP $1 "POP2 $1 =redundance
 	"<anyk-20> $1 "POP2 $1 =redundance
+	"OVR $1 "POP $1 =redundance
+	"OVR2 $1 "POP2 $1 =redundance
+	"DUP $1 "NIP $1 =redundance
+	"DUP2 $1 "NIP2 $1 =redundance
+	"SWP $1 "NIP $1 =pop
+	"SWP2 $1 "NIP2 $1 =pop
+
+	"OVR $1 "NIP $1 =popdup
+	"OVR2 $1 "NIP2 $1 =popdup2
+	"POP $1 "#00 $1 =dupeor
+	"POP2 $1 "#0000 $1 =dupeor2
 	"SWPr $1 "STH2r $1 =sthrsthr
 	"SWP $1 "STH2 $1 =sthsth
 	"STH2r $1 "SWP $1 =sthrsthr
@@ -918,6 +941,8 @@
 	",* $1 "STZ* $1 =rune
 	"_* $1 "STZ* $1 =rune
 	";* $1 "STZ* $1 =rune
+	
+
 	&end
 
 @rules3
@@ -946,6 +971,15 @@
 	"#00 $1 "GTH $1 "?* $1 =redundance
 	"SFT $1 "DUP $1 "ADD $1 =redundance
 	"SFT2 $1 "DUP2 $1 "ADD2 $1 =redundance
+
+	"ROT $1 "SWP $1 "ROT $1 =swp
+	"ROT2 $1 "SWP2 $1 "ROT2 $1 =swp2
+
+	"ROT $1 "NIP $1 "SWP $1 =pop
+	"ROT2 $1 "NIP2 $1 "SWP2 $1 =pop2
+
+	"<logic> $1 "{1} $1 "<logic> $1 =logic
+
 	"#00 $1 "NEQ $1 "JMP $1 =1jcn
 	"#01 $1 "EQU $1 "JMP $1 =1jcn
 	"#00 $1 "GTH $1 "JMP $1 =1jcn
