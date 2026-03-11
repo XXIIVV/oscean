@@ -669,19 +669,17 @@ a strange <a href='forth.html'>Forth</a> in which the program state is unordered
 <b>red yellow</b>
 </pre>
 
-<p>Evaluation consists of applying fractions from left to right, each to exhaustion, until the bag stabilizes.</p>
+<p>Evaluation consists of applying fractions in a sequence when their denominators are found.</p>
 <pre>
-<b>blue^3</b>        black/pink white/blue red/white^3
-<b>blue^3</b>        white/blue red/white^3
-<b>blue^2 white</b>  white/blue red/white^3
-<b>blue white^2</b>  white/blue red/white^3
-<b>white^3</b>       red/white^3
+<b>blue^3</b>        black/pink white/blue red/[blue^2 white]
+<b>blue^3</b>        white/blue red/[blue^2 white]
+<b>blue^2 white</b>  red/[blue^2 white]
 <b>red</b>
 </pre>
 
-<p>A fraction can put another fraction in the bag.</p>
+<p>A fraction can also put another bag containing fractions and symbols, in the bag.</p>
 <pre>
-<b>x</b>  [y z/y]/x 
+<b>x</b>  [y z/y]/x
 <b>y</b>  z/y
 <b>z</b>
 </pre>
@@ -716,69 +714,69 @@ a strange <a href='forth.html'>Forth</a> in which the program state is unordered
 <b>false</b>
 </pre>
 
-<h3>Arithmetic</h3>
-
-<p>The fraction <code>x/y</code> drains <code>y</code> into <code>x</code>, effectively finding the sum by resource transfer. The <b>sum</b>:</p>
-<pre>
-<b>x^2 y^3</b>  x/y
-<b>x^3 y^2</b>  x/y
-<b>x^4 y</b>    x/y
-<b>x^5</b>
-</pre>
-
-<p>The fraction <code>1/(x y)</code> finds the <b>difference</b> between two symbols, but the program must handle positive and negative results:</p>
-<pre>
-<b>x^4 y^2</b>  1/[x y] pos/x neg/y
-<b>x^3 y</b>    1/[x y] pos/x neg/y
-<b>x^2</b>      1/[x y] pos/x neg/y
-<b>x^2</b>      pos/x neg/y
-<b>x pos</b>    pos/x neg/y
-<b>pos^2</b>    neg/y
-<b>pos^2</b>
-</pre>
-<pre style='margin-top:-29px'>
-<b>x^2 y^4</b>  1/[x y] pos/x neg/y
-<b>x y^3</b>    1/[x y] pos/x neg/y
-<b>y^2</b>      1/[x y] pos/x neg/y
-<b>y^2</b>      pos/x neg/y
-<b>y^2</b>      neg/y
-<b>y neg</b>    neg/y
-<b>neg^2</b>    neg/y
-<b>neg^2</b>
-</pre>
-
-<p>To <b>double</b> the value of a symbol:</p>
-<pre>
-<b>x^3</b>      r^2/x
-<b>x^2 r^2</b>  r^2/x
-<b>x r^4</b>    r^2/x
-<b>r^6</b>      r^2/x
-<b>r^6</b>
-</pre>
-
-<p>To <b>divide</b> by three:</p>
-<pre>
-<b>x^7</b>        res/x^3 rem/x
-<b>x^4 res</b>    res/x^3 rem/x
-<b>x res^2</b>    res/x^3 rem/x
-<b>x res^2</b>    rem/x
-<b>res^2 rem</b>
-</pre>
-
 <h3>Functions</h3>
 
-<p>Functions are symbols to be replaced by the body of their definition. A definition starts with colon, and ends with a semi-colon. The definition comment indicates the state of the bag before and after the transformation.</p>
+<p>Functions are symbols that are replaced their body if found in the bag. A definition starts with colon, and ends with a semi-colon. The definition comment indicates the state of the bag before and after the transformation.</p>
 
 <pre>
 : And? ( x y -- bool ) <b>a</b> true/[a x y] false/[a x] false/[a y] false/a ;
 </pre>
 <pre style='margin-top:-29px'>
 <b>x y And?</b>
-<b>x y a</b>     true/[a x y] false/[a x] false/[a y] false/a 
-<b>true</b>      false/[a x] false/[a y] false/a 
-<b>true</b>      false/[a y] false/a 
-<b>true</b>      false/a 
+<b>x y a</b>     true/[a x y] false/[a x] false/[a y] false/a
+<b>true</b>      false/[a x] false/[a y] false/a
+<b>true</b>      false/[a y] false/a
+<b>true</b>      false/a
 <b>true</b>
+</pre>
+
+<h3>Arithmetic</h3>
+
+<p>The function <code>[x Add]/y</code> drains <code>y</code> into <code>x</code> and calls itself again for as long as <code>y</code> is in the bag, effectively finding the sum by resource transfer.</p>
+
+<pre>
+: Add ( x y -- x^2 ) [x Add]/y ;
+</pre>
+<pre style='margin-top:-29px'>
+<b>x^2 y^3 Add</b>
+<b>x^2 y^3</b>      [x Add]/y
+<b>x^3 y^2 Add</b>
+<b>x^3 y^2</b>      [x Add]/y
+<b>x^4 y Add</b>  
+<b>x^4 y</b>        [x Add]/y
+<b>x^5 Add</b>    
+<b>x^5</b>          [x Add]/y
+<b>x^5</b>
+</pre>
+
+<p>To find the <b>difference</b> between two symbols, the following recursive function can find the result:</p>
+<pre>
+: Sub ( x y -- x|y ) Sub/[x y] ;
+</pre>
+<pre style='margin-top:-29px'>
+x^4 y^2 Sub
+x^4 y^2 Sub/[x y]
+x^3 y Sub
+x^3 y Sub/[x y]
+x^2 Sub
+x^2 Sub/[x y]
+x^2
+</pre>
+
+<p>To <b>double</b> the value of a symbol:</p>
+<pre>
+: Double ( x -- res^2 ) [res^2 Double]/x ;
+</pre>
+<pre style='margin-top:-29px'>
+<b>x^3 Double</b>    
+<b>x^3</b>               [res^2 Double]/x
+<b>x^2 res^2 Double</b>
+<b>x^2 res^2</b>         [res^2 Double]/x
+<b>x res^4 Double</b>
+<b>x res^4</b>           [res^2 Double]/x
+<b>res^6 Double</b>
+<b>res^6</b>             [res^2 Double]/x
+<b>res^6</b>
 </pre>
 
 <h3>Loops</h3>
