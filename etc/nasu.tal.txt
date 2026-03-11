@@ -1,17 +1,17 @@
 ( Nasu : pixel editor )
 
-|00 @System &vector $2 &pad $6 &r $2 &g $2 &b $2
-|10 @Console &vector $2 &read $1 &pad $5 &write $1
-|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|80 @Controller &vector $2 &button $1 &key $1
-|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @System/vector $2 &pad $6 &r $2 &g $2 &b $2
+|10 @Console/vector $2 &read $1 &pad $5 &write $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &chord $1
+|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
-	@state &timer $1 &changed $1
-	@settings &depth $1 &color $1 &blend $1 &ratio $1 &tool $1 &focus $2 &zoom $1 &brush $1 &dir $1
-	@cursor &x $2 &y $2 &last $1
+	@state/timer $1
+	@settings/depth $1 &color $1 &blend $1 &ratio $1 &tool $1 &focus $2 &zoom $1 &brush $1 &dir $1
+	@cursor/x $2 &y $2 &last $1
 	@selection &x1 $1 &y1 $1 &x2 $1 &y2 $1 &zx $1 &zy $1 &a $1
 	@frame &x1 $2 &y1 $2 &x2 $2 &y2 $2 &width $2 &height $2
 	@filepath $40
@@ -70,11 +70,11 @@
 	"Nasu 0a
 	( details ) "A 20 "Sprite 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "16 20 "Apr 20 "2025 00 01
+	( date ) "11 20 "Mar 20 "2026 00 01
 	( icon ) 83 =appicon
 
 @manifest ( ... )
-	( >>> ) 09 "Nasu $1
+	( > ) 09 "Nasu $1
 	( - ) 00 00 =about/toggle "About $1
 	( - ) 01 "n =file-new "New $1
 	( - ) 01 "r =trap "Rename $1
@@ -84,7 +84,7 @@
 	( - ) 00 00 =file-save-mono "SaveMono $1
 	( - ) 01 "p =save-theme "SaveTheme $1
 	( - ) 01 "q =exit "Exit $1
-	( >>> ) 0a "Edit $1
+	( > ) 0a "Edit $1
 	( - ) 01 "c =edit-copy-chr "Copy $1
 	( - ) 05 "C =edit-copy-icn "CopyMono $1
 	( - ) 01 "v =edit-paste "Paste $1
@@ -95,10 +95,10 @@
 	( - ) 00 "c =edit-colorize "Colorize $1
 	( - ) 00 00 =edit-flipx "Horizontal $1
 	( - ) 00 00 =edit-flipy "Veritcal $1
-	( >>> ) 02 "Options $1
+	( > ) 02 "Options $1
 	( - ) 02 00 =toggle-zoom "Zoom $1
 	( - ) 00 "d =toggle-dir "Direction $1
-	( >>> ) 0a "Move $1
+	( > ) 0a "Move $1
 	( - ) 10 00 =move-up "Up $1
 	( - ) 20 00 =move-down "Down $1
 	( - ) 40 00 =move-left "Left $1
@@ -109,7 +109,7 @@
 	( - ) 84 00 =move-incw "Incr.W $1
 	( - ) 00 1b =move-reset "Reset $1
 	( - ) 01 "a =select-all "SelectAll $1
-	( >>> ) 07 "Tool $1
+	( > ) 07 "Tool $1
 	( - ) 00 "q =tool-brush "Brush $1
 	( - ) 00 "w =tool-selector "Selector $1
 	( - ) 00 "e =tool-zoom "Zoom $1
@@ -204,8 +204,7 @@
 	#01 .settings/tool LDZ EQU ?&select
 	( | paint )
 	.settings/color LDZ .Mouse/state DEI #01 EQU MUL <put-pixel>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state>
+	state/<change>
 	<redraw>
 	BRK
 
@@ -218,8 +217,7 @@
 
 	&zoomed ( x* y* -> )
 	SWP2 #03 SFT2 #00 .selection/zx LDZ ADD2 SWP2 #03 SFT2 #00 .selection/zy LDZ ADD2 .settings/color LDZ .Mouse/state DEI #01 EQU MUL <put-pixel>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state>
+	state/<change>
 	<redraw>
 	BRK
 
@@ -239,8 +237,7 @@
 	.settings/focus LDZ2 ;spritesheet SUB2 STH2kr STA2
 	.settings/blend LDZ INC2r INC2r STH2r STA
 	<draw-nametable>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state>
+	state/<change>
 	BRK
 
 @on-touch-toolview ( -> )
@@ -264,16 +261,18 @@
 @on-touch-zoomview ( -> )
 	.Mouse/y DEI2 .zoomview/y1 LDZ2 SUB2 #0020 LTH2 ?{
 		.Mouse/x DEI2 .zoomview/x1 LDZ2 SUB2 #03 SFT2 NIP
-		( ) DUP #00 EQU .Mouse/state DEI #01 EQU #0101 NEQ2 ?{ ;op-shiftu <run> }
-		DUP #00 EQU .Mouse/state DEI #01 GTH #0101 NEQ2 ?{ ;op-shiftd <run> }
-		DUP #01 EQU .Mouse/state DEI #01 EQU #0101 NEQ2 ?{ ;op-shiftr <run> }
-		DUP #01 EQU .Mouse/state DEI #01 GTH #0101 NEQ2 ?{ ;op-shiftl <run> }
+		( ) DUP #00 EQU .Mouse/state DEI #01 EQU #0101 NEQ2 ?{ ;op-shiftu <run>
+			state/<change> }
+		DUP #00 EQU .Mouse/state DEI #01 GTH #0101 NEQ2 ?{ ;op-shiftd <run>
+			state/<change> }
+		DUP #01 EQU .Mouse/state DEI #01 EQU #0101 NEQ2 ?{ ;op-shiftr <run>
+			state/<change> }
+		DUP #01 EQU .Mouse/state DEI #01 GTH #0101 NEQ2 ?{ ;op-shiftl <run>
+			state/<change> }
 		POP
 		( release mouse ) [ LIT2 00 -Mouse/state ] DEO !&finish }
 	.Mouse/x DEI2 .zoomview/x1 LDZ2 SUB2 #02 SFT2 #00 .selection/x1 LDZ #30 SFT2 ADD2
-	( ) .Mouse/y DEI2 .zoomview/y1 LDZ2 SUB2 #02 SFT2 #00 .selection/y1 LDZ #30 SFT2 ADD2 .settings/color LDZ .Mouse/state DEI #01 EQU MUL <put-pixel>
-	&finish [ LIT2 01 -state/changed ] STZ
-	<draw-state>
+	( ) .Mouse/y DEI2 .zoomview/y1 LDZ2 SUB2 #02 SFT2 #00 .selection/y1 LDZ #30 SFT2 ADD2 .settings/color LDZ .Mouse/state DEI #01 EQU MUL <put-pixel> &finish state/<change>
 	<redraw>
 	BRK
 
@@ -448,7 +447,7 @@
 
 @has-nametable ( -- bool )
 	;nametable STH2k #0300 ADD2 STH2r
-	&>loop ( -- )
+	&>loop
 		LDAk #00 EQU ?{ POP2 POP2 #01 JMP2r }
 		INC2 GTH2k ?&>loop
 	POP2 POP2 #00 JMP2r
@@ -456,15 +455,29 @@
 @get-strw ( str* -- width* )
 	slen #30 SFT2 JMP2r
 
+@state/<unchange> ( -- )
+	[ LIT2 01 _&changed ] STR !/<draw>
+
+@state/<change> ( -- )
+	[ LIT2 03 _&changed ] STR
+	( >> )
+
+@state/<draw> ( -- )
+	.toolview/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
+	.toolview/y1 LDZ2 .Screen/y DEO2
+	;save-icn .Screen/addr DEO2
+	[ LIT2 &changed $1 -Screen/sprite ] DEO
+	JMP2r
+
 (
 @|filter )
 
 @<filter> ( op* -- )
 	,&fn STR2
 	.selection/y2 LDZ INC #30 SFT .selection/y1 LDZ #30 SFT
-	&>ver ( -- )
+	&>ver
 		STHk .selection/x2 LDZ INC #30 SFT .selection/x1 LDZ #30 SFT
-		&>hor ( -- )
+		&>hor
 			#00 OVR #00 STHkr [ LIT2 &fn $2 ] JSR2 INC GTHk ?&>hor
 		POP2 POPr INC GTHk ?&>ver
 	POP2 JMP2r
@@ -508,9 +521,9 @@
 	.settings/dir LDZ ?<run-ver>
 	,&fn STR2
 	.selection/y2 LDZ INC .selection/y1 LDZ
-	&>ver ( -- )
+	&>ver
 		.selection/x2 LDZ INC .selection/x1 LDZ
-		&>hor ( -- )
+		&>hor
 			OVR2 NIP OVR SWP get-tile-addr [ LIT2 &fn $2 ] JSR2 INC GTHk ?&>hor
 		POP2 INC GTHk ?&>ver
 	POP2 JMP2r
@@ -518,9 +531,9 @@
 @<run-ver> ( op* -- )
 	,&fn STR2
 	.selection/x2 LDZ INC .selection/x1 LDZ
-	&>ver ( -- )
+	&>ver
 		.selection/y2 LDZ INC .selection/y1 LDZ
-		&>hor ( -- )
+		&>hor
 			OVR2 NIP OVR get-tile-addr [ LIT2 &fn $2 ] JSR2 INC GTHk ?&>hor
 		POP2 INC GTHk ?&>ver
 	POP2 JMP2r
@@ -531,21 +544,21 @@
 @op-invert ( addr* -- )
 	,&t STR2
 	#1000
-	&>loop ( -- )
+	&>loop
 		#00 OVR [ LIT2 &t $2 ] ADD2 LDA2k #ffff EOR2 SWP2 STA2
 		INC INC GTHk ?&>loop
 	POP2 JMP2r
 
 @op-shiftu ( addr* -- )
 	DUP2k #0007 ADD2 SWP2 LDAk STH
-	&>ch1 ( -- )
+	&>ch1
 		INC2k LDA STH
 		DUP2 STHr ROT ROT STA
 		INC2 GTH2k ?&>ch1
 	POP2
 	( cap ) STHr ROT ROT STA
 	#0008 ADD2 DUP2 #0007 ADD2 SWP2 LDAk STH
-	&>ch2 ( -- )
+	&>ch2
 		INC2k LDA STH
 		DUP2 STHr ROT ROT STA
 		INC2 GTH2k ?&>ch2
@@ -555,14 +568,14 @@
 
 @op-shiftd ( addr* -- )
 	DUP2k #0007 ADD2 LDAk STH
-	&>ch1 ( -- )
+	&>ch1
 		DUP2 #0001 SUB2 LDA STH
 		DUP2 STHr ROT ROT STA
 		#0001 SUB2 LTH2k ?&>ch1
 	POP2
 	( cap ) STHr ROT ROT STA
 	#0008 ADD2 DUP2 #0007 ADD2 LDAk STH
-	&>ch2 ( -- )
+	&>ch2
 		DUP2 #0001 SUB2 LDA STH
 		DUP2 STHr ROT ROT STA
 		#0001 SUB2 LTH2k ?&>ch2
@@ -573,7 +586,7 @@
 @op-shiftl ( addr* -- )
 	STH2
 	#0800
-	&>loop ( -- )
+	&>loop
 		( 1 ) #00 OVR STH2kr ADD2
 		( 1 ) LDAk rol ROT ROT STA
 		( 2 ) #00 OVR STH2kr #0008 ADD2 ADD2
@@ -584,7 +597,7 @@
 @op-shiftr ( addr* -- )
 	STH2
 	#0800
-	&>loop ( -- )
+	&>loop
 		( 1 ) #00 OVR STH2kr ADD2
 		( 1 ) LDAk ror ROT ROT STA
 		( 2 ) #00 OVR STH2kr #0008 ADD2 ADD2
@@ -627,7 +640,7 @@
 	;spritesheet .Screen/addr DEO2
 	[ LIT2 f6 -Screen/auto ] DEO
 	#1000
-	&>loop ( -- )
+	&>loop
 		[ LIT2 81 -Screen/sprite ] DEO
 		INC GTHk ?&>loop
 	POP2
@@ -637,7 +650,7 @@
 	#00 .selection/y1 LDZ #30 SFT2 .tileview/y1 LDZ2 ADD2 .Screen/y DEO2
 	.selection LDZ2 get-tile-addr ,&sprite STR2
 	.selection/y2 LDZ .selection/y1 LDZ SUB INC #00
-	&>loop-sel ( -- )
+	&>loop-sel
 		#00 OVR #80 SFT2 [ LIT2 &sprite $2 ] ADD2 .Screen/addr DEO2
 		[ LIT2 84 -Screen/sprite ] DEO
 		INC GTHk ?&>loop-sel
@@ -662,7 +675,7 @@
 	.tileview/y1 LDZ2 .Screen/y DEO2
 	[ LIT2 f2 -Screen/auto ] DEO
 	#f0
-	&>times ( -- )
+	&>times
 		[ LIT2 00 -Screen/sprite ] DEO
 		INC DUP ?&>times
 	POP
@@ -670,11 +683,11 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	;pixel-icn .Screen/addr DEO2
 	#1000
-	&>ver ( -- )
+	&>ver
 		#00 OVR #30 SFT .tileview/y1 LDZ2 ADD2 .Screen/y DEO2
 		.tileview/x1 LDZ2 .Screen/x DEO2
 		#1000
-		&>hor ( -- )
+		&>hor
 			OVR2 NIP OVR SWP
 			( y ) .selection/zy LDZ ADD #00 SWP
 			( x ) ROT .selection/zx LDZ ADD #00 SWP SWP2 get-pixel .Screen/sprite DEO
@@ -697,11 +710,11 @@
 @<draw-nametable> ( -- )
 	[ LIT2 00 -Screen/auto ] DEO
 	#1000
-	&>ver ( -- )
+	&>ver
 		( > y ) #00 OVR #30 SFT2 .nametableview/y LDZ2 ADD2 .Screen/y DEO2
 		STHk .nametableview/x LDZ2 .Screen/x DEO2
 		#1000
-		&>hor ( -- )
+		&>hor
 			( > x ) #00 OVR #30 SFT2 .nametableview/x LDZ2 ADD2 .Screen/x DEO2
 			( id ) #00 OVR STHkr #40 SFT ADD
 			( addr* ) #0003 MUL2 ;nametable ADD2 LDA2k ;spritesheet ADD2 .Screen/addr DEO2
@@ -715,11 +728,11 @@
 @<draw-zoomview> ( -- )
 	;bigpixel-icn .Screen/addr DEO2
 	#0800
-	&>ver ( -- )
+	&>ver
 		#00 OVRk #00 .selection/y1 LDZ #30 SFT ADD2 ,&y STR2
 		#20 SFT .zoomview/y1 LDZ2 ADD2 .Screen/y DEO2
 		#0800
-		&>hor ( -- )
+		&>hor
 			#00 OVRk #00 .selection/x1 LDZ #30 SFT ADD2 ,&x STR2
 			#20 SFT .zoomview/x1 LDZ2 ADD2 .Screen/x DEO2
 			[ LIT2 &x $2 ] [ LIT2 &y $2 ] get-pixel .Screen/sprite DEO
@@ -744,10 +757,10 @@
 	( | stash address )
 	.settings/focus LDZ2 STH2k .Screen/addr DEO2
 	#0400
-	&>ver ( -- )
+	&>ver
 		#00 OVR #30 SFT .preview/y1 LDZ2 ADD2 .Screen/y DEO2
 		#0400
-		&>hor ( -- )
+		&>hor
 			#00 OVR #30 SFT .preview/x1 LDZ2 ADD2 .Screen/x DEO2
 			( | get x,y )
 			OVR2 NIP OVR SWP
@@ -787,7 +800,7 @@
 	.Screen/y DEO2
 	.Screen/x DEO2
 	#1000
-	&>loop ( -- )
+	&>loop
 		DUP STHkr GTH #30 SFT #00 SWP ;slider-icns ADD2 .Screen/addr DEO2
 		[ LIT2 02 -Screen/sprite ] DEO
 		.Screen/x DEI2k INC2 INC2 ROT DEO2
@@ -798,7 +811,7 @@
 @<draw-blendview> ( -- )
 	[ LIT2 00 -Screen/auto ] DEO
 	#1000
-	&>loop ( -- )
+	&>loop
 		#00 OVR #03 AND #30 SFT2 .blendview/x1 LDZ2 ADD2 .Screen/x DEO2
 		#00 OVR #32 SFT2 .blendview/y1 LDZ2 ADD2 .Screen/y DEO2
 		;fill-icn .Screen/addr DEO2
@@ -832,7 +845,7 @@
 	.selection LDZ2 SWP #40 SFT ADD <draw-byte>
 	.dataview/y1 LDZ2 .Screen/y DEO2
 	#0400
-	&>loop ( -- )
+	&>loop
 		.dataview/x1 LDZ2 .Screen/x DEO2
 		#00 OVR DUP ADD .settings/focus LDZ2 ADD2 #01 ;<draw-chr>/color STA
 		( ch1 ) LDA2k <draw-short>
@@ -864,7 +877,7 @@
 	;zoom-icns [ #00 .settings/zoom LDZ #30 SFT2 ADD2 ] .Screen/addr DEO2
 	#01 .settings/tool LDZ #02 EQU ADD .Screen/sprite DEO
 	( | file i/o )
-	<draw-state>
+	state/<draw>
 	.toolview/x2 LDZ2 STH2k #0018 SUB2 .Screen/x DEO2
 	;load-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
@@ -873,13 +886,6 @@
 	[ LIT2 01 -Screen/sprite ] DEO
 	( | filepath )
 	#01 !<draw-filepath>
-
-@<draw-state> ( -- )
-	.toolview/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
-	.toolview/y1 LDZ2 .Screen/y DEO2
-	;save-icn .Screen/addr DEO2
-	#05 .state/changed LDZ #0a MUL ADD .Screen/sprite DEO
-	JMP2r
 
 @<draw-filepath> ( color -- )
 	.toolview/x1 LDZ2 #0040 ADD2 .Screen/x DEO2
@@ -896,7 +902,7 @@
 	POP ;fill-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/auto ] DEO
 	#1300
-	&>l ( -- )
+	&>l
 		[ LIT2 00 -Screen/sprite ] DEO
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -905,7 +911,7 @@
 	.Screen/addr DEO2 &blank .Screen/auto DEO
 	STH
 	#00
-	&>l2 ( -- )
+	&>l2
 		STHkr .Screen/sprite DEO
 		INC GTHk ?&>l2
 	POP2 POPr JMP2r
@@ -928,7 +934,7 @@
 @<draw-str> ( str* -- str* )
 	LDAk #00 EQU ?{
 		[ LIT2 01 -Screen/auto ] DEO
-		&>while ( -- )
+		&>while
 			LDAk <draw-chr>
 			INC2 LDAk ?&>while }
 	INC2 JMP2r
@@ -969,7 +975,7 @@
 	.Screen/addr DEO2
 	STH
 	#00
-	&>l ( -- )
+	&>l
 		STHkr /paint INC GTHk ?&>l
 	POP2 POPr JMP2r
 
@@ -1012,8 +1018,7 @@
 	( | rename to untitled.txt )
 	;filepath #0040 <mclr>
 	;untitled-txt ;filepath <scpy>
-	#00 .state/changed STZ
-	<draw-state> !<redraw>
+	state/<unchange> !<redraw>
 
 @file-open ( -- )
 	;filepath is-mono ?file-open-mono
@@ -1030,8 +1035,7 @@
 	#0300 .File/length DEO2
 	;nametable .File/read DEO2
 	;filepath scap #0004 SUB2 #0004 <mclr>
-	#00 .state/changed STZ
-	<draw-state> !<redraw>
+	state/<unchange> !<redraw>
 
 @file-open-mono ( -- )
 	;spritesheet #1300 <mclr>
@@ -1039,11 +1043,10 @@
 	;filepath .File/name DEO2
 	#0008 .File/length DEO2
 	#0000
-	&>loop ( -- )
+	&>loop
 		#00 OVR #40 SFT2 ;spritesheet ADD2 .File/read DEO2
 		INC NEQk ?&>loop
-	POP2 #00 .state/changed STZ
-	<draw-state> !<redraw>
+	POP2 state/<unchange> !<redraw>
 
 @file-save ( -- )
 	;filepath is-mono ?file-save-mono
@@ -1058,16 +1061,16 @@
 		#0300 .File/length DEO2
 		;nametable .File/write DEO2
 		;filepath scap #0004 SUB2 #0004 <mclr> }
-	#00 .state/changed STZ !<draw-state>
+	!state/<unchange>
 
 @file-save-mono ( -- )
 	;filepath .File/name DEO2
 	#0008 .File/length DEO2
 	#0000
-	&>loop ( -- )
+	&>loop
 		#00 OVR #40 SFT2 ;spritesheet ADD2 .File/write DEO2
 		INC NEQk ?&>loop
-	POP2 #00 .state/changed STZ !<draw-state>
+	POP2 !state/<unchange>
 
 @save-theme ( -- )
 	.System/r DEI2 #fffa STA2
@@ -1093,40 +1096,38 @@
 @edit-paste ( -- )
 	;snarf-txt .File/name DEO2
 	#0010 .File/length DEO2
-	;op-read <run> !<redraw>
+	;op-read <run>
+	state/<change> !<redraw>
 
 @edit-paste-icn ( -- )
 	;snarf-txt .File/name DEO2
 	#0008 .File/length DEO2
-	;op-read <run> !<redraw>
+	;op-read <run>
+	state/<change> !<redraw>
 
 @edit-cut ( -- )
-	edit-copy-chr ;op-erase <run> !<redraw>
+	edit-copy-chr ;op-erase <run>
+	state/<change> !<redraw>
 
 @edit-erase ( -- )
 	;op-erase <run>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state> !<redraw>
+	state/<change> !<redraw>
 
 @edit-invert ( -- )
 	;op-invert <run>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state> !<redraw>
+	state/<change> !<redraw>
 
 @edit-colorize ( -- )
 	;filter-colorize <filter>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state> !<redraw>
+	state/<change> !<redraw>
 
 @edit-flipx ( -- )
 	;filter-flipx <filter>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state> !<redraw>
+	state/<change> !<redraw>
 
 @edit-flipy ( -- )
 	;filter-flipy <filter>
-	[ LIT2 01 -state/changed ] STZ
-	<draw-state> !<redraw>
+	state/<change> !<redraw>
 
 @tool-brush ( -- )
 	#00 !<set-tool>
@@ -1214,18 +1215,10 @@
 @<mcpy> ( src* dst* len* -- )
 	SWP2 STH2
 	OVR2 ADD2 SWP2
-	&>loop ( -- )
+	&>loop
 		LDAk STH2kr STA
 		INC2r INC2 GTH2k ?&>loop
 	POP2 POP2 POP2r JMP2r
-
-@<phex> ( short* -- )
-	SWP <phex>/b
-	&b ( -- )
-	DUP #04 SFT <phex>/c
-	&c ( -- )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
 
 (
 @|assets )

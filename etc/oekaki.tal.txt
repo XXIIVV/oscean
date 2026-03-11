@@ -11,7 +11,7 @@
 |000
 
 	@src/buf $40
-	@canvas/width $2 &height $2 &length $2 &x $2 &y $2 &changed $1
+	@canvas/width $2 &height $2 &length $2 &x $2 &y $2
 	@brush/color $1 &shape $1 &patt $1 &tool $1 &natural $1 &erase $1 &blend $1
 	@menu/hide $1
 
@@ -53,8 +53,7 @@
 	( name ) "Oekaki 0a
 	( desc ) "Drawing 20 "Program 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Dec 20 "2025 $1
-	( exts ) 00
+	( date ) "11 20 "Mar 20 "2026 $2
 
 %abs2 ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
@@ -194,18 +193,13 @@
 	&>vf
 		STH2k .&width LDZ2 #01 SFT2 #0000
 		&>hf
-			( a ) DUP2 STH2kr canvas/get-pixel STH
-			( b ) OVR2 INC2 .&width LDZ2 SWP2 SUB2 SWP2 canvas/get-pixel STH
+			( a ) DUP2 STH2kr /get-pixel STH
+			( b ) OVR2 INC2 .&width LDZ2 SWP2 SUB2 SWP2 /get-pixel STH
 			( a ) SWPr STHr /<set-pixel-raw>
 			( b ) NIP2 STHr /<set-pixel-raw>
 			POP2 POP2 INC2 GTH2k ?&>hf
 		POP2 POP2 POP2r INC2 GTH2k ?&>vf
 	POP2 POP2 !/<redraw>
-
-@canvas/<set-state> ( state -- )
-	DUP .&changed LDZ EQU ?{
-		( set ) .&changed STZ !<draw-state> }
-	POP JMP2r
 
 @canvas/<set-size> ( w* h* -- )
 	.Screen/height DEO2
@@ -230,7 +224,7 @@
 	&>v
 		[ LIT2 &xn $1 &xi $1 ]
 		( xi yi ) ROTk ROT POP
-		( *x *y ) SWP #00 SWP #30 SFT2 ROT #00 SWP #30 SFT2 canvas/get-tile-addr .Screen/addr DEO2
+		( *x *y ) SWP #00 SWP #30 SFT2 ROT #00 SWP #30 SFT2 /get-tile-addr .Screen/addr DEO2
 		.&y LDZ2 ADD2 .Screen/y DEO2
 		.&x LDZ2 ADD2 .Screen/x DEO2
 		[ LIT2r 81 -Screen/sprite ]
@@ -243,7 +237,7 @@
 @canvas/<set-pixel-raw> ( x* y* color -- x* y* )
 	STH
 	[ LITr 01 ]
-	( get tile addr ) canvas/get-tile-addr STH2
+	( get tile addr ) /get-tile-addr STH2
 	( get glyph vertical offset ) DUP2 #0007 AND2 STH2
 	ADD2r
 	( make bit mask ) OVR2 NIP #07 AND #80 SWP SFT
@@ -422,14 +416,26 @@
 	[ LIT2 08 -brush/patt ] LDZ NEQ #0a MUL .Screen/sprite DEO
 	( >> )
 
-@<draw-state> ( -- )
+@state/<draw> ( -- )
 	.menu/hide LDZ ?{
-		;state-icn .Screen/addr DEO2
-		#0003 .Screen/x DEO2
 		[ LIT2 00 -Screen/auto ] DEO
+		;&sprite .Screen/addr DEO2
+		#0003 .Screen/x DEO2
 		#0130 .Screen/y DEO2
-		#000a .canvas/changed LDZ [ JMP SWP POP ] .Screen/sprite DEO }
+		[ LIT2 &changed $1 -Screen/sprite ] DEO }
 	JMP2r
+
+@state/<unchange> ( -- )
+	#0a !/<set>
+
+@state/<change> ( -- )
+	#00
+	( >> )
+
+@state/<set> ( state -- )
+	DUP ,&changed LDR EQU ?{
+		( set ) ,&changed STR !/<draw> }
+	POP JMP2r
 
 (
 @|tools )
@@ -674,7 +680,7 @@
 			( y* ) OVR2 #03 SFT [ LIT2 &y $2 ] ADD2
 			( fn ) [ LIT2 &fn $2 ] JSR2 }
 		POP2 INC GTHk ?&>l
-	POP2 #01 !canvas/<set-state>
+	POP2 !state/<change>
 
 @natural ( x* y* -- x* y* )
 	( speed ) OVR2 OVR2 canvas/get-touch-x canvas/get-touch-y get-speed
@@ -697,16 +703,15 @@
 @|file )
 
 @<make-file> ( -- )
-	;canvas/mem .canvas/length LDZ2 mclr #00 canvas/<set-state> !canvas/<redraw>
+	;canvas/mem .canvas/length LDZ2 mclr state/<unchange> !canvas/<redraw>
 
 @<save-file> ( -- )
 	;src/buf .File/name DEO2
 	.canvas/length LDZ2 .File/length DEO2
-	;canvas/mem .File/write DEO2
-	#00 !canvas/<set-state>
+	;canvas/mem .File/write DEO2 !state/<unchange>
 
 @<open-file> ( -- )
-	#00 canvas/<set-state>
+	state/<unchange>
 	src/is-icn ?<open-icn>
 	src/is-tga ?<open-tga>
 	;src/buf .File/name DEO2
@@ -745,8 +750,8 @@
 	( ) DUP #03 EQU ?&rawm
 	POP
 	( | error )
-	;&error-txt <pstr>/
-	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 <pstr>/
+	;&error-txt str/<print>
+	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 str/<print>
 	#0a18 DEO
 	JMP2r
 
@@ -757,7 +762,7 @@
 	POP ;tga-rawm #0001 !parse-tga
 
 	&error-txt ( err )
-	"Unsupported 20 "image-type: 20 $1
+	"Unsupported 20 "image-type: 20 00
 
 @parse-tga ( filter* length* -- )
 	( | cache size )
@@ -896,11 +901,11 @@
 
 @spray/<update> ( -- )
 	[ LIT2 08 -brush/patt ] LDZ EQU ?{ JMP2r }
-	prng/get ,&seed STR2
+	prng/get ,&+seed STR2
 	#0800
 	&>l
-		( patt ) prng/get [ LIT2 &seed $2 ] AND2 AND
-		( save ) OVR #00 SWP ;spray/buf ADD2 STA
+		( patt ) prng/get [ LIT2 &+seed $2 ] AND2 AND
+		( save ) OVR #00 SWP ;&buf ADD2 STA
 		INC GTHk ?&>l
 	POP2 JMP2r
 
@@ -967,10 +972,10 @@
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 @prng/<init> ( -- )
 	[ LIT2 00 -DateTime/second ] DEI
@@ -1063,7 +1068,7 @@
 @hand-icn [ 4040 787c fcfc 7c38 ]
 	&down [ 0000 787c fcfc 7c38 ]
 
-@state-icn [ 183c 66c3 c366 3c18 ]
+@state/sprite [ 183c 66c3 c366 3c18 ]
 
 @dict/default "pict40x28.chr $1
 	&chr-ext ".chr $1
