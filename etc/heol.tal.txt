@@ -22,7 +22,7 @@
 @meta 00 "HEOL! 0a
 	( details ) "A 20 "Lisp 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Dec 20 "2025 $2
+	( date ) "6 20 "Mar 20 "2026 $2
 
 (
 @|Box )
@@ -87,12 +87,12 @@
 
 @token/<push> ( c -- )
 	DUP #20 GTH ?{ POP JMP2r }
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	[ LIT2 00 &+ptr -&buf ] INCk ,&+ptr STR
 	STZ2
 	JMP2r
 
 @token/<clear> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 -&buf _&+ptr ] STR
 	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
@@ -141,7 +141,7 @@
 	token/scan
 	( | handlers )
 	.token/buf LDZ LIT ") NEQ ?{ ;types/nil JMP2r }
-	.token/buf LDZ2 LIT2 ". $1 NEQ2 ?{ read !token/scan }
+	.token/buf LDZ2 LIT2 ". 00 NEQ2 ?{ read !token/scan }
 	parse /list SWP2 !cons
 
 	&quote ( -- cell* )
@@ -188,7 +188,7 @@
 	POP2 POP2 POP2 .err LDZ2 JMP2r
 
 	&prim ( env* t* f* -- res* )
-	ord #20 SFT2 ;prim/lut ADD2 INC2 INC2 LDA2 JMP2
+	ord #20 SFT2 ;prim/lut INC2 INC2 ADD2 LDA2 JMP2
 
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
@@ -337,11 +337,11 @@
 
 @sym/find-alloc ( str* -- addr* )
 	/find INC2k ORA ?{
-		POP2 ,&ptr LDR2 SWP2 !/<push-str> }
+		POP2 ,&+ptr LDR2 SWP2 !/<push-str> }
 	NIP2 JMP2r
 
 @sym/find ( str* -- str* addr* )
-	STH2k ,&ptr LDR2 ;&mem
+	STH2k ,&+ptr LDR2 ;&mem
 	&>l
 		DUP2 STH2kr str/cmp ?{
 			INC2 GTH2k ?&>l
@@ -356,7 +356,7 @@
 		INC2 !&>w
 
 @sym/<push> ( char -- )
-	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	[ LIT2 &+ptr =&mem ] INC2k ,&+ptr STR2
 	STA
 	JMP2r
 
@@ -440,29 +440,29 @@
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
-@dict/err "ERR $1 &pair 20 ". 20 $1 &prompt 0a cebb 20 $1
-	&tru "#t $1
-	&nil-list "() $1
-	&lambda "lambda $1
-	&define "define $1
-	&quote "quote $1
-	&print "print $1
-	&pair? "pair? $1
-	&eval "eval $1
-	&cons "cons $1
-	&let* "let* $1
-	&cdr "cdr $1
-	&car "car $1
-	&eq? "eq? $1
-	&and "and $1
-	&not "not $1
-	&or "or $1
-	&if "if $1
-	&+ "+ $1
-	&- "- $1
-	&* "* $1
-	&/ "/ $1
-	&< "< $1
+@dict/err "ERR 00 &pair 20 ". 20 00 &prompt 0a cebb 20 00
+	&tru "#t 00
+	&nil-list "() 00
+	&lambda "lambda 00
+	&define "define 00
+	&quote "quote 00
+	&print "print 00
+	&pair? "pair? 00
+	&eval "eval 00
+	&cons "cons 00
+	&let* "let* 00
+	&cdr "cdr 00
+	&car "car 00
+	&eq? "eq? 00
+	&and "and 00
+	&not "not 00
+	&or "or 00
+	&if "if 00
+	&+ "+ 00
+	&- "- 00
+	&* "* 00
+	&/ "/ 00
+	&< "< 00
 
 @prim/lut [
 	=dict/eval =f-eval =dict/quote =f-quote

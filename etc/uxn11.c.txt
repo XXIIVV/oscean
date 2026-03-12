@@ -41,7 +41,6 @@ static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY, rL1, rL2;
 #define HEIGHT (40 * 8)
 
 #define CLAMP(v, a, b) { if(v < a) v = a; else if(v >= b) v = b; }
-#define TWOS(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
 
 static inline Uint16 peek2(const Uint8 *d) { return ((Uint16)d[0] << 8) | d[1]; }
 static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
@@ -144,7 +143,8 @@ console_input(int c, unsigned int type)
 {
 	if(c == EOF) c = 0, type = CONSOLE_END;
 	dev[0x12] = c, dev[0x17] = type;
-	if(console_vector) uxn_eval(console_vector);
+	if(console_vector)
+		uxn_eval(console_vector);
 	return type != CONSOLE_END;
 }
 
@@ -363,8 +363,6 @@ static const Uint8 blend_lut[16][2][4] = {
 	{{3, 2, 3, 1}, {12, 8, 12, 4}},
 	{{3, 3, 1, 2}, {12, 12, 4, 8}}};
 
-static const Uint8 alpha_lut[16] = {0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0};
-
 void emu_redraw(void), emu_resize(void);
 
 static void
@@ -517,25 +515,28 @@ screen_deo_sprite(void)
 {
 	int i, j, x = rX, y = rY;
 	const int ctrl = dev[0x2f];
-	const int flipx = ctrl & 0x10, dx = flipx ? -rDY : rDY;
-	const int flipy = ctrl & 0x20, dy = flipy ? -rDX : rDX;
+	const int flipx = ctrl & 0x10, flipy = ctrl & 0x20;
+	const int dx = flipx ? -rDY : rDY, dy = flipy ? -rDX : rDX;
 	const int row_start = flipx ? 0 : 7, row_delta = flipx ? 1 : -1;
 	const int col_start = flipy ? 7 : 0, col_delta = flipy ? -1 : 1;
 	const int layer = ctrl & 0x40, layer_mask = layer ? 0x3 : 0xc;
-	const int mode_2bpp = ctrl >> 7, addr_2bpp = mode_2bpp ? rMA << 2 : rMA << 1;
+	const int is_2bpp = ctrl >> 7;
+	const int addr_incr = rMA << is_2bpp;
+	const int stride = screen_wmar2;
 	const int blend = ctrl & 0xf;
-	const Uint8 opaque = alpha_lut[blend], *table = blend_lut[blend][layer >> 6];
-	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_2bpp) {
+	const Uint8 opaque_mask = blend % 5;
+	const Uint8 *table = blend_lut[blend][layer >> 6];
+	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_incr) {
 		const Uint16 x0 = x + 8, y0 = y + 8;
-		if(x0 + 8 >= screen_wmar2 || y0 + 8 >= screen_hmar2) continue;
-		Uint8 *dst = screen_layers + y0 * screen_wmar2 + x0;
+		if(x0 + 8 >= stride || y0 + 8 >= screen_hmar2) continue;
+		Uint8 *dst = screen_layers + y0 * stride + x0;
 		const Uint8 *col = &ram[rA + col_start];
-		for(j = 0; j < 8; j++, dst += screen_wmar2, col += col_delta) {
+		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
 			Uint8 *d = dst;
-			const int ch1 = *col, ch2 = mode_2bpp ? col[8] : 0;
+			const int ch1 = *col, ch2 = is_2bpp ? col[8] : 0;
 			for(int k = 0, row = row_start; k < 8; k++, d++, row += row_delta) {
 				const int color = ((ch1 >> row) & 1) | (((ch2 >> row) & 1) << 1);
-				if(opaque || color)
+				if(opaque_mask || color)
 					*d = (*d & layer_mask) | table[color];
 			}
 		}
@@ -560,9 +561,9 @@ static Uint8 screen_dei_ralb(void) { return rA; }
 static void screen_deo_vector(void) { screen_vector = peek2(&dev[0x20]); }
 static void screen_deo_width(void) { screen_resize(peek2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
 static void screen_deo_height(void) { screen_resize(screen_width & 0xfff, peek2(&dev[0x24]) & 0xfff); }
-static void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; }
-static void screen_deo_x(void) { rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX); }
-static void screen_deo_y(void) { rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY); }
+static void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = (dev[0x26] & 0x4) << 1, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; }
+static void screen_deo_x(void) { rX = (dev[0x28] << 8) | dev[0x29], rX = (short)rX; }
+static void screen_deo_y(void) { rY = (dev[0x2a] << 8) | dev[0x2b], rY = (short)rY; }
 static void screen_deo_addr(void) { rA = (dev[0x2c] << 8) | dev[0x2d]; }
 
 /* clang-format on */
@@ -575,7 +576,8 @@ controller_down(Uint8 mask)
 {
 	if(mask) {
 		dev[0x82] |= mask;
-		if(controller_vector) uxn_eval(controller_vector);
+		if(controller_vector)
+			uxn_eval(controller_vector);
 	}
 }
 
@@ -584,7 +586,8 @@ controller_up(Uint8 mask)
 {
 	if(mask) {
 		dev[0x82] &= (~mask);
-		if(controller_vector) uxn_eval(controller_vector);
+		if(controller_vector)
+			uxn_eval(controller_vector);
 	}
 }
 
@@ -593,7 +596,8 @@ controller_key(Uint8 key)
 {
 	if(key) {
 		dev[0x83] = key;
-		if(controller_vector) uxn_eval(controller_vector);
+		if(controller_vector)
+			uxn_eval(controller_vector);
 		dev[0x83] = 0;
 	}
 }
@@ -611,14 +615,16 @@ static void
 mouse_down(Uint8 mask)
 {
 	dev[0x96] |= mask;
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 }
 
 static void
 mouse_up(Uint8 mask)
 {
 	dev[0x96] &= (~mask);
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 }
 
 static void
@@ -626,7 +632,8 @@ mouse_pos(Uint16 x, Uint16 y)
 {
 	poke2(&dev[0x92], x);
 	poke2(&dev[0x94], y);
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 }
 
 static void
@@ -634,7 +641,8 @@ mouse_scroll(Uint16 x, Uint16 y)
 {
 	poke2(&dev[0x9a], x);
 	poke2(&dev[0x9c], -y);
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 	poke2(&dev[0x9a], 0);
 	poke2(&dev[0x9c], 0);
 }
@@ -679,14 +687,14 @@ make_pathfile(char *pathbuf, const char *filepath, const char *basename)
 	*pathbuf = 0;
 }
 
-static unsigned int
+static inline unsigned int
 put_fill(Uint8 *dest, unsigned int len, char c)
 {
 	memset(dest, c, len);
 	return len;
 }
 
-static unsigned int
+static inline unsigned int
 put_size(Uint8 *dest, unsigned int len, unsigned int size)
 {
 	unsigned int i;
@@ -695,7 +703,7 @@ put_size(Uint8 *dest, unsigned int len, unsigned int size)
 	return len;
 }
 
-static unsigned int
+static inline unsigned int
 put_text(Uint8 *dest, const char *text)
 {
 	Uint8 *anchor = dest;
@@ -1304,7 +1312,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 18 Feb 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 11 Mar 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

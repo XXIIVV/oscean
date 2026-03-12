@@ -1,0 +1,85 @@
+( lib.string )
+
+|100
+
+@on-reset ( -> )
+	;tests/end ;tests
+	&>l
+		LDA2k JSR2 <print-result>
+		INC2 INC2 GTH2k ?&>l
+	POP2 POP2
+	( lb ) #0a18 DEO
+	( debugger ) #010e DEO
+	( exit ) #800f DEO
+	BRK
+
+@tests [ =u8/<test> =u16/<test> ] &end $2
+
+(
+@|u8 )
+
+%u8/mod ( a b -- a%b ) {
+	DIVk MUL SUB }
+
+%u8/min ( a b -- min ) {
+	LTHk [ JMP SWP ] POP }
+
+%u8/max ( a b -- min ) {
+	GTHk [ JMP SWP ] POP }
+
+@u8/<print> ( byte -- )
+	DUP #04 SFT /<print-nibble>
+	( >> )
+	&<print-nibble> ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+(
+@|u16 )
+
+%u16/mod ( a* b* -- a%b* ) {
+	DIV2k MUL2 SUB2 }
+
+%u16/min ( a b -- min ) {
+	LTH2k [ JMP SWP2 ] POP2 }
+
+%u16/max ( a b -- min ) {
+	GTH2k [ JMP SWP2 ] POP2 }
+
+@u16/<print> ( short* -- )
+	SWP u8/<print> !u8/<print>
+
+(
+@|Tests )
+
+@u8/<test> ( -- value )
+	;&name str/<print>
+	#06 #04 /mod #02 NEQ ?&fail
+	#06 #04 /min #04 NEQ ?&fail
+	#04 #06 /min #04 NEQ ?&fail
+	#06 #04 /max #06 NEQ ?&fail
+	#04 #06 /max #06 NEQ ?&fail
+	#01 JMP2r
+	&fail #00 JMP2r
+	&name 0a "u8: 20 $1
+
+@u16/<test> ( -- )
+	;&name str/<print>
+	#0006 #0004 /mod #0002 NEQ2 ?&fail
+	#0006 #0004 /min #0004 NEQ2 ?&fail
+	#0004 #0006 /min #0004 NEQ2 ?&fail
+	#0006 #0004 /max #0006 NEQ2 ?&fail
+	#0004 #0006 /max #0006 NEQ2 ?&fail
+	#01 JMP2r
+	&fail #00 JMP2r
+	&name 0a "u16: 20 $1
+
+@<print-result> ( bool -- )
+	#30 ADD #18 DEO
+	JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+

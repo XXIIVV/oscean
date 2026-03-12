@@ -44,7 +44,7 @@
 	( name ) "CCCC 0a
 	( details ) "A 20 "Desktop 20 "Calculator 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Feb 20 "2026 $2
+	( date ) "12 20 "Mar 20 "2026 $2
 
 %MOD2 ( a* b* -- res* ) {
 	DIV2k MUL2 SUB2 }
@@ -126,7 +126,7 @@
 @on-mouse/touch-modes ( x* -- )
 	#0005 DIV2
 	( | Handlers )
-	DUP #00 NEQ ?{ mode/<toggle-dec> }
+	DUP ?{ mode/<toggle-dec> }
 	DUP #01 NEQ ?{ mode/<toggle-dot> }
 	DUP #02 NEQ ?{ mode/<toggle-fac> }
 	POP2 JMP2r
@@ -262,7 +262,7 @@
 	( | print fraction )
 	LDA2k SWP2 INC2 INC2 LDA2 DUP2 #0001 EQU2 ?&whole
 	( | proper fraction )
-	SWP2 print-value LIT "/ #18 DEO
+	SWP2 print-value [ LIT2 "/ 18 ] DEO
 	print-value #0a18 DEO
 	JMP2r
 
@@ -272,7 +272,7 @@
 
 @print-value ( short* -- )
 	ORAk ?{
-		LIT "0 #18 DEO
+		[ LIT2 "0 18 ] DEO
 		JMP2r }
 	mode/is-dec ?print-dec
 
@@ -361,7 +361,8 @@
 	SWP2 #03e8 #1000 mode/is-dec [ JMP SWP2 POP2 ] MUL2 SWP2 DIV2 !number/<draw>
 
 @fraction/<draw-whole> ( num* den* -- )
-	POP2 !number/<draw-auto>
+	POP2
+	( >> )
 
 @number/<draw-auto> ( short* -- )
 	mode/is-exp ?/<draw-factors>
@@ -395,7 +396,7 @@
 	( count ) [ LIT2r 0000 ]
 	( value ) [ LIT2r 0002 ]
 	&>w
-		DUP2 STH2kr DIV2k MUL2 SUB2 ORA ?{
+		DUP2 STH2kr MOD2 ORA ?{
 			( count+1 ) SWP2r INC2r SWP2r
 			( apply ) STH2kr DIV2 DUP2 #0001 NEQ2 ?&>w
 		POP2 STH2r STH2r SWP2 !/<draw-factor> }
@@ -446,13 +447,13 @@
 @mode/<draw> ( -- )
 	#0058 .Screen/x DEO2
 	#0082 .Screen/y DEO2
-	;mode/dec-icn .Screen/addr DEO2
+	;&dec-icn .Screen/addr DEO2
 	#0a /is-dec #00 NEQ #0a MUL SUB .Screen/sprite DEO
 	.Screen/x DEI2k #0005 ADD2 ROT DEO2
-	;mode/dot-icn .Screen/addr DEO2
+	;&dot-icn .Screen/addr DEO2
 	#0a /is-dot #00 NEQ #0a MUL SUB .Screen/sprite DEO
 	.Screen/x DEI2k #0005 ADD2 ROT DEO2
-	;mode/fac-icn .Screen/addr DEO2
+	;&fac-icn .Screen/addr DEO2
 	#0a /is-exp #00 NEQ #0a MUL SUB .Screen/sprite DEO
 	JMP2r
 
@@ -487,7 +488,7 @@
 	[ LIT2 01 _&value ] LDR AND JMP2r
 
 @mode/<toggle> ( -- )
-	[ LIT2 07 &value $1 ] INC AND ,&value STR
+	[ LIT2 01 &value $1 ] EOR ,&value STR
 	display/<draw>
 	header/<draw>
 	;buttons/mode !button/<press>
@@ -513,7 +514,7 @@
 @|Selection )
 
 @sel/<press> ( -- )
-	[ LIT2 00 -&d ] LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 INC2 INC2 LDA2 JMP2
+	[ LIT2 00 -&d ] LDZ2 #30 SFT ADD #20 SFT2 ;layout INC2 INC2 ADD2 LDA2 JMP2
 
 @sel/<set> ( x y -- )
 	#00 ;fill-icn /<draw>
@@ -525,7 +526,7 @@
 @sel/<draw> ( color addr* -- )
 	[ LIT2 00 -Screen/auto ] DEO
 	.Screen/addr DEO2
-	#00 .&d LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 LDA2 LDA2k #0008 ADD2 .Screen/x DEO2
+	[ LIT2 00 -&d ] LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 LDA2 LDA2k #0008 ADD2 .Screen/x DEO2
 	INC2 INC2 LDA2 #0002 SUB2 .Screen/y DEO2
 	#40 ADD .Screen/sprite DEO
 	JMP2r
@@ -794,8 +795,8 @@
 @chicago/<draw-center> ( text* color -- )
 	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 #0008 SUB2 .Screen/x DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
+	#20 /<draw-char>
+	#20 /<draw-char>
 	&>ws
 		LDAk #1f GTH ?{ POP2 JMP2r }
 		LDAk /<draw-char>
@@ -855,8 +856,8 @@
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	.File/success-lb DEI ?{ !theme/<reset> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
 
 	&path ".theme $1
 
