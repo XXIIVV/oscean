@@ -663,7 +663,7 @@ a strange <a href='forth.html'>Forth</a> in which the program state is unordered
 
 <p>The program state is a bag of unordered things, transformations are represented as fractions where the denominator indicates things to remove from the bag, and the numerator, things to add.</p>
 
-<p>The documentation below displays the content of the bag in bold. Multiple instances of things are grouped as <code>thing^count</code>.</p>
+<p>The documentation below displays the content of the bag in bold. Multiple instances of things are grouped as <code>thing^count</code>. The empty bag, or identity, is represented as <code>[]</code>.</p>
 
 <pre>
 <i>( a comment )</i>
@@ -719,7 +719,7 @@ a strange <a href='forth.html'>Forth</a> in which the program state is unordered
 
 <h3>Functions</h3>
 
-<p>Functions are symbols that are replaced their body if found in the bag. A definition starts with colon, and ends with a semi-colon. The definition comment indicates the state of the bag before and after the transformation.</p>
+<p>Functions are symbols that are evaluated when they enter the bag. A definition starts with colon, followed by the function name, a comment that indicates the transformation and finally, a semi-colon. </p>
 
 <pre>
 : And? ( x y -- bool ) <b>a</b> true/[a x y] false/[a x] false/[a y] false/a ;
@@ -732,6 +732,8 @@ a strange <a href='forth.html'>Forth</a> in which the program state is unordered
 <b>true</b>      false/a
 <b>true</b>
 </pre>
+
+<p>If two or more functions may be called at once, the interpreter can choose to evaluated them non-deterministically, or throw an error.</p>
 
 <h3>Arithmetic</h3>
 
@@ -803,6 +805,17 @@ a strange <a href='forth.html'>Forth</a> in which the program state is unordered
 <b>done</b>      [x^2 loop]/x
 <b>done</b>
 </pre>
+
+<h3>Numeric Symbols</h3>
+
+<p>Under the hood, the name for symbols are automatically assigned a <a href='primes.html'>prime value</a>, for that reason, numeric symbols are special. The program can operate on these raw numeric decimal integers. For that reason, symbol/1 will always add to a bag, 1/symbol will always take away from the bag.</p>
+<pre>
+8 25/[2^3] 1/25
+5^2 1/25
+[]
+</pre>
+
+<h3>FizzBuzz</h3>
 
 <p>This is a first draft of the language, I'm currently working on an implementation. One last thing before I end this, here's a fizzbuzz: </p>
 
