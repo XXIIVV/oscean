@@ -27,6 +27,14 @@
 %u8/max ( a b -- min ) {
 	GTHk [ JMP SWP ] POP }
 
+@u8/sqrt ( n -- sq )
+	DUP ?{ JMP2r }
+	INCk ?{ POP #10 JMP2r }
+	INC #01 SFT [ LITr 01 ]
+	&>ls
+		STHkr SUB INCr DUP STHkr GTH ?&>ls
+	POP STHr JMP2r
+
 @u8/<print> ( byte -- )
 	DUP #04 SFT /<print-nibble>
 	( >> )
@@ -46,6 +54,14 @@
 %u16/max ( a b -- min ) {
 	GTH2k [ JMP SWP2 ] POP2 }
 
+@u16/sqrt ( n* -- sq* )
+	ORAk ?{ POP JMP2r }
+	INC2k ORA ?{ INC SWP INC2 JMP2r }
+	INC2 #01 SFT2 [ LIT2r 0001 ]
+	&>ls
+		STH2kr SUB2 INC2r DUP2 STH2kr GTH2 ?&>ls
+	POP2 STH2r JMP2r
+
 @u16/<print> ( short* -- )
 	SWP u8/<print> !u8/<print>
 
@@ -59,6 +75,7 @@
 	#04 #06 /min #04 NEQ ?&fail
 	#06 #04 /max #06 NEQ ?&fail
 	#04 #06 /max #06 NEQ ?&fail
+	#04 /sqrt #02 NEQ ?&fail
 	#01 JMP2r
 	&fail #00 JMP2r
 	&name 0a "u8: 20 $1
@@ -70,6 +87,7 @@
 	#0004 #0006 /min #0004 NEQ2 ?&fail
 	#0006 #0004 /max #0006 NEQ2 ?&fail
 	#0004 #0006 /max #0006 NEQ2 ?&fail
+	#0004 /sqrt #0002 NEQ2 ?&fail
 	#01 JMP2r
 	&fail #00 JMP2r
 	&name 0a "u16: 20 $1
