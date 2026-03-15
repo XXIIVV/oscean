@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Mar 20 "2026 $2
+	( date ) "14 20 "Mar 20 "2026 $2
 
 (
 @|Source )
@@ -59,6 +59,10 @@
 @scope/length ( -- length* )
 	[ LIT2 00 _&ptr ] LDR .&buf SUB #0001 SUB2 JMP2r
 
+@scope/<unset> ( -- )
+	;&void
+	( >> )
+
 @scope/<set> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
@@ -72,6 +76,8 @@
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
+
+@scope/void "!VOID $1
 
 (
 @|core )
@@ -116,6 +122,7 @@
 	( blank ) LDAk #00 EQU ?<sclr>
 	( token count ) .stats/tokens LDZ2k INC2 ROT STZ2
 	( new scope ) DUP2 is-new-scope #00 EQU ?{ INC2k scope/<set> }
+	( macro reset scope ) LDAk LIT "% NEQ ?{ scope/<unset> }
 	( include ) LDA [ LIT "~ ] EQU ?include
 	;rules2/end ;rules2
 	&>loop2
