@@ -1,0 +1,885 @@
+#include <stdint.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "pd_api.h"
+
+#define BANKS 0x10
+#define BANKS_CAP BANKS * 0x10000
+#define PAGE_PROGRAM 0x100
+
+#define SCREEN_WIDTH 400
+#define SCREEN_WIDTH_PAD2 (SCREEN_WIDTH + 16)
+#define SCREEN_HEIGHT 240
+#define SCREEN_HEIGHT_PAD2 (SCREEN_HEIGHT + 16)
+#define SCREEN_LENGTH SCREEN_WIDTH_PAD2 *SCREEN_HEIGHT_PAD2
+#define LCD_ROWSEG (LCD_ROWSIZE / 4)
+
+#define POLYPHONY 4
+#define PROF_ENABLE 0
+#define KEY_REPEAT 150
+#define FRAME_TIMER 0.015f
+#define FINE_TUNE -6
+
+// General utility macros.
+#define println pd->system->logToConsole
+#define time_ms() pd->system->getCurrentTimeMilliseconds()
+
+typedef signed char Sint8;
+typedef unsigned char Uint8;
+typedef signed short Sint16;
+typedef unsigned short Uint16;
+typedef void (*deo_handler)(void);
+typedef Uint8 (*dei_handler)(void);
+
+static unsigned int uxn_eval(Uint16 pc);
+static Uint8 *ram, dev[0x100], stk[2][0x100], ptr[2];
+static int console_vector, screen_vector, controller_vector, mouse_vector;
+static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
+static uint8_t pixel_lut[256];
+
+extern Uint8 uxn_rom[];
+extern Uint8 uxn_rom_size[];
+
+static PlaydateAPI *pd = NULL;
+PDMenuItem *ctrl_menu_item;
+PDMenuItem *invert_menu_item;
+
+typedef enum CtrlMethod {
+	CTRL_CONTROLLER = 0,
+	CTRL_MOUSE = 1,
+	CTRL_NUM,
+} CtrlMethod;
+
+const char *ctrl_method_str[CTRL_NUM] = {"Controller", "Mouse"};
+
+typedef struct Settings {
+	CtrlMethod ctrl_method;
+	bool invert;
+} Settings;
+
+Settings settings = {CTRL_CONTROLLER, false};
+
+static inline Uint16
+peek2(const Uint8 *d)
+{
+	return ((Uint16)d[0] << 8) | d[1];
+}
+
+static inline void
+poke2(Uint8 *d, Uint16 v)
+{
+	d[0] = v >> 8, d[1] = v;
+}
+
+void
+save_settings(void)
+{
+	SDFile *f = pd->file->open("settings.bin", kFileWrite);
+	if(!f) {
+		println("error: couldn't open settings file");
+		return;
+	}
+	if(pd->file->write(f, &settings, sizeof(settings)) < 0) {
+		println("error: couldn't save settings");
+		return;
+	}
+	pd->file->close(f);
+}
+
+void
+load_settings(void)
+{
+	SDFile *f = pd->file->open("settings.bin", kFileReadData);
+	if(!f) {
+		println("error: couldn't open settings file");
+		return;
+	}
+	if(pd->file->read(f, &settings, sizeof(settings)) < 0) {
+		println("error: couldn't load settings");
+		return;
+	}
+	pd->file->close(f);
+	pd->display->setInverted(settings.invert);
+	pd->system->setMenuItemValue(invert_menu_item, settings.invert);
+	pd->system->setMenuItemValue(ctrl_menu_item, settings.ctrl_method);
+}
+
+/*
+@|System ------------------------------------------------------------ */
+
+static void
+system_reboot(const unsigned int soft)
+{
+	memset(dev, 0, 0x100);
+	memset(stk[0], 0, 0x100);
+	memset(stk[1], 0, 0x100);
+	if(soft)
+		memset(ram + 0x100, 0, 0xff00);
+	else
+		memset(ram, 0, 0x10000);
+	ptr[0] = ptr[1] = 0;
+	console_vector = screen_vector = controller_vector = mouse_vector = 0;
+	rX = rY = rA = rMX = rMY = rMA = rML = rDX = rDY = 0;
+}
+
+static void
+system_deo_expansion(void)
+{
+	const Uint16 exp = peek2(dev + 2);
+	Uint8 *aptr = ram + exp;
+	Uint16 length = peek2(aptr + 1);
+	unsigned int bank = peek2(aptr + 3) * 0x10000;
+	unsigned int addr = peek2(aptr + 5);
+	if(ram[exp] == 0x0) {
+		if(bank < BANKS_CAP)
+			memset(ram + bank + addr, ram[exp + 7], length);
+	} else if(ram[exp] == 1 || ram[exp] == 2) {
+		unsigned int dst_bank = peek2(aptr + 7) * 0x10000;
+		unsigned int dst_addr = peek2(aptr + 9);
+		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
+			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
+	}
+}
+
+/* clang-format off */
+
+static Uint8 system_dei_wst(void) { return ptr[0]; }
+static Uint8 system_dei_rst(void) { return ptr[1]; }
+static void system_deo_wst(void) { ptr[0] = dev[4]; }
+static void system_deo_rst(void) { ptr[1] = dev[5]; }
+
+/* clang-format on */
+
+/*
+@|Console ----------------------------------------------------------- */
+
+static void
+console_deo_vector(void)
+{
+	console_vector = peek2(&dev[0x10]);
+}
+
+static void
+console_deo_stdout(void)
+{
+	pd->system->logToConsole("%c", dev[0x18]);
+}
+
+static void
+console_deo_stderr(void)
+{
+	pd->system->logToConsole("%c", dev[0x19]);
+}
+
+/*
+@|Screen ------------------------------------------------------------ */
+
+static int screen_reqdraw;
+static Uint8 *screen_layers;
+static uint32_t *screen_buf;
+
+static const Uint8 blend_lut[16][2][4] = {
+	{{0, 0, 1, 2}, {0, 0, 4, 8}},
+	{{0, 1, 2, 3}, {0, 4, 8, 12}},
+	{{0, 2, 3, 1}, {0, 8, 12, 4}},
+	{{0, 3, 1, 2}, {0, 12, 4, 8}},
+	{{1, 0, 1, 2}, {4, 0, 4, 8}},
+	{{1, 1, 2, 3}, {4, 4, 8, 12}},
+	{{1, 2, 3, 1}, {4, 8, 12, 4}},
+	{{1, 3, 1, 2}, {4, 12, 4, 8}},
+	{{2, 0, 1, 2}, {8, 0, 4, 8}},
+	{{2, 1, 2, 3}, {8, 4, 8, 12}},
+	{{2, 2, 3, 1}, {8, 8, 12, 4}},
+	{{2, 3, 1, 2}, {8, 12, 4, 8}},
+	{{3, 0, 1, 2}, {12, 0, 4, 8}},
+	{{3, 1, 2, 3}, {12, 4, 8, 12}},
+	{{3, 2, 3, 1}, {12, 8, 12, 4}},
+	{{3, 3, 1, 2}, {12, 12, 4, 8}}};
+
+/* clang-format on */
+
+static void
+screen_deo_pixel(void)
+{
+	const int ctrl = dev[0x2e];
+	const int hi = ctrl & 0x40;
+	const Uint8 mask = hi ? 0x3 : 0xc;
+	const Uint8 color = hi ? ((ctrl & 0x3) << 2) : (ctrl & 0x3);
+	/* fill mode */
+	if(ctrl & 0x80) {
+		int px;
+		const int x1 = (ctrl & 0x10) ? 8 : rX + 8;
+		const int x2 = (ctrl & 0x10) ? rX : SCREEN_WIDTH;
+		const int y1 = (ctrl & 0x20) ? 8 : rY + 8;
+		const int y2 = (ctrl & 0x20) ? rY : SCREEN_HEIGHT;
+		const int hor = (x2 + 8) - x1;
+		const int ver = (y2 + 8) - y1;
+		Uint8 *row = &screen_layers[y1 * SCREEN_WIDTH_PAD2 + x1];
+		Uint8 *end = row + ver * SCREEN_WIDTH_PAD2;
+		for(; row < end; row += SCREEN_WIDTH_PAD2) {
+			Uint8 *dst = row;
+			for(px = 0; px < hor; px++)
+				dst[px] = (dst[px] & mask) | color;
+		}
+		screen_reqdraw = 1;
+	}
+	/* pixel mode */
+	else {
+		const Uint16 x = rX, y = rY;
+		if(x < SCREEN_WIDTH && y < SCREEN_HEIGHT) {
+			Uint8 *dst = &screen_layers[(y + 8) * SCREEN_WIDTH_PAD2 + (x + 8)];
+			*dst = (*dst & mask) | color;
+		}
+		if(rMX) rX++;
+		if(rMY) rY++;
+		screen_reqdraw = 1;
+	}
+}
+
+static void
+screen_deo_sprite(void)
+{
+	int i, j, x = rX, y = rY;
+	const int ctrl = dev[0x2f];
+	const int flipx = ctrl & 0x10, flipy = ctrl & 0x20;
+	const int dx = flipx ? -rDY : rDY, dy = flipy ? -rDX : rDX;
+	const int row_start = flipx ? 0 : 7, row_delta = flipx ? 1 : -1;
+	const int col_start = flipy ? 7 : 0, col_delta = flipy ? -1 : 1;
+	const int layer = ctrl & 0x40, layer_mask = layer ? 0x3 : 0xc;
+	const int is_2bpp = ctrl >> 7;
+	const int addr_incr = rMA << is_2bpp;
+	const int stride = SCREEN_WIDTH_PAD2;
+	const int blend = ctrl & 0xf;
+	const Uint8 opaque_mask = blend % 5;
+	const Uint8 *table = blend_lut[blend][layer >> 6];
+	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_incr) {
+		const int x0 = x + 8, y0 = y + 8;
+		if(x0 < 0 || y0 < 0 || x0 + 8 >= stride || y0 + 8 >= SCREEN_HEIGHT_PAD2) continue;
+		Uint8 *dst = screen_layers + y0 * stride + x0;
+		const Uint8 *col = &ram[rA + col_start];
+		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
+			Uint8 *d = dst;
+			const int ch1 = *col;
+			const int ch2 = is_2bpp ? (col[8] << 1) : 0;
+			int row = row_start;
+			for(int k = 0; k < 8; k++, d++, row += row_delta) {
+				const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
+				if(opaque_mask || color)
+					*d = (*d & layer_mask) | table[color];
+			}
+		}
+	}
+	screen_reqdraw = 1;
+	if(rMX) rX += flipx ? -rDX : rDX;
+	if(rMY) rY += flipy ? -rDY : rDY;
+}
+
+/* clang-format off */
+
+static Uint8 screen_dei_whb(void) { return SCREEN_WIDTH >> 8; }
+static Uint8 screen_dei_wlb(void) { return (unsigned char)SCREEN_WIDTH; }
+static Uint8 screen_dei_hhb(void) { return SCREEN_HEIGHT >> 8; }
+static Uint8 screen_dei_hlb(void) { return (unsigned char)SCREEN_HEIGHT; }
+static Uint8 screen_dei_rxhb(void) { return rX >> 8; }
+static Uint8 screen_dei_rxlb(void) { return rX; }
+static Uint8 screen_dei_ryhb(void) { return rY >> 8; }
+static Uint8 screen_dei_rylb(void) { return rY; }
+static Uint8 screen_dei_rahb(void) { return rA >> 8; }
+static Uint8 screen_dei_ralb(void) { return rA; }
+static void screen_deo_vector(void) { screen_vector = peek2(&dev[0x20]); }
+static void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = (dev[0x26] & 0x4) << 1, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; }
+static void screen_deo_x(void) { rX = (Sint16)peek2(&dev[0x28]); }
+static void screen_deo_y(void) { rY = (Sint16)peek2(&dev[0x2a]); }
+static void screen_deo_addr(void) { rA = peek2(&dev[0x2c]); }
+
+/* clang-format on */
+
+/*
+@|Controller -------------------------------------------------------- */
+
+void
+controller_deo_vector(void)
+{
+	controller_vector = peek2(&dev[0x80]);
+}
+
+/*
+@|Mouse ------------------------------------------------------------- */
+
+void
+mouse_deo_vector(void)
+{
+	mouse_vector = peek2(&dev[0x90]);
+}
+
+/*
+@|File -------------------------------------------------------------- */
+
+typedef struct UxnFile {
+	SDFile *f;
+	char current_filename[4096];
+	enum {
+		FILE_IDLE,
+		FILE_READ,
+		FILE_WRITE,
+		FILE_DIR_READ,
+	} state;
+} UxnFile;
+
+UxnFile uxn_file[2] = {0};
+
+static void
+reset(UxnFile *f)
+{
+	if(f->f != NULL) {
+		pd->file->close(f->f);
+		f->f = NULL;
+	}
+	f->state = FILE_IDLE;
+}
+
+static Uint16
+file_init(UxnFile *f, char *filename, size_t max_len)
+{
+	char *p = f->current_filename;
+	size_t len = sizeof(f->current_filename);
+	reset(f);
+	if(len > max_len) {
+		len = max_len;
+	}
+	while(len) {
+		if((*p++ = *filename++) == '\0') {
+			return 0;
+		}
+		len--;
+	}
+	f->current_filename[0] = '\0';
+	return 0;
+}
+
+typedef struct DirCallbackData {
+	char *dst;
+	Uint16 len;
+	Uint16 written;
+} DirCallbackData;
+
+void
+dir_callback(const char *filename, void *data)
+{
+	DirCallbackData *ret = data;
+	if(ret->len < strlen(filename) + 8) {
+		ret->written = 0;
+		return;
+	}
+
+	// Select the appropriate file header.
+	char header_buf[5] = {0};
+	char *headers[] = {
+		"???? ",
+		"!!!! ",
+		"---- ",
+	};
+	char *header = headers[0];
+	FileStat st;
+	if(pd->file->stat(filename, &st) < 0) {
+		header = headers[1];
+	} else if(st.isdir) {
+		header = headers[2];
+	} else if(st.size < 0x10000) {
+		// Write file size here.
+		const char *digits = "0123456789ABCDEF";
+		header_buf[0] = digits[(st.size >> 0xc) & 0xf];
+		header_buf[1] = digits[(st.size >> 0x8) & 0xf];
+		header_buf[2] = digits[(st.size >> 0x4) & 0xf];
+		header_buf[3] = digits[(st.size >> 0x0) & 0xf];
+		header_buf[4] = ' ';
+		header = header_buf;
+	}
+
+	// Write the header.
+	while(ret->len > 1) {
+		if(*header == '\0') {
+			break;
+		}
+		*ret->dst++ = *header++;
+		ret->len--;
+		ret->written++;
+	}
+
+	// Write the path name.
+	while(ret->len > 1) {
+		if(*filename == '\0') {
+			break;
+		}
+		*ret->dst++ = *filename++;
+		ret->len--;
+		ret->written++;
+	}
+	*ret->dst++ = '\n';
+	ret->len--;
+}
+
+Uint16
+read_dir(UxnFile *f, char *dest, Uint16 len)
+{
+	DirCallbackData data = {dest, len, 0};
+	pd->file->listfiles(f->current_filename, dir_callback, &data, 0);
+	return data.written;
+}
+
+static Uint16
+file_read(UxnFile *f, void *dest, int len)
+{
+	if(f->state != FILE_READ && f->state != FILE_DIR_READ) {
+		reset(f);
+		FileStat st;
+		if(pd->file->stat(f->current_filename, &st) >= 0 && st.isdir) {
+			f->state = FILE_DIR_READ;
+		} else {
+			f->f = pd->file->open(f->current_filename, kFileReadData);
+			if(f->f != NULL) {
+				f->state = FILE_READ;
+			}
+		}
+	}
+	if(f->state == FILE_READ) {
+		return pd->file->read(f->f, dest, len);
+	}
+	if(f->state == FILE_DIR_READ) {
+		return read_dir(f, dest, len);
+	}
+	return 0;
+}
+
+static Uint16
+file_write(UxnFile *f, void *src, Uint16 len, Uint8 flags)
+{
+	Uint16 ret = 0;
+	if(f->state != FILE_WRITE) {
+		reset(f);
+		f->f = pd->file->open(f->current_filename,
+			(flags & 0x01) ? kFileAppend : kFileWrite);
+		if(f->f != NULL) {
+			f->state = FILE_WRITE;
+		}
+	}
+	if(f->state == FILE_WRITE) {
+		int n_written = pd->file->write(f->f, src, len);
+		if(n_written < 0 || pd->file->flush(f->f) < 0) {
+			ret = 0;
+		} else {
+			ret = n_written;
+		}
+	}
+	return ret;
+}
+
+static Uint16
+file_stat(UxnFile *f, void *dest, Uint16 len)
+{
+	char *basename = strrchr(f->current_filename, '/');
+	if(basename != NULL) {
+		basename++;
+	} else {
+		basename = f->current_filename;
+	}
+	FileStat st;
+	if(pd->file->stat(f->current_filename, &st) < 0) {
+		return 0;
+	}
+	DirCallbackData data = {dest, len, 0};
+	dir_callback(basename, &data);
+	return data.written;
+}
+
+static Uint16
+file_delete(UxnFile *f)
+{
+	return pd->file->unlink(f->current_filename, 0);
+}
+
+/*
+@|Datetime ---------------------------------------------------------- */
+
+void
+update_datetime(PlaydateAPI *pd)
+{
+	struct PDDateTime date_time;
+	int32_t gmt_offset = pd->system->getTimezoneOffset();
+	uint32_t epoch = pd->system->getSecondsSinceEpoch(NULL) + gmt_offset;
+	pd->system->convertEpochToDateTime(epoch, &date_time);
+	dev[0xc0] = date_time.year >> 8;
+	dev[0xc1] = date_time.year & 0xff;
+	dev[0xc2] = date_time.month;
+	dev[0xc3] = date_time.day;
+	dev[0xc4] = date_time.hour;
+	dev[0xc5] = date_time.minute;
+	dev[0xc6] = date_time.second;
+	dev[0xc7] = date_time.weekday;
+}
+
+/*
+@|Core -------------------------------------------------------------- */
+
+static const dei_handler dei_handlers[256] = {
+	[0x04] = system_dei_wst,
+	[0x05] = system_dei_rst,
+	[0x22] = screen_dei_whb,
+	[0x23] = screen_dei_wlb,
+	[0x24] = screen_dei_hhb,
+	[0x25] = screen_dei_hlb,
+	[0x28] = screen_dei_rxhb,
+	[0x29] = screen_dei_rxlb,
+	[0x2a] = screen_dei_ryhb,
+	[0x2b] = screen_dei_rylb,
+	[0x2c] = screen_dei_rahb,
+	[0x2d] = screen_dei_ralb,
+};
+
+static const deo_handler deo_handlers[256] = {
+	[0x03] = system_deo_expansion,
+	[0x04] = system_deo_wst,
+	[0x05] = system_deo_rst,
+	[0x11] = console_deo_vector,
+	[0x18] = console_deo_stdout,
+	[0x19] = console_deo_stderr,
+	[0x21] = screen_deo_vector,
+	[0x26] = screen_deo_auto,
+	[0x28] = screen_deo_x,
+	[0x29] = screen_deo_x,
+	[0x2a] = screen_deo_y,
+	[0x2b] = screen_deo_y,
+	[0x2c] = screen_deo_addr,
+	[0x2d] = screen_deo_addr,
+	[0x2e] = screen_deo_pixel,
+	[0x2f] = screen_deo_sprite,
+	[0x81] = controller_deo_vector,
+	[0x91] = mouse_deo_vector,
+};
+
+static inline Uint8
+emu_dei(const Uint8 port)
+{
+	dei_handler h = dei_handlers[port];
+	return h ? h() : dev[port];
+}
+
+static inline void
+emu_deo(const Uint8 port, const Uint8 value)
+{
+	deo_handler h = deo_handlers[port];
+	dev[port] = value;
+	if(h) h();
+}
+
+/* clang-format off */
+
+#define OPC(opc, A, B) {\
+	case 0x00|opc: {const Uint8 d=0,r=0;A B} break;\
+	case 0x20|opc: {const Uint8 d=1,r=0;A B} break;\
+	case 0x40|opc: {const Uint8 d=0,r=1;A B} break;\
+	case 0x60|opc: {const Uint8 d=1,r=1;A B} break;\
+	case 0x80|opc: {const Uint8 d=0,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xa0|opc: {const Uint8 d=1,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xc0|opc: {const Uint8 d=0,r=1,k=ptr[1];A ptr[1]=k;B} break;\
+	case 0xe0|opc: {const Uint8 d=1,r=1,k=ptr[1];A ptr[1]=k;B} break;}
+#define DEC(m) stk[m][--ptr[m]]
+#define INC(m) stk[m][ptr[m]++]
+#define IMM a = ram[pc++] << 8, a |= ram[pc++];
+#define MOV pc = d ? (Uint16)a : pc + (Sint8)a;
+#define POx(o,m) o = DEC(r); if(m) o |= DEC(r) << 8;
+#define PUx(i,m,s) if(m) c = (i), INC(s) = c >> 8, INC(s) = c; else INC(s) = i;
+#define GOT(o) if(d) o[1] = DEC(r); o[0] = DEC(r);
+#define PUT(i,s) INC(s) = i[0]; if(d) INC(s) = i[1];
+#define DEO(o,v) emu_deo(o, v[0]); if(d) emu_deo(o + 1, v[1]);
+#define DEI(i,v) v[0] = emu_dei(i); if(d) v[1] = emu_dei(i + 1); PUT(v,r)
+#define POK(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
+#define PEK(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUT(v,r)
+
+static unsigned int
+uxn_eval(Uint16 pc)
+{
+	unsigned int a, b, c, x[2], y[2], z[2];
+	for(;;)
+	switch(ram[pc++]) {
+	/* BRK */ case 0x00: return 1;
+	/* JCI */ case 0x20: if(DEC(0)) { IMM pc += a; } else pc += 2; break;
+	/* JMI */ case 0x40: IMM pc += a; break;
+	/* JSI */ case 0x60: IMM PUx(pc, 1, 1) pc += a; break;
+	/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
+	/* LIT */ case 0x80: INC(0) = ram[pc++]; break;
+	/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
+	/* LIr */ case 0xc0: INC(1) = ram[pc++]; break;
+	/* INC */ OPC(0x01,POx(a,d),PUx(a + 1,d,r))
+	/* POP */ OPC(0x02,ptr[r] -= 1 + d;,{})
+	/* NIP */ OPC(0x03,GOT(x) ptr[r] -= 1 + d;,PUT(x,r))
+	/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x,r) PUT(y,r))
+	/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y,r) PUT(x,r) PUT(z,r))
+	/* DUP */ OPC(0x06,GOT(x),PUT(x,r) PUT(x,r))
+	/* OVR */ OPC(0x07,GOT(x) GOT(y),PUT(y,r) PUT(x,r) PUT(y,r))
+	/* EQU */ OPC(0x08,POx(a,d) POx(b,d),PUx(b == a,0,r))
+	/* NEQ */ OPC(0x09,POx(a,d) POx(b,d),PUx(b != a,0,r))
+	/* GTH */ OPC(0x0a,POx(a,d) POx(b,d),PUx(b > a,0,r))
+	/* LTH */ OPC(0x0b,POx(a,d) POx(b,d),PUx(b < a,0,r))
+	/* JMP */ OPC(0x0c,POx(a,d),MOV)
+	/* JCN */ OPC(0x0d,POx(a,d) POx(b,0),if(b) MOV)
+	/* JSR */ OPC(0x0e,POx(a,d),PUx(pc,1,!r) MOV)
+	/* STH */ OPC(0x0f,GOT(x),PUT(x,!r))
+	/* LDZ */ OPC(0x10,POx(a,0),PEK(a, x, 0xff))
+	/* STZ */ OPC(0x11,POx(a,0) GOT(y),POK(a, y, 0xff))
+	/* LDR */ OPC(0x12,POx(a,0),PEK(pc + (Sint8)a, x, 0xffff))
+	/* STR */ OPC(0x13,POx(a,0) GOT(y),POK(pc + (Sint8)a, y, 0xffff))
+	/* LDA */ OPC(0x14,POx(a,1),PEK(a, x, 0xffff))
+	/* STA */ OPC(0x15,POx(a,1) GOT(y),POK(a, y, 0xffff))
+	/* DEI */ OPC(0x16,POx(a,0),DEI(a, x))
+	/* DEO */ OPC(0x17,POx(a,0) GOT(y),DEO(a, y))
+	/* ADD */ OPC(0x18,POx(a,d) POx(b,d),PUx(b + a, d,r))
+	/* SUB */ OPC(0x19,POx(a,d) POx(b,d),PUx(b - a, d,r))
+	/* MUL */ OPC(0x1a,POx(a,d) POx(b,d),PUx(b * a, d,r))
+	/* DIV */ OPC(0x1b,POx(a,d) POx(b,d),PUx(a ? b / a : 0, d,r))
+	/* AND */ OPC(0x1c,POx(a,d) POx(b,d),PUx(b & a, d,r))
+	/* ORA */ OPC(0x1d,POx(a,d) POx(b,d),PUx(b | a, d,r))
+	/* EOR */ OPC(0x1e,POx(a,d) POx(b,d),PUx(b ^ a, d,r))
+	/* SFT */ OPC(0x1f,POx(a,0) POx(b,d),PUx(b >> (a & 0xf) << (a >> 4), d,r))
+	} return 0;
+}
+
+/* clang-format on */
+
+void
+uxn_init(void)
+{
+	if (ram) {
+		pd->system->realloc(ram, 0); 
+		ram = NULL;
+	}
+	ram = (Uint8 *)pd->system->realloc(NULL, BANKS_CAP);
+	if (ram) {
+		memset(ram, 0, BANKS_CAP);
+		size_t rom_len = (size_t)&uxn_rom_size;
+		memcpy(ram + PAGE_PROGRAM, uxn_rom, 0xa0000);
+	} else {
+		pd->system->error("Failed to allocate Uxn RAM");
+		return;
+	}
+	screen_layers = (Uint8 *)pd->system->realloc(screen_layers, SCREEN_LENGTH);
+	if (screen_layers) {
+		memset(screen_layers, 0, SCREEN_LENGTH);
+	}
+	screen_buf = (uint32_t *)pd->graphics->getFrame();
+	// Precompile LUT
+	for(int i = 0; i < 256; i++) {
+		uint8_t bg = i & 0x3;
+		uint8_t fg = (i >> 2) & 0x3;
+		uint8_t color = fg ? fg : bg;
+		pixel_lut[i] = (color == 3) ? 1 : 0;
+	}
+	update_datetime(pd);
+	uxn_eval(PAGE_PROGRAM);
+}
+
+typedef struct Mouse {
+	int x, y, dx, dy;
+	bool left, right;
+} Mouse;
+
+Mouse mouse = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0, 0, false, false};
+
+bool should_update_ctrl = false;
+bool should_update_mouse = false;
+float holding_timer = 0;
+
+void
+update_inputs(PlaydateAPI *pd)
+{
+	PDButtons current, pushed, released;
+	int crank = pd->system->getCrankChange();
+	if(crank > 0) {
+		dev[0x9c] = 0, dev[0x9d] = 1;
+		should_update_mouse = true;
+	} else if(crank < 0) {
+		dev[0x9c] = dev[0x9d] = 0xff;
+		should_update_mouse = true;
+	}
+	pd->system->getButtonState(&current, &pushed, &released);
+	current &= 0x3f;
+	pushed &= 0x3f;
+	released &= 0x3f;
+	switch(settings.ctrl_method) {
+	case CTRL_CONTROLLER: {
+		Uint8 state = 0x00;
+		state |= !!(current & 0x20);
+		state |= !!(current & 0x10) << 0x1;
+		state |= !!(current & 0x04) << 0x4;
+		state |= !!(current & 0x08) << 0x5;
+		state |= !!(current & 0x01) << 0x6;
+		state |= !!(current & 0x02) << 0x7;
+		dev[0x82] = state;
+		if(pushed || released)
+			should_update_ctrl = true;
+		if(pushed)
+			holding_timer = time_ms();
+		if(current) {
+			float elapsed = time_ms() - holding_timer;
+			if(elapsed > KEY_REPEAT) {
+				should_update_ctrl = true;
+				holding_timer = time_ms();
+			}
+		}
+	} break;
+	case CTRL_MOUSE: {
+		mouse.dx = 0;
+		mouse.dy = 0;
+		mouse.dx -= (current & kButtonLeft) >> 0;
+		mouse.dx += (current & kButtonRight) >> 1;
+		mouse.dy -= (current & kButtonUp) >> 2;
+		mouse.dy += (current & kButtonDown) >> 3;
+		mouse.left = (current & kButtonB) >> 4;
+		mouse.right = (current & kButtonA) >> 5;
+		Uint8 mouse_state = (mouse.left << 1) | mouse.right;
+		if(mouse_state != dev[0x96]) {
+			dev[0x96] = (mouse.left << 1) | mouse.right;
+			should_update_mouse = true;
+		}
+		if(mouse.dx | mouse.dy)
+			should_update_mouse = true;
+	} break;
+	default: break;
+	}
+}
+
+int datetime_frame;
+
+int
+update(void *playdate)
+{
+	PlaydateAPI *pd = playdate;
+	update_inputs(pd);
+	static float frame_timer;
+	frame_timer = pd->system->getElapsedTime();
+	if(frame_timer < FRAME_TIMER)
+		return 0;
+	if(datetime_frame++ == 60)
+		update_datetime(pd), datetime_frame = 0;
+	pd->system->resetElapsedTime();
+	// Evaluate inputs and screen changes.
+	if(should_update_ctrl && controller_vector) {
+		uxn_eval(controller_vector);
+		should_update_ctrl = false;
+	}
+	if(should_update_mouse && mouse_vector) {
+		uxn_eval(mouse_vector);
+		dev[0x9c] = dev[0x9d] = 0;
+		should_update_mouse = false;
+	}
+	if(screen_vector)
+		uxn_eval(screen_vector);
+	// Blit blit bliiiiit
+	if(screen_reqdraw) {
+		uint32_t *dst = screen_buf;
+		Uint8 *src_ptr = &screen_layers[8 * SCREEN_WIDTH_PAD2 + 8];
+		for(size_t y = 0; y < SCREEN_HEIGHT; y++) {
+			uint32_t *row_dst = &dst[y * LCD_ROWSEG];
+			for(size_t xi = 0, base_xi = 0; xi < 13; xi++, base_xi += 32) {
+				uint32_t c = 0;
+				for(int b = 0; b < 4; b++) {
+					int base = base_xi + b * 8;
+					uint8_t out = 0;
+					int remaining = SCREEN_WIDTH - base;
+					int limit = remaining > 8 ? 8 : remaining;
+					for(int k = 0; k < limit; k++)
+						out |= pixel_lut[src_ptr[base + k]] << (7 - k);
+					c |= (uint32_t)out << (b * 8);
+				}
+				row_dst[xi] = c;
+			}
+			src_ptr += SCREEN_WIDTH_PAD2;
+		}
+		pd->graphics->markUpdatedRows(0, SCREEN_HEIGHT - 1);
+		screen_reqdraw = 0;
+		return true;
+	}
+	return false;
+}
+
+void
+menu_ctrl_method(void *data)
+{
+	(void)data;
+	// Reset mouse/controller to avoid hanging issues.
+	switch(settings.ctrl_method) {
+	case CTRL_CONTROLLER: {
+		dev[0x82] = 0x00;
+		should_update_ctrl = true;
+	} break;
+	case CTRL_MOUSE: {
+		poke2(&dev[0x92], 0);
+		poke2(&dev[0x94], 0);
+		dev[0x96] = 0;
+		poke2(&dev[0x9a], 0);
+		poke2(&dev[0x9c], 0);
+		should_update_mouse = true;
+	} break;
+	default: break;
+	}
+	// Switch input method.
+	settings.ctrl_method = pd->system->getMenuItemValue(ctrl_menu_item);
+	save_settings();
+}
+
+void
+menu_invert_color(void *data)
+{
+	(void)data;
+	settings.invert = pd->system->getMenuItemValue(invert_menu_item);
+	pd->display->setInverted(settings.invert);
+	save_settings();
+}
+
+void
+menu_reset(void *data)
+{
+	(void)data;
+	pd->graphics->clear(kColorBlack);
+	system_reboot(0);
+	uxn_init();
+}
+
+int
+eventHandler(PlaydateAPI *playdate, PDSystemEvent event, uint32_t arg)
+{
+	(void)arg;
+	if(event == kEventInit) {
+		pd = playdate;
+		pd->display->setRefreshRate(0);
+		pd->display->setScale(1);
+		pd->graphics->clear(kColorBlack);
+		pd->system->setUpdateCallback(update, pd);
+		// Initialize menu items.
+		ctrl_menu_item = pd->system->addOptionsMenuItem("Input",
+			ctrl_method_str,
+			CTRL_NUM,
+			menu_ctrl_method,
+			NULL);
+		invert_menu_item = pd->system->addCheckmarkMenuItem("invert",
+			0,
+			menu_invert_color,
+			NULL);
+		pd->system->addMenuItem("Reset", menu_reset, NULL);
+		// Try to restore the settings or create a new file if needed.
+		SDFile *f = pd->file->open("settings.bin", kFileReadData);
+		if(f == NULL) {
+			println("Settings file not found, creating new settings file");
+			save_settings();
+		} else {
+			pd->file->close(f);
+			println("Loading settings");
+			load_settings();
+			println("Loading settings. done");
+		}
+		uxn_init();
+	}
+	return 0;
+}

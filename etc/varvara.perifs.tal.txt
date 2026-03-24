@@ -10,6 +10,7 @@
 |000
 
 	@center/x $2 &y $2
+	@wheel/y $1 &y-lo $1
 
 |100
 
@@ -145,7 +146,34 @@
 		.center/x LDZ2 #0018 SUB2 .Screen/x DEO2
 		.center/y LDZ2 #0022 ADD2 .Screen/y DEO2
 		#05ff ;small/icn #16 <draw-times> }
-	POP JMP2r
+	POP !wheel/<redraw>
+
+@wheel/<redraw> ( -- )
+	.center/x LDZ2 #0047 ADD2 .Screen/x DEO2
+	.center/y LDZ2 #0010 ADD2 .Screen/y DEO2
+	.&y-lo LDZ hex/<draw-byte>
+	( | wheel )
+	.center/x LDZ2 #0048 ADD2 .Screen/x DEO2
+	.center/y LDZ2 #0020 ADD2 .Screen/y DEO2
+	#05ff ;&icns #16 <draw-times>
+	#05ff ;&icns #0010 ADD2 #16 <draw-times>
+	#00 /<draw-points>
+	.&y LDZ2k .Mouse/scrolly DEI2 ADD2 ROT STZ2
+	#01
+	( >> )
+
+@wheel/<draw-points> ( color -- )
+	,&px STR
+	.&y LDZ2 DUP2 #0010 ADD2 /offset
+	( >> )
+	&offset ( wheelpos* -- )
+	DUP2 #001f AND2 .center/x LDZ2 #0048 ADD2 /load .Screen/x DEO2
+	#0018 ADD2 #001f AND2 .center/y LDZ2 #0020 ADD2 /load .Screen/y DEO2
+	[ LIT &px $1 ] .Screen/pixel DEO
+	JMP2r
+
+	&load ( offset* base* -- coord* )
+	SWP2 ;&offsets ADD2 LDA #00 SWP ADD2 JMP2r
 
 (
 @|Generics )
@@ -290,4 +318,12 @@
 	0018 2424 3c24 2424 0038 2424 3824 2438
 	0018 2420 2020 2418 0038 2424 2424 2438
 	001c 2020 3820 201c 001c 2020 3820 2020 ]
+
+@wheel/icns [
+	0718 2040 4080 8081 c030 0804 0402 0202
+	8080 4040 2018 0700 0202 0404 0830 c000 ]
+
+@wheel/offsets [
+	07 08 09 0a 0b 0b 0c 0c 0c 0c 0c 0b 0b 0a 09 08
+	07 06 05 04 03 03 02 02 02 02 02 03 03 04 05 06 ]
 
