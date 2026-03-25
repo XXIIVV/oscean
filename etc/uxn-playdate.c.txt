@@ -276,6 +276,32 @@ screen_deo_sprite(void)
 	if(rMY) rY += flipy ? -rDY : rDY;
 }
 
+static void
+screen_redraw(void)
+{
+	uint32_t *dst = screen_buf;
+	Uint8 *src_ptr = &screen_layers[8 * SCREEN_WIDTH_PAD2 + 8];
+	for(size_t y = 0; y < SCREEN_HEIGHT; y++) {
+		uint32_t *row_dst = &dst[y * LCD_ROWSEG];
+		for(size_t xi = 0, base_xi = 0; xi < 13; xi++, base_xi += 32) {
+			uint32_t c = 0;
+			for(int b = 0; b < 4; b++) {
+				int base = base_xi + b * 8;
+				uint8_t out = 0;
+				int remaining = SCREEN_WIDTH - base;
+				int limit = remaining > 8 ? 8 : remaining;
+				for(int k = 0; k < limit; k++)
+					out |= pixel_lut[src_ptr[base + k]] << (7 - k);
+				c |= (uint32_t)out << (b * 8);
+			}
+			row_dst[xi] = c;
+		}
+		src_ptr += SCREEN_WIDTH_PAD2;
+	}
+	pd->graphics->markUpdatedRows(0, SCREEN_HEIGHT - 1);
+	screen_reqdraw = 0;
+}
+
 /* clang-format off */
 
 static Uint8 screen_dei_whb(void) { return SCREEN_WIDTH >> 8; }
@@ -651,12 +677,12 @@ uxn_eval(Uint16 pc)
 void
 uxn_init(void)
 {
-	if (ram) {
-		pd->system->realloc(ram, 0); 
+	if(ram) {
+		pd->system->realloc(ram, 0);
 		ram = NULL;
 	}
 	ram = (Uint8 *)pd->system->realloc(NULL, BANKS_CAP);
-	if (ram) {
+	if(ram) {
 		memset(ram, 0, BANKS_CAP);
 		size_t rom_len = (size_t)&uxn_rom_size;
 		memcpy(ram + PAGE_PROGRAM, uxn_rom, 0xa0000);
@@ -665,7 +691,7 @@ uxn_init(void)
 		return;
 	}
 	screen_layers = (Uint8 *)pd->system->realloc(screen_layers, SCREEN_LENGTH);
-	if (screen_layers) {
+	if(screen_layers) {
 		memset(screen_layers, 0, SCREEN_LENGTH);
 	}
 	screen_buf = (uint32_t *)pd->graphics->getFrame();
@@ -778,27 +804,7 @@ update(void *playdate)
 		uxn_eval(screen_vector);
 	// Blit blit bliiiiit
 	if(screen_reqdraw) {
-		uint32_t *dst = screen_buf;
-		Uint8 *src_ptr = &screen_layers[8 * SCREEN_WIDTH_PAD2 + 8];
-		for(size_t y = 0; y < SCREEN_HEIGHT; y++) {
-			uint32_t *row_dst = &dst[y * LCD_ROWSEG];
-			for(size_t xi = 0, base_xi = 0; xi < 13; xi++, base_xi += 32) {
-				uint32_t c = 0;
-				for(int b = 0; b < 4; b++) {
-					int base = base_xi + b * 8;
-					uint8_t out = 0;
-					int remaining = SCREEN_WIDTH - base;
-					int limit = remaining > 8 ? 8 : remaining;
-					for(int k = 0; k < limit; k++)
-						out |= pixel_lut[src_ptr[base + k]] << (7 - k);
-					c |= (uint32_t)out << (b * 8);
-				}
-				row_dst[xi] = c;
-			}
-			src_ptr += SCREEN_WIDTH_PAD2;
-		}
-		pd->graphics->markUpdatedRows(0, SCREEN_HEIGHT - 1);
-		screen_reqdraw = 0;
+		screen_redraw();
 		return true;
 	}
 	return false;
