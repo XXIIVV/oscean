@@ -16,7 +16,6 @@
 #define SCREEN_LENGTH SCREEN_WIDTH_PAD2 *SCREEN_HEIGHT_PAD2
 #define LCD_ROWSEG (LCD_ROWSIZE / 4)
 
-#define POLYPHONY 4
 #define PROF_ENABLE 0
 #define KEY_REPEAT 150
 #define FRAME_TIMER 0.015f
@@ -164,15 +163,13 @@ console_deo_vector(void)
 static void
 console_deo_stdout(void)
 {
-	// pd->system->logToConsole("%c", dev[0x18]);
-	printf("%c", dev[0x18]);
+	// printf("%c", dev[0x18]);
 }
 
 static void
 console_deo_stderr(void)
 {
-	// pd->system->logToConsole("%c", dev[0x19]);
-	printf("%c", dev[0x19]);
+	// printf("%c", dev[0x19]);
 }
 
 /*
@@ -321,6 +318,159 @@ static void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2
 static void screen_deo_x(void) { rX = (Sint16)peek2(&dev[0x28]); }
 static void screen_deo_y(void) { rY = (Sint16)peek2(&dev[0x2a]); }
 static void screen_deo_addr(void) { rA = peek2(&dev[0x2c]); }
+
+/* clang-format on */
+
+/*
+@|Audio ------------------------------------------------------------- */
+
+#define POLYPHONY 4
+#define SAMPLE_FREQUENCY 44100
+#define NOTE_PERIOD (SAMPLE_FREQUENCY * 0x4000 / 11025)
+#define ADSR_STEP (SAMPLE_FREQUENCY / 0xf)
+
+typedef struct {
+	uint32_t count, advance, period, age, a, d, s, r;
+	uint16_t addr, i, len;
+	int8_t volume[2];
+	uint8_t pitch, repeat;
+} Apu;
+
+static SoundSource *apu_sources[POLYPHONY];
+static Apu apu[POLYPHONY];
+
+/* clang-format off */
+
+static uint32_t advances[12] = {
+	0x80000, 0x879c8, 0x8facd, 0x9837f, 0xa1451, 0xaadc1,
+	0xb504f, 0xbfc88, 0xcb2ff, 0xd7450, 0xe411f, 0xf1a1c
+};
+
+/* clang-format on */
+
+static int32_t
+envelope(Apu *c, uint32_t age)
+{
+	if(!c->r) return 0x0888;
+	if(age < c->a) return 0x0888 * age / c->a;
+	if(age < c->d) return 0x0444 * (2 * c->d - c->a - age) / (c->d - c->a);
+	if(age < c->s) return 0x0444;
+	if(age < c->r) return 0x0444 * (c->r - age) / (c->r - c->s);
+	c->advance = 0;
+	return 0x0000;
+}
+
+int
+apu_render(Apu *c, uint8_t *dat, int16_t *left, int16_t *right, int len)
+{
+	int32_t s;
+	if(!c->advance || !c->period) return 0;
+	while(len--) {
+		c->count += c->advance;
+		c->i += c->count / c->period;
+		c->count %= c->period;
+		if(c->i >= c->len) {
+			if(!c->repeat) {
+				c->advance = 0;
+				break;
+			}
+			c->i %= c->len;
+		}
+		s = (int8_t)(dat[c->addr + c->i] + 0x80) * envelope(c, c->age++);
+		*left++ = s * c->volume[0] / 0x180;
+		*right++ = s * c->volume[1] / 0x180;
+	}
+	return 1;
+}
+
+void
+apu_start(Apu *c, uint16_t adsr, uint8_t pitch)
+{
+	if(pitch < 108 && c->len)
+		c->advance = advances[pitch % 12] >> (8 - pitch / 12);
+	else {
+		c->advance = 0;
+		return;
+	}
+	c->a = ADSR_STEP * (adsr >> 12);
+	c->d = ADSR_STEP * (adsr >> 8 & 0xf) + c->a;
+	c->s = ADSR_STEP * (adsr >> 4 & 0xf) + c->d;
+	c->r = ADSR_STEP * (adsr >> 0 & 0xf) + c->s;
+	c->age = 0;
+	c->i = 0;
+	if(c->len <= 0x100) /* single cycle mode */
+		c->period = NOTE_PERIOD * 337 / 2 / c->len;
+	else /* sample repeat mode */
+		c->period = NOTE_PERIOD;
+}
+
+uint8_t
+apu_get_vu(Apu *c)
+{
+	int i;
+	int32_t sum[2] = {0, 0};
+	if(!c->advance || !c->period) return 0;
+	for(i = 0; i < 2; ++i) {
+		if(!c->volume[i]) continue;
+		sum[i] = 1 + envelope(c, c->age) * c->volume[i] / 0x800;
+		if(sum[i] > 0xf) sum[i] = 0xf;
+	}
+	return (sum[0] << 4) | sum[1];
+}
+
+static int
+audio_callback(void *context, int16_t *left, int16_t *right, int len)
+{
+	return apu_render((Apu *)context, ram, left, right, len);
+}
+
+static int
+apu_init(void)
+{
+	int i;
+	SoundChannel *ch = pd->sound->getDefaultChannel();
+	for(i = 0; i < POLYPHONY; ++i)
+		apu_sources[i] = pd->sound->channel->addCallbackSource(ch, audio_callback, &apu[i], 1);
+	pd->sound->channel->setVolume(ch, 1.0);
+	pd->sound->channel->setPan(ch, 0.0);
+	return 1;
+}
+
+Uint16
+apu_dei(Uint8 *dev, Uint8 port)
+{
+	(void)dev, (void)port;
+	// TODO: Implement
+	/*
+	int id = 0;
+	Apu *c = &apu[id];
+	if(b0 == 0x2) {
+		d->dat[0x2] = 0x0;
+		poke16(d->dat, 0x2, c->i); }
+	else if(b0 == 0x4)
+		d->dat[0x4] = apu_get_vu(c);
+	*/
+	return 0;
+}
+
+void
+audio_play(int instance, Uint8 *d)
+{
+	Apu *c = &apu[instance];
+	c->len = *(d + 0xa) << 8 | *(d + 0xb);
+	c->addr = *(d + 0xc) << 8 | *(d + 0xd);
+	c->volume[0] = d[0xe] >> 4;
+	c->volume[1] = d[0xe] & 0xf;
+	c->repeat = !(d[0xf] & 0x80);
+	apu_start(c, *(d + 0x8) << 8 | *(d + 0x9), d[0xf] & 0x7f);
+}
+
+/* clang-format off */
+
+static void audio_play0(void) { audio_play(0, &dev[0x30]); }
+static void audio_play1(void) { audio_play(1, &dev[0x40]); }
+static void audio_play2(void) { audio_play(2, &dev[0x50]); }
+static void audio_play3(void) { audio_play(3, &dev[0x60]); }
 
 /* clang-format on */
 
@@ -631,6 +781,10 @@ static const deo_handler deo_handlers[256] = {
 	[0x2d] = screen_deo_addr,
 	[0x2e] = screen_deo_pixel,
 	[0x2f] = screen_deo_sprite,
+	[0x3f] = audio_play0,
+	[0x4f] = audio_play1,
+	[0x5f] = audio_play2,
+	[0x6f] = audio_play3,
 	[0x81] = controller_deo_vector,
 	[0x91] = mouse_deo_vector,
 	[0xa5] = filea_deo_stat,
@@ -761,8 +915,9 @@ uxn_init(void)
 		uint8_t bg = i & 0x3;
 		uint8_t fg = (i >> 2) & 0x3;
 		uint8_t color = fg ? fg : bg;
-		pixel_lut[i] = (color == 3) ? 1 : 0;
+		pixel_lut[i] = color & 1;
 	}
+	apu_init();
 	update_datetime(pd);
 	uxn_eval(PAGE_PROGRAM);
 }

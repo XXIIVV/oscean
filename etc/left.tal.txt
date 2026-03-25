@@ -60,7 +60,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "6 20 "Mar 20 "2026 $1 02
+	( date ) "25 20 "Mar 20 "2026 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -111,6 +111,10 @@
 
 (
 @|macros )
+
+%Screen/<set-pos> ( x* y* -- ) {
+	.Screen/y DEO2
+	.Screen/x DEO2 }
 
 %sel/get-to ( -- addr* ) {
 	.sel/to LDZ2 }
@@ -569,8 +573,7 @@
 
 @scrollbar/<draw> ( -- )
 	( | bg )
-	#0004 .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	#0004 #0028 Screen/<set-pos>
 	#01 ;textarea/lines LDZ #03 MUL STH2k SUB
 	( ) ;halftone-icn #02 <draw-times>
 	( | fg )
@@ -667,8 +670,7 @@
 
 @textarea/<redraw> ( -- )
 	( | clear )
-	/get-anchor .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	/get-anchor #0028 Screen/<set-pos>
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | paint )
 	#0028 .Screen/y DEO2
@@ -708,8 +710,7 @@
 	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<draw-widget>
 	sel/<draw-widget>
 	( | col80 )
-	/get-anchor #03c0 ADD2 .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	/get-anchor #03c0 ADD2 #0028 Screen/<set-pos>
 	[ LIT2 16 -Screen/auto ] DEO
 	[ LIT2 05 -scrollbar/height ] LDZ2 #03 SFT2 SUB ;col80-icn #02 !<draw-times>
 
@@ -782,8 +783,7 @@
 
 @caret/is-invisible ( -- f )
 	[ LIT &found $1 ] DUP ?{
-		[ LIT2 &x $2 ] .Screen/x DEO2
-		[ LIT2 &y $2 ] .Screen/y DEO2 }
+		[ LIT2 &x $2 ] [ LIT2 &y $2 ] Screen/<set-pos> }
 	JMP2r
 
 (
@@ -893,8 +893,7 @@
 @nav/<redraw> ( -- )
 	.&visible LDZ ?{ !scrollbar/<draw> }
 	( | clear )
-	;&width .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	;&width #0028 Screen/<set-pos>
 	[ LIT2 90 -Screen/pixel ] DEO
 	scrollbar/<draw>
 	( | draw )
@@ -912,8 +911,7 @@
 	POP2 POP2r JMP2r
 
 @nav/<draw-empty> ( range* -- )
-	POP2 #0014 .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	POP2 #0014 #0028 Screen/<set-pos>
 	;dict/empty #03 !ank/<draw-left-color>
 
 @nav/<draw-label> ( ztr selected -- ztr )
@@ -969,8 +967,7 @@
 @nav/toggle-sidebar ( -- )
 	.&visible LDZk #01 EOR SWP STZ
 	( | clear label markers )
-	#0014 .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	#0014 #0028 Screen/<set-pos>
 	[ LIT2 90 -Screen/pixel ] DEO !reqdraw-both
 
 @nav/<prev-marker> ( -- )
@@ -1084,8 +1081,7 @@
 	!file/<open>
 
 @path/<clear> ( -- )
-	;&x .Screen/x DEO2
-	#0018 .Screen/y DEO2
+	;&x #0018 Screen/<set-pos>
 	[ LIT2 a0 -Screen/pixel ] DEO
 	JMP2r
 
@@ -1094,8 +1090,7 @@
 	( >> )
 
 @path/<draw-state> ( -- )
-	#0002 .Screen/x DEO2
-	#0004 .Screen/y DEO2
+	#0002 #0004 Screen/<set-pos>
 	[ LIT2 25 -Screen/auto ] DEO
 	;ank/diamond .Screen/addr DEO2
 	.&state LDZ .Screen/sprite DEOk DEO
@@ -1106,8 +1101,7 @@
 	( >> )
 
 @path/<draw-color> ( color -- )
-	;&x .Screen/x DEO2
-	#001c .Screen/y DEO2
+	;&x #001c Screen/<set-pos>
 	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
 	#0004 .Screen/y DEO2
 	;&buf ROT ank/<draw-left-color>
@@ -1421,7 +1415,7 @@
 	( >> )
 	&single ( c -- )
 	sel/get-from STH2k textarea/<put-char>
-	STH2r INC2 sel/<set-a> !autocomplete/update
+	INC2r STH2r sel/<set-a> !autocomplete/update
 
 @erase ( -- )
 	sel/has-length ?{
@@ -1647,7 +1641,7 @@
 @menu/<touch-sub> ( id -- )
 	DUP .&cat LDZ2 LDA2k SWP2 SUB2 #0004 SUB2 #0006 DIV2 NIP LTH ?{
 		( outside ) POP #ffff ;&on-exit-sub !/<open> }
-	#00 SWP #0006 MUL2 #0004 ADD2 .&cat LDZ2 ADD2 INC2 INC2 LDA2
+	#00 SWP #0006 MUL2 #0004 ADD2 .&cat LDZ2 INC2 INC2 ADD2 LDA2
 	( * ) JSR2 #ffff ;&on-exit-sub !/<open>
 
 @menu/<init> ( -- )
