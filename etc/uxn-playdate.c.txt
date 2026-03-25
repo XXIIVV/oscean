@@ -36,7 +36,7 @@ typedef Uint8 (*dei_handler)(void);
 static unsigned int uxn_eval(Uint16 pc);
 static Uint8 *ram, dev[0x100], stk[2][0x100], ptr[2];
 static int console_vector, screen_vector, controller_vector, mouse_vector;
-static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
+static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY, rL1, rL2;
 static uint8_t pixel_lut[256];
 
 extern Uint8 uxn_rom[];
@@ -164,13 +164,15 @@ console_deo_vector(void)
 static void
 console_deo_stdout(void)
 {
-	pd->system->logToConsole("%c", dev[0x18]);
+	// pd->system->logToConsole("%c", dev[0x18]);
+	printf("%c", dev[0x18]);
 }
 
 static void
 console_deo_stderr(void)
 {
-	pd->system->logToConsole("%c", dev[0x19]);
+	// pd->system->logToConsole("%c", dev[0x19]);
+	printf("%c", dev[0x19]);
 }
 
 /*
@@ -367,7 +369,7 @@ reset(UxnFile *f)
 }
 
 static Uint16
-file_init(UxnFile *f, char *filename, size_t max_len)
+file_init_shim(UxnFile *f, char *filename, size_t max_len)
 {
 	char *p = f->current_filename;
 	size_t len = sizeof(f->current_filename);
@@ -456,7 +458,7 @@ read_dir(UxnFile *f, char *dest, Uint16 len)
 }
 
 static Uint16
-file_read(UxnFile *f, void *dest, int len)
+file_read_shim(UxnFile *f, void *dest, int len)
 {
 	if(f->state != FILE_READ && f->state != FILE_DIR_READ) {
 		reset(f);
@@ -480,7 +482,7 @@ file_read(UxnFile *f, void *dest, int len)
 }
 
 static Uint16
-file_write(UxnFile *f, void *src, Uint16 len, Uint8 flags)
+file_write_shim(UxnFile *f, void *src, Uint16 len, Uint8 flags)
 {
 	Uint16 ret = 0;
 	if(f->state != FILE_WRITE) {
@@ -503,7 +505,7 @@ file_write(UxnFile *f, void *src, Uint16 len, Uint8 flags)
 }
 
 static Uint16
-file_stat(UxnFile *f, void *dest, Uint16 len)
+file_stat_shim(UxnFile *f, void *dest, Uint16 len)
 {
 	char *basename = strrchr(f->current_filename, '/');
 	if(basename != NULL) {
@@ -521,10 +523,58 @@ file_stat(UxnFile *f, void *dest, Uint16 len)
 }
 
 static Uint16
-file_delete(UxnFile *f)
+file_delete_shim(UxnFile *f)
 {
 	return pd->file->unlink(f->current_filename, 0);
 }
+
+static unsigned int
+file_init(unsigned int id, Uint16 addr)
+{
+	return file_init_shim(&uxn_file[id], ram + addr, 0x10000 - addr);
+}
+
+static unsigned int
+file_read(unsigned int id, Uint16 addr, unsigned int len)
+{
+	return file_read_shim(&uxn_file[id], ram + addr, len);
+}
+
+static unsigned int
+file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
+{
+	return file_write_shim(&uxn_file[id], ram + addr, len, flags);
+}
+
+static unsigned int
+file_stat(unsigned int id, Uint16 addr, unsigned int len)
+{
+	// TODO: Implement
+	return 0;
+}
+
+static unsigned int
+file_delete(unsigned int id)
+{
+	return file_delete_shim(&uxn_file[id]);
+}
+
+/* clang-format off */
+
+static void filea_deo_stat(void) { poke2(&dev[0xa2], file_stat(0, peek2(&dev[0xa4]), rL1)); }
+static void filea_deo_delete(void) { poke2(&dev[0xa2], file_delete(0)); }
+static void filea_deo_name(void) { poke2(&dev[0xa2], file_init(0, peek2(&dev[0xa8]))); }
+static void filea_deo_length(void) { rL1 = peek2(&dev[0xaa]); }
+static void filea_deo_read(void) { poke2(&dev[0xa2], file_read(0, peek2(&dev[0xac]), rL1)); }
+static void filea_deo_write(void) { poke2(&dev[0xa2], file_write(0, peek2(&dev[0xae]), rL1, dev[0xa7])); }
+static void fileb_deo_stat(void) { poke2(&dev[0xb2], file_stat(1, peek2(&dev[0xb4]), rL2)); }
+static void fileb_deo_delete(void) { poke2(&dev[0xb2], file_delete(1)); }
+static void fileb_deo_name(void) { poke2(&dev[0xb2], file_init(1, peek2(&dev[0xb8]))); }
+static void fileb_deo_length(void) { rL2 = peek2(&dev[0xba]); }
+static void fileb_deo_read(void) { poke2(&dev[0xb2], file_read(1, peek2(&dev[0xbc]), rL2)); }
+static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0xbe]), rL2, dev[0xb7])); }
+
+/* clang-format on */
 
 /*
 @|Datetime ---------------------------------------------------------- */
@@ -583,7 +633,18 @@ static const deo_handler deo_handlers[256] = {
 	[0x2f] = screen_deo_sprite,
 	[0x81] = controller_deo_vector,
 	[0x91] = mouse_deo_vector,
-};
+	[0xa5] = filea_deo_stat,
+	[0xa6] = filea_deo_delete,
+	[0xa9] = filea_deo_name,
+	[0xab] = filea_deo_length,
+	[0xad] = filea_deo_read,
+	[0xaf] = filea_deo_write,
+	[0xb5] = fileb_deo_stat,
+	[0xb6] = fileb_deo_delete,
+	[0xb9] = fileb_deo_name,
+	[0xbb] = fileb_deo_length,
+	[0xbd] = fileb_deo_read,
+	[0xbf] = fileb_deo_write};
 
 static inline Uint8
 emu_dei(const Uint8 port)
