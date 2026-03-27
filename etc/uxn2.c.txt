@@ -41,7 +41,6 @@ static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY, rL1, rL2;
 #define HEIGHT (40 * 8)
 
 #define CLAMP(v, a, b) { if(v < a) v = a; else if(v >= b) v = b; }
-#define TWOS(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
 
 static inline Uint16 peek2(const Uint8 *d) { return ((Uint16)d[0] << 8) | d[1]; }
 static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
@@ -144,7 +143,8 @@ console_input(int c, unsigned int type)
 {
 	if(c == EOF) c = 0, type = CONSOLE_END;
 	dev[0x12] = c, dev[0x17] = type;
-	if(console_vector) uxn_eval(console_vector);
+	if(console_vector)
+		uxn_eval(console_vector);
 	return type != CONSOLE_END;
 }
 
@@ -388,8 +388,8 @@ static void screen_deo_vector(void) { screen_vector = peek2(&dev[0x20]); }
 static void screen_deo_width(void) { screen_resize(peek2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
 static void screen_deo_height(void) { screen_resize(screen_width & 0xfff, peek2(&dev[0x24]) & 0xfff); }
 static void screen_deo_auto(void) { rMX = dev[0x26] & 0x1, rMY = dev[0x26] & 0x2, rMA = dev[0x26] & 0x4, rML = dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; }
-static void screen_deo_x(void) { rX = (dev[0x28] << 8) | dev[0x29], rX = TWOS(rX); }
-static void screen_deo_y(void) { rY = (dev[0x2a] << 8) | dev[0x2b], rY = TWOS(rY); }
+static void screen_deo_x(void) { rX = (dev[0x28] << 8) | dev[0x29], rX = (short)rX; }
+static void screen_deo_y(void) { rY = (dev[0x2a] << 8) | dev[0x2b], rY = (short)rY; }
 static void screen_deo_addr(void) { rA = (dev[0x2c] << 8) | dev[0x2d]; }
 
 /* clang-format on */
@@ -570,7 +570,8 @@ controller_down(Uint8 mask)
 {
 	if(mask) {
 		dev[0x82] |= mask;
-		if(controller_vector) uxn_eval(controller_vector);
+		if(controller_vector)
+			uxn_eval(controller_vector);
 	}
 }
 
@@ -579,7 +580,8 @@ controller_up(Uint8 mask)
 {
 	if(mask) {
 		dev[0x82] &= (~mask);
-		if(controller_vector) uxn_eval(controller_vector);
+		if(controller_vector)
+			uxn_eval(controller_vector);
 	}
 }
 
@@ -588,7 +590,8 @@ controller_key(Uint8 key)
 {
 	if(key) {
 		dev[0x83] = key;
-		if(controller_vector) uxn_eval(controller_vector);
+		if(controller_vector)
+			uxn_eval(controller_vector);
 		dev[0x83] = 0;
 	}
 }
@@ -606,14 +609,16 @@ static void
 mouse_down(Uint8 mask)
 {
 	dev[0x96] |= mask;
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 }
 
 static void
 mouse_up(Uint8 mask)
 {
 	dev[0x96] &= (~mask);
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 }
 
 static void
@@ -621,7 +626,8 @@ mouse_pos(Uint16 x, Uint16 y)
 {
 	dev[0x92] = x >> 8, dev[0x93] = x;
 	dev[0x94] = y >> 8, dev[0x95] = y;
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 }
 
 static void
@@ -629,7 +635,8 @@ mouse_scroll(Uint16 x, Uint16 y)
 {
 	dev[0x9a] = x >> 8, dev[0x9b] = x;
 	dev[0x9c] = -y >> 8, dev[0x9d] = -y;
-	if(mouse_vector) uxn_eval(mouse_vector);
+	if(mouse_vector)
+		uxn_eval(mouse_vector);
 	dev[0x9a] = 0, dev[0x9b] = 0;
 	dev[0x9c] = 0, dev[0x9d] = 0;
 }
@@ -1252,7 +1259,9 @@ emu_event(void)
 		/* Audio */
 		else if(event.type >= audio0_event && event.type < audio0_event + POLYPHONY) {
 			Uint8 *port_value = &dev[0x30 + 0x10 * (event.type - audio0_event)];
-			uxn_eval(port_value[0] << 8 | port_value[1]);
+			Uint16 vector = port_value[0] << 8 | port_value[1];
+			if(vector)
+				uxn_eval(vector);
 		}
 		/* Controller */
 		else if(event.type == SDL_TEXTINPUT) {
@@ -1261,7 +1270,7 @@ emu_event(void)
 				controller_key(*c);
 		} else if(event.type == SDL_KEYDOWN) {
 			int ksym, key;
-			if((key = get_key(&event)) && (key < 0x20 || (SDL_GetModState() & KMOD_ALT) || (SDL_GetModState() & KMOD_CTRL)))
+			if((key = get_key(&event)) && (key < 0x20 || (SDL_GetModState() & (KMOD_ALT | KMOD_CTRL))))
 				controller_key(key);
 			else if(get_button(&event))
 				controller_down(get_button(&event));
@@ -1402,7 +1411,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 21 Feb 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 27 Mar 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
