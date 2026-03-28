@@ -1,0 +1,207 @@
+( uxncli ulzenc.rom example.txt a.ulz )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|000
+
+	@pad $2
+	@src $30
+	@dst $30
+	@match-len $2
+	@output-ptr $2
+	@dict-best $2
+	@combine $2
+	@dict-data $2
+	@dict-len $2
+
+|100
+
+@ready-src ( -> )
+	;meta #06 DEO2
+	.Console/type DEI #03 AND ?{ ;dict/usage <perr>/
+		#010f DEO }
+	;&await .Console/vector DEO2
+	BRK
+	&await ( -> )
+	.Console/read DEI .src skey ?ready-dst
+	BRK
+
+@ready-dst ( -> )
+	;&await .Console/vector DEO2
+	BRK
+	&await ( -> )
+	.Console/read DEI .dst skey ?on-ready
+	BRK
+
+@meta $1
+	( name ) "Ulzenc 0a
+	( desc ) "ULZ 20 "Encoder 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "5 20 "Jun 20 "2024 $1
+	( exts ) 00
+
+@on-ready ( -> )
+	( | load raw )
+	;src .File/name DEO2
+	#4000 .File/length DEO2
+	;raw .File/read DEO2
+	;raw .File/success DEI2 uxn_lz_compress
+	( | write )
+	;dst .File/name DEO2
+	.output-ptr LDZ2 ;compressed SUB2 .File/length DEO2
+	;compressed .File/write DEO2
+	( | summary )
+	;dict/decompressed <pstr>
+	;src <pstr>/
+	;dict/spacer <pstr>
+	;dst <pstr>/
+	[ LIT2 "( 18 ] DEO
+	.output-ptr LDZ2 ;compressed SUB2 <pdec>
+	;dict/bytes <pstr>
+	[ LIT2 ") 18 ] DEO
+	#0a18 DEO
+	( halt ) #800f DEO
+	BRK
+
+@<append-byte> ( byte -- )
+	.output-ptr LDZ2 INC2k .output-ptr STZ2
+	STA
+	JMP2r
+
+@<append-short> ( short* -- )
+	.output-ptr LDZ2 INC2k INC2 .output-ptr STZ2
+	STA2
+	JMP2r
+
+@uxn_lz_compress ( input* length* -- )
+	( | fill variables )
+	;compressed .output-ptr STZ2
+	ADD2k NIP2 SWP2
+	&w ( end* start* -- )
+	EQU2k ?&end
+	( | get available dictionary size )
+	DUP2 ;raw SUB2 #0100 LTH2k ?{ SWP2 }
+	POP2 .dict-len STZ2
+	( | size of the string to search for )
+	SUB2k #3fff #0004 ADD2 LTH2k ?{ SWP2 }
+	POP2 ,&string-len STR2
+	( | itterate through the dictionary )
+	#0000 .match-len STZ2
+	DUP2 .dict-len LDZ2 SUB2 .dict-data STZ2
+	&for1 ( for ; dict_len; dict++, dict_len-- )
+	.dict-len LDZ2 #0000 EQU2 ?&end-for1
+	( Find common prefix length with the string ) #0000
+	&for2 ( for i = 0;; i++ )
+	( | If we reach the end of the string, it's the best possible match. )
+	DUP2 [ LIT2 &string-len $2 ] NEQ2 ?{
+		DUP2 .match-len STZ2
+		.dict-data LDZ2 .dict-best STZ2
+		POP2 !&done-search }
+	( | in[i] != dict[i % dict_len] break; )
+	
+	( a ) ADD2k LDA STH
+	( b ) DUP2 .dict-len LDZ2 DIV2k MUL2 SUB2 .dict-data LDZ2 ADD2
+	( res ) LDA STHr NEQ ?&end-for2
+	INC2 ORAk ?&for2
+	&end-for2 ( i > match_len )
+	DUP2 .match-len LDZ2 LTH2 ?{
+		DUP2 .match-len STZ2
+		.dict-data LDZ2 .dict-best STZ2 }
+	POP2 .dict-data LDZ2 INC2 .dict-data STZ2
+	.dict-len LDZ2 #0001 SUB2 .dict-len STZ2
+	!&for1
+	&end-for1
+	&done-search ( -- )
+	( CPY ) .match-len LDZ2 #0003 GTH2 ?op-cpy
+	( LIT ) !op-lit
+	&end POP2 POP2 JMP2r
+
+(
+@|opcodes )
+
+@op-cpy ( in* -- )
+	( | More numeric range: treat 0 as 4, 1 as 5, etc. )
+	.match-len LDZ2 #0004 SUB2
+	( | CPY2 )
+	DUP2 #003f GTH2 ?&cpy2
+	( *output_ptr++ = match_ctl
+	| 0x80; ) NIP #80 ORA <append-byte>
+	!&cpy-resume
+	&cpy2 ( match-ctl* -- )
+	SWP #c0 ORA <append-short>
+	&cpy-resume ( -- )
+	( | *output_ptr++ = in - dict_best - 1; )
+	DUP2 .dict-best LDZ2 SUB2 #0001 SUB2 NIP <append-byte>
+	( | in += match_len; Advance input by size of the match )
+	.match-len LDZ2 ADD2
+	( | Disable combining previous literal, if any )
+	#0000 .combine STZ2
+	!uxn_lz_compress/w
+
+@op-lit ( in* -- )
+	.combine LDZ2 ORA ?&combine
+	( start a new literal )
+	( Store this address, and later use it to increment the literal size. )
+	( | combine = output_ptr++; )
+	.output-ptr LDZ2 INC2k .output-ptr STZ2
+	.combine STZ2
+	( | *combine = 0; )
+	#00 .combine LDZ2 LDA2 STA
+	( | *output_ptr++ = *in++; )
+	LDAk <append-byte>
+	INC2 !uxn_lz_compress/w
+	&combine ( -- )
+	( | if ++*combine == 127 )
+	.combine LDZ2 LDA INC DUP #7f NEQ ?{ POP #00 }
+	.combine LDZ2 STA
+	LDAk <append-byte>
+	INC2 !uxn_lz_compress/w
+
+(
+@|stdlib )
+
+@skey ( key buf -- proc )
+	OVR #21 LTH ?{
+		#00 SWP sput #00 JMP2r }
+	POP2 #01 JMP2r
+
+@scap ( str* -- end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@sput ( chr str* -- )
+	scap/ INC2k #00 ROT ROT STA
+	STA
+	JMP2r
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@<perr> ( str* -- )
+	LDAk #19 DEO
+	INC2 & LDAk ?<perr>
+	POP2 JMP2r
+
+@<pdec> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&>w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+			DUP [ LIT "0 ] ADD #19 DEO
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
+	POP2r POP2 POP2 JMP2r
+
+(
+@|memory )
+
+@dict &usage "usage: 20 "ulzenc.rom 20 "a.ulz 20 "b.bin 0a $1
+	&decompressed "Compressed 20 $1
+	&spacer 20 "-> 20 $1
+	&bytes 20 "bytes $1
+
+@raw $8000
+
+@compressed
+

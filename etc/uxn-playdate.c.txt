@@ -36,7 +36,7 @@ static unsigned int uxn_eval(Uint16 pc);
 static Uint8 *ram, dev[0x100], stk[2][0x100], ptr[2];
 static int console_vector, screen_vector, controller_vector, mouse_vector;
 static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY, rL1, rL2;
-static uint8_t pixel_lut[256];
+static uint8_t pixel_lut[16];
 
 extern Uint8 uxn_rom[];
 extern Uint8 uxn_rom_size[];
@@ -72,31 +72,31 @@ poke2(Uint8 *d, Uint16 v)
 	d[0] = v >> 8, d[1] = v;
 }
 
-void
+static void
 save_settings(void)
 {
 	SDFile *f = pd->file->open("settings.bin", kFileWrite);
 	if(!f) {
-		println("error: couldn't open settings file");
+		println("Error: couldn't open settings");
 		return;
 	}
 	if(pd->file->write(f, &settings, sizeof(settings)) < 0) {
-		println("error: couldn't save settings");
+		println("Error: couldn't save settings");
 		return;
 	}
 	pd->file->close(f);
 }
 
-void
+static void
 load_settings(void)
 {
 	SDFile *f = pd->file->open("settings.bin", kFileReadData);
 	if(!f) {
-		println("error: couldn't open settings file");
+		println("Error: couldn't open settings");
 		return;
 	}
 	if(pd->file->read(f, &settings, sizeof(settings)) < 0) {
-		println("error: couldn't load settings");
+		println("Error: couldn't load settings");
 		return;
 	}
 	pd->file->close(f);
@@ -278,27 +278,44 @@ screen_deo_sprite(void)
 static void
 screen_redraw(void)
 {
-	uint32_t *dst = screen_buf;
-	Uint8 *src_ptr = &screen_layers[8 * SCREEN_WIDTH_PAD2 + 8];
-	for(size_t y = 0; y < SCREEN_HEIGHT; y++) {
-		uint32_t *row_dst = &dst[y * LCD_ROWSEG];
-		for(size_t xi = 0, base_xi = 0; xi < 13; xi++, base_xi += 32) {
+	const Uint8 *src = &screen_layers[8 * SCREEN_WIDTH_PAD2 + 8];
+	for(int y = 0; y < SCREEN_HEIGHT; y++, src += SCREEN_WIDTH_PAD2) {
+		uint32_t *row_dst = &screen_buf[y * LCD_ROWSEG];
+		const Uint8 *p = src;
+		for(int xi = 0; xi < 12; xi++, p += 32) {
 			uint32_t c = 0;
-			for(int b = 0; b < 4; b++) {
-				int base = base_xi + b * 8;
-				uint8_t out = 0;
-				int remaining = SCREEN_WIDTH - base;
-				int limit = remaining > 8 ? 8 : remaining;
-				for(int k = 0; k < limit; k++)
-					out |= pixel_lut[src_ptr[base + k]] << (7 - k);
-				c |= (uint32_t)out << (b * 8);
-			}
-			row_dst[xi] = c;
+			for(int k = 0; k < 32; k++)
+				c |= (uint32_t)pixel_lut[p[k] & 0xf] << (k ^ 7);
+			*row_dst++ = c;
 		}
-		src_ptr += SCREEN_WIDTH_PAD2;
+		uint32_t c = 0;
+		for(int k = 0; k < 16; k++)
+			c |= (uint32_t)pixel_lut[p[k] & 0xf] << (k ^ 7);
+		*row_dst = c;
 	}
 	pd->graphics->markUpdatedRows(0, SCREEN_HEIGHT - 1);
 	screen_reqdraw = 0;
+}
+
+static void
+screen_init(void)
+{
+	println("Starting screen.. %d bytes", (int)SCREEN_LENGTH);
+	screen_layers = (Uint8 *)pd->system->realloc(screen_layers, SCREEN_LENGTH);
+	if(!screen_layers) {
+		println("Error: Failed to allocate screen layers");
+		return;
+	}
+	memset(screen_layers, 0, SCREEN_LENGTH);
+	println("Starting screen.. ok");
+	screen_buf = (uint32_t *)pd->graphics->getFrame();
+	// Precompile LUT
+	for(int i = 0; i < 16; i++) {
+		uint8_t fg = (i >> 2) & 0x3;
+		uint8_t bg = i & 0x3;
+		uint8_t color = fg ? fg : bg;
+		pixel_lut[i] = color & 1;
+	}
 }
 
 /* clang-format off */
@@ -360,7 +377,7 @@ envelope(Apu *c, uint32_t age)
 	return 0x0000;
 }
 
-int
+static int
 apu_render(Apu *c, uint8_t *dat, int16_t *left, int16_t *right, int len)
 {
 	int32_t s;
@@ -383,7 +400,7 @@ apu_render(Apu *c, uint8_t *dat, int16_t *left, int16_t *right, int len)
 	return 1;
 }
 
-void
+static void
 apu_start(Apu *c, uint16_t adsr, uint8_t pitch)
 {
 	if(pitch < 108 && c->len)
@@ -404,7 +421,7 @@ apu_start(Apu *c, uint16_t adsr, uint8_t pitch)
 		c->period = NOTE_PERIOD;
 }
 
-uint8_t
+static uint8_t
 apu_get_vu(Apu *c)
 {
 	int i;
@@ -425,7 +442,7 @@ audio_callback(void *context, int16_t *left, int16_t *right, int len)
 }
 
 static int
-apu_init(void)
+audio_init(void)
 {
 	int i;
 	SoundChannel *ch = pd->sound->getDefaultChannel();
@@ -436,7 +453,7 @@ apu_init(void)
 	return 1;
 }
 
-Uint16
+static Uint16
 apu_dei(Uint8 *dev, Uint8 port)
 {
 	(void)dev, (void)port;
@@ -453,7 +470,7 @@ apu_dei(Uint8 *dev, Uint8 port)
 	return 0;
 }
 
-void
+static void
 audio_play(int instance, Uint8 *d)
 {
 	Apu *c = &apu[instance];
@@ -477,7 +494,7 @@ static void audio_play3(void) { audio_play(3, &dev[0x60]); }
 /*
 @|Controller -------------------------------------------------------- */
 
-void
+static void
 controller_deo_vector(void)
 {
 	controller_vector = peek2(&dev[0x80]);
@@ -486,7 +503,7 @@ controller_deo_vector(void)
 /*
 @|Mouse ------------------------------------------------------------- */
 
-void
+static void
 mouse_deo_vector(void)
 {
 	mouse_vector = peek2(&dev[0x90]);
@@ -506,7 +523,7 @@ typedef struct UxnFile {
 	} state;
 } UxnFile;
 
-UxnFile uxn_file[2] = {0};
+static UxnFile uxn_file[2] = {0};
 
 static void
 reset(UxnFile *f)
@@ -543,7 +560,7 @@ typedef struct DirCallbackData {
 	Uint16 written;
 } DirCallbackData;
 
-void
+static void
 dir_callback(const char *filename, void *data)
 {
 	DirCallbackData *ret = data;
@@ -599,7 +616,7 @@ dir_callback(const char *filename, void *data)
 	ret->len--;
 }
 
-Uint16
+static Uint16
 read_dir(UxnFile *f, char *dest, Uint16 len)
 {
 	DirCallbackData data = {dest, len, 0};
@@ -729,21 +746,89 @@ static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0
 /*
 @|Datetime ---------------------------------------------------------- */
 
+struct PDDateTime date_time;
+
+int datetime_busy;
+
 void
-update_datetime(PlaydateAPI *pd)
+datetime_update(void)
 {
-	struct PDDateTime date_time;
-	int32_t gmt_offset = pd->system->getTimezoneOffset();
-	uint32_t epoch = pd->system->getSecondsSinceEpoch(NULL) + gmt_offset;
-	pd->system->convertEpochToDateTime(epoch, &date_time);
-	dev[0xc0] = date_time.year >> 8;
-	dev[0xc1] = date_time.year & 0xff;
-	dev[0xc2] = date_time.month;
-	dev[0xc3] = date_time.day;
-	dev[0xc4] = date_time.hour;
-	dev[0xc5] = date_time.minute;
-	dev[0xc6] = date_time.second;
-	dev[0xc7] = date_time.weekday;
+	if(!datetime_busy) {
+		int32_t gmt_offset = pd->system->getTimezoneOffset();
+		uint32_t epoch = pd->system->getSecondsSinceEpoch(NULL) + gmt_offset;
+		pd->system->convertEpochToDateTime(epoch, &date_time);
+		datetime_busy = 1;
+	}
+}
+
+/* clang-format off */
+
+static Uint8 datetime_dei_yhb(void) { datetime_update(); return date_time.year >> 8; }
+static Uint8 datetime_dei_ylb(void) { datetime_update(); return date_time.year & 0xff; }
+static Uint8 datetime_dei_mon(void) { datetime_update(); return date_time.month; }
+static Uint8 datetime_dei_day(void) { datetime_update(); return date_time.day; }
+static Uint8 datetime_dei_hou(void) { datetime_update(); return date_time.hour; }
+static Uint8 datetime_dei_min(void) { datetime_update(); return date_time.minute; }
+static Uint8 datetime_dei_sec(void) { datetime_update(); return date_time.second; }
+static Uint8 datetime_dei_wday(void) { datetime_update(); return date_time.weekday; }
+
+/* clang-format on */
+
+/*
+@|Soundtrack -------------------------------------------------------- */
+
+static int soundtrack_id, soundtrack_changed, soundtrack_mute;
+static float soundtrack_volume;
+
+FilePlayer *player;
+
+static void
+soundtrack_init(void)
+{
+	player = pd->sound->fileplayer->newPlayer();
+}
+
+static void
+soundtrack_deo_play(void)
+{
+	soundtrack_id = dev[0xd8], soundtrack_changed = 3;
+}
+static void
+soundtrack_deo_mute(void)
+{
+	soundtrack_mute = !dev[0xd9], soundtrack_changed = 3;
+}
+
+static void
+soundtrack_update(void)
+{
+	/* fade out */
+	if(soundtrack_changed == 3) {
+		if(soundtrack_volume <= 0)
+			soundtrack_changed = 2, soundtrack_volume = 0.0f;
+		else
+			soundtrack_volume -= 0.05f;
+		pd->sound->fileplayer->setVolume(player, soundtrack_volume, soundtrack_volume);
+		/* change song */
+	} else if(soundtrack_changed == 2) {
+		pd->sound->fileplayer->stop(player);
+		if(!soundtrack_mute) {
+			char soundpath[] = "sounds/A";
+			soundpath[7] = 'A' + (soundtrack_id % 14);
+			pd->sound->fileplayer->loadIntoPlayer(player, soundpath);
+			pd->sound->fileplayer->play(player, 0);
+		}
+		soundtrack_changed = 1;
+		/* fade in */
+	} else if(soundtrack_changed == 1) {
+		if(!soundtrack_mute) {
+			if(soundtrack_volume >= 1)
+				soundtrack_changed = 0, soundtrack_volume = 1.0;
+			else
+				soundtrack_volume += 0.05f;
+			pd->sound->fileplayer->setVolume(player, soundtrack_volume, soundtrack_volume);
+		}
+	}
 }
 
 /*
@@ -762,6 +847,14 @@ static const dei_handler dei_handlers[256] = {
 	[0x2b] = screen_dei_rylb,
 	[0x2c] = screen_dei_rahb,
 	[0x2d] = screen_dei_ralb,
+	[0xc0] = datetime_dei_yhb,
+	[0xc1] = datetime_dei_ylb,
+	[0xc2] = datetime_dei_mon,
+	[0xc3] = datetime_dei_day,
+	[0xc4] = datetime_dei_hou,
+	[0xc5] = datetime_dei_min,
+	[0xc6] = datetime_dei_sec,
+	[0xc7] = datetime_dei_wday,
 };
 
 static const deo_handler deo_handlers[256] = {
@@ -798,7 +891,9 @@ static const deo_handler deo_handlers[256] = {
 	[0xb9] = fileb_deo_name,
 	[0xbb] = fileb_deo_length,
 	[0xbd] = fileb_deo_read,
-	[0xbf] = fileb_deo_write};
+	[0xbf] = fileb_deo_write,
+	[0xd8] = soundtrack_deo_play,
+	[0xd9] = soundtrack_deo_mute};
 
 static inline Uint8
 emu_dei(const Uint8 port)
@@ -889,36 +984,32 @@ uxn_eval(Uint16 pc)
 
 /* clang-format on */
 
-void
+static void
 uxn_init(void)
 {
+	// Ram
 	if(ram) {
 		pd->system->realloc(ram, 0);
 		ram = NULL;
 	}
 	ram = (Uint8 *)pd->system->realloc(NULL, BANKS_CAP);
-	if(ram) {
-		memset(ram, 0, BANKS_CAP);
-		size_t rom_len = (size_t)&uxn_rom_size;
-		memcpy(ram + PAGE_PROGRAM, uxn_rom, 0xa0000);
-	} else {
-		pd->system->error("Failed to allocate Uxn RAM");
+	if(!ram) {
+		println("Error: Failed to allocate RAM");
 		return;
 	}
-	screen_layers = (Uint8 *)pd->system->realloc(screen_layers, SCREEN_LENGTH);
-	if(screen_layers) {
-		memset(screen_layers, 0, SCREEN_LENGTH);
+	memset(ram, 0, BANKS_CAP);
+	size_t rom_len = (size_t)&uxn_rom_size;
+	println("Copying rom.. %d bytes", (int)rom_len);
+	if(rom_len > BANKS_CAP - PAGE_PROGRAM) {
+		println("Error: Copying rom.. Too large");
+		return;
 	}
-	screen_buf = (uint32_t *)pd->graphics->getFrame();
-	// Precompile LUT
-	for(int i = 0; i < 256; i++) {
-		uint8_t bg = i & 0x3;
-		uint8_t fg = (i >> 2) & 0x3;
-		uint8_t color = fg ? fg : bg;
-		pixel_lut[i] = color & 1;
-	}
-	apu_init();
-	update_datetime(pd);
+	memcpy(ram + PAGE_PROGRAM, uxn_rom, rom_len);
+	println("Copying rom.. ok");
+	screen_init();
+	soundtrack_init();
+	audio_init();
+	datetime_busy = 0;
 	uxn_eval(PAGE_PROGRAM);
 }
 
@@ -927,17 +1018,17 @@ typedef struct Mouse {
 	bool left, right;
 } Mouse;
 
-Mouse mouse = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0, 0, false, false};
+static Mouse mouse = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0, 0, false, false};
 
-bool should_update_ctrl = false;
-bool should_update_mouse = false;
-float holding_timer = 0;
+static bool should_update_ctrl = false;
+static bool should_update_mouse = false;
+static float holding_timer = 0;
 
-void
+static void
 update_inputs(PlaydateAPI *pd)
 {
 	PDButtons current, pushed, released;
-	int crank = pd->system->getCrankChange();
+	float crank = pd->system->getCrankChange();
 	if(crank > 0) {
 		dev[0x9c] = 0, dev[0x9d] = 1;
 		should_update_mouse = true;
@@ -992,19 +1083,14 @@ update_inputs(PlaydateAPI *pd)
 	}
 }
 
-int datetime_frame;
-
-int
+static int
 update(void *playdate)
 {
-	PlaydateAPI *pd = playdate;
 	update_inputs(pd);
-	static float frame_timer;
-	frame_timer = pd->system->getElapsedTime();
-	if(frame_timer < FRAME_TIMER)
+	if(pd->system->getElapsedTime() < FRAME_TIMER)
 		return 0;
-	if(datetime_frame++ == 60)
-		update_datetime(pd), datetime_frame = 0;
+	datetime_busy = 0;
+	soundtrack_update();
 	pd->system->resetElapsedTime();
 	// Evaluate inputs and screen changes.
 	if(should_update_ctrl && controller_vector) {
@@ -1012,21 +1098,24 @@ update(void *playdate)
 		should_update_ctrl = false;
 	}
 	if(should_update_mouse && mouse_vector) {
+		mouse.x = mouse.x + mouse.dx;
+		mouse.y = mouse.y + mouse.dy;
+		poke2(&dev[0x92], mouse.x);
+		poke2(&dev[0x94], mouse.y);
 		uxn_eval(mouse_vector);
 		dev[0x9c] = dev[0x9d] = 0;
 		should_update_mouse = false;
 	}
 	if(screen_vector)
 		uxn_eval(screen_vector);
-	// Blit blit bliiiiit
 	if(screen_reqdraw) {
 		screen_redraw();
-		return true;
+		return 1;
 	}
-	return false;
+	return 0;
 }
 
-void
+static void
 menu_ctrl_method(void *data)
 {
 	(void)data;
@@ -1051,7 +1140,7 @@ menu_ctrl_method(void *data)
 	save_settings();
 }
 
-void
+static void
 menu_invert_color(void *data)
 {
 	(void)data;
@@ -1060,7 +1149,7 @@ menu_invert_color(void *data)
 	save_settings();
 }
 
-void
+static void
 menu_reset(void *data)
 {
 	(void)data;
@@ -1099,7 +1188,7 @@ eventHandler(PlaydateAPI *playdate, PDSystemEvent event, uint32_t arg)
 			pd->file->close(f);
 			println("Loading settings");
 			load_settings();
-			println("Loading settings. done");
+			println("Loading settings.. ok");
 		}
 		uxn_init();
 	}
