@@ -6,6 +6,7 @@
 |000
 
 	@src/buf $40
+	@cmp/eq $1
 
 |100
 
@@ -27,10 +28,11 @@
 @src/on-console ( -> )
 	.Console/type DEI
 	( | handlers )
-	DUP #04 NEQ ?{ #800f DEO }
 	DUP #03 LTH ?{
-		;&buf hash /<print-ln>
+		;&buf hash cmp/test /<print-ln>
 		[ LIT2 -&buf _&ptr ] STR
+		DUP #04 NEQ ?{
+			[ LIT2 81 -cmp/eq ] LDZ EOR #0f DEO }
 		BRK }
 	.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
 	STZ
@@ -56,8 +58,19 @@
 		.File/success-lb DEI ?{
 			,&x LDR2 ,&y LDR2 JMP2r }
 		[ LIT &c $1 ] DUP DUP2
-		( x ) [ LIT2 &x 1234 ] [ LIT2 &a 2443 ] MUL2 ADD2 ,&x STR2
-		( y ) [ LIT2 &y abcd ] [ LIT2 &b 118d ] MUL2 ADD2 ,&y STR2 !&>stream
+		( x ) [ LIT2 &x 1234 ] #2443 MUL2 ADD2 ,&x STR2
+		( y ) [ LIT2 &y abcd ] #118d MUL2 ADD2 ,&y STR2 !&>stream
+
+@cmp/test ( hash** -- hash** )
+	[ LIT &first 01 ] ?{
+		OVR2 [ LIT2 &hs $2 ] EQU2 STH
+		DUP2 [ LIT2 &ls $2 ] EQU2 STHr AND .&eq LDZ AND .&eq STZ
+		JMP2r }
+	OVR2 ,&hs STR2
+	DUP2 ,&ls STR2
+	[ LIT2 00 _&first ] STR
+	[ LIT2 01 -&eq ] STZ
+	JMP2r
 
 (
 @|stdlib )
@@ -67,13 +80,13 @@
 	.Console/write DEO
 	INC2 !/<print>
 
-@u32/<print> ( a* b* -- )
-	SWP2 /s
-	&s ( a* b* -- )
-	SWP /b
-	&b ( a b -- )
-	DUP #04 SFT /c
-	&c ( a -- )
+@u32/<print> ( hs* ls* -- )
+	SWP2 /u16
+	&u16 ( hb lb -- )
+	SWP /u8
+	&u8 ( xx -- )
+	DUP #04 SFT /u4
+	&u4 ( x -- )
 	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD .Console/write DEO
 	JMP2r
 
