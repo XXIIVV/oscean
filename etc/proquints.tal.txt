@@ -11,7 +11,7 @@
 
 @on-reset ( -> )
 	.Console/type DEI ?{
-		;dict/usage <perr>
+		;dict/usage err/<print>
 		#010f DEO
 		BRK }
 	;src/on-console .Console/vector DEO2
@@ -23,45 +23,46 @@
 		STZ
 		BRK }
 	( | read file )
-	;src/buf .File/name DEO2
+	;&buf .File/name DEO2
 	#0002 .File/length DEO2
-	&>stream ( -- )
+	&>stream
 		;&data .File/read DEO2
 		.File/success-lb DEI ?{
-			POP2 #0a18 DEO
+			#0a18 DEO
 			#800f DEO
 			BRK }
-		[ LIT2 &data $2 ] proquint #20 emit-char !&>stream
+		[ LIT2 &data $2 ] proquint #2018 DEO !&>stream
 
 (
 @|core )
 
 @proquint ( short* -- )
-	( c1 ) DUP2 #0c emit-con
-	( v1 ) DUP2 #0a emit-vow
-	( c2 ) DUP2 #06 emit-con
-	( v2 ) DUP2 #04 emit-vow
-	( c3 ) #00 ( >> )
+	DUP2 #0c con/<emit>
+	DUP2 #0a vow/<emit>
+	DUP2 #06 con/<emit>
+	DUP2 #04 vow/<emit>
+	#00
+	( >> )
 
-@emit-con ( val* sft -- )
-	SFT2 #000f AND2 ;&lut ADD2 LDA !emit-char
+@con/<emit> ( val* sft -- )
+	SFT2 #000f AND2 ;&lut ADD2 LDA .Console/write DEO
+	JMP2r
+
 	&lut [ "bdfghjklmnprstvz ]
 
-@emit-vow ( val* sft -- )
-	SFT2 #0003 AND2 ;&lut ADD2 LDA !emit-char
-	&lut [ "aiou ]
-
-@emit-char ( c -- )
-	.Console/write DEO
+@vow/<emit> ( val* sft -- )
+	SFT2 #0003 AND2 ;&lut ADD2 LDA .Console/write DEO
 	JMP2r
+
+	&lut [ "aiou ]
 
 (
 @|stdlib )
 
-@<perr> ( str* -- )
+@err/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#19 DEO
-	INC2 !<perr>
+	INC2 !/<print>
 
-@dict/usage "usage: 20 "proquints.rom 20 "input.bin 0a $1
+@dict/usage "usage: 20 "proquints.rom 20 "input.bin 0a00
 

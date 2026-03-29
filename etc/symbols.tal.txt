@@ -11,34 +11,38 @@
 
 @on-reset ( -> )
 	.Console/type DEI ?{
-		;Dict/usage str/<print>
+		;dict/usage str/<print>
 		#010f DEO
 		BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
 
 @src/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI EQU ?{ <parse>
-		#800f DEO
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ
 		BRK }
-	.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
-	STZ
+	symbols/<parse>
+	#800f DEO
 	BRK
 
-@<parse> ( -- )
+@symbols/<parse> ( -- )
 	;src/buf .File/name DEO2
-	#8000 .File/length DEO2
-	;sym DUP2 .File/read DEO2
-	.File/success DEI2 ADD2 ;sym
+	#ff00 ;&buf SUB2 .File/length DEO2
+	;&buf DUP2 .File/read DEO2
+	.File/success DEI2 ADD2 ;&buf
 	&>l
-		LDA2k hex/<print>
+		LDA2k u16/<print>
 		#2018 DEO
 		INC2 INC2 DUP2 str/<print>
 		#0a18 DEO
 		str/cap INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@hex/<print> ( short* -- )
+(
+@|Stdlib )
+
+@u16/<print> ( short* -- )
 	SWP /b
 	&b ( -- )
 	DUP #04 SFT /c
@@ -51,13 +55,11 @@
 	INC2 !/cap
 
 @str/<print> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		#18 DEO
-		INC2 !&>w
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
-@Dict
-	&usage "usage: 20 "sym.rom 20 "input.bin.sym 0a $1
+@dict/usage "usage: 20 "sym.rom 20 "input.bin.sym 0a00
 
-@sym
+@symbols/buf
 

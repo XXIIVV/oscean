@@ -1,136 +1,131 @@
 ( ulz decoder )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |000
 
-	@src $30
-	@dst $30
-	@ptr $1
+	@src/buf $40
+	@dst/buf $40
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	.Console/type DEI #03 AND ?{ ;dict/usage <perr>/
-		#010f DEO }
-	;&await .Console/vector DEO2
-	BRK
-	&await ( -> )
-	.Console/read DEI .src skey ?ready-dst
-	BRK
-
-@ready-dst ( -> )
-	;&await .Console/vector DEO2
-	BRK
-	&await ( -> )
-	.Console/read DEI .dst skey ?on-ready
+	[ LIT2 03 -Console/type ] DEI AND ?{
+		;dict/usage str/<print>
+		#010f DEO
+		BRK }
+	;src/on-console .Console/vector DEO2
 	BRK
 
 @meta $1
 	( name ) "Ulzdec 0a
 	( desc ) "ULZ 20 "Decoder 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "5 20 "Jun 20 "2024 $1
-	( exts ) 00
-
-@on-ready ( -> )
-	;src <decode_ulz>
-	( | export )
-	;dst .File/name DEO2
-	.ptr LDZ2 ;mem SUB2 .File/length DEO2
-	;mem .File/write DEO2
-	( | summary )
-	;dict/decompressed <pstr>
-	;src <pstr>
-	;dict/spacer <pstr>
-	;dst <pstr>
-	[ LIT2 "( 18 ] DEO
-	.ptr LDZ2 ;mem SUB2 <pdec>
-	;dict/bytes <pstr>
-	[ LIT2 ") 18 ] DEO
-	#0a18 DEO
-	( halt ) #800f DEO
-	BRK
-
-@<decode_ulz> ( str* -- )
-	;mem .ptr STZ2
-	.File/name DEO2
-	&>stream ( -- )
-		#0001 .File/length DEO2
-		;&b DUP2 .File/read DEO2
-		.File/success DEI2 ORA ?{ POP2 JMP2r }
-		[ LIT &b $1 ] <decode_ulz_byte>
-		!&>stream
-
-@<decode_ulz_byte> ( byte -- )
-	DUP #80 AND ?op-cpy
-
-@op-lit ( byte -- )
-	#00 SWP INC2 DUP2 .File/length DEO2
-	.ptr LDZ2 DUP2 .File/read DEO2
-	ADD2 .ptr STZ2
-	JMP2r
-
-@op-cpy ( byte -- )
-	#7f AND DUP #40 AND ?{ #00 SWP !&copy }
-	#3f AND getc
-	&copy ( length* -- )
-	.ptr LDZ2 #00 getc INC2 SUB2 ,&offset STR2
-	#0004 ADD2 #0000
-	&l ( length* i* -- )
-	( get ) DUP2 [ LIT2 &offset $2 ] ADD2 LDA
-	( put ) .ptr LDZ2 STAk INC2 .ptr STZ2
-	POP INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
+	( date ) "28 20 "Mar 20 "2026 $2
 
 (
-@|stdlib )
+@|Buffers )
 
-@skey ( key buf -- proc )
-	OVR #21 LTH ?{
-		#00 SWP sput #00 JMP2r }
-	POP2 #01 JMP2r
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ
+		BRK }
+	;dst/on-console .Console/vector DEO2
+	BRK
 
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
+@dst/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ
+		BRK }
+	( >> )
 
-@sput ( chr str* -- )
-	scap/ INC2k #00 ROT ROT STA
+@run ( -> )
+	;src/buf ulz/decode
+	( | write )
+	;dst/buf .File/name DEO2
+	DUP2 .File/length DEO2
+	;ulz/buf .File/write DEO2
+	( | summary )
+	;dict/decompressed str/<print>
+	;src/buf str/<print>
+	;dict/spacer str/<print>
+	;dst/buf str/<print>
+	[ LIT2 "( 18 ] DEO
+	dec/<print>
+	;dict/bytes str/<print>
+	[ LIT2 ") 18 ] DEO
+	#0a18 DEO
+	#800f DEO
+	BRK
+
+(
+@|Core )
+
+@ulz/decode ( src* -- length* )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	&>stream
+		;&b .File/read DEO2
+		.File/success-lb DEI ?{
+			,&ptr LDR2 ;&buf SUB2 JMP2r }
+		[ LIT &b $1 ] /<eval> !&>stream
+
+@ulz/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA
 	JMP2r
 
+@ulz/<eval> ( byte -- )
+	DUP #80 AND ?{
+		( | op-lit )
+		INC #00
+		&>l-lit
+			getc /<push>
+			INC GTHk ?&>l-lit
+		POP2 JMP2r }
+	( | op-cpy )
+	#7f AND DUP #40 AND ?{ #00 SWP !&<copy> }
+	#3f AND getc
+	( >> )
+
+@ulz/<copy> ( length* -- )
+	#0004 ADD2 STH2
+	,&ptr LDR2 #00 getc INC2 SUB2 DUP2 STH2r ADD2 SWP2
+	&>l-cpy
+		LDAk /<push>
+		INC2 GTH2k ?&>l-cpy
+	POP2 POP2 JMP2r
+
+(
+@|Stdlib )
+
 @getc ( -- b )
-	#0001 .File/length DEO2
 	;&b .File/read DEO2
 	[ LIT &b $1 ] JMP2r
 
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
-@<perr> ( str* -- )
-	LDAk #19 DEO
-	INC2 & LDAk ?<perr>
-	POP2 JMP2r
-
-@<pdec> ( short* -- )
+@dec/<print> ( short* -- )
 	#2710 [ LIT2r 00fb ]
-	&>w ( -- )
+	&>w
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
 			DUP [ LIT "0 ] ADD #19 DEO
 			INCr }
 		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
 	POP2r POP2 POP2 JMP2r
-	( @
-	| mem )
 
-@dict &usage "usage: 20 "ulzdec.rom 20 "a.bin 20 "b.ulz 0a $1
-	&decompressed "Decompressed 20 $1
-	&spacer 20 "-> 20 $1
-	&bytes 20 "bytes $1
+(
+@|mem )
 
-@mem
+@dict/usage "usage: 20 "ulzdec.rom 20 "a.bin 20 "b.ulz 0a00
+	&decompressed "Decompressed 2000 &bytes 20 "bytes 00 &spacer 20 "-> 2000
+
+@ulz/buf
 
