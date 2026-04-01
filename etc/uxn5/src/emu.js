@@ -55,12 +55,8 @@ function Emu (embed)
 					rom = decodeUlz(rom);
 				this.load(rom);
 			}
-			else if (boot_ulz) {
+			else if (boot_ulz) 
 				this.load(decodeUlz(b64decode(boot_ulz)));
-			}
-			else if(boot_rom.length) {
-				this.load(boot_rom);
-			}
 			// Start screen vector
 			setInterval(() => {
 				window.requestAnimationFrame(() => {

@@ -1,0 +1,215 @@
+( uxncli tgachr.rom file.tga )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@image &id-length $1 &color-map $1 &image-type $1 &map $5 &x $2 &y $2 &w $2 &h $2 &depth $1 &descriptor $1
+	@src/buf
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	( | theme )
+	#fa0f .System/r DEO2
+	#0a0f .System/g DEO2
+	#0a0f .System/b DEO2
+	( | bind )
+	;src/on-console .Console/vector DEO2
+	[ LIT2 03 -Console/type ] DEI AND ?{
+		;dict/usage err/<pstr>
+		[ LIT2 01 -System/state ] DEO }
+	BRK
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		STZ2
+		BRK }
+	;&buf tga/<load>
+	BRK
+
+(
+@|TGA )
+
+@tga/<load> ( path* -- )
+	( | header )
+	DUP2 .File/name DEO2
+	#0012 .File/length DEO2
+	;image .File/read DEO2
+	( | flip endianness )
+	;image/w STH2k LDA2 SWP STH2r STA2
+	;image/h STH2k LDA2 SWP STH2r STA2
+	( | resize )
+	;image/w LDA2 #0020 ADD2 .Screen/width DEO2
+	;image/h LDA2 #0020 ADD2 .Screen/height DEO2
+	( | print details )
+	err/<pstr>
+	[ LIT2 ": 19 ] DEO
+	#00 ;image/image-type LDA #10 SFT ;image-types ADD2 LDA2 err/<pstr>
+	#0a19 DEO
+	( | get parser )
+	;image/image-type LDA STHk #08 AND STHr #f7 AND
+	( | handlers )
+	#02 NEQk NIP ?{ POP ;pixel-raw-true #0004 !/<parse> }
+	#03 NEQk NIP ?{ POP ;pixel-raw-bw #0001 !/<parse> }
+	( | unknown handler )
+	;&err err/<pstr>
+	#0a19 DEO
+	JMP2r
+
+	&err "Unsupported 20 "tga-type: 2000
+
+@tga/<parse> ( rle? filter* length* -- )
+	.File/length DEO2
+	,&filter STR2
+	#00 EQU ,&uncompressed STR
+	( | drawing settings )
+	#0010 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 05 -Screen/auto ] DEO
+	#0000 ,&x STR2
+	#0000 ,&y STR2
+	&>stream
+		[ LIT &uncompressed $1 ] ?{
+			( | rle )
+			[ LITr -File/length ] DEI2kr #0001 .File/length DEO2
+			;&command .File/read DEO2
+			ROTr DEO2r !&read-pixel }
+		&>repeat
+			[ LIT2 80 _&command ] LDR AND ?{ &read-pixel ;&pixel .File/read DEO2
+				.File/success-lb DEI ?{ JMP2r } }
+			[ LIT2 &x $2 ] [ LIT2 &y $2 ] #0007 AND2 ;&pixel [ LIT2 &filter $2 ] JSR2 /<set-pixel>
+			( | on linebreak )
+			,&x LDR2 INC2 DUP2 ,&x STR2
+			;image/w LDA2 NEQ2 ?{
+				#0000 ,&x STR2
+				,&y LDR2 INC2 ,&y STR2
+				( | on row )
+				,&y LDR2 #0007 AND2 ORA ?{ ;&rowbuf DUP2 /<draw-row>
+					/<print-row> } }
+			[ LIT2 7f &command 00 ] DUPk #00 NEQ SUB ,&command STR
+			AND ?&>repeat
+		!&>stream
+	&pixel $4
+
+@tga/<draw-row> ( addr* -- )
+	.Screen/addr DEO2
+	[ LIT2r 81 -Screen/sprite ] ;image/w LDA2 #03 SFT2 SUB
+	&>ld
+		DEOkr
+		INC DUP ?&>ld
+	POP POP2r
+	( | move down )
+	#0010 .Screen/x DEO2
+	.Screen/y DEI2k #0008 ADD2 ROT DEO2
+	JMP2r
+
+@tga/<print-row> ( addr* -- )
+	DUP2 ;image/w LDA2 #43 SFT2 ADD2 SWP2
+	&>lp
+		LDA2k /<print-cell>
+		INC2 INC2 GTH2k ?&>lp
+	POP2 POP2 JMP2r
+
+@tga/<print-cell> ( cell* -- )
+	u16/<print>
+	[ LIT2 07 &id $1 ] INC DUP ,&id STR
+	AND ?{ #0a18 DEO
+		JMP2r }
+	#2018 DEO
+	JMP2r
+
+@tga/<set-pixel> ( x* y* color -- )
+	STH
+	OVR2 SWP2
+	( | get addr )
+	DUP2 #0007 AND2 SWP2 #83 SFT2 ADD2 SWP2 #43 SFT2 ADD2 ;&rowbuf ADD2
+	( ch1 ) OVR2 OVR2 STHkr #00 /<toggle-pixel>
+	( ch2 ) #0008 ADD2 STHr #01
+	( >> )
+
+@tga/<toggle-pixel> ( x* addr* color -- )
+	STH2
+	LDAk STH
+	SWP2 NIP STHr SWP SFTr STHr #01 AND ?{
+		( mask ) #0107 ROT #07 AND SUB #40 SFT SFT #ff EOR AND
+		( save ) ROT ROT STA
+		JMP2r }
+	( mask ) #0107 ROT #07 AND SUB #40 SFT SFT ORA
+	( save ) ROT ROT STA
+	JMP2r
+
+(
+@|Filters )
+
+@pixel-raw-true ( pixel* -- color )
+	LDAk ,&b STR
+	INC2 LDAk ,&g STR
+	INC2 LDAk ,&r STR
+	INC2 LDA ,&a STR
+	[ LIT2 00 &r $1 ] [ LIT2 00 &g $1 ] [ LIT2 00 &b $1 ] ADD2 ADD2 #0003 DIV2 NIP [ LIT &a $1 ] #50 LTH ?&alpha
+	DUP #a0 GTH ?&white
+	DUP #40 GTH ?&gray
+	POP #02 JMP2r
+	&white POP #03 JMP2r
+	&gray POP #01 JMP2r
+
+	&alpha ( rgb a -- color )
+	POP #00 JMP2r
+
+@pixel-raw-bw ( x* y* addr* -- x* y* color )
+	( res ) LDA JMP2r
+
+(
+@|stdlib )
+
+@err/<pstr> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#19 DEO
+		INC2 !&>w
+
+@u16/<print> ( short* -- )
+	SWP u8/<print>
+	( >> )
+
+@u8/<print> ( byte -- )
+	DUP #04 SFT /c &c #0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+(
+@|Assets )
+
+@meta $1
+	( name ) "Tgachr 0a
+	( desc ) "TGA 20 "to 20 "CHR 20 "Converter 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "15 20 "Jul 20 "2024 0000
+
+@dict/usage "usage: 20 "tgachr.rom 20 "in.tga 20 "out.tga 0a 00
+	&no-image "no-data 00
+	&raw-color "RAW-color 00
+	&raw-true "RAW-true 00
+	&raw-bw "RAW-bw 00
+	&rle-color "RLE-color 00
+	&rle-true "RLE-true 00
+	&rle-bw "RLE-bw 00
+	&unknown "unknown 00
+
+@image-types [
+	=dict/no-image =dict/raw-color
+	=dict/raw-true =dict/raw-bw
+	=dict/unknown =dict/unknown
+	=dict/unknown =dict/unknown
+	=dict/unknown =dict/rle-color
+	=dict/rle-true =dict/rle-bw ]
+
+@tga/rowbuf ( A row chr tiles for the width of the image )
+
+

@@ -78,7 +78,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "20 20 "Feb 20 "2026 00 01
+	( date ) "14 20 "Mar 20 "2026 00 01
 	( icon ) 83 =appicon
 
 @manifest/dat ( . )
@@ -262,7 +262,7 @@
 	&>lr
 		LDAk DUP ?{
 			POP POP2 /<init>
-			#00 !src/<force-change> }
+			#00 !/<force-change> }
 		/<push>
 		INC2 !&>lr
 
@@ -436,7 +436,7 @@
 	JMP2r
 
 @grid/<reset> ( -- )
-	;grid/width LDZ ;grid/height LDZ MUL2 ,&len STR2
+	;&width LDZ ;&height LDZ MUL2 ,&len STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
 
@@ -474,7 +474,7 @@
 @grid/<draw-cell> ( x y addr* -- )
 	OVR2 select/is-within ?/<draw-cell-selected>
 	DUP2 types/get STHk .Types/nil NEQ ?/<draw-cell-port>
-	grid/get DUP LIT ". EQU ?/<draw-cell-grid>
+	/get DUP LIT ". EQU ?/<draw-cell-grid>
 	#00 SWP #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
 	( draw ) #0f STHr AND INC .Screen/sprite DEO
 	POP2 JMP2r
@@ -488,12 +488,12 @@
 	JMP2r
 
 @grid/<draw-cell-port> ( x y addr* . type -- )
-	grid/get #00 SWP #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+	/get #00 SWP #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
 	( draw ) #0f STHr AND INC .Screen/sprite DEO
 	POP2 JMP2r
 
 @grid/<draw-cell-selected> ( x y addr* -- )
-	grid/get #00 SWP #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+	/get #00 SWP #40 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
 	[ LIT2 -Styles/selected -Screen/sprite ] DEO
 	POP2 JMP2r
 
@@ -555,7 +555,7 @@
 @voices/<release> ( voice -- )
 	( chn ) INC INC LDZ2 SWP .Console/write DEO
 	( note ) .Console/write DEO
-	( vel ) #00 .Console/write DEO
+	( vel ) [ LIT2 00 -Console/write ] DEO
 	JMP2r
 
 @voices/<add> ( chn pitch len vel -- )
@@ -565,8 +565,8 @@
 	POP
 	( save ) /next STHk STZ2
 	INCkr INCr STHr STZ2
-	STHr
-	( chn ) INC INCk LDZ2 SWP .Console/write DEO
+	INCr STHr
+	( chn ) INCk LDZ2 SWP .Console/write DEO
 	( note ) .Console/write DEO
 	( vel ) LDZ .Console/write DEO !/<draw>
 
@@ -641,10 +641,10 @@
 	( a ) .select/from LDZ2 get-addr src/<capture>
 	grid/<reset>
 	types/<reset>
-	#0000 ;src/buf file/<inject> !select/<reset>
+	#0000 ;src/buf /<inject> !select/<reset>
 
 @file/<reopen> ( -- )
-	#0000 ;src/buf file/<inject>
+	#0000 ;src/buf /<inject>
 	src/<init>
 	grid/<reqdraw>
 	timer/<reset>
@@ -687,7 +687,7 @@
 @|Edit )
 
 @edit/<cut> ( -- )
-	edit/<copy>
+	/<copy>
 	LIT ". !select/<fill>
 
 @edit/<copy> ( -- )
@@ -868,7 +868,7 @@
 	.&to STZ2
 	.&from STZ2
 	[ LIT2 00 -help ] STZ
-	grid/<reqdraw> !select/<draw-widget>
+	grid/<reqdraw> !/<draw-widget>
 
 @select/<fill> ( char -- )
 	DUP ?{ POP JMP2r }
@@ -887,12 +887,12 @@
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	( | icon )
-	#00 .Controller/vector DEI2 ;insert/on-button EQU2 STHk
+	[ LIT2 00 -Controller/vector ] DEI2 ;insert/on-button EQU2 STHk
 	( get addr ) #40 SFT2 ;&icns ADD2 .Screen/addr DEO2
 	( draw ) INCr DUPr [ LITr -Screen/sprite ] DEOr
 	( set color ) [ LIT2r =font/color ] STAr
 	( | draw size )
-	.select/from LDZ2 .select/to LDZ2 EQU2k ?{ SWP2 SUB2 DUP2 }
+	.&from LDZ2 .&to LDZ2 EQU2k ?{ SWP2 SUB2 DUP2 }
 	( | value )
 	POP2 #00 ROT font/<draw-dec-small>
 	#00 SWP !font/<draw-dec-small>
@@ -984,7 +984,7 @@
 
 @random/from-range ( a b -- num )
 	EQUk ?{
-		OVR SUB random/generate ADD SWP INC MOD ADD JMP2r }
+		OVR SUB /generate ADD SWP INC MOD ADD JMP2r }
 	POP JMP2r
 
 (
@@ -1379,7 +1379,7 @@
 	&* ( addr* -- )
 	STH2k
 	( set itself ) types/lock-lut
-	( get edge ) [ LIT2 00 -grid/width ] LDZ .head/x LDZ SUB ADD2 STH2r INC2
+	( get edge ) [ LIT2 00 -grid/width ] LDZ .head/x LDZ SUB ADD2 INC2r STH2r
 	&>l
 		types/lock-lut
 		( stop at hash ) DUP2 grid/get LIT "# EQU ?&end
