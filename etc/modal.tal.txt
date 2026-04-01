@@ -44,7 +44,7 @@
 	( >> )
 
 @token/<store> ( -- )
-	;&buf
+	[ LIT2 00 -&buf ]
 	( ) LDZk ?{ POP2 JMP2r }
 	( ) DUP2 dec/valid ?/<store-number>
 	( ) dict/find-alloc body/<push-cell>
@@ -160,7 +160,7 @@
 
 @rules/<push> ( addr* -- addr* )
 	LDA2k ORA ?{
-		( no lhs ) !rules/<print> }
+		( no lhs ) !/<print> }
 	DUP2 tuple/walk LDA2k ORA ?{
 		( no rhs ) NIP2 JMP2r }
 	tuple/walk SWP2
@@ -196,8 +196,8 @@
 
 @body/<push-number> ( num* -- )
 	DUP2
-	( a ) ;dict/sym-a body/<push-times>
-	( 0 ) ;dict/sym-zero body/<push-cell>
+	( a ) ;dict/sym-a /<push-times>
+	( 0 ) ;dict/sym-zero /<push-cell>
 	( b ) ;dict/sym-b
 	( >> )
 
@@ -318,7 +318,7 @@
 @str/to-dec ( str* -- val* )
 	[ LIT2r 0000 ]
 	&>w
-		( -- ) ( acc ) [ LIT2r 000a ] MUL2r
+		( acc ) [ LIT2r 000a ] MUL2r
 		( add ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
 		ADD2r
 		( next ) INC2 LDAk ?&>w
@@ -327,7 +327,7 @@
 @err/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	.Console/error DEO
-	INC2 !err/<print>
+	INC2 !/<print>
 
 @dec/<print> ( short* -- )
 	#000a SWP2 [ LITr ff ]

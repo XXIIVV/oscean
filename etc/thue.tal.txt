@@ -19,12 +19,12 @@
 @|Compiler )
 
 @line/on-console ( -> )
-	[ LIT2 0a -Console/read ] DEI
+	.Console/read DEI
 	( | handlers )
-	NEQk ?{ /parse POP2 BRK }
-	DUP ?{ POP2 BRK }
+	DUP ?{ POP BRK }
+	DUP #0a NEQ ?{ POP /parse BRK }
 	/<push>
-	POP BRK
+	BRK
 
 @line/parse ( -- )
 	/find-spacer INCk ?/<add-rule>
@@ -62,7 +62,9 @@
 @|Accumulator )
 
 @acc/on-console ( -> )
-	.Console/read DEI DUP ?{ POP /<eval>
+	.Console/read DEI
+	( | handlers )
+	DUP #1f GTH ?{ POP /<eval>
 		BRK }
 	/append BRK
 
@@ -83,15 +85,21 @@
 	;&buf-1 ;&buf-2 [ LIT2 01 &flip $1 ] INCk ,&flip STR
 	AND [ JMP SWP2 ] ,&src STR2
 	,&dst STR2
-	/get-src !err/<print>
+	JMP2r
+
+@acc/<print> ( -- )
+	/get-src err/<print>
+	#0a19 DEO
+	JMP2r
 
 @acc/<eval> ( -- )
 	/<swap>
+	/<print>
 	&>we
 		[ LIT2 00 -rewrite ] STZ
 		/<step>
-		.rewrite LDZ ?&>we
-	JMP2r
+		.rewrite LDZ ?{ JMP2r }
+		/<print> !&>we
 
 @acc/<step> ( src* -- src* )
 	/get-src

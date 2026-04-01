@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
-uxnasm ../format-js.tal.txt format-js.rom
-uxnasm ../thue.tal.txt thue
+uxncli ~/roms/drifblim.rom ../format-js.tal.txt format-js.rom
+uxncli ~/roms/drifblim.rom ../thue.tal.txt thue
 uxncli format-js.rom thue > src/thue.js
 
 rm -f format-js.rom thue

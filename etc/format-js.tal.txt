@@ -21,27 +21,27 @@
 	BRK
 
 @<render> ( src* -- )
-	DUP2 .File/name DEO2
-	#0001 .File/length DEO2
 	;dict/const-txt <pstr>
-	( src* ) <pstr>
+	DUP2 <pstr>
+	.File/name DEO2
+	#0001 .File/length DEO2
 	;dict/header-txt <pstr>
 	#00
-	&>stream ( -- )
+	&>stream
 		;&buf .File/read DEO2
 		.File/success-lb DEI ?{
 			POP #800f DEO
 			;dict/footer-txt !<pstr> }
 		[ LIT2 "0 18 ] DEO
 		[ LIT2 "x 18 ] DEO
-		[ LIT &buf $1 ] <phex-byte>
+		[ LIT &buf $1 ] u8/<print>
 		[ LIT2 ", 18 ] DEO
 		#2018 DEO
 		INC DUP #07 AND ?{ #0a18 DEO
 			#0918 DEO }
 		!&>stream
 
-@<phex-byte> ( byte -- )
+@u8/<print> ( byte -- )
 	DUP #04 SFT /char
 	( >> )
 	&char ( char -- )
@@ -53,7 +53,6 @@
 	INC2 LDAk ?<pstr>
 	POP2 JMP2r
 
-@dict
-	&const-txt "const 20 00 &header-txt 20 "= 20 "new 20 "Uint8Array([ 0a 09 00
+@dict/const-txt "const 20 00 &header-txt 20 "= 20 "new 20 "Uint8Array([ 0a 09 00
 	&footer-txt "0x00]) 0a 00
 
