@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/* cc ulzenc.c -o ulzenc && ./ulzenc a.bin b.ulz */
+
+static int
+error(const char *name, const char *msg)
+{
+	fprintf(stderr, "%s: %s\n", name, msg);
+	return 0;
+}
+
+enum { MinMatchLength = 4 };
+
+unsigned char *raw, *mem;
+
+int
+uxn_lz_compress(const void *input, int input_size)
+{
+	int i, dict_len, match_len, string_len, match_ctl;
+	unsigned char *output_ptr = mem, *combine = 0;
+	const unsigned char *dict, *dict_best = 0;
+	const unsigned char *in = input, *start = in, *end = in + input_size;
+	while(in != end) {
+		/* Get available dictionary size (history of original output) */
+		dict_len = (int)(in - start);
+		if(dict_len > 256)
+			dict_len = 256;
+		/* Size of the string to search for */
+		/* Limit string length to what we can fit in 14 bits, plus the minimum match length */
+		string_len = (int)(end - in);
+		if(string_len > 0x3FFF + MinMatchLength)
+			string_len = 0x3FFF + MinMatchLength;
+		/* Iterate through the dictionary */
+		match_len = 0;
+		dict = in - dict_len;
+		for(; dict_len; dict++, dict_len--) {
+			/* Find common prefix length with the string */
+			/* If we reach the end of the string, this is the best possible match. End. */
+			for(i = 0;; i++) {
+				if(i == string_len) {
+					match_len = i;
+					dict_best = dict;
+					goto done_search;
+				}
+				/* Dictionary repeats if we hit the end */
+				if(in[i] != dict[i % dict_len])
+					break;
+			}
+			if(i > match_len) {
+				match_len = i;
+				dict_best = dict;
+			}
+		}
+	done_search:
+		/* CPY */
+		if(match_len >= MinMatchLength) {
+			/* More numeric range: treat 0 as 4, 1 as 5, etc. */
+			match_ctl = match_len - MinMatchLength;
+			/* CPY2 */
+			if(match_ctl > 0x3F) {
+				*output_ptr++ = match_ctl >> 8 | 0xc0; /* High byte of the length, with both flags set */
+				*output_ptr++ = match_ctl;             /* Low byte of the length */
+			} else
+				*output_ptr++ = match_ctl | 0x80;
+			/* offset(0 is -1, 1 is -2, ...) */
+			*output_ptr++ = in - dict_best - 1;
+			in += match_len; /* Advance input by size of the match */
+			combine = 0;     /* Disable combining previous literal, if any */
+		}
+		/* LIT */
+		else {
+			/* Combine with previous literal */
+			if(combine) {
+				if(++*combine == 127)
+					combine = 0;
+			}
+			/* Start a new literal */
+			else {
+				/* Store this address, and later use it to increment the literal size. */
+				combine = output_ptr++;
+				/* The 0 here means literal of length 1. */
+				*combine = 0;
+			}
+
+			/* Write 1 literal byte from the input to the output. */
+			*output_ptr++ = *in++;
+		}
+	}
+	return (int)(output_ptr - mem);
+}
+
+int
+encode_ulz(FILE *src)
+{
+	int length = 0;
+	mem = malloc(0x100000), raw = malloc(0x100000);
+	while(fread(raw + length, 1, 1, src)) ++length;
+	return uxn_lz_compress(raw, length);
+}
+
+int
+main(int argc, char *argv[])
+{
+	int res;
+	FILE *src, *dst;
+	if(argc != 3)
+		return error("usage", "ulzenc [-v] a.bin b.ulz ");
+	if(argv[1][0] == '-' && argv[1][1] == 'v')
+		return !fprintf(stdout, "Ulzenc - ULZ Encoder, 15 Nov 2023.\n");
+	if(!(src = fopen(argv[1], "rb")))
+		return !error("Invalid input file", argv[1]);
+	res = encode_ulz(src);
+	if(!(dst = fopen(argv[2], "wb")))
+		return !error("Invalid output file", argv[1]);
+	fwrite(mem, res, 1, dst);
+	printf("Compressed %s -> %s(%d bytes).\n", argv[1], argv[2], res);
+	return 0;
+}

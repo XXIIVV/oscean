@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/* cc ulzdec.c -o ulzdec && ./ulzdec a.ulz b.bin */
+
+static int
+error(const char *name, const char *msg)
+{
+	fprintf(stderr, "%s: %s\n", name, msg);
+	return 0;
+}
+
+char *mem;
+
+int
+decode_ulz(FILE *src)
+{
+	char c, *copy, *ptr;
+	short i, length;
+	ptr = mem = malloc(0x10000);
+	while((c = getc(src)) != EOF) {
+		if(c & 0x80) { /* CPY */
+			if(c & 0x40)
+				length = (c & 0x3f) << 8 | getc(src);
+			else
+				length = c & 0x3f;
+			copy = ptr - (getc(src) + 1);
+			for(i = 0; i < length + 4; i++)
+				*(ptr++) = *(copy++);
+		} else /* LIT */
+			for(i = 0; i < c + 1; i++)
+				*(ptr++) = getc(src);
+	}
+	return ptr - mem;
+}
+
+int
+main(int argc, char *argv[])
+{
+	int res;
+	FILE *src, *dst;
+	if(argc != 3)
+		return error("usage", "ulzdec [-v] a.ulz b.bin");
+	if(argv[1][0] == '-' && argv[1][1] == 'v')
+		return !fprintf(stdout, "Ulzdec - ULZ Decoder, 15 Nov 2023.\n");
+	if(!(src = fopen(argv[1], "rb")))
+		return !error("Invalid input file", argv[1]);
+	res = decode_ulz(src);
+	if(!(dst = fopen(argv[2], "wb")))
+		return !error("Invalid output file", argv[1]);
+	fwrite(mem, res, 1, dst);
+	printf("Decompressed %s -> %s(%d bytes).\n", argv[1], argv[2], res);
+	return 0;
+}

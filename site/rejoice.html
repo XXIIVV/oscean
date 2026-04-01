@@ -17,7 +17,7 @@
 <nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="self">rejoice</a></li></ul><ul></ul></nav>
 <main><h2>Rejoice!</h2>
 
-<p><b>Rejoice</b> is a concatenative programming language where data is encoded as multisets and composes by multiplication of fractions. Think <a href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or a strange <a href='forth.html'>Forth</a> in which the program state is unordered.</p>
+<p><b>Rejoice</b> is a concatenative programming language and notation where data is encoded as multisets that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or <a href='forth.html'>Forth</a> in which the program state is unordered instead of a stack.</p>
 
 <h3>Basics</h3>
 
@@ -32,7 +32,7 @@
 <pre>
 <i>( a comment )</i>
 
-<b>red green blue</b>  [yellow red]/blue
+<b>red green blue</b>      [yellow red]/blue
 <b>red^2 green yellow</b>
 </pre>
 <!--
@@ -44,19 +44,13 @@ transformations are represented as fractions where the denominator indicates thi
 </pre>
 -->
 
-<p>Evaluation consists of applying fractions in a sequence when their denominators are found. The evaluation ends when there are no fractions left to apply. Notice how the <code>black/pink</code> fails to apply.</p>
+<p>Evaluation consists of applying fractions in a sequence when their denominators are found in the bag. The program halts when there are no more fractions left to apply.</p>
 <pre>
-<b>blue^3</b>        black/pink white/blue red/[blue^2 white]
-<b>blue^3</b>        white/blue red/[blue^2 white]
-<b>blue^2 white</b>  red/[blue^2 white]
-<b>red</b>
-</pre>
-
-<p>A fraction can also put fractions and symbols back in the bag.</p>
-<pre>
-<b>x</b>  [y z/y]/x
-<b>y</b>  z/y
-<b>z</b>
+<b>blue^3 red</b>           cyan/pink red [cyan^2]/red red/[blue^2 cyan]
+<b>blue^3 red</b>           red [cyan^2]/red red/[blue^2 cyan]
+<b>blue^3 red^2</b>         [cyan^2]/red red/[blue^2 cyan]
+<b>blue^3 red cyan^2</b>    red/[blue^2 cyan]
+<b>blue red^2 cyan</b>
 </pre>
 
 <h3>Logic</h3>
@@ -94,7 +88,7 @@ transformations are represented as fractions where the denominator indicates thi
 <p>Functions are symbols that are evaluated when they enter the bag. A definition starts with colon, followed by the function name, a comment that indicates the transformation and finally, a semi-colon. Notice how the <b>AND</b> gate uses a sentinel value <code>and</code> to catch the absence of input.</p>
 
 <pre>
-: And? ( x y -- true|false )
+: And? ( x y -- bool )
 	<b>and</b> true/[and x y] false/[and x] false/[and y] false/and ;
 </pre>
 <pre style='margin-top:-29px'>
