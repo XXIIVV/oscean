@@ -6,32 +6,26 @@
 	<meta property='og:site_name' content='Varvara5'/>
 	<meta property='og:description' content="By Hundred Rabbits"/>
 	<meta property='og:logo' content="media/services/logo.jpg"/>
-	<meta property="og:title" content="Heol Interpreter"/>
-	<meta property="og:url" content="https://wiki.xxiivv.com/site/heol.html"/>
+	<meta property="og:title" content="Rejoice Interpreter"/>
+	<meta property="og:url" content="https://wiki.xxiivv.com/site/rejoice.html"/>
 	<meta name="viewport" content="width=device-width" />
 	<link href="media/services/icon.png" type="image/png" rel="shortcut icon">
-	<title>Lisp Playground</title>
+	<title>Rejoice Playground</title>
 	<script src="../uxnrepl/src/uxn.js"></script>
 	<script src="../uxnrepl/src/emu.js"></script>
-	<script src="src/heol.js"></script>
+	<script src="src/rejoice.js"></script>
 	<script src="src/examples.js"></script>
 </head>
 <body>
-	<textarea id="editor" spellcheck="false">
-(define double
-	(lambda (x) (+ x x)))
+	<textarea id="editor" spellcheck="false">( Welcome to Rejoice, 
+	this is a comment )
 
-(if 
-	(eq? (+ (double 6) (* 34 56)) 1916)
-	'correct
-	'wrong)
-
-(print 
-	'(hello world))</textarea>
+[this is a bag] tote/bag [programming language]/tote
+</textarea>
 	<div id='term'>Press <b>Reduce</b> to evaluate.</div>
 	<div id='menu'>
 		<input type="button" id="run" value="Reduce">
-		<span id='wst'>> </span>
+		<span id='wst'></span>
 		<select name="cars" id="examples">
 			<option value="hello">0. Hello World</option>  
 			<option value="factorial">1. Factorial</option>
@@ -50,6 +44,10 @@ let term_el = document.getElementById("term")
 let editor_el = document.getElementById("editor")
 let wst_el = document.getElementById("wst")
 let run_el = document.getElementById("run")
+let choice = window.location.hash.slice(1)
+
+if(examples[choice])
+	editor_el.value = examples[choice]
 
 document.body.className = "active"
 
@@ -59,19 +57,21 @@ function popup(text) {
 }
 
 function run() {
-	let query = editor_el.value+'\n'
+	let query = editor_el.value.split(/\r?\n/).join(" ")+' \n'
 	let program = new Uint8Array(0x10000)
 	let emu = new Emu()
-	emu.uxn.load(heol).eval(0x0100)
+
+	console.log(query)
+	emu.uxn.load(rejoice).eval(0x0100)
 	for (let i = 0; i < query.length; i++)
 		emu.console.input(query.charAt(i).charCodeAt(0), 1)
 	emu.console.input(0x00, 4)
 	emu.console.stdout_body = emu.console.stdout_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
 	if(emu.console.stdout_body.includes('\n')) {
 		popup(emu.console.stdout_body)
-		wst_el.innerHTML = `> Result in new window`
+		wst_el.innerHTML = "Result in new window"
 	} else
-		wst_el.innerHTML = `> ${emu.console.stdout_body}`
+		wst_el.innerHTML = emu.console.stdout_body
 	term_el.innerHTML = emu.console.stderr_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
 	term_el.scrollTop = term_el.scrollHeight;
 }
@@ -102,16 +102,16 @@ document.getElementById('examples').addEventListener('change', (e) => {
 	</script>
 	<style>
 		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
-		body ::selection { background-color:#000;color:#fff;text-decoration:none }
-		textarea { resize:none; width:calc(100vw - 20px); height:100vh; border:0; padding:10px; margin:0px; background:#efefef; tab-size: 2; }
+		body ::selection { background:#000;color:#fff;text-decoration:none }
+		textarea { resize:none; width:calc(100vw - 20px); height:100vh; border:0; padding:10px; margin:0px; background:#72dec2; tab-size: 2; }
 		textarea:focus { outline: none !important; }
-		div#term { background:#ddd; padding:10px; color:black; height:55px; overflow-x:hidden; overflow-y:scroll; white-space:pre; display:none }
-		div#menu { height:25px; background:#ccc; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
+		div#term { background:#8ff2d9; padding:10px; color:black; height:115px; overflow-x:hidden; overflow-y:scroll; white-space:pre; display:none }
+		div#menu { height:25px; background:#b2ffeb; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
 		div#menu select { float:right }
-		body.active textarea { height:calc(100% - 140px); }
+		body.active textarea { height:calc(100% - 200px); }
 		body.active div#term, body.active div#menu { display:block }
 		#run { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
-		#run:hover { background: #aaa; color:#000 }
+		#run:hover { background: #fff; color:#000 }
 
 		dialog { background:#a4f4e0; display: none; padding: 10px; padding-bottom: 0; }
 		dialog[open] { display: block; }

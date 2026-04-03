@@ -1,0 +1,426 @@
+( miul! miul! )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
+|000
+
+	@token/buf $40
+	@item/buf $40
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	;token/on-console .Console/vector DEO2
+	( | Prefabs )
+	;dict/identity syms/find-alloc POP BRK
+
+@meta $1
+	( name ) "Rejoice 0a
+	( desc ) "Multiset 20 "Language 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "3 20 "Apr 20 "2026 $2
+
+%u8/mod ( a b -- a%b ) {
+	DIVk MUL SUB }
+
+%u16/mod ( a* b* -- a%b* ) {
+	DIV2k MUL2 SUB2 }
+
+%u16/not-divisible ( u16* div* -- t ) {
+	u16/mod #0000 NEQ2 }
+
+%char/is-dec ( c -- t ) {
+	LIT "0 SUB #0a LTH }
+
+(
+@|Token )
+
+@token/on-console-comment ( -> )
+	.Console/read DEI LIT ") NEQ ?{ ;&on-console .Console/vector DEO2 }
+	BRK
+
+@token/on-console-bag ( -> )
+	.Console/read DEI
+	( | handlers )
+	DUP LIT "] NEQ ?{ ;&on-console .Console/vector DEO2 }
+	/<push>
+	BRK
+
+@token/on-console ( -> )
+	.Console/read DEI
+	( | handlers )
+	DUP #20 GTH ?{
+		[ LIT2 -&buf _&ptr ] LDR EQU ?{ POP /<parse>
+			BRK }
+		#0a NEQ ?{ world/<eval> }
+		BRK }
+	DUP LIT "( NEQ ?{
+		;&on-console-comment .Console/vector DEO2
+		POP BRK }
+	DUP LIT "[ NEQ ?{ ;&on-console-bag .Console/vector DEO2 }
+	/<push>
+	BRK
+
+@token/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@token/<reset> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
+
+@token/<parse> ( -- )
+	( | exists )
+	.&buf
+	( | den )
+	world/<push-scope>
+	/<parse-bag>
+	world/<pop-scope>
+	world/<push-scope>
+	LDZk LIT "/ EQU ?{
+		#0000 world/<push-item>
+		world/<pop-scope>
+		POP !/<reset> }
+	INC
+	( | num )
+	/<parse-bag>
+	world/<pop-scope>
+	POP !/<reset>
+
+@token/<parse-bag> ( ztr -- ztr )
+	LDZk char/is-dec ?/<parse-number>
+	LDZk LIT "[ EQU ?/<parse-bag-complex>
+	item/parse !world/<push-item>
+
+@token/<parse-bag-complex> ( ztr -- ztr )
+	INC
+	&>w
+		item/parse world/<push-item>
+		ztr/walk-ws LDZk LIT "] NEQ ?&>w
+	INC JMP2r
+
+@token/<parse-number> ( ztr -- ztr )
+	dec-ztr/walk-u16
+	( | 1 )
+	DUP2 #0001 NEQ2 ?{ POP2 #0000 !world/<push-item> }
+	( | factorize )
+	( value ) [ LIT2r 0002 ]
+	&>wpn
+		DUP2 #0001 GTH2 ?{ POP2r POP2 JMP2r }
+		DUP2 STH2kr u16/not-divisible ?{
+			STH2kr /drain-factor STH
+			primes/find-id STHr SWP world/<push-item> }
+		INC2r !&>wpn
+
+@token/drain-factor ( num* div* -- num* id count )
+	[ LITr 00 ]
+	&>wpf
+		OVR2 OVR2 u16/mod #0000 EQU2 ?{ STHr JMP2r }
+		INCr STH2k DIV2 STH2r !&>wpf
+
+(
+@|Bag/Items )
+
+@fraction/<print> ( addr* -- )
+	( num ) LDA2k OVR2 INC2 INC2 bag/<print>
+	LDA2
+	( den is not [] ) INC2k INC2 LDA2 ORA ?{ POP2 JMP2r }
+	[ LIT2 "/ 19 ] DEO
+	( den ) LDA2k SWP2 INC2 INC2 !bag/<print>
+
+%bag/get-length ( to* from* -- to* from* length ) {
+	SUB2k #01 SFT2 NIP }
+
+@bag/<print> ( to* from* -- )
+	/get-length #01 GTH ?/<print-complex>
+	&>lpb
+		LDA2k item/<print>
+		INC2 INC2 GTH2k ?&>lpb
+	POP2 POP2 JMP2r
+
+@bag/<print-complex> ( to* from* -- )
+	[ LIT2 "[ 19 ] DEO
+	&>lpbc
+		LDA2k item/<print>
+		INC2 INC2 EQU2k ?{ #2019 DEO }
+		GTH2k ?&>lpbc
+	POP2 POP2 [ LIT2 "] 19 ] DEO
+	JMP2r
+
+@item/<print> ( count id -- )
+	syms/<print-name>
+	DUP #02 LTH ?{
+		[ LIT2 "^ 19 ] DEO !u8/<print-dec> }
+	POP JMP2r
+
+@item/parse ( ztr -- ztr count id )
+	[ LIT2 -&buf _&ptr ] STR
+	&>w
+		LDAk
+		( | handlers )
+		DUP #21 LTH ?/find-sym
+		DUP LIT "/ EQU ?/find-sym
+		DUP LIT "] EQU ?/find-sym
+		DUP LIT "^ EQU ?/find-sym
+		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		STZ2
+		INC2 !&>w
+
+@item/walk-count ( ztr -- ztr count )
+	LDZk LIT "^ NEQ ?{ INC !dec-ztr/walk-u8 }
+	#01 JMP2r
+
+@item/find-sym ( ztr c -- ztr count id )
+	POP
+	( identity ) [ LIT2 -&buf _&ptr ] LDR NEQ ?{ #0000 JMP2r }
+	/walk-count ;&buf !syms/find-alloc
+
+(
+@|Symbols )
+
+@syms/<push> ( dict* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@syms/find-alloc ( str* -- id )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>lfa
+		EQU2k ?{
+			LDA2k STH2kr str/compare ?/found
+			INC2 INC2 !&>lfa }
+	POP2
+	( | alloc )
+	;&buf SUB2 #01 SFT2 STH2r dict/alloc /<push>
+	NIP JMP2r
+
+@syms/found ( ptr* buf* . str* -- id )
+	POP2r NIP2 ;&buf SUB2 #01 SFT2 NIP JMP2r
+
+%syms/get-name ( id -- str* ) {
+	#00 SWP DUP ADD ;&buf ADD2 LDA2 }
+
+@syms/<print-name> ( id -- )
+	STHk /get-name ORAk ?{
+		POP2 #00 DUPr ADDr STHr ;primes/lut ADD2 LDA2 !u16/<print-dec> }
+	POPr !str/<print>
+
+(
+@|World )
+
+@world/<push-scope> ( -- )
+	,&ptr LDR2 ,&scope STR2
+	#ffff
+	( >> )
+
+@world/<push-item> ( id count -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@world/<pop-scope> ( -- )
+	,&ptr LDR2 [ LIT2 &scope $2 ] STA2
+	JMP2r
+
+@world/<print> ( addr* -- )
+	,&ptr LDR2 SWP2
+	&>l
+		DUP2 fraction/<print>
+		#2019 DEO
+		LDA2 LDA2 GTH2k ?&>l
+	POP2 POP2 #0a19 DEO
+	JMP2r
+
+@world/<eval> ( -- )
+	tote/<clear>
+	,&ptr LDR2 ;&buf
+	&>w
+		EQU2k ?{
+			tote/<print>
+			DUP2 tote/<apply>
+			DUP2 /<print>
+			LDA2 LDA2 !&>w }
+	POP2 POP2 tote/<print>
+	#0a19 DEO
+	JMP2r
+
+(
+@|Tote )
+
+%tote/lacks ( count id -- t ) {
+	#00 SWP ;&buf ADD2 LDA GTH }
+
+%tote/<put> ( count id -- ) {
+	SWP STH
+	#00 SWP ;&buf ADD2 LDAk STHr ADD ROT ROT STA }
+
+%tote/<take> ( count id -- ) {
+	SWP STH
+	#00 SWP ;&buf ADD2 LDAk STHr SUB ROT ROT STA }
+
+@tote/can-apply ( den* -- t )
+	LDA2k SWP2 INC2 INC2
+	&>l
+		LDA2k /lacks ?{ INC2 INC2 GTH2k ?&>l }
+	EQU2 JMP2r
+
+@tote/<apply> ( fraction* -- )
+	LDA2k /can-apply ?{ POP2 JMP2r }
+	( | put in )
+	LDA2k OVR2 INC2 INC2
+	&>lap
+		LDA2k /<put>
+		INC2 INC2 GTH2k ?&>lap
+	POP2 POP2 LDA2
+	( | take out )
+	LDA2k SWP2 INC2 INC2
+	&>lat
+		LDA2k /<take>
+		INC2 INC2 GTH2k ?&>lat
+	POP2 POP2 JMP2r
+
+@tote/<print> ( -- )
+	[ LIT2 "[ 19 ] DEO
+	[ LIT2r ff00 ] ;&buf-end ;&buf
+	&>lp
+		LDAk #00 EQU ?{
+			OVRr STHr ?{ #2019 DEO }
+			LDAk STHkr item/<print>
+			LIT2r 00ff AND2r }
+		INC2 INCr GTH2k ?&>lp
+	POP2 POP2 POP2r [ LIT2 "] 19 ] DEO
+	#2019 DEO
+	JMP2r
+
+@tote/<clear> ( -- )
+	;&buf-end ;&buf
+	&>lc
+		#0000 OVR2 STA2
+		INC2 INC2 GTH2k ?&>lc
+	POP2 POP2 JMP2r
+
+(
+@|Dict )
+
+@dict/alloc ( src* -- ptr* )
+	,&ptr LDR2 SWP2
+	&>w
+		LDAk DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA
+		?{ POP2 JMP2r }
+		INC2 !&>w
+
+@dict/identity "[] $1
+
+@primes/find-id ( prime* -- id )
+	STH2
+	#00
+	&>l
+		#00 OVR DUP ADD ;&lut ADD2 LDA2 STH2kr EQU2 ?{ INC DUP ?&>l }
+	POP2r JMP2r
+
+(
+@|Stdlib )
+
+@dec-ztr/walk-u16 ( ztr -- ztr u16* )
+	[ LIT2r 0000 ]
+	&>w16
+		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STH2r JMP2r }
+		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
+		ADD2r INC !&>w16
+
+@dec-ztr/walk-u8 ( ztr -- ztr u8 )
+	[ LITr 00 ]
+	&>w8
+		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STHr JMP2r }
+		LITr 0a MULr STH
+		ADDr INC !&>w8
+
+@char/<emit-digit> ( d -- )
+	LIT "0 ADD #19 DEO
+	JMP2r
+
+@str/compare ( a* b* -- bool )
+	STH2
+	&>wc
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>wc
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !/<print>
+
+@ztr/walk-ws ( ztr -- ztr )
+	LDZk #20 NEQ ?{ INC !/walk-ws }
+	JMP2r
+
+@u8/<print-dec> ( u8 -- )
+	DUP #0a LTH ?{
+		DUP #64 LTH ?{
+			( 100 ) DUP #64 DIV char/<emit-digit>
+			#64 /mod }
+		( 10 ) DUP #0a DIV char/<emit-digit>
+		#0a /mod }
+	( 1 ) !char/<emit-digit>
+
+@u16/<print-dec> ( u16* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP char/<emit-digit>
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
+
+(
+@|Buffers )
+
+@primes/lut [
+	0001 0002 0003 0005 0007 000b 000d 0011
+	0013 0017 001d 001f 0025 0029 002b 002f
+	0035 003b 003d 0043 0047 0049 004f 0053
+	0059 0061 0065 0067 006b 006d 0071 007f
+	0083 0089 008b 0095 0097 009d 00a3 00a7
+	00ad 00b3 00b5 00bf 00c1 00c5 00c7 00d3
+	00df 00e3 00e5 00e9 00ef 00f1 00fb 0101
+	0107 010d 010f 0115 0119 011b 0125 0133
+	0137 0139 013d 014b 0151 015b 015d 0161
+	0167 016f 0175 017b 017f 0185 018d 0191
+	0199 01a3 01a5 01af 01b1 01b7 01bb 01c1
+	01c9 01cd 01cf 01d3 01df 01e7 01eb 01f3
+	01f7 01fd 0209 020b 021d 0223 022d 0233
+	0239 023b 0241 024b 0251 0257 0259 025f
+	0265 0269 026b 0277 0281 0283 0287 028d
+	0293 0295 02a1 02a5 02ab 02b3 02bd 02c5
+	02cf 02d7 02dd 02e3 02e7 02ef 02f5 02f9
+	0301 0305 0313 031d 0329 032b 0335 0337
+	033b 033d 0347 0355 0359 035b 035f 036d
+	0371 0373 0377 038b 038f 0397 03a1 03a9
+	03ad 03b3 03b9 03c7 03cb 03d1 03d7 03df
+	03e5 03f1 03f5 03fb 03fd 0407 0409 040f
+	0419 041b 0425 0427 042d 043f 0443 0445
+	0449 044f 0455 045d 0463 0469 047f 0481
+	048b 0493 049d 04a3 04a9 04b1 04bd 04c1
+	04c7 04cd 04cf 04d5 04e1 04eb 04fd 04ff
+	0503 0509 050b 0511 0515 0517 051b 0527
+	0529 052f 0551 0557 055d 0565 0577 0581
+	058f 0593 0595 0599 059f 05a7 05ab 05ad
+	05b3 05bf 05c9 05cb 05cf 05d1 05d5 05db
+	05e7 05f3 05fb 0607 060d 0611 0617 061f
+	0623 062b 062f 063d 0641 0647 0649 064d ]
+
+@dict/buf $400
+
+@syms/buf $200
+
+@tote/buf $100 &buf-end
+
+@world/buf
+
