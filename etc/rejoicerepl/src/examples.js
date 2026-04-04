@@ -38,3 +38,13 @@ or true true
 	true/[or true true]
 	true/[or true]
 	false/[or]`
+
+examples.fizzbuzz = `times^20 f b
+
+@Loop ( times -- )
+	[num f b .FizzBuzz\\n Loop]/[times f^3 b^5]
+	[num f b .Fizz\\n Loop]/[times f^3]
+	[num f b .Buzz\\n Loop]/[times b^5]
+	[num f b .#num .\\n Loop]/times
+`
+
