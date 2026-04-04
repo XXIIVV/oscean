@@ -205,12 +205,16 @@
 	POP2r NIP2 ;&buf SUB2 #01 SFT2 NIP JMP2r
 
 %syms/get-name ( id -- str* ) {
-	#00 SWP DUP ADD ;&buf ADD2 LDA2 }
+	#00 SWP DUP ADD ;syms/buf ADD2 LDA2 }
 
 @syms/<print-name> ( id -- )
 	STHk /get-name ORAk ?{
 		POP2 #00 DUPr ADDr STHr ;primes/lut ADD2 LDA2 !u16/<print-dec> }
 	POPr !str/<print>
+
+@syms/<emit> ( name* -- )
+	LDAk LIT "# NEQ ?{ INC2 /find-alloc tote/get-count !u8/<print-dec> }
+	!str/<print>
 
 (
 @|World )
@@ -240,13 +244,14 @@
 
 @world/<eval> ( -- )
 	tote/<clear>
-	,&ptr LDR2 ;&buf
+	,&ptr LDR2 ;&buf [ LIT2r 0000 ]
 	&>w
-		EQU2k ?{
-			tote/<print>
-			DUP2 tote/<apply>
-			DUP2 /<print>
-			goto/step !&>w }
+		INC2r STH2kr #0000 EQU2 ?{
+			EQU2k ?{
+				tote/<print>
+				DUP2 tote/<apply>
+				DUP2 /<print>
+				goto/step !&>w } }
 	POP2 POP2 tote/<print>
 	#0a19 DEO
 	JMP2r
@@ -281,7 +286,18 @@
 %tote/lacks ( count id -- t ) {
 	/get-addr LDA GTH }
 
+@tote/get-count ( id -- count )
+	/get-addr LDA JMP2r
+
 @tote/<put> ( count id -- )
+	( | detect io )
+	DUP syms/get-name LDAk LIT ". NEQ ?{
+		INC2 #18 ;char/port STA
+		syms/<emit>
+		#19 ;char/port STA
+		POP2 JMP2r }
+	POP2
+	( | detect label )
 	DUP label/get ORAk ?{
 		POP2 /get-addr STH2k LDA ADD STH2r STA
 		JMP2r }
@@ -368,9 +384,18 @@
 		LITr 0a MULr STH
 		ADDr INC !&>w8
 
-@char/<emit-digit> ( d -- )
-	LIT "0 ADD #19 DEO
+@char/<print-digit> ( d -- )
+	LIT "0 ADD
+	( >> )
+
+@char/<print> ( c -- )
+	[ LIT &port 19 ] DEO
 	JMP2r
+
+@char/escape ( byte -- byte )
+	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	[ LIT "n ] NEQ ?{ #0a JMP2r }
+	#20 JMP2r
 
 @str/compare ( a* b* -- bool )
 	STH2
@@ -381,7 +406,9 @@
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
-	#19 DEO
+	( | esc )
+	DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape }
+	char/<print>
 	INC2 !/<print>
 
 @ztr/walk-ws ( ztr -- ztr )
@@ -391,11 +418,11 @@
 @u8/<print-dec> ( u8 -- )
 	DUP #0a LTH ?{
 		DUP #64 LTH ?{
-			( 100 ) DUP #64 DIV char/<emit-digit>
+			( 100 ) DUP #64 DIV char/<print-digit>
 			#64 /mod }
-		( 10 ) DUP #0a DIV char/<emit-digit>
+		( 10 ) DUP #0a DIV char/<print-digit>
 		#0a /mod }
-	( 1 ) !char/<emit-digit>
+	( 1 ) !char/<print-digit>
 
 @u16/<print-dec> ( u16* -- )
 	[ LIT2r ff00 ]
@@ -403,7 +430,7 @@
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
 	&>write
-		NIP char/<emit-digit>
+		NIP char/<print-digit>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
