@@ -7,6 +7,7 @@
 
 	@token/buf $40
 	@item/buf $40
+	@goto/buf $40
 
 |100
 
@@ -20,7 +21,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "3 20 "Apr 20 "2026 $2
+	( date ) "4 20 "Apr 20 "2026 $2
 
 %u8/mod ( a b -- a%b ) {
 	DIVk MUL SUB }
@@ -38,7 +39,7 @@
 @|Token )
 
 @token/on-console-comment ( -> )
-	.Console/read DEI LIT ") NEQ ?{ ;&on-console .Console/vector DEO2 }
+	[ LIT2 ") -Console/read ] DEI NEQ ?{ ;&on-console .Console/vector DEO2 }
 	BRK
 
 @token/on-console-bag ( -> )
@@ -51,10 +52,10 @@
 @token/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP #20 GTH ?{
-		[ LIT2 -&buf _&ptr ] LDR EQU ?{ POP /<parse>
-			BRK }
-		#0a NEQ ?{ world/<eval> }
+	DUP #0a NEQ ?{ POP /<parse>
+		world/<eval>
+		BRK }
+	DUP #20 GTH ?{ POP /<parse>
 		BRK }
 	DUP LIT "( NEQ ?{
 		;&on-console-comment .Console/vector DEO2
@@ -73,8 +74,9 @@
 	JMP2r
 
 @token/<parse> ( -- )
-	( | exists )
 	.&buf
+	( exists ) DUP ,&ptr LDR NEQ ?{ POP JMP2r }
+	( @label ) LDZk LIT "@ EQU ?/<parse-label>
 	( | den )
 	world/<push-scope>
 	/parse-bag world/<pop-scope>
@@ -87,6 +89,9 @@
 	( | num )
 	/parse-bag world/<pop-scope>
 	POP !/<reset>
+
+@token/<parse-label> ( ztr -- )
+	#00 SWP INC syms/find-alloc label/<create> !/<reset>
 
 @token/parse-bag ( ztr -- ztr )
 	LDZk char/is-dec ?/parse-number
@@ -157,7 +162,7 @@
 @item/parse ( ztr -- ztr count id )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
-		LDAk
+		LDZk
 		( | handlers )
 		DUP #21 LTH ?/find-sym
 		DUP LIT "/ EQU ?/find-sym
@@ -241,24 +246,49 @@
 			tote/<print>
 			DUP2 tote/<apply>
 			DUP2 /<print>
-			LDA2 LDA2 !&>w }
+			goto/step !&>w }
 	POP2 POP2 tote/<print>
 	#0a19 DEO
+	JMP2r
+
+%label/get-addr ( id -- addr* ) {
+	#00 SWP DUP ADD ;&buf ADD2 }
+
+@label/<create> ( id -- )
+	/get-addr ;world/ptr LDA2 SWP2 STA2
+	JMP2r
+
+@label/get ( id -- addr* )
+	/get-addr LDA2 JMP2r
+
+@goto/step ( addr* -- addr* )
+	[ LIT2 -&buf _&ptr ] LDR EQU ?{
+		POP2 ,&ptr LDR #02 SUB DUP ,&ptr STR
+		LDZ2 JMP2r }
+	LDA2 LDA2 JMP2r
+
+@goto/<push> ( id addr* -- id )
+	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
+	STZ2
 	JMP2r
 
 (
 @|Tote )
 
-%tote/lacks ( count id -- t ) {
-	#00 SWP ;&buf ADD2 LDA GTH }
+%tote/get-addr ( id -- addr* ) {
+	#00 SWP ;&buf ADD2 }
 
-%tote/<put> ( count id -- ) {
-	SWP STH
-	#00 SWP ;&buf ADD2 LDAk STHr ADD ROT ROT STA }
+%tote/lacks ( count id -- t ) {
+	/get-addr LDA GTH }
+
+@tote/<put> ( count id -- )
+	DUP label/get ORAk ?{
+		POP2 /get-addr STH2k LDA ADD STH2r STA
+		JMP2r }
+	NIP2 !goto/<push>
 
 %tote/<take> ( count id -- ) {
-	SWP STH
-	#00 SWP ;&buf ADD2 LDAk STHr SUB ROT ROT STA }
+	/get-addr STH2k LDA SWP SUB STH2r STA }
 
 @tote/can-apply ( den* -- t )
 	LDA2k SWP2 INC2 INC2
@@ -414,11 +444,13 @@
 	05e7 05f3 05fb 0607 060d 0611 0617 061f
 	0623 062b 062f 063d 0641 0647 0649 064d ]
 
-@dict/buf $400
+@tote/buf $100 &buf-end
 
 @syms/buf $200
 
-@tote/buf $100 &buf-end
+@label/buf $200
+
+@dict/buf $400
 
 @world/buf
 

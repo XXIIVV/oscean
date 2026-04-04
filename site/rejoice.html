@@ -17,7 +17,7 @@
 <nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="self">rejoice</a></li></ul><ul></ul></nav>
 <main><h2>Rejoice!</h2>
 
-<p><b>Rejoice</b> is a concatenative programming language and notation where data is encoded as multisets that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching of rewriting, or <a href='forth.html'>Forth</a> in which the program state is unordered instead of a stack.</p>
+<p><b>Rejoice</b> is a concatenative programming language and notation where data is encoded as multisets that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a  stack.</p>
 
 <h3>Basics</h3>
 
@@ -27,7 +27,7 @@
 	<li><b>Transformations</b> are represented as fractions in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
 </ul>
 
-<p>The documentation below will display the content of bags in bold. Multiple instances of things are grouped as <code>thing^count</code>. The empty bag, or identity, is represented as <code>[]</code>.</p>
+<p>Multiple instances of things are grouped as <code>thing^count</code>. The empty bag, or identity, is represented as <code>[]</code>.</p>
 
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" class='frame' style='height:270px'></iframe>
@@ -72,96 +72,87 @@
 <b>false</b>
 </pre>
 
-<h3>Functions</h3>
+<h3>Loops</h3>
 
-<p>Functions are symbols that are evaluated when they enter the bag. A definition starts with colon, followed by the function name, a comment that indicates the transformation and finally, a semi-colon. Notice how the <b>AND</b> gate uses a sentinel value <code>and</code> to catch the absence of input.</p>
+<p>A @label is a special symbol that holds an address that is jumped to upon entering the bag. This documentation will capitalize the labels to make them explicit, but it is merely a convention. Here is a how a simple loop is created:</p>
 
 <pre>
-: And? ( x y -- bool )
-	<b>and</b> true/[and x y] false/[and x] false/[and y] false/and ;
+times^5
+@Loop <i>( t -- )</i>
+	Loop/times
+done
 </pre>
 <pre style='margin-top:-29px'>
-<b>x y And?</b>
-<b>x y and</b>   true/[and x y] false/[and x] false/[and y] false/and
-<b>true</b>      false/[and x] false/[and y] false/and
-<b>true</b>      false/[and y] false/and
-<b>true</b>      false/and
-<b>true</b>
+[] times^5 Loop/times 
+[times^5] Loop/times 
+[times^4] Loop/times 
+[times^3] Loop/times 
+[times^2] Loop/times 
+[times] Loop/times 
+[] Loop/times 
+[]
 </pre>
 
-<p>If two or more functions may be called at once, the interpreter can choose to evaluated them non-deterministically, or throw an error.</p>
+<p>If two or more functions are called at once, the interpreter may choose to evaluated them non-deterministically, throw an error or evaluate them in symbolic order.</p>
 
 <h3>Arithmetic</h3>
 
 <p>The function <code>[x Add]/y</code> drains <code>y</code> into <code>x</code> and calls itself again for as long as <code>y</code> is in the bag, effectively finding the sum by resource transfer.</p>
 
 <pre>
-: Add ( x y -- x^2 ) [x Add]/y ;
+x^3 y^4
+@Add <i>( x y -- xres )</i>
+	[x Add]/y
 </pre>
 <pre style='margin-top:-29px'>
-<b>x^2 y^3 Add</b>
-<b>x^2 y^3</b>      [x Add]/y
-<b>x^3 y^2 Add</b>
-<b>x^3 y^2</b>      [x Add]/y
-<b>x^4 y Add</b>  
-<b>x^4 y</b>        [x Add]/y
-<b>x^5 Add</b>    
-<b>x^5</b>          [x Add]/y
-<b>x^5</b>
+[] x^3 y^4 [x add]/y 
+[x^3] y^4 [x add]/y 
+[x^3 y^4] [x add]/y 
+[x^4 y^3] [x add]/y 
+[x^5 y^2] [x add]/y 
+[x^6 y] [x add]/y 
+[x^7] [x add]/y 
+[x^7]
 </pre>
 
 <p>To find the <b>difference</b> between two symbols, the program can take out one of each symbol until exhaustion, leaving either <code>x</code> for a positive result, or <code>y</code> for a negative result. The following recursive function can find the result:</p>
 <pre>
-: Sub ( x y -- x|y ) Sub/[x y] ;
+x^5 y^3
+@Sub <i>( x y -- xres )</i>
+	Sub/[x y]
 </pre>
 <pre style='margin-top:-29px'>
-<b>x^4 y^2 Sub</b>
-<b>x^4 y^2</b>      Sub/[x y]
-<b>x^3 y Sub</b>
-<b>x^3 y</b>        Sub/[x y]
-<b>x^2 Sub</b>
-<b>x^2</b>          Sub/[x y]
-<b>x^2</b>
+[] x^5 y^3 Sub/[x y] 
+[x^5] y^3 Sub/[x y] 
+[x^5 y^3] Sub/[x y] 
+[x^4 y^2] Sub/[x y] 
+[x^3 y] Sub/[x y] 
+[x^2] Sub/[x y] 
+[x^2]
 </pre>
 
-<p>To <b>double</b> the value of a symbol:</p>
-<pre>
-: Double ( x -- y^2 ) [y^2 Double]/x ;
-</pre>
+<h3>Relationship to Fractran</h3>
+<p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label at the top. For example, the Fractran program: 225, 7/3, 7/5</p>
+<pre>r3^2 r5^2
+@Fractran <i>( r3 r5 -- r3+r5.r7 )</i>
+	[Fractran r7]/r3
+	[Fractran r7]/r5</pre>
 <pre style='margin-top:-29px'>
-<b>x^3 Double</b>    
-<b>x^3</b>             [y^2 Double]/x
-<b>x^2 y^2 Double</b>
-<b>x^2 y^2</b>         [y^2 Double]/x
-<b>x y^4 Double</b>
-<b>x y^4</b>           [y^2 Double]/x
-<b>y^6 Double</b>
-<b>y^6</b>             [y^2 Double]/x
-<b>y^6</b>
+[] r3^2 r5^2 [Fractran r7]/r3 [Fractran r7]/r5 
+[r3^2] r5^2 [Fractran r7]/r3 [Fractran r7]/r5 
+[r3^2 r5^2] [Fractran r7]/r3 [Fractran r7]/r5 
+[r3 r5^2 r7] [Fractran r7]/r3 [Fractran r7]/r5 
+[r5^2 r7^2] [Fractran r7]/r3 [Fractran r7]/r5 
+[r5^2 r7^2] [Fractran r7]/r5 
+[r5 r7^3] [Fractran r7]/r3 [Fractran r7]/r5 
+[r5 r7^3] [Fractran r7]/r5 
+[r7^4] [Fractran r7]/r3 [Fractran r7]/r5 
+[r7^4] [Fractran r7]/r5 
+[r7^4]
 </pre>
 
-<h3>Loops</h3>
 
-<p>A function can include its own name in the definition, allowing for loops:</p>
-
-<pre>
-: loop ( x -- ) <b>x</b> done/x^4 [x^2 loop]/x ;</pre>
-<pre style='margin-top:-29px'>
-<b>x loop</b>
-<b>x</b>         done/x^4 [x^2 loop]/x
-<b>x</b>         [x^2 loop]/x
-<b>x^2 loop</b>
-<b>x^2</b>       done/x^4 [x^2 loop]/x
-<b>x^2</b>       [x^2 loop]/x
-<b>x^3 loop</b>
-<b>x^3</b>       done/x^4 [x^2 loop]/x
-<b>x^3</b>       [x^2 loop]/x
-<b>x^4 loop</b>
-<b>x^4</b>       done/x^4 [x^2 loop]/x
-<b>done</b>      [x^2 loop]/x
-<b>done</b>
-</pre>
-
+<!--
 <h3>FizzBuzz</h3>
 
 <p>This is a first draft of the language, I'm currently working on an implementation. One last thing before I end this, here's a fizzbuzz: </p>
@@ -174,6 +165,7 @@
 	print-b/[b^4] 
 	done/[i^100] FizzBuzz/i ;
 </pre>
+-->
 
 <!--
 
