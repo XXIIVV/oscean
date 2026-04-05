@@ -21,7 +21,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Apr 20 "2026 $2
+	( date ) "5 20 "Apr 20 "2026 $2
 
 %u8/mod ( a b -- a%b ) {
 	DIVk MUL SUB }
@@ -52,10 +52,9 @@
 @token/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP #0a NEQ ?{ POP /<parse>
-		world/<eval>
-		BRK }
-	DUP #20 GTH ?{ POP /<parse>
+	DUP #20 GTH ?{
+		/<parse>
+		#0a NEQ ?{ world/<eval> }
 		BRK }
 	DUP LIT "( NEQ ?{
 		;&on-console-comment .Console/vector DEO2
@@ -71,11 +70,12 @@
 
 @token/<reset> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
 @token/<parse> ( -- )
 	.&buf
-	( exists ) DUP ,&ptr LDR NEQ ?{ POP JMP2r }
+	( exists ) LDZk ?{ POP JMP2r }
 	( @label ) LDZk LIT "@ EQU ?/<parse-label>
 	( | den )
 	world/<push-scope>
@@ -115,23 +115,23 @@
 		DUP2 #0001 GTH2 ?{ POP2r POP2 JMP2r }
 		DUP2 STH2kr u16/not-divisible ?{
 			STH2kr /drain-factor STH
-			primes/find-id STHr SWP world/<push-item> }
+			primes/prime-id STHr SWP world/<push-item> }
 		INC2r !&>wpn
 
 @token/drain-factor ( num* div* -- num* id count )
 	[ LITr 00 ]
 	&>wpf
-		OVR2 OVR2 u16/mod #0000 EQU2 ?{ STHr JMP2r }
-		INCr STH2k DIV2 STH2r !&>wpf
+		OVR2 OVR2 u16/mod ORA ?{
+			INCr STH2k DIV2 STH2r !&>wpf }
+	STHr JMP2r
 
 (
 @|Bag/Items )
 
 @fraction/<print> ( addr* -- )
 	( num ) LDA2k OVR2 INC2 INC2 bag/<print>
-	LDA2
-	( den is not [] ) INC2k INC2 LDA2 ORA ?{ POP2 JMP2r }
-	[ LIT2 "/ 19 ] DEO
+	LDA2 INC2k INC2 LDA2 ORA ?{ POP2 JMP2r }
+	( den is not [] ) [ LIT2 "/ 19 ] DEO
 	( den ) LDA2k SWP2 INC2 INC2 !bag/<print>
 
 %bag/get-length ( to* from* -- to* from* length ) {
@@ -209,7 +209,7 @@
 
 @syms/<print-name> ( id -- )
 	STHk /get-name ORAk ?{
-		POP2 #00 DUPr ADDr STHr ;primes/lut ADD2 LDA2 !u16/<print-dec> }
+		POP2 #00 DUPr ADDr STHr primes/id-prime !u16/<print-dec> }
 	POPr !str/<print>
 
 @syms/<emit> ( name* -- )
@@ -234,25 +234,28 @@
 	JMP2r
 
 @world/<print> ( addr* -- )
-	,&ptr LDR2 SWP2
+	,&ptr LDR2 SWP2 [ LIT2r 0800 ]
 	&>l
+		GTHkr STHr ?{
+			LIT ". DUP char/<print>
+			char/<print> !&print-end }
 		DUP2 fraction/<print>
 		#2019 DEO
-		LDA2 LDA2 GTH2k ?&>l
-	POP2 POP2 #0a19 DEO
+		LDA2 LDA2 INCr GTH2k ?&>l &print-end POP2 POP2 POP2r #0a19 DEO
 	JMP2r
 
 @world/<eval> ( -- )
 	tote/<clear>
-	,&ptr LDR2 ;&buf [ LIT2r 0000 ]
+	;&buf [ LIT2r 0001 ]
 	&>w
-		INC2r STH2kr #0000 EQU2 ?{
-			EQU2k ?{
-				tote/<print>
-				DUP2 tote/<apply>
-				DUP2 /<print>
-				goto/step !&>w } }
-	POP2 POP2 tote/<print>
+		LDA2k ORA ?{ !&end }
+		ORAkr STHr ?{ !&end }
+		DUP2 tote/<apply>
+		DUP2 /<print>
+		goto/step INC2r !&>w
+
+	&end ( addr* -- )
+	POP2 POP2r tote/<print>
 	#0a19 DEO
 	JMP2r
 
@@ -292,9 +295,9 @@
 @tote/<put> ( count id -- )
 	( | detect io )
 	DUP syms/get-name LDAk LIT ". NEQ ?{
-		INC2 #18 ;char/port STA
+		INC2 str/<set-print>
 		syms/<emit>
-		#19 ;char/port STA
+		str/<set-debug>
 		POP2 JMP2r }
 	POP2
 	( | detect label )
@@ -313,6 +316,7 @@
 	EQU2 JMP2r
 
 @tote/<apply> ( fraction* -- )
+	/<print>
 	LDA2k /can-apply ?{ POP2 JMP2r }
 	( | put in )
 	LDA2k OVR2 INC2 INC2
@@ -360,12 +364,15 @@
 
 @dict/identity "[] $1
 
-@primes/find-id ( prime* -- id )
+@primes/id-prime ( id -- prime* )
+	;&lut ADD2 LDA2 JMP2r
+
+@primes/prime-id ( prime* -- id )
 	STH2
-	#00
+	#0000
 	&>l
-		#00 OVR DUP ADD ;&lut ADD2 LDA2 STH2kr EQU2 ?{ INC DUP ?&>l }
-	POP2r JMP2r
+		DUP2 DUP ADD /id-prime STH2kr EQU2 ?{ INC DUP ?&>l }
+	POP2r NIP JMP2r
 
 (
 @|Stdlib )
@@ -397,6 +404,10 @@
 	[ LIT "n ] NEQ ?{ #0a JMP2r }
 	#20 JMP2r
 
+@ztr/walk-ws ( ztr -- ztr )
+	LDZk #20 NEQ ?{ INC !/walk-ws }
+	JMP2r
+
 @str/compare ( a* b* -- bool )
 	STH2
 	&>wc
@@ -407,12 +418,19 @@
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	( | esc )
-	DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape }
+	[ LIT &esc 01 ] ?{
+		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape } }
 	char/<print>
 	INC2 !/<print>
 
-@ztr/walk-ws ( ztr -- ztr )
-	LDZk #20 NEQ ?{ INC !/walk-ws }
+@str/<set-print> ( -- )
+	#18 ;char/port STA
+	#00 ;&esc STA
+	JMP2r
+
+@str/<set-debug> ( -- )
+	#19 ;char/port STA
+	#01 ;&esc STA
 	JMP2r
 
 @u8/<print-dec> ( u8 -- )
