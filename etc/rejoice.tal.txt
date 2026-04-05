@@ -99,7 +99,7 @@
 	item/parse !world/<push-item>
 
 @token/parse-bag-complex ( ztr -- ztr )
-	INC
+	INC ztr/walk-ws
 	&>w
 		LDZk char/is-dec #00 EQU ?{ /parse-number !&resume }
 		item/parse world/<push-item> &resume ztr/walk-ws LDZk LIT "] NEQ ?&>w
@@ -107,8 +107,11 @@
 
 @token/parse-number ( ztr -- ztr )
 	dec-ztr/walk-u16
-	( | 1 )
+	( | check if not number 1 )
 	DUP2 #0001 NEQ2 ?{ POP2 #0000 !world/<push-item> }
+	( | check if not already prime )
+	DUP2 primes/prime-id DUP ?/parse-prime
+	POP
 	( | factorize )
 	( value ) [ LIT2r 0002 ]
 	&>wpn
@@ -117,6 +120,13 @@
 			STH2kr /drain-factor STH
 			primes/prime-id STHr SWP world/<push-item> }
 		INC2r !&>wpn
+
+@token/parse-prime ( ztr u16* id -- ztr )
+	STH
+	POP2
+	( | factors )
+	LDZk LIT "^ NEQ ?{ INC dec-ztr/walk-u8 STHr !world/<push-item> }
+	#01 STHr !world/<push-item>
 
 @token/drain-factor ( num* div* -- num* id count )
 	[ LITr 00 ]
@@ -224,7 +234,7 @@
 	#ffff
 	( >> )
 
-@world/<push-item> ( id count -- )
+@world/<push-item> ( count id -- )
 	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
