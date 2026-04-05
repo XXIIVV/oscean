@@ -1,5 +1,3 @@
-/* Inspired from https://doc.rust-lang.org/rust-by-example/ */
-
 let examples = {}
 
 examples.hello = `( Welcome to Rejoice, a multiset playground. )
@@ -18,27 +16,27 @@ candy/coin
 .Count: .#ticket
 `
 
-examples.binary = `( A short example to demonstrate the result 
+examples.binary = `( An example to demonstrate the result 
 	of some binary logic operations )
 
 not true
-
-	false/[not true]
-	true/[not false]
+	.false/[not true]
+	.true/[not false]
 
 and true true
-
-	true/[and true true]
-	false/[and true]
-	false/[and]
+	.true/[and true true]
+	.false/[and true]
+	.false/[and]
 
 or true true
+	.true/[or true true]
+	.true/[or true]
+	.false/[or]`
 
-	true/[or true true]
-	true/[or true]
-	false/[or]`
+examples.product = `( A program to multiply two numbers 
+	and print the result: )
 
-examples.product = `x^2 y^3
+x^2 y^3
 @Mul ( x y -- res )
 	[Mul z res]/y
 @Move ( z -- y)
@@ -47,15 +45,21 @@ examples.product = `x^2 y^3
 @Clean ( y -- )
 	Clean/[y res]
 
-.#res`
+.#res
+`
 
-examples.fizzbuzz = `times^20 f b
+examples.fizzbuzz = `( Prints numbers from 1 to 100, 
+	replacing multiples of 3 with Fizz,
+	multiples of 5 with Buzz, 
+	and multiples of both with FizzBuzz )
 
-@Loop ( times -- )
-	[num f b .FizzBuzz\\n Loop]/[times f^3 b^5]
-	[num f b .Fizz\\n Loop]/[times f^3]
-	[num f b .Buzz\\n Loop]/[times b^5]
-	[num f b .#num .\\n Loop]/times
+times^100 f b
+
+@Loop ( times f b -- num f b )
+	[num f b .FizzBuzz\n Loop]/[times f^3 b^5]
+	[num f b .Fizz\n Loop]/[times f^3]
+	[num f b .Buzz\n Loop]/[times b^5]
+	[num f b .#num .\n Loop]/times
 `
 examples.colors = `red^2 blue^2 yellow^2
 	violet/[red blue]
