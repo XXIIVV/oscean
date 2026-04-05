@@ -40,6 +40,16 @@ examples.fractions = `( A whole number, equal to 7/1: )  7
 
 examples.postfix = `( .. )
 `
+examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition, 
+	akin to how a product is the addition prime factors.
+
+ × 153
+    61
+   ---
+   1b4 )
+
+[a b^5 c^3] [b^6 c]
+`
 
 examples.binary = `( An example to demonstrate the result 
 	of some binary logic operations )
