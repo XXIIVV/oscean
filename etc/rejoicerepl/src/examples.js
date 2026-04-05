@@ -1,23 +1,14 @@
 /* Inspired from https://doc.rust-lang.org/rust-by-example/ */
 
-let examples = {
+let examples = {}
 
-"hello": 
-
-`( Welcome to Rejoice, 
+examples.hello = `( Welcome to Rejoice, 
 	this is a comment )
 
-[this is a bag] tote/bag [programming language]/tote`,
+[this is a bag] tote/bag [programming language]/tote
 
-"factorial":
-
-`TODO`,
-
-"fizzbuzz": 
-
-`TODO`,
-
-}
+.Hello!
+`
 
 examples.binary = `( A short example to demonstrate the result 
 	of some binary logic operations )
@@ -46,7 +37,10 @@ examples.product = `x^2 y^3
 	[Move y]/z
 	Mul/x
 @Clean ( y -- )
-	Clean/[y res]`
+	Clean/[y res]
+
+.#res`
+
 examples.fizzbuzz = `times^20 f b
 
 @Loop ( times -- )
