@@ -2,12 +2,20 @@
 
 let examples = {}
 
-examples.hello = `( Welcome to Rejoice, 
-	this is a comment )
+examples.hello = `( Welcome to Rejoice, a multiset playground. )
 
-[this is a bag] tote/bag [programming language]/tote
+( Put a marble and five coins in the bag: )
+marble coin^5
 
-.Hello!
+( Replace a coin with a candy: )
+candy/coin
+
+( Trade two coins for a ticket for as long as possible: )
+@TicketBooth
+	[TicketBooth ticket]/coin^2
+
+( To print the result: )
+.Count: .#ticket
 `
 
 examples.binary = `( A short example to demonstrate the result 
