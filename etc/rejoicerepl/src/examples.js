@@ -40,6 +40,8 @@ examples.fractions = `( A whole number, equal to 7/1: )  7
 
 examples.postfix = `( .. )
 `
+
+
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition, 
 	akin to how a product is the addition prime factors.
 
@@ -50,6 +52,21 @@ examples.tropical = `( In Tropical Arithmetic, the multiplication operation is a
 
 [a b^5 c^3] [b^6 c]
 `
+
+examples.bits = `( The eight individual bits of a decimal number less than 256
+	are extracted by a series of division. )
+
+( Input a number to convert: ) n^92
+
+[.1 B0]/n^128 .0 @B0
+[.1 B1]/n^64  .0 @B1
+[.1 B2]/n^32  .0 @B2
+[.1 B3]/n^16  .0 @B3
+.\\s
+[.1 B4]/n^8   .0 @B4
+[.1 B5]/n^4   .0 @B5
+[.1 B6]/n^2   .0 @B6
+[.1 B7]/n     .0 @B7`
 
 examples.binary = `( An example to demonstrate the result 
 	of some binary logic operations )
@@ -91,10 +108,10 @@ examples.fizzbuzz = `( Prints numbers from 1 to 100,
 times^100 f b
 
 @Loop ( times f b -- num f b )
-	[num f b .FizzBuzz\n Loop]/[times f^3 b^5]
-	[num f b .Fizz\n Loop]/[times f^3]
-	[num f b .Buzz\n Loop]/[times b^5]
-	[num f b .#num .\n Loop]/times
+	[num f b .FizzBuzz\\n Loop]/[times f^3 b^5]
+	[num f b .Fizz\\n Loop]/[times f^3]
+	[num f b .Buzz\\n Loop]/[times b^5]
+	[num f b .#num .\\n Loop]/times
 `
 examples.colors = `red^2 blue^2 yellow^2
 	violet/[red blue]
