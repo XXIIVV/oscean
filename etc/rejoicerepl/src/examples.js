@@ -16,6 +16,31 @@ candy/coin
 .Count: .#ticket
 `
 
+examples.primes = `( Multiplying is the same as adding prime factors.
+	The product 10[2 5] and 21[3 7], is the sum of their primes. )
+
+10 21
+
+( Inversely, Division is the same as subtracting prime factors. 
+	Multiplying by the fraction 1/35[3 5], is the same as dividing by 35. )
+
+1/35
+`
+
+examples.fractions = `( A whole number, equal to 7/1: )  7
+
+( A proper fraction, less than 1: ) 3/7
+
+( An improper fraction, greater than 1: ) 5/2
+
+( An unreduced fraction, a factor is present on both sides ): [5 3]/[2 3]
+
+( The previous fraction, reduced: ) 5/2
+`
+
+examples.postfix = `( .. )
+`
+
 examples.binary = `( An example to demonstrate the result 
 	of some binary logic operations )
 
