@@ -35,6 +35,9 @@
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
 
+%syms/get-name ( id -- str* ) {
+	#00 SWP DUP ADD ;syms/buf ADD2 LDA2 }
+
 (
 @|Token )
 
@@ -161,9 +164,8 @@
 	SUB2k #01 SFT2 NIP }
 
 @bag/<print> ( to* from* -- )
-	STH2k INC2k LDA label/get INC2 INC2 STH2r NEQ2 ?{
+	INC2k LDA syms/get-name LDA LIT "' NEQ ?{
 		LIT "' char/<print>
-		( | Not quote )
 		INC2 INC2 }
 	( | Not quote )
 	/get-length #01 GTH ?/<print-complex>
@@ -231,9 +233,6 @@
 
 @syms/found ( ptr* buf* . str* -- id )
 	POP2r NIP2 ;&buf SUB2 #01 SFT2 NIP JMP2r
-
-%syms/get-name ( id -- str* ) {
-	#00 SWP DUP ADD ;syms/buf ADD2 LDA2 }
 
 @syms/<print-name> ( id -- )
 	STHk /get-name ORAk ?{
