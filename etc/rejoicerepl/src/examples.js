@@ -90,6 +90,21 @@ or true true
 	.true/[or true]
 	.false/[or]`
 
+examples.binary_adder = `( Add 51 + 101 in binary by adding each bit to the bag. )
+
+(  51 )       b5 b4       b1 b0
+( 101 )    b6 b5       b2    b0
+
+( Binary Adder with carry )
+
+b1/[b0^2] b2/[b1^2] b3/[b2^2] b4/[b3^2]
+b5/[b4^2] b6/[b5^2] b7/[b6^2]
+
+( Convert to decimal )
+
+   n/b0  n^2/b1  n^4/b2   n^8/b3
+n^16/b4 n^32/b5 n^64/b6 n^128/b7`
+
 examples.product = `( A program to multiply two numbers 
 	and print the result: )
 
@@ -137,4 +152,6 @@ x^6 y^15
 	[Gcd y]/y
 
 .#x`
+
+
 
