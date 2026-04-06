@@ -62,6 +62,7 @@ examples.product = `( A program to multiply two numbers
 	and print the result: )
 
 x^2 y^3
+
 @Mul ( x y -- res )
 	[Mul t res]/y
 @MulMov
@@ -76,6 +77,7 @@ examples.quotient = `( A program to divides a number by another
 	and print the result: )
 
 x^24 y^3
+
 @Div ( x y -- res )
 	[Div t]/[y x] res
 @DivMov
@@ -90,6 +92,7 @@ examples.gcd = `( A program to find the GCD of two numbers,
 	and print the result: )
 
 x^6 y^15
+
 @Gcd ( x y -- x )
 	[Gcd z]/[x y]
 @GcdSwap
