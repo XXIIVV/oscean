@@ -58,53 +58,6 @@ examples.tropical = `( In Tropical Arithmetic, the multiplication operation is a
 [a b^5 c^3] [b^6 c]
 `
 
-examples.bits = `( The eight individual bits of a decimal number less than 256
-	are extracted by a series of division. )
-
-( Input a number to convert: ) n^92
-
-[.1 B0]/n^128 .0 @B0
-[.1 B1]/n^64  .0 @B1
-[.1 B2]/n^32  .0 @B2
-[.1 B3]/n^16  .0 @B3
-.\\s
-[.1 B4]/n^8   .0 @B4
-[.1 B5]/n^4   .0 @B5
-[.1 B6]/n^2   .0 @B6
-[.1 B7]/n     .0 @B7`
-
-examples.binary = `( An example to demonstrate the result 
-	of some binary logic operations )
-
-not true
-	.false/[not true]
-	.true/[not false]
-
-and true true
-	.true/[and true true]
-	.false/[and true]
-	.false/[and]
-
-or true true
-	.true/[or true true]
-	.true/[or true]
-	.false/[or]`
-
-examples.binary_adder = `( Add 51 + 101 in binary by adding each bit to the bag. )
-
-(  51 )       b5 b4       b1 b0
-( 101 )    b6 b5       b2    b0
-
-( Binary Adder with carry )
-
-b1/[b0^2] b2/[b1^2] b3/[b2^2] b4/[b3^2]
-b5/[b4^2] b6/[b5^2] b7/[b6^2]
-
-( Convert to decimal )
-
-   n/b0  n^2/b1  n^4/b2   n^8/b3
-n^16/b4 n^32/b5 n^64/b6 n^128/b7`
-
 examples.product = `( A program to multiply two numbers 
 	and print the result: )
 
@@ -154,4 +107,59 @@ x^6 y^15
 .#x`
 
 
+/*
+@|Binary */
 
+
+examples.binary_logic = `( An example to demonstrate the result 
+	of some binary logic operations )
+
+not true
+	.false/[not true]
+	.true/[not false]
+
+and true true
+	.true/[and true true]
+	.false/[and true]
+	.false/[and]
+
+or true true
+	.true/[or true true]
+	.true/[or true]
+	.false/[or]`
+
+examples.binary_adder = `( Add 73 + 124 in binary by adding each bit to the bag. )
+
+n^73 n^124
+
+( Decimal to Binary )
+
+@B7 [B7 b7]/n^128 @B6 [B6 b6]/n^64 @B5 [B5 b5]/n^32 @B4 [B4 b4]/n^16 
+@B3 [B3 b3]/n^8   @B2 [B2 b2]/n^4  @B1 [B1 b1]/n^2  @B0 [B0 b0]/n
+
+( Adder with Carry )
+
+          b7/[b6^2] b6/[b5^2] b5/[b4^2]  
+b4/[b3^2] b3/[b2^2] b2/[b1^2] b1/[b0^2]
+
+( Binary to Decimal )
+
+n^128/b7 n^64/b6 n^32/b5 n^16/b4
+n^8/b3   n^4/b2  n^2/b1  n/b0`
+
+
+examples.binary_print = `( The eight individual bits of a decimal number less than 256
+	are extracted by a series of division. )
+
+( Input a number to convert: ) n^92
+
+[.1 B7]/n^128 .0 @B7
+[.1 B6]/n^64  .0 @B6
+[.1 B5]/n^32  .0 @B5
+[.1 B4]/n^16  .0 @B4
+.\\s
+[.1 B3]/n^8   .0 @B3
+[.1 B2]/n^4   .0 @B2
+[.1 B1]/n^2   .0 @B1
+[.1 B0]/n     .0 @B0
+`
