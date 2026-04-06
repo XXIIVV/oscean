@@ -62,12 +62,7 @@ examples.product = `( A program to multiply two numbers
 x^2 y^3
 
 @Mul ( x y -- res )
-	[Mul t res]/y
-@MulMov
-	[MulMov y]/t
-	Mul/x
-@MulClean
-	MulClean/[y res]
+	[Mul t res]/y 'y/t Mul/x '1/[y res]
 
 .#res`
 
@@ -77,12 +72,7 @@ examples.quotient = `( A program to divides a number by another
 x^24 y^3
 
 @Div ( x y -- res )
-	[Div t]/[y x] res
-@DivMov
-	[DivMov y]/t
-	[Div x]/x
-@DivClean
-	DivClean/y
+	[Div t]/[y x] res 'y/t [Div x]/x '1/y
 
 .#res`
 
@@ -92,12 +82,7 @@ examples.gcd = `( A program to find the GCD of two numbers,
 x^6 y^15
 
 @Gcd ( x y -- x )
-	[Gcd z]/[x y]
-@GcdSwap
-	[GcdSwap y]/x
-@GcdRestore
-	[GcdRestore x]/z
-	[Gcd y]/y
+	[Gcd z]/[x y] 'y/x 'x/z [Gcd y]/y
 
 .#x`
 
@@ -124,24 +109,17 @@ examples.colors = `red^2 blue^2 yellow^2
 examples.spirograph = `( inner cog: ) x^40
 ( outer cog  ) a^96
 
-@Copy ( a -- y y2 )
-	[Copy y y2]/a
+( y y2 copy )  
+
+'[y y2]/a
 
 @Gcd ( x y -- x )
-	[Gcd z]/[x y]
-@GcdSwap
-	[GcdSwap y]/x
-@GcdRestore
-	[GcdRestore x]/z [Gcd y]/y
+	[Gcd z]/[x y] 'y/x 'x/z [Gcd y]/y
 
 @Div ( y2 x -- res )
-	[Div t]/[y2 x] res
-@DivMov
-	[DivMov x]/t [Div y2]/y2
-@DivClean
-	DivClean/x
+	[Div t]/[y2 x] res 'x/t [Div y2]/y2 '1/x
 
-.Turns:\\s .#res`
+.Turns:\s .#res`
 
 
 /*
@@ -171,8 +149,8 @@ n^73 n^124
 
 ( Decimal to Binary )
 
-@B7 [B7 b7]/n^128 @B6 [B6 b6]/n^64 @B5 [B5 b5]/n^32 @B4 [B4 b4]/n^16
-@B3 [B3 b3]/n^8   @B2 [B2 b2]/n^4  @B1 [B1 b1]/n^2  @B0 [B0 b0]/n
+'b7/n^128 'b6/n^64 'b5/n^32 'b4/n^16
+'b3/n^8   'b2/n^4  'b1/n^2  'b0/n
 
 ( Adder with Carry )
 
