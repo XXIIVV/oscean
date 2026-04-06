@@ -21,26 +21,31 @@ examples.primes = `( Multiplying is the same as adding prime factors.
 
 10 21
 
-( Inversely, Division is the same as subtracting prime factors. 
-	Multiplying by the fraction 1/35[3 5], is the same as dividing by 35. )
+( Division is the same as subtracting prime factors. 
+	Multiplying by the fraction 1/3, is the same as dividing by 3. 
+	And the result is the subtraction of the prime factor 3. )
 
-1/35
-`
+1/3
 
-examples.fractions = `( A whole number, equal to 7/1: )  7
+( The result is 70[2 5 7]. )`
 
-( A proper fraction, less than 1: ) 3/7
+examples.fractions = `( A whole number, equal to 7/1: )
+7
 
-( An improper fraction, greater than 1: ) 5/2
+( A proper fraction, less than 1: )
+3/7
 
-( An unreduced fraction, a factor is present on both sides ): [5 3]/[2 3]
+( An improper fraction, greater than 1: )
+5/2
 
-( The previous fraction, reduced: ) 5/2
-`
+( An unreduced fraction, a factor is present on both sides ):
+[5 3]/[2 3]
+
+( The previous fraction, reduced: )
+5/2`
 
 examples.postfix = `( .. )
 `
-
 
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition, 
 	akin to how a product is the addition prime factors.
@@ -97,8 +102,7 @@ x^2 y^3
 @Clean ( y -- )
 	Clean/[y res]
 
-.#res
-`
+.#res`
 
 examples.fizzbuzz = `( Prints numbers from 1 to 100, 
 	replacing multiples of 3 with Fizz,
@@ -120,4 +124,17 @@ examples.colors = `red^2 blue^2 yellow^2
 	black/[violet green orange]
 `
 
+examples.gcd = `( A program to find the GCD of two numbers,
+	and print the result: )
+
+x^6 y^15
+@Gcd ( x y -- x )
+	[Gcd z]/[x y]
+@Swap
+	[Swap y]/x
+@Restore
+	[Restore x]/z
+	[Gcd y]/y
+
+.#x`
 

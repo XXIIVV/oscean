@@ -29,33 +29,33 @@ red^2 blue^2 yellow^2
 
 <p>Here is the implementation of a <b>NOT</b> logic gate.</p>
 <pre>
-<b>false not</b>  true/[false not] false/[true not]
-<b>true</b>       false/[true not]
-<b>true</b>
+false not
+	true/[false not]
+	false/[true not]
 </pre>
 <pre style='margin-top:-29px'>
-<b>true not</b>  true/[false not] false/[true not]
-<b>true not</b>  false/[true not]
-<b>false</b>
+[false not] true/[false not] false/[true not] 
+[true] false/[true not] 
+[true]
 </pre>
 
 <p>The different handlers are sequenced one after the other, here is a <b>OR</b> gate. Notice the need for a sentinel <code>or</code> symbol.</p>
 <pre>
-<b>x y or</b>  true/[x y or] true/[x or] true/[y or] false/or
-<b>true</b>    true/[x or] true/[y or] false/or
-<b>true</b>    true/[y or] false/or
-<b>true</b>    false/or
-<b>true</b>
+x y or
+	true/[x y or]
+	true/[x or]
+	true/[y or]
+	false/or
 </pre>
 <pre style='margin-top:-29px'>
-<b>or</b>     true/[x y or] true/[x or] true/[y or] false/or
-<b>or</b>     true/[x or] true/[y or] false/or
-<b>or</b>     true/[y or] false/or
-<b>or</b>     false/or
-<b>false</b>
+[x y or] true/[x y or] true/[x or] true/[y or] false/or 
+[true] true/[x or] true/[y or] false/or 
+[true] true/[y or] false/or 
+[true] false/or 
+[true]
 </pre>
 
-<h3>Loops</h3>
+<h3>Labels</h3>
 
 <p>A @label is a special symbol that holds an address that is jumped to upon entering the bag. This documentation will capitalize the labels to make them explicit, but it is merely a convention. Here is a how a simple loop is created:</p>
 
@@ -78,12 +78,10 @@ done
 
 <p>If two or more functions are called at once, the interpreter may choose to evaluated them non-deterministically, throw an error or evaluate them in symbolic order.</p>
 
-<h3>Logic II</h3>
-
-<p>Here is the implementation of a <b>greater</b> comparison.</p>
+<p>Using this looping mechanism, we can rulesets that drain registers. For example, here is the implementation of a <b>greater</b> comparison:</p>
 <pre>
 x^3 y^2
-@Gth ( x y -- x y true/false )
+@Gth ( x y -- x y true|false )
 	Gth/[x y]
 	true/x Gth/x
 	false/y Gth/y
@@ -119,16 +117,24 @@ x^3 y^4
 
 <p>To find the <b>difference</b> between two symbols, the program can take out one of each symbol until exhaustion, leaving either <code>x</code> for a positive result, or <code>y</code> for a negative result. The following recursive function can find the result:</p>
 <pre>
-x^5 y^3
-@Sub <i>( x y -- xres )</i>
+x^2 y^5
+@Sub <i>( x y -- x|y )</i>
 	Sub/[x y]
+@Pos <i>( x -- pos )</i>
+	[Pos pos]/x
+@Neg <i>( x -- neg )</i>
+	[Neg neg]/y
 </pre>
 <pre style='margin-top:-29px'>
-[x^5 y^3] Sub/[x y] 
-[x^4 y^2] Sub/[x y] 
-[x^3 y] Sub/[x y] 
-[x^2] Sub/[x y] 
-[x^2]
+[x^2 y^5] Sub/[x y] [Pos pos]/x [Neg neg]/y 
+[x y^4] Sub/[x y] [Pos pos]/x [Neg neg]/y 
+[y^3] Sub/[x y] [Pos pos]/x [Neg neg]/y 
+[y^3] [Pos pos]/x [Neg neg]/y 
+[y^3] [Neg neg]/y 
+[y^2 neg] [Neg neg]/y 
+[y neg^2] [Neg neg]/y 
+[neg^3] [Neg neg]/y 
+[neg^3]
 </pre>
 
 <p>Here's a more complex program that finds the <b>product</b> of two numbers using multiple labels.</p>
@@ -161,7 +167,6 @@ pigs:3</pre>
 
 <pre>
 times^100 f b
-
 @Loop ( times -- )
 	[num f b .FizzBuzz\n Loop]/[times f^3 b^5]
 	[num f b .Fizz\n Loop]/[times f^3]
@@ -169,25 +174,7 @@ times^100 f b
 	[num f b .#num .\n Loop]/times
 </pre>
 <pre style='margin-top:-29px'>
-1
-2
-Fizz
-4
-Buzz
-Fizz
-7
-8
-Fizz
-Buzz
-11
-Fizz
-13
-14
-FizzBuzz
-16
-17
-..
-</pre>
+1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, ..</pre>
 
 <h3>On Linear Logic</h3>
 <p>Traditional logic treats entities as infinite, whereas linear logic accounts for resources, Rejoice is an attempt at making a linear logic playground in which every transformation equates to a transaction that consumes entities. The @label mechanism corresponds to the infinite use modality from linear logic. Labelled rules can fire indefinitely, like a vending machine accepting any number of coins, without @VendingMachine, the rule fires once and the program ends.</p>
