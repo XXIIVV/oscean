@@ -743,8 +743,6 @@ done
 [done]
 </pre>
 
-<p>If two or more functions are called at once, the interpreter may choose to evaluated them non-deterministically, throw an error or evaluate them in symbolic order.</p>
-
 <p>Using this looping mechanism, we can rulesets that drain registers. For example, here is the implementation of a <b>greater</b> comparison:</p>
 <pre>
 x^3 y^2
@@ -765,35 +763,30 @@ x^3 y^2
 [true]
 </pre>
 
-<h3>Arithmetic</h3>
+<h3>Anonymous Labels</h3>
 
-<p>The function <code>[x Add]/y</code> drains <code>y</code> into <code>x</code> and calls itself again for as long as <code>y</code> is in the bag, effectively finding the <b>sum</b> by resource transfer.</p>
+<p>A quick way to write draining fractions is to use anonymous labels. For example, the addition fraction <code>@Add [x Add]/y</code>, can also be written as <code>'x/y</code>, telling the compiler to create an anonymous label at its position.</p>
 
 <pre>
-x^3 y^4
-
-@Add <i>( x y -- xres )</i>
-	[x Add]/y
+x^3 y^4 'x/y
 </pre>
 <pre style='margin-top:-29px'>
-[x^3 y^4] [x add]/y 
-[x^4 y^3] [x add]/y 
-[x^5 y^2] [x add]/y 
-[x^6 y] [x add]/y 
-[x^7] [x add]/y 
-[x^7]
+[x^3 y^4] 'x/y 
+[x^4 y^3] 'x/y 
+[x^5 y^2] 'x/y 
+[x^6 y] 'x/y 
+[x^7] 'x/y 
+[x^7] 
 </pre>
+
+<h3>Arithmetic</h3>
 
 <p>To find the <b>difference</b> between two values, the program can take out one of each until exhaustion, leaving either <code>x</code> for a positive result, or <code>y</code> for a negative result. The last two labels drain the values into either <code>pos</code> or <code>neg</code>:</p>
 <pre>
 x^2 y^5
 
-@Sub <i>( x y -- x|y )</i>
-	Sub/[x y]
-@Pos <i>( x -- pos )</i>
-	[Pos pos]/x
-@Neg <i>( x -- neg )</i>
-	[Neg neg]/y
+@Sub ( x y -- x|y )
+	Sub/[x y] 'pos/x 'neg/y
 </pre>
 <pre style='margin-top:-29px'>
 [x^2 y^5] Sub/[x y] [Pos pos]/x [Neg neg]/y 
@@ -811,13 +804,8 @@ x^2 y^5
 <pre>
 x^2 y^3
 
-@Mul <i>( x y -- res )</i>
-	[Mul z res]/y
-@Move <i>( z -- y)</i>
-	[Move y]/z
-	Mul/x
-@Clean <i>( y -- )</i>
-	Clean/[y res]
+@Mul ( x y -- res )
+	[Mul z res]/y 'y/z Mul/x '1/[y res]
 </pre>
 
 <h3>I/O</h3>

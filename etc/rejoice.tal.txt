@@ -77,8 +77,12 @@
 	.&buf
 	( exists ) LDZk ?{ POP JMP2r }
 	( @label ) LDZk LIT "@ EQU ?/<parse-label>
-	( | den )
+	( 'quote ) LDZk LIT "' EQU ?/<parse-quote>
 	world/<push-scope>
+	( >> )
+
+@token/<parse-fraction> ( ztr -- )
+	( | den )
 	/parse-bag world/<pop-scope>
 	world/<push-scope>
 	LDZk LIT "/ EQU ?{
@@ -89,6 +93,15 @@
 	( | num )
 	/parse-bag world/<pop-scope>
 	POP !/<reset>
+
+@token/<parse-quote> ( ztr -- )
+	;&quote-name syms/find-alloc STHk label/<create>
+	world/<push-scope>
+	#01 STHr world/<push-item>
+	,&id LDR INC ,&id STR
+	INC !/<parse-fraction>
+
+	&quote-name "' [ &id "0 00 ]
 
 @token/<parse-label> ( ztr -- )
 	#00 SWP INC syms/find-alloc label/<create> !/<reset>
@@ -148,6 +161,11 @@
 	SUB2k #01 SFT2 NIP }
 
 @bag/<print> ( to* from* -- )
+	STH2k INC2k LDA label/get INC2 INC2 STH2r NEQ2 ?{
+		LIT "' char/<print>
+		( | Not quote )
+		INC2 INC2 }
+	( | Not quote )
 	/get-length #01 GTH ?/<print-complex>
 	&>lpb
 		LDA2k item/<print>
@@ -220,7 +238,10 @@
 @syms/<print-name> ( id -- )
 	STHk /get-name ORAk ?{
 		POP2 #00 DUPr ADDr STHr primes/id-prime !u16/<print-dec> }
-	POPr !str/<print>
+	POPr
+	( | quoted )
+	LDAk LIT "' NEQ ?{ LDA !char/<print> }
+	!str/<print>
 
 @syms/<emit> ( name* -- )
 	LDAk LIT "# NEQ ?{ INC2 /find-alloc tote/get-count !u8/<print-dec> }
@@ -269,8 +290,7 @@
 	( | steps )
 	;dict/reached str/<print>
 	STH2r u16/<print-dec>
-	;dict/steps str/<print>
-	JMP2r
+	;dict/steps !str/<print>
 
 %label/get-addr ( id -- addr* ) {
 	#00 SWP DUP ADD ;&buf ADD2 }
