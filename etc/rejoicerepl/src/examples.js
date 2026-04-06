@@ -50,12 +50,10 @@ examples.postfix = `( .. )
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
 
- × 153
-    61
-   ---
-   1b4 )
-
-[a b^5 c^3] [b^6 c]
+( × 153 ) [a^1 b^5 c^3]
+(    61 )     [b^6 c^1]
+(   --- )
+(   1b4 )
 `
 
 examples.product = `( A program to multiply two numbers
