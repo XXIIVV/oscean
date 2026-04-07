@@ -134,7 +134,7 @@ examples.spirograph = `( inner cog: ) x^40
 @Div ( y2 x -- res )
 	[Div t]/[y2 x] res 'x/t [Div y2]/y2 '1/x
 
-.Turns:\s .#res`
+.Turns:\\s .#res`
 
 
 /*
