@@ -1,0 +1,330 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property='og:type' content='website'/>
+<meta property='og:site_name' content='XXIIVV'/>
+<meta property='og:description' content="By Devine Lu Linvega"/>
+<meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<link href="../links/main.css" type="text/css" rel="stylesheet">
+<link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<link href="../links/img.xml" type="application/rss+xml" rel="alternate" title="XXIIVV" />
+<meta property="og:title" content="gaude"/>
+<meta property="og:url" content="https://wiki.xxiivv.com/site/gaude.html"/>
+<meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<title>XXIIVV &mdash; gaude</title>
+</head>
+<body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
+<nav><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="parent">rejoice</a></li></ul><ul><li><a href="gaude.html" class="self">gaude</a></li></ul><ul></ul></nav>
+<main><h2>Gaude!</h2>
+
+<p><b>Gaude</b> es <a href='concatenative.html'>concatenative</a> lingua de
+programmatione ubi dato es codificato ut sacco que compone per multiplicatione.
+Operatione es representato ut fractione, ubi denominatore indica re ad
+consumere ex sacco, et numeratore indica re ad insere in sacco.</p>
+
+<h3>Fundamento</h3>
+
+<ul>
+	<li>Stato de programma es <b>sacco</b> de re non-ordinate. Per exemplo, sacco <code>[cubo cono^3]</code> contine uno cubo et tres cono.</li>
+	<li><b>Symbolo</b> es re in sacco, scripto ut numero integro decimal, aut ut nomine que representa valore <a href='primes.html'>primo</a>. Per exemplo, sacco <code>[8 sphaera^2]</code> et <code>[2^3 sphaera sphaera]</code> es equale.</li>
+	<li><b>Transformatione</b> es representato ut fractione, ubi denominatore indica re ad consumere ex sacco, et numeratore indica re ad insere. Per exemplo, <code>strix/[felis^2]</code> significa: consumere duo felis, insere uno strix.</li>
+</ul>
+
+<p>Instantia multiple de re es groupato ut <code>re^numero</code>. Sacco vacuo, aut identitate, es representato ut <code>[]</code>.</p>
+
+<div class='codeview'>
+	<iframe src="../etc/rejoicerepl/index.html#gaude" frameborder="0" class='frame' style='height:450px'></iframe>
+</div>
+
+<p>Evaluatione consiste in applicatione de fractione in sequentia quando denominatore es trovato in sacco. Programma cessa quando non es plus fractione ad applicare.</p>
+<pre>
+rubro^2 caerulo^2 flavo^2
+	violeto/[rubro caerulo]
+	viridi/[caerulo flavo]
+	aurantio/[rubro flavo]
+	atro/[violeto viridi aurantio]
+</pre>
+
+<h3>Logica I</h3>
+
+<p>Hic es implementatione de porta logica <b>NON</b>.</p>
+<pre>
+falso non
+	vero/[falso non]
+	falso/[vero non]
+</pre>
+<pre style='margin-top:-29px'>
+[falso non] vero/[falso non] falso/[vero non] 
+[vero] falso/[vero non] 
+[vero]
+</pre>
+
+<p>Regulare differente es sequentiato uno post altero. Hic es porta logica <b>AUT</b>. Nota necessitate de symbolo sentinella <code>aut</code>.</p>
+<pre>
+x y aut
+	vero/[x y aut]
+	vero/[x aut]
+	vero/[y aut]
+	falso/aut
+</pre>
+<pre style='margin-top:-29px'>
+[x y aut] vero/[x y aut] vero/[x aut] vero/[y aut] falso/aut 
+[vero] vero/[x aut] vero/[y aut] falso/aut 
+[vero] vero/[y aut] falso/aut 
+[vero] falso/aut 
+[vero]
+</pre>
+
+<h3>Meta</h3>
+
+<!-- 
+	So, in Latin, a "meta" is the point in a chariot race 
+	where you loop around.. 
+-->
+
+<p>A @meta es symbolo speciale que contine addresso ad que programma salta
+quando es trovato in sacco. Hic es exemplo de cyclo simplice:</p>
+
+<pre>
+tempore^5
+
+@Cyclo ( tempore -- )
+	Cyclo/tempore
+fine
+</pre>
+<pre style='margin-top:-29px'>
+[tempore^5] Cyclo/tempore fine 
+[tempore^4] Cyclo/tempore fine 
+[tempore^3] Cyclo/tempore fine 
+[tempore^2] Cyclo/tempore fine 
+[tempore] Cyclo/tempore fine 
+[] Cyclo/tempore fine 
+[] fine 
+[fine]
+</pre>
+
+<p>Per hoc mechanismo de cyclo, nos pote scribere regula que drena registro. Per exemplo, hic es implementatione de comparatione maior:</p>
+<pre>
+x^3 y^2
+
+@Maior ( x y -- x y vero|falso )
+	Maior/[x y]
+	vero/x Maior/x
+	falso/y Maior/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^3 y^2] Maior/[x y] vero/x Maior/x falso/y Maior/y 
+[x^2 y] Maior/[x y] vero/x Maior/x falso/y Maior/y 
+[x] Maior/[x y] vero/x Maior/x falso/y Maior/y 
+[x] vero/x Maior/x falso/y Maior/y 
+[vero] Maior/x falso/y Maior/y 
+[vero] falso/y Maior/y 
+[vero] Maior/y 
+[vero] 
+</pre>
+
+<h3>Meta Anonymo</h3>
+
+<p>Modo rapido ad scribere fractione que drena es uso de meta anonymo. Per exemplo, fractione de additione <code>@Adde [x Adde]/y</code> pote etiam esse scripto ut <code>'x/y</code>, indicante ad compilatore ad creare meta anonymo in suo positione.
+
+<pre>
+x^3 y^4 'x/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^3 y^4] 'x/y 
+[x^4 y^3] 'x/y 
+[x^5 y^2] 'x/y 
+[x^6 y] 'x/y 
+[x^7] 'x/y 
+[x^7] 
+</pre>
+
+<h3>Arithmetica</h3>
+
+<p>Ad trovare differentia inter duo valore, programma pote consumere uno de singulo usque ad exhaustione, relinquente aut <code>x</code> pro resultato positivo, aut <code>y</code> pro resultato negativo. Ultimo duo meta drena valore in aut <code>pos</code> aut <code>neg</code>:
+
+<pre>
+x^2 y^5
+
+@Sub ( x y -- pos|neg )
+	Sub/[x y] 'pos/x 'neg/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^5] Sub/[x y] 'pos/x 'neg/y 
+[x y^4] Sub/[x y] 'pos/x 'neg/y 
+[y^3] Sub/[x y] 'pos/x 'neg/y 
+[y^3] 'pos/x 'neg/y 
+[y^3] 'neg/y 
+[y^2 neg] 'neg/y 
+[y neg^2] 'neg/y 
+[neg^3] 'neg/y 
+[neg^3] 
+</pre>
+
+<p>Hic es programma plus complexo que trova producto de duo numero per uso de meta multiple.</p>
+<pre>
+x^2 y^3
+
+@Mul ( x y -- res )
+	[Mul z res]/y 'y/z Mul/x '1/[y res]
+</pre>
+
+<h3>Ingressu/Egressu</h3>
+
+<p>Symbolo que initia cum <kbd>.</kbd> es emitto ut texto et immediate consumpto ex sacco. Symbolo que initia cum <kbd>.#</kbd> emitte numero de instantia in sacco de symbolo specifico.</p>
+
+<pre>
+porco^3
+	( imprimere vocabulo ) .porco:
+	( imprimere numero ) .#porco
+</pre>
+<pre style='margin-top:-29px'>
+porco:3</pre>
+
+<h3>FizzBuzz</h3>
+<p>Hoc non es completo sine exemplo de FizzBuzz:</p>
+
+<pre>
+tempore^100 f b
+
+@Cyclo ( tempore -- )
+	[num f b .FizzBuzz\n Cyclo]/[tempore f^3 b^5]
+	[num f b .Fizz\n Cyclo]/[tempore f^3]
+	[num f b .Buzz\n Cyclo]/[tempore b^5]
+	[num f b .#num .\n Cyclo]/tempore
+</pre>
+<pre style='margin-top:-29px'>
+1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, ..</pre>
+
+<!--
+
+gaude: rejoice
+lingua: language
+dato: data
+codificato: encoded
+sacco: bag
+operatione: operation
+fractione: fraction
+denominatore: denominator
+indica: indicates
+consumere: consume
+numeratore: numerator
+insere: insert
+fundamento: basics
+stato: state
+non-ordinate: unordered
+exemplo: example
+cubo: cube
+cono: cone
+contine: contains
+symbolo: symbol
+scripto: written
+numero: number
+integro: integer
+nomine: name
+representa: represents
+valore: value
+primo: prime
+sphaera: ball
+equale: equal
+transformatione: transformation
+significa: means
+strix: owl
+felis: cat
+instantia: instance
+groupato: grouped
+vacuo: empty
+identitate: identity
+evaluatione: evaluation
+applicatione: application
+sequentia: sequence
+trovato: found
+cessa: halts
+plus: more
+applicare: apply
+rubro: red
+caerulo: blue
+flavo: yellow
+violeto: violet
+viridi: green
+aurantio: orange
+atro: black
+logica: logic
+hic: here
+implementatione: implementation
+porta: gate
+falso: false
+vero: true
+regulare: handler
+differente: different
+sequentiato: sequenced
+nota: note
+necessitate: need
+sentinella: sentinel
+meta: label
+speciale: special
+addresso: address
+salta: jumps
+cyclo: loop
+fine: end
+mechanismo: mechanism
+scribere: write
+regula: rule
+drena: drains
+registro: register
+comparatione: comparison
+maior: greater
+anonymo: anonymous
+modo: way
+rapido: quick
+additione: addition
+etiam: also
+compilatore: compiler
+positione: position
+arithmetica: arithmetic
+differentia: difference
+inter: between
+singulo: each
+usque ad: until
+exhaustione: exhaustion
+relinquente: leaving
+resultato: result
+positivo: positive
+negativo: negative
+ultimo: last
+producto: product
+multiple: multiple
+ingressu: input
+egressu: output
+initia: starts
+emitto: emits
+immediate: immediately
+specifico: specific
+imprimere: print
+vocabulo: word
+porco: pig
+tempore: time
+completo: complete
+sine: without
+
+-->
+
+<ul>
+	<li><a href='../etc/rejoice.tal.txt' target='_blank'>Source</a>, Uxntal.</li>
+	<li><a href='https://git.sr.ht/~rabbits/rejoice' target='_blank'>Repository</a>, Uxntal.</li>
+</ul>
+
+<img src='../media/generic/rrrr.png' width='170'/>
+<ul></ul></main>
+<footer>
+	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
+	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
+	<a href="devine_lu_linvega.html">Devine Lu Linvega</a> <span> &bull; 2008-2026</span>
+	<div class="right"><a href="about.html#license">BY-NC-SA 4.0</a>
+		<a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.png" alt="CreativeCommons"/></a>
+		<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/rotonde.png" alt="Webring"/></a>
+		<a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.png" alt="Merveilles"/></a>
+	</div>
+	<hr/>
+</footer>
+</body></html>

@@ -16,6 +16,21 @@ candy/coin
 .Count: .#ticket
 `
 
+examples.gaude = `( Salve ad Gaude, ludo de sacco. )
+
+( Insere uno calculus et quinque nummus in sacco: )
+calculus nummus^5
+
+( Consumere uno nummus, insere uno bellaria: )
+bellaria/nummus
+
+( Consumere duo nummus pro tessera, quam diu possibile: )
+@Tesserarum ( nummus -- tessera )
+    [Tesserarum tessera]/nummus^2
+
+( Ad imprimere resultato: )
+.Computus: .#tessera`
+
 examples.primes = `( Multiplying is the same as adding prime factors.
 	The product 10[2 5] and 21[3 7], is the sum of their primes. )
 
