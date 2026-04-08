@@ -68,14 +68,12 @@ examples.postfix = `( .. )
 
 examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-n^6
+n^9
 
 @Fib ( n -- )
-	b^1
+	[]/n^3 b^1
 	@FibLoop ( n a b -- b )
-		'[next]/a
-		'[next b2]/b
-		'a/b2
+		'[next]/a '[next a]/b
 		'b/next
 		FibLoop/n
 	'[]/a
