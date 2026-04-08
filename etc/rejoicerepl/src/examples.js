@@ -73,8 +73,7 @@ n^9
 @Fib ( n -- )
 	[]/n^3 b^1
 	@FibLoop ( n a b -- b )
-		'[next]/a '[next a]/b
-		'b/next
+		't/a '[t a]/b 'b/t
 		FibLoop/n
 	'[]/a
 
