@@ -1,20 +1,21 @@
 let examples = {}
 
-examples.hello = `( Welcome to Rejoice, a multiset playground. )
+examples.hello = `( Put a marble and five coins in the bag: )
 
-( Put a marble and five coins in the bag: )
 marble coin^5
 
 ( Replace a coin with a candy: )
+
 candy/coin
 
 ( Trade two coins for a ticket for as long as possible: )
-@TicketBooth
+
+@TicketBooth ( coint -- coin ticket )
 	[TicketBooth ticket]/coin^2
 
 ( To print the result: )
-.Count: .#ticket
-`
+
+.Count: .#ticket`
 
 examples.gaude = `( Salve ad Gaude, ludo de symbolo et sacco. )
 

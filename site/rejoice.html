@@ -22,32 +22,22 @@
 <h3>Basics</h3>
 
 <ul>
-	<li>The <b>program state</b> is a bag of unordered things. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones.</li>
+	<li>The <b>program state</b> is a bag of unordered things. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag, or identity, is represented as <code>[]</code>.</li>
 	<li><b>Symbols</b> are things in the bag written as either numeric decimal integers or names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[8 ball^2]</code> and <code>[2^3 ball ball]</code> are equal.</li>
 	<li><b>Transformations</b> are represented as fractions in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
 </ul>
 
-<p>Multiple instances of things are grouped as <code>thing^count</code>. The empty bag, or identity, is represented as <code>[]</code>.</p>
+<p>Evaluation consists of trying to apply fractions, in a sequence from left to right, when the content of the denominator are found in the bag: these things are removed from the bag and the things in the numerator are added; otherwise nothing happens. The following fraction is then tried, and so on. The program halts when there are no more fractions to apply.</p>
 
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" class='frame' style='height:450px'></iframe>
 </div>
 
-<p>Evaluation consists of applying fractions in a sequence when their denominators are found in the bag. The program halts when there are no more fractions left to apply.</p>
-
-<pre>
-red^2 blue^2 yellow^2
-	violet/[red blue]
-	green/[blue yellow]
-	orange/[red yellow]
-	black/[violet green orange]
-</pre>
-
 <q style='font-size:22px'>[] es nihil, identitate. []/n es predecessore. n es successore.</q>
 
 <h3>Logic I</h3>
 
-<p>Here is the implementation of a <b>NOT</b> logic gate.</p>
+<p>Logic is implemented by sequencing fractions that attempt to match each possible states of the gate. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
 <pre>
 false not
 	true/[false not]
@@ -75,9 +65,19 @@ x y or
 [true]
 </pre>
 
+<p>Lastly, here is a <b>AND</b> gate which also needs a sentinel symbol to capture the state when both inputs aren't present in the bag.</p>
+
+<pre>
+x y and
+	true/[x y and]
+	false/[x and]
+	false/[y and]
+	false/and
+</pre>
+
 <h3>Labels</h3>
 
-<p>A @label is a special symbol that holds an address that is jumped to upon entering the bag. This documentation will capitalize the labels to make them explicit, but it is merely a convention. Here is a how a simple loop is created:</p>
+<p>A @label is a special symbol that holds an address that is jumped to upon entering the bag. This documentation will capitalize the labels to make them explicit, and write the expected state changes in comments, but these are merely a convention. Here is a how a simple loop is created:</p>
 
 <pre>
 times^5
@@ -117,9 +117,9 @@ x^3 y^2
 [true]
 </pre>
 
-<h3>Anonymous Labels</h3>
+<h3>Anonymous Functions</h3>
 
-<p>A quick way to write draining fractions is to use anonymous labels. For example, the addition fraction <code>@Add [x Add]/y</code>, can also be written as <code>'x/y</code>, telling the compiler to create an anonymous label at its position.</p>
+<p>Anonymous functions are operations that are retried until the content in the denominator is no longer present in the bag. For example, the addition fraction <code>@Add [x Add]/y</code>, can also be written as <code>'x/y</code>, telling the compiler to create a symbol at the fraction's position in the program.</p>
 
 <pre>
 x^3 y^4 'x/y
@@ -162,8 +162,16 @@ x^2 y^3
 	[Mul z res]/y 'y/z Mul/x '1/[y res]
 </pre>
 
+<p>And the <b>quotient</b>:</p>
+<pre>
+x^24 y^3
+
+@Div ( x y -- res )
+	[Div t]/[y x] res 'y/t [Div x]/x '1/y
+</pre>
+
 <h3>I/O</h3>
-<p>Symbols that start with <kbd>.</kbd> will be emited as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the amount of instances in the bag of that specific symbol.</p>
+<p>Symbols that start with <kbd>.</kbd> will be emited as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the amount of instances in the bag of that specific symbol. For example: A token like <code>.bat^2</code> will emit <code>batbat</code>.</p>
 
 <pre>
 pigs^3
@@ -173,7 +181,7 @@ pigs^3
 <pre style='margin-top:-29px'>
 pigs:3</pre>
 
-<p>There is presently no input, this is a work in progress.</p>
+<p>The supported escape sequences are: <code>\t</code>(tab), <code>\s</code>(space) and <code>\n</code>(linebreak). There is presently no input, this is a work in progress.</p>
 
 <h3>FizzBuzz</h3>
 <p>This would not be complete without an example of FizzBuzz:</p>
@@ -191,7 +199,9 @@ times^100 f b
 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, ..</pre>
 
 <h3>On Linear Logic</h3>
-<p>Traditional logic treats entities as infinite, whereas linear logic accounts for resources, Rejoice is an attempt at making a linear logic playground in which every transformation equates to a transaction that consumes entities. The @label mechanism corresponds to the infinite use modality from linear logic. Labelled rules can fire indefinitely, like a vending machine accepting any number of coins, without @VendingMachine, the rule fires once and the program ends.</p>
+<p>Traditional logic treats entities as infinite, whereas linear logic accounts for resources, Rejoice is an attempt at making a linear logic playground in which every transformation equates to a transaction that consumes entities.</p>
+
+<p>The @label mechanism corresponds to the infinite use modality from linear logic, whereas anonymous functions are a purer instance of it, in which a single linear rule is promoted to an inexhaustible one. Labelled rules can fire indefinitely, like a vending machine accepting any number of coins, without @VendingMachine, the rule fires once and the program ends.</p>
 
 <pre>coin^3
 
