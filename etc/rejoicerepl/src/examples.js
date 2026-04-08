@@ -66,6 +66,22 @@ examples.fractions = `( A whole number, equal to 7/1: )
 examples.postfix = `( .. )
 `
 
+examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
+
+n^6
+
+@Fib ( n -- )
+	b^1
+	@FibLoop ( n a b -- b )
+		'[next]/a
+		'[next b2]/b
+		'a/b2
+		'b/next
+		FibLoop/n
+	'[]/a
+
+.#b`
+
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
 
