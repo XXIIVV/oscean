@@ -159,14 +159,14 @@ or true true
 	.true/[or true]
 	.false/[or]`
 
-examples.binary_adder = `( Add 73 + 124 in binary by adding each bit to the bag. )
+examples.binary_adder = `( Put two decimal numbers in the bag: )
 
-n^73 n^124
+d^73 d^124
 
 ( Decimal to Binary )
 
-'b7/n^128 'b6/n^64 'b5/n^32 'b4/n^16
-'b3/n^8   'b2/n^4  'b1/n^2  'b0/n
+'b7/d^128 'b6/d^64 'b5/d^32 'b4/d^16
+'b3/d^8   'b2/d^4  'b1/d^2  'b0/d
 
 ( Adder with Carry )
 
@@ -175,26 +175,43 @@ b4/[b3^2] b3/[b2^2] b2/[b1^2] b1/[b0^2]
 
 ( Binary to Decimal )
 
-n^128/b7 n^64/b6 n^32/b5 n^16/b4
-n^8/b3   n^4/b2  n^2/b1  n/b0`
+d^128/b7 d^64/b6 d^32/b5 d^16/b4
+d^8/b3   d^4/b2  d^2/b1  d/b0`
 
 
-examples.binary_print = `( The eight individual bits of a decimal number less than 256
-	are extracted by a series of division. )
+examples.binary_print = `( Input a decimal number: )
 
-( Input a number to convert: )
-
-n^92
+d^92
 
 ( Decimal to Binary )
 
-'b7/n^128 'b6/n^64 'b5/n^32 'b4/n^16
-'b3/n^8   'b2/n^4  'b1/n^2  'b0/n
+'b7/d^128 'b6/d^64 'b5/d^32 'b4/d^16
+'b3/d^8   'b2/d^4  'b1/d^2  'b0/d
 
 ( Print each bit )
 
-.#b7      .#b6     .#b5     .#b4 .\\s
-.#b3      .#b2     .#b1     .#b0`
+.#b7 .#b6 .#b5 .#b4 .\\s
+.#b3 .#b2 .#b1 .#b0`
+
+examples.hex_print = `( Input a decimal number: )
+
+d^92
+
+( Decimal to Nibbles )
+
+     'n^8/d^128 'n^4/d^64 'n^2/d^32 'n/d^16 task PrintNibble
+@Low 'n^8/d^8   'n^4/d^4  'n^2/d^2  'n/d
+
+( Nibble to Hexadecimal )
+
+@PrintNibble ( n -- )
+	[Next .f]/n^15 [Next .e]/n^14 [Next .d]/n^13 [Next .c]/n^12 
+	[Next .b]/n^11 [Next .a]/n^10 [Next .9]/n^9  [Next .8]/n^8
+	[Next .7]/n^7  [Next .6]/n^6  [Next .5]/n^5  [Next .4]/n^4
+	[Next .3]/n^3  [Next .2]/n^2  [Next .1]/n    .0
+
+@Next ( task -- )
+	Low/task`
 
 /*
 @|Special */
