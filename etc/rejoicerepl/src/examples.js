@@ -19,17 +19,17 @@ candy/coin
 
 examples.gaude = `( Salve ad Gaude, ludo de symbolo et sacco. )
 
-( Inserere 1 calculo et 5 nummo in sacco: )
+( Insere 1 calculo et 5 nummo in sacco: )
 calculo nummo^5
 
-( Consumere 1 nummo, insere 1 bellaria: )
+( Consume 1 nummo, inse 1 bellaria: )
 bellaria/nummo
 
-( Consumere 2 nummo pro tessera, quam diu possibile: )
+( Consume 2 nummo pro tessera, quam diu possibile: )
 @Tesserarum ( nummo -- tessera )
     [Tesserarum tessera]/nummo^2
 
-( Ad fine, imprimere resultato: )
+( Ad fine, imprime resultato: )
 .Computus: .#tessera`
 
 /*
@@ -182,18 +182,19 @@ n^8/b3   n^4/b2  n^2/b1  n/b0`
 examples.binary_print = `( The eight individual bits of a decimal number less than 256
 	are extracted by a series of division. )
 
-( Input a number to convert: ) n^92
+( Input a number to convert: )
 
-[.1 B7]/n^128 .0 @B7
-[.1 B6]/n^64  .0 @B6
-[.1 B5]/n^32  .0 @B5
-[.1 B4]/n^16  .0 @B4
-.\\s
-[.1 B3]/n^8   .0 @B3
-[.1 B2]/n^4   .0 @B2
-[.1 B1]/n^2   .0 @B1
-[.1 B0]/n     .0 @B0
-`
+n^92
+
+( Decimal to Binary )
+
+'b7/n^128 'b6/n^64 'b5/n^32 'b4/n^16
+'b3/n^8   'b2/n^4  'b1/n^2  'b0/n
+
+( Print each bit )
+
+.#b7      .#b6     .#b5     .#b4 .\s
+.#b3      .#b2     .#b1     .#b0`
 
 /*
 @|Special */
