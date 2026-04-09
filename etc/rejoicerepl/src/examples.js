@@ -66,6 +66,26 @@ examples.fractions = `( A whole number, equal to 7/1: )
 examples.postfix = `( .. )
 `
 
+examples.multisets = `( Put a marble in the bag )
+
+marble
+
+( Put a second marble in the bag )
+
+marble
+
+( Trade a marble for a coin )
+
+coin/marble
+
+( Replace the last marble using its prime factor name )
+
+3/2
+
+( Giveaway the two coins )
+
+[]/coin^2`
+
 examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
 n^9
