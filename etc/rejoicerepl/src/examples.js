@@ -57,7 +57,7 @@ examples.fractions = `( A whole number, equal to 7/1: )
 ( An improper fraction, greater than 1: )
 5/2
 
-( An unreduced fraction, a factor is present on both sides ):
+( An unreduced fraction, a factor is present on both sides: )
 [5 3]/[2 3]
 
 ( The previous fraction, reduced: )
