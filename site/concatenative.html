@@ -666,7 +666,7 @@ showpage
 
 <h2>Rejoice!</h2>
 
-<p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language and notation where data is encoded as multisets that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
+<p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language and notation in which data is encoded as multisets that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
 
 <h3>Basics</h3>
 
@@ -676,7 +676,7 @@ showpage
 	<li><b>Transformations</b> are represented as fractions in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
 </ul>
 
-<p>Evaluation consists of trying to apply fractions, in a sequence from left to right, when the content of the denominator are found in the bag: these things are removed from the bag and the things in the numerator are added; otherwise nothing happens. The following fraction is then tried, and so on. The program halts when there are no more fractions to apply.</p>
+<p>Evaluation consists of applying each fraction, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect. The following fraction is then tried, and so on. The program halts when there are no more fractions to apply.</p>
 
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" class='frame' style='height:450px'></iframe>
@@ -686,7 +686,7 @@ showpage
 
 <h3>Logic I</h3>
 
-<p>Logic is implemented by sequencing fractions that attempt to match each possible states of the gate. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
+<p>Logic is implemented by sequencing fractions for each possible state of the gate. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
 <pre>
 false not
 	true/[false not]
@@ -698,7 +698,7 @@ false not
 [true]
 </pre>
 
-<p>The different handlers are sequenced one after the other, here is a <b>OR</b> gate. Notice the need for a sentinel <code>or</code> symbol.</p>
+<p>The different cases are sequenced one after the other, here is a <b>OR</b> gate. Note the need for a sentinel <code>or</code> symbol.</p>
 <pre>
 x y or
 	true/[x y or]
@@ -714,7 +714,7 @@ x y or
 [true]
 </pre>
 
-<p>Lastly, here is a <b>AND</b> gate which also needs a sentinel symbol to capture the state when both inputs aren't present in the bag.</p>
+<p>Lastly, here is an <b>AND</b> gate which also needs a sentinel symbol to capture the state when both inputs aren't present in the bag.</p>
 
 <pre>
 x y and
@@ -726,7 +726,7 @@ x y and
 
 <h3>Labels</h3>
 
-<p>A @label is a special symbol that holds an address that is jumped to upon entering the bag. This documentation will capitalize the labels to make them explicit, and write the expected state changes in comments, but these are merely a convention. Here is a how a simple loop is created:</p>
+<p>A @label is a special symbol that represents a jump target. When the corresponding symbol appears in the bag, execution continues from the @label position in the program. This documentation will capitalize the labels to make them explicit, and write the expected state changes in comments, but these are merely convention. Here is how a simple loop is created:</p>
 
 <pre>
 times^5
@@ -746,7 +746,7 @@ done
 [done]
 </pre>
 
-<p>Using this looping mechanism, we can rulesets that drain registers. For example, here is the implementation of a <b>greater</b> comparison:</p>
+<p>Using this looping mechanism, we can write programs that drain registers. For example, here is the implementation of a <b>greater</b> comparison:</p>
 <pre>
 x^3 y^2
 
@@ -768,7 +768,7 @@ x^3 y^2
 
 <h3>Anonymous Functions</h3>
 
-<p>Anonymous functions are operations that are retried until the content in the denominator is no longer present in the bag. For example, the addition fraction <code>@Add [x Add]/y</code>, can also be written as <code>'x/y</code>, telling the compiler to create a symbol at the fraction's position in the program.</p>
+<p>Anonymous functions are operations that are retried until the denominator is no longer present in the bag. For example, the addition fraction <code>@Add [x Add]/y</code>, can also be written as <code>'x/y</code>, telling the compiler to create a symbol at the fraction's position in the program.</p>
 
 <pre>
 x^3 y^4 'x/y
@@ -784,7 +784,7 @@ x^3 y^4 'x/y
 
 <h3>Arithmetic</h3>
 
-<p>To find the <b>difference</b> between two values, the program can take out one of each until exhaustion, leaving either <code>x</code> for a positive result, or <code>y</code> for a negative result. The last two labels drain the values into either <code>pos</code> or <code>neg</code>:</p>
+<p>To find the <b>difference</b> between two values, the program removes one of each symbol until exhaustion, leaving either <code>x</code> for a positive result, or <code>y</code> for a negative result. The last two labels drain the values into either <code>pos</code> or <code>neg</code>:</p>
 <pre>
 x^2 y^5
 
@@ -820,7 +820,7 @@ x^24 y^3
 </pre>
 
 <h3>I/O</h3>
-<p>Symbols that start with <kbd>.</kbd> will be emited as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the amount of instances in the bag of that specific symbol. For example: A token like <code>.bat^2</code> will emit <code>batbat</code>.</p>
+<p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.bat^2</code> will emit <code>batbat</code>.</p>
 
 <pre>
 pigs^3
@@ -830,7 +830,7 @@ pigs^3
 <pre style='margin-top:-29px'>
 pigs:3</pre>
 
-<p>The supported escape sequences are: <code>\t</code>(tab), <code>\s</code>(space) and <code>\n</code>(linebreak). There is presently no input, this is a work in progress.</p>
+<p>The supported escape sequences are: <code>\t</code>(tab), <code>\s</code>(space) and <code>\n</code>(linebreak). There is presently no definition for input, this is a work in progress.</p>
 
 <h3>FizzBuzz</h3>
 <p>This would not be complete without an example of FizzBuzz:</p>
