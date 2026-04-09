@@ -179,19 +179,16 @@ or true true
 	.true/[or true]
 	.false/[or]`
 
-examples.binary_adder = `( Put two decimal numbers in the bag: )
+examples.binary_adder = `( Put two binary numbers in the bag:
+  Bit   b7 b6 b5 b4 b3 b2 b1 b0 )
 
-d^73 d^124
-
-( Decimal to Binary )
-
-'b7/d^128 'b6/d^64 'b5/d^32 'b4/d^16
-'b3/d^8   'b2/d^4  'b1/d^2  'b0/d
+( 73  )    b6       b3       b0
+( 124 )    b6 b5 b4 b3 b2
 
 ( Adder with Carry )
 
-          b7/[b6^2] b6/[b5^2] b5/[b4^2]
-b4/[b3^2] b3/[b2^2] b2/[b1^2] b1/[b0^2]
+b1/[b0^2] b2/[b1^2] b3/[b2^2] b4/[b3^2]
+b5/[b4^2] b6/[b5^2] b7/[b6^2] 
 
 ( Binary to Decimal )
 
@@ -208,10 +205,30 @@ d^92
 'b7/d^128 'b6/d^64 'b5/d^32 'b4/d^16
 'b3/d^8   'b2/d^4  'b1/d^2  'b0/d
 
-( Print each bit )
+( Print 8 bits )
 
 .#b7 .#b6 .#b5 .#b4 .\\s
 .#b3 .#b2 .#b1 .#b0`
+
+/*
+@|Ternary */
+
+examples.ternary_print = `( Input a decimal number: )
+
+d^92
+
+( Decimal to Unsigned Ternary )
+
+'b5/d^243 'b4/d^81 'b3/d^27   
+'b2/d^9   'b1/d^3  'b0/d
+
+( Print 6 trits )
+
+.#b5 .#b4 .#b3 .\\s
+.#b2 .#b1 .#b0`
+
+/*
+@|Hex */
 
 examples.hex_print = `( Input a decimal number: )
 
