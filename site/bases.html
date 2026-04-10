@@ -336,7 +336,6 @@ number of digits needed to express a given range of values.</p>
 instead of coming from the set {0, 1, 2}, the digits are {-, 0 and +}. They are
 <i>balanced</i> because they are arranged symmetrically about zero.</p>
 
-
 <p>Arithmetic is nearly as simple as it is with binary numbers; in particular,
 the multiplication table is trivial. Addition and subtraction are essentially
 the same operation: Just negate one number and then add. Negation itself is
@@ -344,29 +343,218 @@ also effortless: Change every -1 into a 1, and vice versa. Rounding is mere
 truncation: Setting the least-significant trits to 0 automatically rounds to
 the closest power of 3.</p>
 
-<h3>Encoding in 16-bit machines</h3></h3>
-<p>Five trits can be stored in a byte by using modulo and division, this
-technique can store 243 possible values in a byte:</p>
-<pre>
-(n % 3) + '0', n /= 3;
-</pre>
-
-<p>If the number is encoded first into something like a float, it makes
-unpacking <a href='https://compilade.net/blog/ternary-packing'
-target='_blank'>possible without division</a>:</p>
-<pre>
-uint8_t q = (((uint16_t) i) * 256 + (243 - 1)) / 243;
-for (int j = 0; j < 5; ++j) {
-	uint16_t m = q * 3;
-	s2[j] = (m >> 8) + '0';
-	q = m & 0xFF;
-}
-</pre>
-
 <q>Perhaps the prettiest number system of all is the balanced ternary notation.</q>
 <cite>Donald E. Knuth, The Art of Computer Programming</cite>
 
 <img src='../media/refs/trefoil.png' width='120'/>
+
+<h3>Ternary Logic</h3>
+
+<p>Consider the task of comparing two numbers. In a machine based on binary logic,
+comparison is often a two-stage process. First you ask, "Is x less than y?";
+depending on the answer, you may then have to ask a second question, such as
+"Is x equal to y?" Ternary logic simplifies the process: A single comparison
+can yield any of three possible outcomes: "less," "equal" and "greater." </p>
+
+<div class='codeview'>
+	<iframe src="../etc/rejoicerepl/index.html#ternary_logic" frameborder="0" class='frame' style='height:500px'></iframe>
+</div>
+
+<h3>Single Input Gates</h3>
+
+<p>Single input ternary logic gates take a single trit, and output a single trit. The gates uses the <a href='heptavintimal.html'>heptavintimal notation</a>, as well a name to reflect their effect. The reversible logic gates are highlighted, to learn more, see <a href='reversible_computing.html'>reversible computing</a>.</p>
+
+<p>The table below shows the permutation of every possible input, for example, if the E gate(negation) gets a <kbd>t-</kbd> input, it will output a <kbd>t+</kbd>.</p>
+
+<table border='1'>
+	<tr><th></th><th>+</th><th>0</th><th>-</th><th>Number</th><th>Name</th><th>Definitions</th></tr>
+	<tr><th>0</th><td>-</td><td>-</td><td>-</td><td>-13</td><td>False</td><td>NEG(LAX(LAX))</td></tr>
+	<tr><th>A</th><td>-</td><td>-</td><td>0</td><td>-12</td><td></td><td>NEG(LAX)</td></tr>
+	<tr><th>B</th><td>-</td><td>-</td><td>+</td><td>-11</td><td>Decoder(-)</td><td>DEC(DEC(LAX))</td></tr>
+	<tr><th>C</th><td>-</td><td>0</td><td>-</td><td>-10</td><td>Abn</td><td>NEG(LAX(DEC))</td></tr>
+	<tr><th>D</th><td>-</td><td>0</td><td>0</td><td>-9</td><td></td><td>DEC(LAX(NEG))</td></tr>
+	<tr class='rev'><th>E</th><td>-</td><td>0</td><td>+</td><td>-8</td><td>Negation</td><td>NEG</td></tr>
+	<tr><th>F</th><td>-</td><td>+</td><td>-</td><td>-7</td><td>Decoder(0)</td><td>DEC(DEC(LAX(DEC)))</td></tr>
+	<tr class='rev'><th>G</th><td>-</td><td>+</td><td>0</td><td>-6</td><td>Increment</td><td>DEC(DEC)</td></tr>
+	<tr><th>H</th><td>-</td><td>+</td><td>+</td><td>-5</td><td></td><td>DEC(NEG(LAX(NEG)))</td></tr>
+	<tr><th>I</th><td>0</td><td>-</td><td>-</td><td>-4</td><td></td><td>NEG(LAX(NEG))</td></tr>
+	<tr><th>J</th><td>0</td><td>-</td><td>0</td><td>-3</td><td></td><td>DEC(LAX(DEC))</td></tr>
+	<tr class='rev'><th>K</th><td>0</td><td>-</td><td>+</td><td>-2</td><td>Decrement</td><td>DEC</td></tr>
+	<tr><th>L</th><td>0</td><td>0</td><td>-</td><td>-1</td><td></td><td>DEC(LAX)</td></tr>
+	<tr><th>M</th><td>0</td><td>0</td><td>0</td><td>0</td><td>Clear</td><td>DEC(LAX(LAX))</td></tr>
+	<tr><th>N</th><td>0</td><td>0</td><td>+</td><td>1</td><td></td><td>NEG(DEC(LAX))</td></tr>
+	<tr class='rev'><th>O</th><td>0</td><td>+</td><td>-</td><td>2</td><td></td><td>NEG(DEC)</td></tr>
+	<tr><th>P</th><td>0</td><td>+</td><td>0</td><td>3</td><td></td><td>NEG(DEC(LAX(DEC)))</td></tr>
+	<tr><th>Q</th><td>0</td><td>+</td><td>+</td><td>4</td><td></td><td>LAX(NEG)</td></tr>
+	<tr><th>R</th><td>+</td><td>-</td><td>-</td><td>5</td><td>Floor/Decoder(+)</td><td>DEC(DEC(LAX(NEG)))</td></tr>
+	<tr class='rev'><th>S</th><td>+</td><td>-</td><td>0</td><td>6</td><td></td><td>DEC(NEG)</td></tr>
+	<tr><th>T</th><td>+</td><td>-</td><td>+</td><td>7</td><td></td><td>DEC(NEG(LAX(DEC)))</td></tr>
+	<tr class='rev'><th>U</th><td>+</td><td>0</td><td>-</td><td>8</td><td>Identity</td><td>NEG(NEG)</td></tr>
+	<tr><th>V</th><td>+</td><td>0</td><td>0</td><td>9</td><td>Flat</td><td>NEG(DEC(LAX(NEG)))</td></tr>
+	<tr><th>W</th><td>+</td><td>0</td><td>+</td><td>10</td><td>Abs</td><td>LAX(DEC)</td></tr>
+	<tr><th>X</th><td>+</td><td>+</td><td>-</td><td>11</td><td>Ceil</td><td>DEC(NEG(LAX))</td></tr>
+	<tr><th>Y</th><td>+</td><td>+</td><td>0</td><td>12</td><td>Lax</td><td>LAX</td></tr>
+	<tr><th>Z</th><td>+</td><td>+</td><td>+</td><td>13</td><td>True</td><td>LAX(LAX)</td></tr>
+</table>
+
+<!--
+<table border='1'>
+<tr>
+	<th rowspan="2" colspan="2">AND</th>
+	<th colspan="3">B</th>
+</tr>
+<tr>
+	<th style="background:#FFC7C7;" width="25">F</th>
+	<th width="25">U</th>
+	<th style="background:#9EFF9E;" width="25">T</th>
+</tr>
+<tr>
+	<th rowspan="3" width="25">A</th>
+	<th style="background:#FFC7C7;" width="25">F</th>
+	<td style="background:#FFC7C7;">F</td>
+	<td style="background:#FFC7C7;">F</td>
+	<td style="background:#FFC7C7;">F</td>
+</tr>
+<tr>
+	<th>U</th>
+	<td style="background:#FFC7C7;">F</td>
+	<td>U</td>
+	<td>U</td>
+</tr>
+<tr>
+	<th style="background:#9EFF9E;">T</th>
+	<td style="background:#FFC7C7;">F</td>
+	<td>U</td>
+	<td style="background:#9EFF9E;">T</td>
+</tr>
+</table>
+
+<table border='1'>
+<tr>
+	<th rowspan="2" colspan="2">OR</th>
+	<th colspan="3">B</th>
+</tr>
+<tr>
+	<th style="background:#FFC7C7;" width="25">F</th>
+	<th width="25">U</th>
+	<th style="background:#9EFF9E;" width="25">T</th>
+</tr>
+<tr>
+	<th rowspan="3" width="25">A</th>
+	<th style="background:#FFC7C7;" width="25">F</th>
+	<td style="background:#FFC7C7;">F</td>
+	<td>U</td>
+	<td style="background:#9EFF9E;">T</td>
+</tr>
+<tr>
+	<th>U</th>
+	<td>U</td>
+	<td>U</td>
+	<td style="background:#9EFF9E;">T</td>
+</tr>
+<tr>
+	<th style="background:#9EFF9E;">T</th>
+	<td style="background:#9EFF9E;">T</td>
+	<td style="background:#9EFF9E;">T</td>
+	<td style="background:#9EFF9E;">T</td>
+</tr>
+</table>
+-->
+
+
+
+<!--
+<table border="1">
+<thead>
+<tr>
+<th colspan="2" class="bottom-bordered-cell right-bordered-cell center-aligned">Inputs</th>
+<td class="left-aligned"></td>
+<th colspan="2" class="bottom-bordered-cell center-aligned">Outputs</th>
+</tr>
+<tr>
+<th class="bottom-bordered-cell right-bordered-cell left-aligned" style="top: 40px;"><i>X</i></th>
+<th class="bottom-bordered-cell center-aligned" style="top: 40px;"><i>Y</i></th>
+<td class="bottom-bordered-cell left-aligned"></td>
+<th class="bottom-bordered-cell center-aligned" style="top: 40px;">TNAND</th>
+<th class="bottom-bordered-cell center-aligned" style="top: 40px;">TNOR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="right-bordered-cell left-aligned">−1</td>
+<td class="center-aligned">−1</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">1</td>
+<td class="center-aligned">1</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">−1</td>
+<td class="center-aligned">0</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">1</td>
+<td class="center-aligned">0</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">−1</td>
+<td class="center-aligned">1</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">1</td>
+<td class="center-aligned">−1</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">0</td>
+<td class="center-aligned">−1</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">1</td>
+<td class="center-aligned">0</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">0</td>
+<td class="center-aligned">0</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">0</td>
+<td class="center-aligned">0</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">0</td>
+<td class="center-aligned">1</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">0</td>
+<td class="center-aligned">−1</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">1</td>
+<td class="center-aligned">−1</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">1</td>
+<td class="center-aligned">−1</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">1</td>
+<td class="center-aligned">0</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">0</td>
+<td class="center-aligned">−1</td>
+</tr>
+<tr>
+<td class="right-bordered-cell left-aligned">1</td>
+<td class="center-aligned">1</td>
+<td class="left-aligned"></td>
+<td class="center-aligned">−1</td>
+<td class="center-aligned">−1</td>
+</tr>
+</tbody>
+</table>
+-->
+
+<ul>
+	<li><a href='https://github.com/tedkotz/ternary/tree/master/math' target='_blank'>Mathematical Properties</a></li>
+	<li><a href='https://homepage.cs.uiowa.edu/~dwjones/ternary/logic.shtml' target='_blank'>Ternary Logic</a></li>
+</ul>
+
+<style>
+	.rev { background:#72dec2 }
+</style>
 <h2>Decimal numbers are a base 10 numeral system.</h2>
 
 <p>In Roman calculation, stones are placed on lines representing units, tens, hundreds and thousands. The spaces between the lines are used to represent intermediate values that is 5, 50, 500. </p>

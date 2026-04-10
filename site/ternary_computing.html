@@ -70,6 +70,26 @@ different ways. To convert to the unsigned form, you can do
 	<tr><th>int</th><td>-13</td><td>000</td><td>13</td></tr>
 </table>
 
+<h3>Encoding in 16-bit machines</h3>
+
+<p>Five trits can be stored in a byte by using modulo and division, this
+technique can store 243 possible values in a byte:</p>
+<pre>
+(n % 3) + '0', n /= 3;
+</pre>
+
+<p>If the number is encoded first into something like a float, it makes
+unpacking <a href='https://compilade.net/blog/ternary-packing'
+target='_blank'>possible without division</a>:</p>
+<pre>
+uint8_t q = (((uint16_t) i) * 256 + (243 - 1)) / 243;
+for (int j = 0; j < 5; ++j) {
+	uint16_t m = q * 3;
+	s2[j] = (m >> 8) + '0';
+	q = m & 0xFF;
+}
+</pre>
+
 <img src='../media/refs/trefoil.png' width='120'/>
 
 <ul>

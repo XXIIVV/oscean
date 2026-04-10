@@ -162,8 +162,7 @@ examples.colors = `red^2 blue^2 yellow^2
 @|Binary */
 
 
-examples.binary_logic = `( An example to demonstrate the result
-	of some binary logic operations )
+examples.binary_logic = `( Input a gate and input states: )
 
 not true
 	.false/[not true]
@@ -241,6 +240,26 @@ t4/[t3^3] t5/[t4^3] t6/[t5^3]
 
 'd^243/t5 'd^81/t4 'd^27/t3 
 'd^9/t2   'd^3/t1  'd/t0`
+
+examples.ternary_logic = `( Put a logic gate and balanced ternary states in the bag: )
+
+and t+ t+
+
+( E, neg ) t-/[e t+] t0/[e t0] t+/[e t-] 
+( G, inc ) t-/[e t+] t+/[e t0] t0/[e t-] 
+( K, dec ) t0/[e t+] t-/[e t0] t+/[e t-]
+( O      ) t0/[e t+] t-/[e t0] t+/[e t-] 
+( U, id  ) t0/[e t+] t+/[e t0] t_/[e t-] 
+
+( and )
+t-/[and t+ t-] t-/[and t0 t-] t-/[and t- t-]
+t0/[and t+ t0] t0/[and t0 t0] t0/[and t- t0]
+t+/[and t+ t+] t+/[and t0 t+] t+/[and t- t+]
+
+( or )
+t+/[or t+ t-] t0/[or t0 t-] t-/[or t- t-]
+t+/[or t+ t0] t0/[or t0 t0] t-/[or t- t0]
+t+/[or t+ t+] t0/[or t0 t+] t-/[or t- t+]`
 
 /*
 @|Hex */

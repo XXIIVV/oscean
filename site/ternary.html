@@ -14,7 +14,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="bases.html" class="parent">bases</a></li><li><a href="multisets.html">multisets</a></li><li><a href="primes.html">primes</a></li><li><a href="fractions.html">fractions</a></li><li><a href="notation.html">notation</a></li><li><a href="tropical_arithmetic.html">tropical arithmetic</a></li><li><a href="lunar_arithmetic.html">lunar arithmetic</a></li></ul><ul><li><a href="binary.html">binary</a></li><li><a href="ternary.html" class="self">ternary</a></li><li><a href="decimal.html">decimal</a></li><li><a href="hexadecimal.html">hexadecimal</a></li><li><a href="heptavintimal.html">heptavintimal</a></li></ul><ul><li><a href="ternary_logic.html">ternary logic</a></li></ul></nav>
+<nav><ul><li><a href="bases.html" class="parent">bases</a></li><li><a href="multisets.html">multisets</a></li><li><a href="primes.html">primes</a></li><li><a href="fractions.html">fractions</a></li><li><a href="notation.html">notation</a></li><li><a href="tropical_arithmetic.html">tropical arithmetic</a></li><li><a href="lunar_arithmetic.html">lunar arithmetic</a></li></ul><ul><li><a href="binary.html">binary</a></li><li><a href="ternary.html" class="self">ternary</a></li><li><a href="decimal.html">decimal</a></li><li><a href="hexadecimal.html">hexadecimal</a></li><li><a href="heptavintimal.html">heptavintimal</a></li></ul><ul></ul></nav>
 <main><h2>Ternary numbers are a base 3 numeral system.</h2>
 
 <img src='../media/refs/3eyes.jpg' width='200' style='float:right;margin-left:30px'/>
@@ -63,7 +63,6 @@ number of digits needed to express a given range of values.</p>
 instead of coming from the set {0, 1, 2}, the digits are {-, 0 and +}. They are
 <i>balanced</i> because they are arranged symmetrically about zero.</p>
 
-
 <p>Arithmetic is nearly as simple as it is with binary numbers; in particular,
 the multiplication table is trivial. Addition and subtraction are essentially
 the same operation: Just negate one number and then add. Negation itself is
@@ -71,61 +70,28 @@ also effortless: Change every -1 into a 1, and vice versa. Rounding is mere
 truncation: Setting the least-significant trits to 0 automatically rounds to
 the closest power of 3.</p>
 
-<h3>Encoding in 16-bit machines</h3></h3>
-<p>Five trits can be stored in a byte by using modulo and division, this
-technique can store 243 possible values in a byte:</p>
-<pre>
-(n % 3) + '0', n /= 3;
-</pre>
-
-<p>If the number is encoded first into something like a float, it makes
-unpacking <a href='https://compilade.net/blog/ternary-packing'
-target='_blank'>possible without division</a>:</p>
-<pre>
-uint8_t q = (((uint16_t) i) * 256 + (243 - 1)) / 243;
-for (int j = 0; j < 5; ++j) {
-	uint16_t m = q * 3;
-	s2[j] = (m >> 8) + '0';
-	q = m & 0xFF;
-}
-</pre>
-
 <q>Perhaps the prettiest number system of all is the balanced ternary notation.</q>
 <cite>Donald E. Knuth, The Art of Computer Programming</cite>
 
 <img src='../media/refs/trefoil.png' width='120'/>
-<h2>Notes on Ternary Logic.</h2>
 
-<p>Along with ternary arithmetic, a computer built of <a
-href='ternary.html'>ternary</a> hardware can also exploit ternary logic.
-Consider the task of comparing two numbers. In a machine based on binary logic,
+<h3>Ternary Logic</h3>
+
+<p>Consider the task of comparing two numbers. In a machine based on binary logic,
 comparison is often a two-stage process. First you ask, "Is x less than y?";
 depending on the answer, you may then have to ask a second question, such as
 "Is x equal to y?" Ternary logic simplifies the process: A single comparison
 can yield any of three possible outcomes: "less," "equal" and "greater." </p>
 
+<div class='codeview'>
+	<iframe src="../etc/rejoicerepl/index.html#ternary_logic" frameborder="0" class='frame' style='height:500px'></iframe>
+</div>
+
 <h3>Single Input Gates</h3>
 
-<p>The gate names uses the <a href='heptavintimal.html'>heptavintimal notation</a>.</p>
+<p>Single input ternary logic gates take a single trit, and output a single trit. The gates uses the <a href='heptavintimal.html'>heptavintimal notation</a>, as well a name to reflect their effect. The reversible logic gates are highlighted, to learn more, see <a href='reversible_computing.html'>reversible computing</a>.</p>
 
-<h4>Reversible Gates</h4>
-
-<ul>
-	<li><b>Identity</b>(U): The most dull gate (number 8) this does not change the
-input. It is its own complement. Applying it any number of times get you back
-to your intial value. </li>
-	<li><b>Negation</b>(E): Balanced ternary gates have a tighter relationship
-between logical and mathmatical negation. The are the same bitwise operator. It
-is its own complement. Applying it multiple time every even application brings
-back the intial value.</li>
-	<li><b>Increment</b>(G) and <b>Decrement</b>(K): These gates can arithmetically
-be thought of as single trit increment or decrement without carry, but with
-roll over. These gates are also complementary . Every 3 applications of either
-one of these gates in a row bring back the intial value.</li>
-	<li>And gates O and S.</li>
-</ul>
-
-<p>To learn more, see <a href='reversible_computing.html'>reversible computing</a>.</p>
+<p>The table below shows the permutation of every possible input, for example, if the E gate(negation) gets a <kbd>t-</kbd> input, it will output a <kbd>t+</kbd>.</p>
 
 <table border='1'>
 	<tr><th></th><th>+</th><th>0</th><th>-</th><th>Number</th><th>Name</th><th>Definitions</th></tr>
@@ -158,6 +124,7 @@ one of these gates in a row bring back the intial value.</li>
 	<tr><th>Z</th><td>+</td><td>+</td><td>+</td><td>13</td><td>True</td><td>LAX(LAX)</td></tr>
 </table>
 
+<!--
 <table border='1'>
 <tr>
 	<th rowspan="2" colspan="2">AND</th>
@@ -219,7 +186,11 @@ one of these gates in a row bring back the intial value.</li>
 	<td style="background:#9EFF9E;">T</td>
 </tr>
 </table>
+-->
 
+
+
+<!--
 <table border="1">
 <thead>
 <tr>
@@ -301,6 +272,7 @@ one of these gates in a row bring back the intial value.</li>
 </tr>
 </tbody>
 </table>
+-->
 
 <ul>
 	<li><a href='https://github.com/tedkotz/ternary/tree/master/math' target='_blank'>Mathematical Properties</a></li>
@@ -310,8 +282,7 @@ one of these gates in a row bring back the intial value.</li>
 <style>
 	.rev { background:#72dec2 }
 </style>
-
-<ul></ul><p><b>incoming: </b><a href="ternary_logic.html">ternary logic</a> <a href="heptavintimal.html">heptavintimal</a> <a href="solrela.html">solrela</a> <a href="ternary_computing.html">ternary computing</a> <a href="terscii.html">terscii</a> </p></main>
+<ul></ul><p><b>incoming: </b><a href="heptavintimal.html">heptavintimal</a> <a href="solrela.html">solrela</a> <a href="ternary_computing.html">ternary computing</a> <a href="terscii.html">terscii</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
 	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
