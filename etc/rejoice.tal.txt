@@ -136,7 +136,12 @@
 	&>wpn
 		DUP2 #0001 GTH2 ?{ POP2r POP2 JMP2r }
 		DUP2 STH2kr u16/not-divisible ?{
-			STH2kr /drain-factor STH
+			STH2kr
+			( | Drain factor )
+			[ LITr 00 ]
+			&>wpf
+				OVR2 OVR2 u16/mod ORA ?{
+					INCr STH2k DIV2 STH2r !&>wpf }
 			primes/prime-id STHr SWP world/<push-item> }
 		INC2r !&>wpn
 
@@ -146,13 +151,6 @@
 	( | factors )
 	LDZk LIT "^ NEQ ?{ INC dec-ztr/walk-u8 STHr !world/<push-item> }
 	#01 STHr !world/<push-item>
-
-@token/drain-factor ( num* div* -- num* id count )
-	[ LITr 00 ]
-	&>wpf
-		OVR2 OVR2 u16/mod ORA ?{
-			INCr STH2k DIV2 STH2r !&>wpf }
-	STHr JMP2r
 
 (
 @|Bag/Items )

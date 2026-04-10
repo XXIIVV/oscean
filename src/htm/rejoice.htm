@@ -60,27 +60,16 @@ x y and
 
 <h3>Labels</h3>
 
-<p>A @label is a special symbol that represents a jump target. When the corresponding symbol appears in the bag, execution continues from the @label position in the program. This documentation will capitalize the labels to make them explicit, and write the expected state changes in comments, but these are merely convention. Here is how a simple loop is created:</p>
+<p>A @label is a special symbol that represents a jump target. When the corresponding label symbol enters the bag, execution continues from the @label position in the program. A conditional jump is done by inserting a label when specific things are found in the bag. The capitalization of label is merely a convention.</p>
 
 <pre>
-times^5
-
-@Loop <i>( t -- )</i>
-	Loop/times
-done
-</pre>
-<pre style='margin-top:-29px'>
-[times^5] Loop/times done 
-[times^4] Loop/times done 
-[times^3] Loop/times done 
-[times^2] Loop/times done 
-[times] Loop/times done 
-[] Loop/times done 
-[] done 
-[done]
+chores
+	SkipPlay/chores
+		play
+	@SkipPlay
 </pre>
 
-<p>Using this looping mechanism, we can write programs that drain registers. For example, here is the implementation of a <b>greater</b> comparison:</p>
+<p>Labels allow for programs to loop and drain symbols. For example, here is the implementation of a <b>greater</b> comparison:</p>
 <pre>
 x^3 y^2
 
@@ -108,11 +97,8 @@ x^3 y^2
 x^3 y^4 'x/y
 </pre>
 <pre style='margin-top:-29px'>
-[x^3 y^4] 'x/y 
-[x^4 y^3] 'x/y 
-[x^5 y^2] 'x/y 
-[x^6 y] 'x/y 
-[x^7] 'x/y 
+[x^3] y^4 'x/y 
+[x^3 y^4] ( ) 'x/y 
 [x^7] 
 </pre>
 
@@ -130,10 +116,7 @@ x^2 y^5
 [x y^4] Sub/[x y] 'pos/x 'neg/y 
 [y^3] Sub/[x y] 'pos/x 'neg/y 
 [y^3] 'pos/x 'neg/y 
-[y^3] 'neg/y 
-[y^2 neg] 'neg/y 
-[y neg^2] 'neg/y 
-[neg^3] 'neg/y 
+[y^3] ( ) 'neg/y 
 [neg^3] 
 </pre>
 
@@ -198,15 +181,27 @@ file^1
 
 @VendingMachine <i>( coin -- candy )</i>
 	[VendingMachine candy]/coin</pre>
-<pre style='margin-top:-29px'>
-[coin^3] [VendingMachine candy]/coin 
-[coin^2 candy] [VendingMachine candy]/coin 
-[coin candy^2] [VendingMachine candy]/coin 
-[candy^3] [VendingMachine candy]/coin 
-[candy^3]
-</pre>
 
 <p>Unlike linear types in traditional programming languages like Rust or Clean, where resource tracking constrains what programmers can do with <i>values</i>, in Rejoice linearity governs <i>rules</i>. Entities don't persist because they're protected, but because nothing consumed them.</p>
+
+<h3>On Optimization</h3>
+<p>There are various levels of optimizations possible, the interpreter implements one in which <i>draining</i> symbols with anonymous functions is done in a single step. This allows for moving or copying values from a single denumerator, to any number of symbols, without having to run through each value one at a time.</p>
+
+<pre>
+c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
+</pre>
+<pre style='margin-top:-29px'>
+[] c^5 '[a b]/c 
+[c^5] ( ) '[a b]/c 
+[a^5 b^5] 
+</pre>
+
+<ul>
+	<li><b>'x/a</b>: One symbol to another.</li>
+	<li><b>'[x y]/a</b>: One symbol to many symbols.</li>
+	<li><b>'[x^2 y]/a</b>: One symbol to many symbol, multiple values at a time.</li>
+	<li><b>'[x^2 y]/a^4</b>: Multiple values from one symbol to many symbols.</li>
+</ul>
 
 <h3>On Fractran</h3>
 <p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label at the top. For example, the Fractran program: 225, 7/3, 7/5</p>
