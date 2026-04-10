@@ -242,13 +242,13 @@ t4/[t3^3] t5/[t4^3] t6/[t5^3]
 
 examples.ternary_logic = `( Put a logic gate and balanced ternary states in the bag: )
 
-and bt+ bt+
+or bt0 bt-
 
 ( E, neg ) bt-/[e bt+] bt0/[e bt0] bt+/[e bt-] 
 ( G, inc ) bt-/[e bt+] bt+/[e bt0] bt0/[e bt-] 
 ( K, dec ) bt0/[e bt+] bt-/[e bt0] bt+/[e bt-]
 ( O      ) bt0/[e bt+] bt-/[e bt0] bt+/[e bt-] 
-( U, id  ) bt0/[e bt+] bt+/[e bt0] t_/[e bt-] 
+( U, id  ) bt+/[e bt+] bt0/[e bt0] bt-/[e bt-] 
 
 ( and )
 bt-/[and bt+ bt-] bt-/[and bt0 bt-] bt-/[and bt- bt-]
