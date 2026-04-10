@@ -162,21 +162,21 @@ examples.colors = `red^2 blue^2 yellow^2
 @|Binary */
 
 
-examples.binary_logic = `( Input a gate and input states: )
+examples.binary_logic = `( Put a logic gate and binary states in the bag: )
 
-not true
-	.false/[not true]
-	.true/[not false]
+or true false
 
-and true true
-	.true/[and true true]
-	.false/[and true]
-	.false/[and]
+( not ) false/[not true] true/[not false]
 
-or true true
-	.true/[or true true]
-	.true/[or true]
-	.false/[or]`
+( and )
+true/[and true true]
+false/[and true false]
+false/[and false false]
+
+( or )
+true/[or false true]
+true/[or true true]
+false/[or false false]`
 
 examples.binary_adder = `( Put two binary numbers in the bag:
   Bit   b7 b6 b5 b4 b3 b2 b1 b0 )
