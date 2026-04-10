@@ -227,6 +227,21 @@ d^92
 .#b5 .#b4 .#b3 .\\s
 .#b2 .#b1 .#b0`
 
+examples.ternary_adder = `( Put two ternary numbers in the bag: )
+
+( 73  )    t3^2 t2^2      t0
+( 124 ) t4 t3   t2   t1^2 t0
+
+( Adder with Carry )
+
+t1/[t0^3] t2/[t1^3] t3/[t2^3]
+t4/[t3^3] t5/[t4^3] t6/[t5^3]
+
+( Ternary to Decimal )
+
+'d^243/t5 'd^81/t4 'd^27/t3 
+'d^9/t2   'd^3/t1  'd/t0`
+
 /*
 @|Hex */
 
