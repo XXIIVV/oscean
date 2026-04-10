@@ -32,13 +32,20 @@
 	( date ) "6 20 "Mar 20 "2026 $2
 
 @src/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{
-		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path info/<error-generic> }
-		NIP STZ
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
 		BRK }
 	( | src -> dst )
 	;dst/on-console !bind
+
+@src/clear ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
+
+@src/<push> ( c -- )
+	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+	NEQk ?{ ;dict/exceeded ;&buf ;dict/Path info/<error-generic> }
+	NIP STZ
+	JMP2r
 
 @dst/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
@@ -80,6 +87,8 @@
 	( >> )
 
 @assembly/<handle-file> ( f* -- )
+	DUP2 ;src/buf EQU2 ?{
+		src/clear DUP2 ;src/<push> for-each #00 src/<push> }
 	.File/name DEO2
 	#0001 .File/length DEO2
 	token/<new>

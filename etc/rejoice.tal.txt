@@ -21,7 +21,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Apr 20 "2026 $2
+	( date ) "10 20 "Apr 20 "2026 $2
 
 %u8/mod ( a b -- a%b ) {
 	DIVk MUL SUB }
@@ -34,6 +34,9 @@
 
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
+
+%label/get-addr ( id -- addr* ) {
+	#00 SWP DUP ADD ;label/buf ADD2 }
 
 %syms/get-name ( id -- str* ) {
 	#00 SWP DUP ADD ;syms/buf ADD2 LDA2 }
@@ -160,15 +163,17 @@
 	( den is not [] ) [ LIT2 "/ 19 ] DEO
 	( den ) LDA2k SWP2 INC2 INC2 !bag/<print>
 
-%bag/get-length ( to* from* -- to* from* length ) {
-	SUB2k #01 SFT2 NIP }
+%fraction/is-quoted ( fraction* -- t ) {
+	INC2k INC2
+	( f* num[0].id ) INC2 LDA
+	( f* jump* = ) label/get EQU2 }
 
 @bag/<print> ( to* from* -- )
 	INC2k LDA syms/get-name LDA LIT "' NEQ ?{
 		LIT "' char/<print>
 		INC2 INC2 }
 	( | Not quote )
-	/get-length #01 GTH ?/<print-complex>
+	SUB2k #01 SFT2 NIP #01 GTH ?/<print-complex>
 	&>lpb
 		LDA2k item/<print>
 		INC2 INC2 GTH2k ?&>lpb
@@ -291,9 +296,6 @@
 	STH2r u16/<print-dec>
 	;dict/steps !str/<print>
 
-%label/get-addr ( id -- addr* ) {
-	#00 SWP DUP ADD ;&buf ADD2 }
-
 @label/<create> ( id -- )
 	/get-addr ;world/ptr LDA2 SWP2 STA2
 	JMP2r
@@ -318,7 +320,7 @@
 %tote/get-addr ( id -- addr* ) {
 	#00 SWP ;&buf ADD2 }
 
-%tote/lacks ( count id -- t ) {
+%tote/apply-fail ( count id -- t ) {
 	/get-addr LDA GTH }
 
 @tote/get-count ( id -- count )
@@ -343,15 +345,17 @@
 %tote/<take> ( count id -- ) {
 	/get-addr STH2k LDA SWP SUB STH2r STA }
 
-@tote/can-apply ( den* -- t )
-	LDA2k SWP2 INC2 INC2
-	&>l
-		LDA2k /lacks ?{ INC2 INC2 GTH2k ?&>l }
-	EQU2 JMP2r
-
 @tote/<apply> ( fraction* -- )
 	/<print>
-	LDA2k /can-apply ?{ POP2 JMP2r }
+	LDA2k
+	( | try to apply )
+	LDA2k SWP2 INC2 INC2
+	( stash length* ) SUB2k STH2
+	&>l
+		LDA2k /apply-fail ?{ INC2 INC2 GTH2k ?&>l }
+	EQU2 ?{ POP2 POP2r JMP2r }
+	( use length* ) STH2r #01 SFT2 NIP #01 GTH ?{
+		( ) DUP2 fraction/is-quoted ?/<apply-drain> }
 	( | put in )
 	LDA2k OVR2 INC2 INC2
 	&>lap
@@ -363,6 +367,18 @@
 	&>lat
 		LDA2k /<take>
 		INC2 INC2 GTH2k ?&>lat
+	POP2 POP2 JMP2r
+
+@tote/<apply-drain> ( fraction* -- )
+	;dict/opt str/<print>
+	( | drain )
+	LDA2k INC2 INC2 LDA2 /get-addr STH2k LDA SWP DIVk DUP ,&mul STR
+	MUL SUB STH2r STA
+	( | apply )
+	LDA2k SWP2 #0004 ADD2
+	&>lad
+		LDA2k SWP [ LIT &mul $1 ] MUL SWP /<put>
+		INC2 INC2 GTH2k ?&>lad
 	POP2 POP2 JMP2r
 
 @tote/<print> ( -- )
@@ -396,7 +412,8 @@
 		?{ POP2 JMP2r }
 		INC2 !&>w
 
-@dict/identity "[] $1 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
+@dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
+	&opt "( 20 ") 20 00
 
 @primes/id-prime ( id -- prime* )
 	;&lut ADD2 LDA2 JMP2r
