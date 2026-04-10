@@ -53,7 +53,7 @@ different ways. To convert to the unsigned form, you can do
 	<tr><th>int</th><td>-13</td><td>000</td><td>13</td></tr>
 </table>
 
-<h3>Encoding in 16-bit machines</h3>
+<h3>Tryte in 16-bit machines</h3>
 
 <p>Five trits can be stored in a byte by using modulo and division, this
 technique can store 243 possible values in a byte:</p>
@@ -71,6 +71,61 @@ for (int j = 0; j < 5; ++j) {
 	s2[j] = (m >> 8) + '0';
 	q = m & 0xFF;
 }
+</pre>
+
+
+<h3>Heptavintimal on 32-bit machines</h3>
+
+<p>To convert and print the <a href='heptavintimal.html'>heptavintimal</a> digits of 5 trybbles from a <a
+href='decimal.html'>decimal</a> integer stored in a 16-bit address space where
+each trit takes 2 bits:</p>
+
+<pre>
+typedef uint32_t trint16_t;
+
+int
+ter2bin(trint16_t t)
+{
+	int sft = 1, acc = 0;
+	while(t)
+		acc += sft * (t & 0x3), t >>= 2, sft *= 3;
+	return acc;
+}
+
+trint16_t
+bin2ter(int n)
+{
+	trint16_t sft = 0, acc = 0;
+	while(n > 0)
+		acc |= (n % 3) << sft, n /= 3, sft += 2;
+	return acc;
+}
+
+trint16_t
+hep2ter(char *str)
+{
+	char c;
+	trint16_t acc = 0;
+	while((c = *str++))
+		acc <<= 6, acc |= bin2ter(c ? (c - 'A') + 1 : 0);
+	return acc;
+}
+
+void
+print_heptavintimal(trint16_t n)
+{
+	int i;
+	for(i = 4; i > -1; --i) {
+		int t = ter2bin((n >> (i * 6)) & 0x3f);
+		putchar(t ? '@' + t : '0');
+	}
+}
+
+<i>// heptavintimal to decimal</i>
+printf("%d", ter2bin(hep2ter("AJY")));
+
+<i>// decimal to heptavintimal</i>
+print_heptavintimal(bin2ter(1024));
 </pre>
 
 <img src='../media/refs/trefoil.png' width='120'/>

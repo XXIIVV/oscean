@@ -161,7 +161,6 @@ examples.colors = `red^2 blue^2 yellow^2
 /*
 @|Binary */
 
-
 examples.binary_logic = `( Put a logic gate and binary states in the bag: )
 
 or true false
@@ -243,23 +242,23 @@ t4/[t3^3] t5/[t4^3] t6/[t5^3]
 
 examples.ternary_logic = `( Put a logic gate and balanced ternary states in the bag: )
 
-and t+ t+
+and bt+ bt+
 
-( E, neg ) t-/[e t+] t0/[e t0] t+/[e t-] 
-( G, inc ) t-/[e t+] t+/[e t0] t0/[e t-] 
-( K, dec ) t0/[e t+] t-/[e t0] t+/[e t-]
-( O      ) t0/[e t+] t-/[e t0] t+/[e t-] 
-( U, id  ) t0/[e t+] t+/[e t0] t_/[e t-] 
+( E, neg ) bt-/[e bt+] bt0/[e bt0] bt+/[e bt-] 
+( G, inc ) bt-/[e bt+] bt+/[e bt0] bt0/[e bt-] 
+( K, dec ) bt0/[e bt+] bt-/[e bt0] bt+/[e bt-]
+( O      ) bt0/[e bt+] bt-/[e bt0] bt+/[e bt-] 
+( U, id  ) bt0/[e bt+] bt+/[e bt0] t_/[e bt-] 
 
 ( and )
-t-/[and t+ t-] t-/[and t0 t-] t-/[and t- t-]
-t0/[and t+ t0] t0/[and t0 t0] t0/[and t- t0]
-t+/[and t+ t+] t+/[and t0 t+] t+/[and t- t+]
+bt-/[and bt+ bt-] bt-/[and bt0 bt-] bt-/[and bt- bt-]
+bt0/[and bt+ bt0] bt0/[and bt0 bt0] bt0/[and bt- bt0]
+bt+/[and bt+ bt+] bt+/[and bt0 bt+] bt+/[and bt- bt+]
 
 ( or )
-t+/[or t+ t-] t0/[or t0 t-] t-/[or t- t-]
-t+/[or t+ t0] t0/[or t0 t0] t-/[or t- t0]
-t+/[or t+ t+] t0/[or t0 t+] t-/[or t- t+]`
+bt+/[or bt+ bt-] bt0/[or bt0 bt-] bt-/[or bt- bt-]
+bt+/[or bt+ bt0] bt0/[or bt0 bt0] bt-/[or bt- bt0]
+bt+/[or bt+ bt+] bt0/[or bt0 bt+] bt-/[or bt- bt+]`
 
 /*
 @|Hex */
@@ -280,6 +279,34 @@ d^92
 	[Next .b]/n^11 [Next .a]/n^10 [Next .9]/n^9  [Next .8]/n^8
 	[Next .7]/n^7  [Next .6]/n^6  [Next .5]/n^5  [Next .4]/n^4
 	[Next .3]/n^3  [Next .2]/n^2  [Next .1]/n    .0
+
+@Next ( task -- )
+	Low/task`
+
+/*
+@|Heptavintimal */
+
+examples.heptavintimal = `( Input a decimal number: )
+
+d^128
+
+( Decimal to Tribbles )
+
+     't^9/d^243 't^3/d^81 't/d^27 task PrintTribble
+@Low 't^9/d^9   't^3/d^3  't/d
+
+( Tribble to Heptavintimal )
+
+@PrintTribble ( t -- )
+	[Next .z]/t^26 [Next .y]/t^25 [Next .x]/t^24
+	[Next .w]/t^23 [Next .v]/t^22 [Next .u]/t^21
+	[Next .t]/t^20 [Next .s]/t^19 [Next .r]/t^18
+	[Next .q]/t^17 [Next .p]/t^16 [Next .o]/t^15
+	[Next .n]/t^14 [Next .m]/t^13 [Next .l]/t^12
+	[Next .k]/t^11 [Next .j]/t^10 [Next .i]/t^9
+	[Next .h]/t^8  [Next .g]/t^7  [Next .f]/t^6
+	[Next .e]/t^5  [Next .d]/t^4  [Next .c]/t^3
+	[Next .b]/t^2  [Next .a]/t    .0
 
 @Next ( task -- )
 	Low/task`

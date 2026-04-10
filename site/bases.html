@@ -364,7 +364,7 @@ can yield any of three possible outcomes: "less," "equal" and "greater." </p>
 
 <p>Single input ternary logic gates take a single trit, and output a single trit. The gates uses the <a href='heptavintimal.html'>heptavintimal notation</a>, as well a name to reflect their effect. The reversible logic gates are highlighted, to learn more, see <a href='reversible_computing.html'>reversible computing</a>.</p>
 
-<p>The table below shows the permutation of every possible input, for example, if the E gate(negation) gets a <kbd>t-</kbd> input, it will output a <kbd>t+</kbd>.</p>
+<p>The table below shows the permutation of every possible balanced ternary input and their equivalent output. For example, if the E gate(negation) gets a <kbd>bt-</kbd> input, it will output a <kbd>bt+</kbd>.</p>
 
 <table border='1'>
 	<tr><th></th><th>+</th><th>0</th><th>-</th><th>Number</th><th>Name</th><th>Definitions</th></tr>
@@ -663,6 +663,12 @@ roman alphabet. </p>
 </tr>
 </table>
 
+<div class='codeview'>
+	<iframe src="../etc/rejoicerepl/index.html#heptavintimal" frameborder="0" class='frame' style='height:580px'></iframe>
+</div>
+
+
+
 <h3>Examples</h3>
 
 <table border='1'>
@@ -680,6 +686,8 @@ roman alphabet. </p>
 <tr><td> 1024 </td><td> 1101221</td><td> 1412</td><td><tt>AJY</tt></td></tr>
 </table>
 
+<img src='../media/refs/oksapmin.png' width='600'/>
+
 <h3>Why not septemvigesimal</h3>
 <p>The name heptavintimal is composed of the Greek prefix hepta, meaning seven,
 followed by the Latin root vinti meaning twenty, with the suffix mal added, to
@@ -687,61 +695,6 @@ indicate that it is a number base. The mixing of Greek and Latin exactly
 follows the formation of the word hexadecimal, where the prefix hexi comes from
 Greek and the root deci is from the Latin.</p>
 
-<img src='../media/refs/oksapmin.png'/>
-
-<h3>Implementation in 32-bit machines</h3>
-
-<p>To convert and print the heptavintimal digits of 5 trybbles from a <a
-href='decimal.html'>decimal</a> integer stored in a 16-bit address space where
-each trit takes 2 bits:</p>
-
-<pre>
-typedef uint32_t trint16_t;
-
-int
-ter2bin(trint16_t t)
-{
-	int sft = 1, acc = 0;
-	while(t)
-		acc += sft * (t & 0x3), t >>= 2, sft *= 3;
-	return acc;
-}
-
-trint16_t
-bin2ter(int n)
-{
-	trint16_t sft = 0, acc = 0;
-	while(n > 0)
-		acc |= (n % 3) << sft, n /= 3, sft += 2;
-	return acc;
-}
-
-trint16_t
-hep2ter(char *str)
-{
-	char c;
-	trint16_t acc = 0;
-	while((c = *str++))
-		acc <<= 6, acc |= bin2ter(c ? (c - 'A') + 1 : 0);
-	return acc;
-}
-
-void
-print_heptavintimal(trint16_t n)
-{
-	int i;
-	for(i = 4; i > -1; --i) {
-		int t = ter2bin((n >> (i * 6)) & 0x3f);
-		putchar(t ? '@' + t : '0');
-	}
-}
-
-<i>// heptavintimal to decimal</i>
-printf("%d", ter2bin(hep2ter("AJY")));
-
-<i>// decimal to heptavintimal</i>
-print_heptavintimal(bin2ter(1024));
-</pre>
 
 <img src='../media/refs/trefoil.png' width='120'/>
 
