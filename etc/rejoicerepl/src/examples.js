@@ -286,7 +286,7 @@ d^92
 /*
 @|Heptavintimal */
 
-examples.heptavintimal = `( Input a decimal number: )
+examples.heptavintimal_print = `( Input a decimal number: )
 
 d^128
 
