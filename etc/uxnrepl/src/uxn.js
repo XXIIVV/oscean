@@ -10,7 +10,7 @@ function Uxn (emu)
 	const pc = new Uint16Array(1)
 	this.dev = new Uint8Array(0x100)
 
-	const stkdat = [new Uint8Array(0x100), new Uint8Array(0x100)]
+	const dat = [new Uint8Array(0x100), new Uint8Array(0x100)]
 	const ptr = new Uint8Array(2);
 	const stk = [new Stack(this, "WST", 0), new Stack(this, "RST", 1)]
 
@@ -19,15 +19,14 @@ function Uxn (emu)
 	
 	function Stack(u, name, id)
 	{
-		const ram = new Uint8Array(0x100)
-		this.PO1 = () => { return ram[--ptr[id] & 0xff] }
+		this.PO1 = () => { return dat[id][--ptr[id] & 0xff] }
 		this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
-		this.PU1 = (val) => { ram[ptr[id]++ & 0xff] = val }
+		this.PU1 = (val) => { dat[id][ptr[id]++ & 0xff] = val }
 		this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
 		this.print = () => {
 			let res = `${name}${ptr[id] - 8 ? ' ' : '|'}`
 			for(let i = ptr[id] - 8; i != ptr[id]; i++) {
-				res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
+				res += ('0' + dat[id][i & 0xff].toString(16)).slice(-2)
 				res += ((i + 1) & 0xff) ? ' ' : '|'
 			}
 			return res; }
