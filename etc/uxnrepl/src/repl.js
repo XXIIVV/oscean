@@ -60,6 +60,10 @@ function setup() {
 	return res
 }
 
+function print_stack(id) {
+	
+}
+
 function run() {
 	let res = setup()
 	if(!res) {
@@ -71,7 +75,7 @@ function run() {
 	term_el.innerHTML += emulator.console.stdout_body
 	if(emulator.console.stdout_body)
 		term_el.scrollTop = term_el.scrollHeight;
-	wst_el.innerHTML = emulator.uxn.get_wst().print()
+	wst_el.innerHTML = emulator.system.print_wst()
 	status(1, "Restart", "Step")
 }
 
@@ -93,7 +97,7 @@ function step() {
 		status(1, "Restart", "Done")
 		return;
 	}
-	wst_el.innerHTML = emulator.uxn.get_wst().print()
+	wst_el.innerHTML = emulator.system.print_wst()
 	status(0, "Finish", make_opcode(opc))
 }
 

@@ -5,6 +5,25 @@ function System(emu)
 	this.vector = 0
 	this.meta = 0
 
+	function print_stack(id) {
+		let ptr = emu.uxn.get_ptr(id)
+		let stk = emu.uxn.get_stk(id)
+		let res = `${id ? 'RST' : 'WST'}${ptr - 8 ? ' ' : '|'}`
+		for(let i = ptr - 8; i != ptr; i++) {
+			res += ('0' + stk[i & 0xff].toString(16)).slice(-2)
+			res += ((i + 1) & 0xff) ? ' ' : '|'
+		}
+		return res;
+	}
+
+	this.print_wst = () => {
+		return print_stack(0);
+	}
+
+	this.print_rst = () => {
+		return print_stack(1);
+	}
+
 	this.dei = (port) => {
 		return emu.uxn.dev[port]
 	}
@@ -15,7 +34,7 @@ function System(emu)
 		else if(port == 0x06 || port == 0x07)
 			this.meta = (emu.uxn.dev[0x06] << 8) | emu.uxn.dev[0x07]
 		else if(port == 0x0e)
-			emu.console.write_string(`${emu.uxn.get_wst().print()}\n${emu.uxn.get_rst().print()}`)
+			emu.console.write_string(`${this.print_wst()}\n${this.print_rst()}`)
 		else if(port == 0x0f)
 			console.log("Evaluation ended.")
 		else
