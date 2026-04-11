@@ -2,7 +2,7 @@
 
 function Uxn (emu)
 {
-	let a,b, m2;
+	let m2;
 	const x = new Uint8Array(2)
 	const y = new Uint8Array(2)
 	const z = new Uint8Array(2)
@@ -18,7 +18,7 @@ function Uxn (emu)
 	/* Microcode */
 
 	function Jmp(i) { if(m2) pc[0] = i; else pc[0] = (pc[0] + Sig(i)); }
-	function Jmi() { a = ram[pc[0]++] << 8 | ram[pc[0]++]; pc[0] = (pc[0] + a); }
+	function Jmi() { const t = ram[pc[0]++] << 8 | ram[pc[0]++]; pc[0] = (pc[0] + t); }
 	function Po1(s) { return stk[s][--ptr[s] & 0xff] }
 	function Po2(s) { return stk[s][--ptr[s] & 0xff] | (stk[s][--ptr[s] & 0xff] << 8) }
 	function Pox(s) { return m2 ? Po2(s) : Po1(s) }
@@ -39,6 +39,7 @@ function Uxn (emu)
 	}
 	
 	this.step = () => {
+		let a, b
 		const ins = ram[pc[0]++]
 		const mk = ins >> 7
 		const s = ins >> 6 & 1
@@ -47,13 +48,13 @@ function Uxn (emu)
 		switch(ins & 0x1f) {
 		case 0x00: /* IMM */ {
 			switch(ins) {
-			case 0x20: /*JCI*/ if(Po1(s)) Jmi(); else pc[0] += 2; break;
-			case 0x40: /*Jmi*/ Jmi(); break;
-			case 0x60: /*JSI*/ Pu2(s,pc[0] + 2); Jmi(); break;
-			case 0xa0: /*LI2*/ Pu1(s,ram[pc[0]++]);
-			case 0x80: /*LIT*/ Pu1(s,ram[pc[0]++]); break;
-			case 0xe0: /*LIr*/ Pu1(s,ram[pc[0]++]);
-			case 0xc0: /*L2r*/ Pu1(s,ram[pc[0]++]); break;
+			case 0x20: /* JCI */ if(Po1(s)) Jmi(); else pc[0] += 2; break;
+			case 0x40: /* JMI */ Jmi(); break;
+			case 0x60: /* JSI */ Pu2(s,pc[0] + 2); Jmi(); break;
+			case 0xa0: /* LI2 */ Pu1(s,ram[pc[0]++]);
+			case 0x80: /* LIT */ Pu1(s,ram[pc[0]++]); break;
+			case 0xe0: /* LIR */ Pu1(s,ram[pc[0]++]);
+			case 0xc0: /* L2R */ Pu1(s,ram[pc[0]++]); break;
 			} break;
 		}
 		case 0x01: /* INC */ { a=Pox(s);                     if(mk) ptr[s] = pk; Pux(s,a + 1); break; }
