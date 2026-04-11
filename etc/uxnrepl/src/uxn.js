@@ -38,7 +38,7 @@ function Uxn (emu)
 	
 	function Po1() { return stk[mr].PO1() }
 	function Po2() { return stk[mr].PO2() }
-	function Pox() { return m2 ? Po2() : Po1() }
+	function Pox(s) { return m2 ? s.PO2() : s.PO1() }
 	
 	function Pu1(x) { stk[mr].PU1(x) }
 	function Pu2(x) { stk[mr].PU2(x) }
@@ -85,20 +85,20 @@ function Uxn (emu)
 					case 0xc0: /*L2r*/ Pu1(ram[pc[0]++]); break;
 				} break;
 			}
-			case 0x01: /* INC */ { a=Pox(), Rec(s); Pux(a + 1); break; }
-			case 0x02: /* POP */ { Pox(), Rec(s); break; }
-			case 0x03: /* NIP */ { Get(x), Pox(), Rec(s); Put(x); break; }
+			case 0x01: /* INC */ { a=Pox(s), Rec(s); Pux(a + 1); break; }
+			case 0x02: /* POP */ { Pox(s), Rec(s); break; }
+			case 0x03: /* NIP */ { Get(x), Pox(s), Rec(s); Put(x); break; }
 			case 0x04: /* SWP */ { Get(x), Get(y), Rec(s); Put(x), Put(y); break; }
 			case 0x05: /* ROT */ { Get(x), Get(y), Get(z), Rec(s); Put(y), Put(x), Put(z); break; }
 			case 0x06: /* DUP */ { Get(x), Rec(s); Put(x), Put(x); break; }
 			case 0x07: /* OVR */ { Get(x), Get(y), Rec(s); Put(y), Put(x), Put(y); break; }
-			case 0x08: /* EQU */ { a=Pox(), b=Pox(), Rec(s); Pu1(b == a); break; }
-			case 0x09: /* NEQ */ { a=Pox(), b=Pox(), Rec(s); Pu1(b != a); break; }
-			case 0x0a: /* GTH */ { a=Pox(), b=Pox(), Rec(s); Pu1(b > a); break; }
-			case 0x0b: /* LTH */ { a=Pox(), b=Pox(), Rec(s); Pu1(b < a); break; }
-			case 0x0c: /* JMP */ { a=Pox(), Rec(s); Jmp(a); break; }
-			case 0x0d: /* JCN */ { a=Pox(), b=Po1(), Rec(s); if(b) Jmp(a); break; }
-			case 0x0e: /* JSR */ { a=Pox(), Rec(s); stk[mr^1].PU2(pc[0]), Jmp(a); break; }
+			case 0x08: /* EQU */ { a=Pox(s), b=Pox(s), Rec(s); Pu1(b == a); break; }
+			case 0x09: /* NEQ */ { a=Pox(s), b=Pox(s), Rec(s); Pu1(b != a); break; }
+			case 0x0a: /* GTH */ { a=Pox(s), b=Pox(s), Rec(s); Pu1(b > a); break; }
+			case 0x0b: /* LTH */ { a=Pox(s), b=Pox(s), Rec(s); Pu1(b < a); break; }
+			case 0x0c: /* JMP */ { a=Pox(s), Rec(s); Jmp(a); break; }
+			case 0x0d: /* JCN */ { a=Pox(s), b=Po1(), Rec(s); if(b) Jmp(a); break; }
+			case 0x0e: /* JSR */ { a=Pox(s), Rec(s); stk[mr^1].PU2(pc[0]), Jmp(a); break; }
 			case 0x0f: /* STH */ { Get(x), Rec(s); stk[mr^1].PU1(x[0]); if(m2) stk[mr^1].PU1(x[1]); break; }
 			case 0x10: /* LDZ */ { a=Po1(), Rec(s); Pek(a, x, 0xff); break; }
 			case 0x11: /* STZ */ { a=Po1(), Get(y), Rec(s); Pok(a, y, 0xff); break; }
@@ -108,14 +108,14 @@ function Uxn (emu)
 			case 0x15: /* STA */ { a=Po2(), Get(y), Rec(s); Pok(a, y, 0xffff); break; }
 			case 0x16: /* DEI */ { a=Po1(), Rec(s); Dei(a, x); break; }
 			case 0x17: /* DEO */ { a=Po1(), Get(y), Rec(s); Deo(a, y); break; }
-			case 0x18: /* ADD */ { a=Pox(), b=Pox(), Rec(s); Pux(b + a); break; }
-			case 0x19: /* SUB */ { a=Pox(), b=Pox(), Rec(s); Pux(b - a); break; }
-			case 0x1a: /* MUL */ { a=Pox(), b=Pox(), Rec(s); Pux(b * a); break; }
-			case 0x1b: /* DIV */ { a=Pox(), b=Pox(), Rec(s); Pux(a ? b / a : 0); break; }
-			case 0x1c: /* AND */ { a=Pox(), b=Pox(), Rec(s); Pux(b & a); break; }
-			case 0x1d: /* ORA */ { a=Pox(), b=Pox(), Rec(s); Pux(b | a); break; }
-			case 0x1e: /* EOR */ { a=Pox(), b=Pox(), Rec(s); Pux(b ^ a); break; }
-			case 0x1f: /* SFT */ { a=Po1(), b=Pox(), Rec(s); Pux(b >> (a & 0xf) << (a >> 4)); break; }
+			case 0x18: /* ADD */ { a=Pox(s), b=Pox(s), Rec(s); Pux(b + a); break; }
+			case 0x19: /* SUB */ { a=Pox(s), b=Pox(s), Rec(s); Pux(b - a); break; }
+			case 0x1a: /* MUL */ { a=Pox(s), b=Pox(s), Rec(s); Pux(b * a); break; }
+			case 0x1b: /* DIV */ { a=Pox(s), b=Pox(s), Rec(s); Pux(a ? b / a : 0); break; }
+			case 0x1c: /* AND */ { a=Pox(s), b=Pox(s), Rec(s); Pux(b & a); break; }
+			case 0x1d: /* ORA */ { a=Pox(s), b=Pox(s), Rec(s); Pux(b | a); break; }
+			case 0x1e: /* EOR */ { a=Pox(s), b=Pox(s), Rec(s); Pux(b ^ a); break; }
+			case 0x1f: /* SFT */ { a=Po1(), b=Pox(s), Rec(s); Pux(b >> (a & 0xf) << (a >> 4)); break; }
 		}
 		return ins
 	}
