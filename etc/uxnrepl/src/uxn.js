@@ -17,13 +17,13 @@ function Uxn (emu)
 	
 	/* Microcode */
 
-	function Jmp(d,i) { if(d) pc[0] = i; else pc[0] = (pc[0] + Sig(i)); }
-	function Jmi() { const t = ram[pc[0]++] << 8 | ram[pc[0]++]; pc[0] = (pc[0] + t); }
-	function Po1(s) { return stk[s][--ptr[s] & 0xff] }
-	function Po2(s) { return stk[s][--ptr[s] & 0xff] | (stk[s][--ptr[s] & 0xff] << 8) }
+	function Jmi() { const t = ram[pc[0]++] << 8 | ram[pc[0]++]; pc[0] += t; }
+	function Jmp(d,i) { if(d) pc[0] = i; else pc[0] += Sig(i); }
+	function Po1(s) { return stk[s][--ptr[s]] }
+	function Po2(s) { return stk[s][--ptr[s]] | (stk[s][--ptr[s]] << 8) }
 	function Pox(d,s) { return d ? Po2(s) : Po1(s) }
-	function Pu1(s,x) { stk[s][ptr[s]++ & 0xff] = x }
-	function Pu2(s,x) { stk[s][ptr[s]++ & 0xff] = x >> 8,stk[s][ptr[s]++ & 0xff] = x }
+	function Pu1(s,x) { stk[s][ptr[s]++] = x }
+	function Pu2(s,x) { stk[s][ptr[s]++] = x >> 8,stk[s][ptr[s]++] = x }
 	function Pux(d,s,x) { if(d) Pu2(s,x); else Pu1(s,x) }
 	function Get(d,s,o) { if(d) o[1] = Po1(s); o[0] = Po1(s) }
 	function Put(d,s,i) { Pu1(s,i[0]); if(d) Pu1(s,i[1]) }
@@ -33,10 +33,6 @@ function Uxn (emu)
 	function Pok(d,i,j,m) { ram[i] = j[0]; if(d) ram[(i + 1) & m] = j[1]; }
 
 	/* Opcodes */
-	
-	this.init = () => {
-		pc[0] = 0x100
-	}
 	
 	this.step = () => {
 		const ins = ram[pc[0]++]
@@ -92,15 +88,18 @@ function Uxn (emu)
 		return ins
 	}
 
+	this.init = () => {
+		pc[0] = 0x100
+	}
+
 	this.eval = (at) => {
 		let steps = 0x8000000
-		let step = this.step
 		pc[0] = at;
-		while(steps-- && step());
+		while(steps-- && this.step());
 	}
 	
 	this.load = (program) => {
-		for (let i = 0; i <= program.length; i++)
+		for (let i = 0; i < program.length; i++)
 			ram[0x100 + i] = program[i]
 		return this
 	}
