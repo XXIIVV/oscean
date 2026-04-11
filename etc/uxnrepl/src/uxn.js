@@ -45,48 +45,48 @@ function Uxn (emu)
 		m2 = ins >> 5 & 1
 		const pk = ptr[s]
 		switch(ins & 0x1f) {
-			case 0x00: /* IMM */ {
-				switch(ins) {
-					case 0x20: /*JCI*/ if(Po1(s)) Jmi(); else pc[0] += 2; break;
-					case 0x40: /*Jmi*/ Jmi(); break;
-					case 0x60: /*JSI*/ Pu2(s,pc[0] + 2); Jmi(); break;
-					case 0xa0: /*LI2*/ Pu1(s,ram[pc[0]++]);
-					case 0x80: /*LIT*/ Pu1(s,ram[pc[0]++]); break;
-					case 0xe0: /*LIr*/ Pu1(s,ram[pc[0]++]);
-					case 0xc0: /*L2r*/ Pu1(s,ram[pc[0]++]); break;
-				} break;
-			}
-			case 0x01: /* INC */ { a=Pox(s);                     if(mk) ptr[s] = pk; Pux(s,a + 1); break; }
-			case 0x02: /* POP */ { Pox(s);                       if(mk) ptr[s] = pk; break; }
-			case 0x03: /* NIP */ { Get(s,x); Pox(s);             if(mk) ptr[s] = pk; Put(s,x); break; }
-			case 0x04: /* SWP */ { Get(s,x); Get(s,y);           if(mk) ptr[s] = pk; Put(s,x); Put(s,y); break; }
-			case 0x05: /* ROT */ { Get(s,x); Get(s,y); Get(s,z); if(mk) ptr[s] = pk; Put(s,y); Put(s,x); Put(s,z); break; }
-			case 0x06: /* DUP */ { Get(s,x);                     if(mk) ptr[s] = pk; Put(s,x); Put(s,x); break; }
-			case 0x07: /* OVR */ { Get(s,x); Get(s,y);           if(mk) ptr[s] = pk; Put(s,y); Put(s,x); Put(s,y); break; }
-			case 0x08: /* EQU */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b == a); break; }
-			case 0x09: /* NEQ */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b != a); break; }
-			case 0x0a: /* GTH */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b > a); break; }
-			case 0x0b: /* LTH */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b < a); break; }
-			case 0x0c: /* JMP */ { a=Pox(s);                     if(mk) ptr[s] = pk; Jmp(a); break; }
-			case 0x0d: /* JCN */ { a=Pox(s); b=Po1(s);           if(mk) ptr[s] = pk; if(b) Jmp(a); break; }
-			case 0x0e: /* JSR */ { a=Pox(s);                     if(mk) ptr[s] = pk; Pu2(s^1,pc[0]); Jmp(a); break; }
-			case 0x0f: /* STH */ { Get(s,x);                     if(mk) ptr[s] = pk; Pu1(s^1,x[0]); if(m2) Pu1(s^1,x[1]); break; }
-			case 0x10: /* LDZ */ { a=Po1(s);                     if(mk) ptr[s] = pk; Pek(s,a,x,0xff); break; }
-			case 0x11: /* STZ */ { a=Po1(s); Get(s,y);           if(mk) ptr[s] = pk; Pok(a,y,0xff); break; }
-			case 0x12: /* LDR */ { a=Po1(s);                     if(mk) ptr[s] = pk; Pek(s,pc[0] + Sig(a),x,0xffff); break; }
-			case 0x13: /* STR */ { a=Po1(s); Get(s,y);           if(mk) ptr[s] = pk; Pok(pc[0] + Sig(a),y,0xffff); break; }
-			case 0x14: /* LDA */ { a=Po2(s);                     if(mk) ptr[s] = pk; Pek(s,a,x,0xffff); break; }
-			case 0x15: /* STA */ { a=Po2(s); Get(s,y);           if(mk) ptr[s] = pk; Pok(a,y,0xffff); break; }
-			case 0x16: /* DEI */ { a=Po1(s);                     if(mk) ptr[s] = pk; Dei(s,a,x); break; }
-			case 0x17: /* DEO */ { a=Po1(s); Get(s,y);           if(mk) ptr[s] = pk; Deo(a,y); break; }
-			case 0x18: /* ADD */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b + a); break; }
-			case 0x19: /* SUB */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b - a); break; }
-			case 0x1a: /* MUL */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b * a); break; }
-			case 0x1b: /* DIV */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,a ? b / a : 0); break; }
-			case 0x1c: /* AND */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b & a); break; }
-			case 0x1d: /* ORA */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b | a); break; }
-			case 0x1e: /* EOR */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b ^ a); break; }
-			case 0x1f: /* SFT */ { a=Po1(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b >> (a & 0xf) << (a >> 4)); break; }
+		case 0x00: /* IMM */ {
+			switch(ins) {
+			case 0x20: /*JCI*/ if(Po1(s)) Jmi(); else pc[0] += 2; break;
+			case 0x40: /*Jmi*/ Jmi(); break;
+			case 0x60: /*JSI*/ Pu2(s,pc[0] + 2); Jmi(); break;
+			case 0xa0: /*LI2*/ Pu1(s,ram[pc[0]++]);
+			case 0x80: /*LIT*/ Pu1(s,ram[pc[0]++]); break;
+			case 0xe0: /*LIr*/ Pu1(s,ram[pc[0]++]);
+			case 0xc0: /*L2r*/ Pu1(s,ram[pc[0]++]); break;
+			} break;
+		}
+		case 0x01: /* INC */ { a=Pox(s);                     if(mk) ptr[s] = pk; Pux(s,a + 1); break; }
+		case 0x02: /* POP */ { Pox(s);                       if(mk) ptr[s] = pk; break; }
+		case 0x03: /* NIP */ { Get(s,x); Pox(s);             if(mk) ptr[s] = pk; Put(s,x); break; }
+		case 0x04: /* SWP */ { Get(s,x); Get(s,y);           if(mk) ptr[s] = pk; Put(s,x); Put(s,y); break; }
+		case 0x05: /* ROT */ { Get(s,x); Get(s,y); Get(s,z); if(mk) ptr[s] = pk; Put(s,y); Put(s,x); Put(s,z); break; }
+		case 0x06: /* DUP */ { Get(s,x);                     if(mk) ptr[s] = pk; Put(s,x); Put(s,x); break; }
+		case 0x07: /* OVR */ { Get(s,x); Get(s,y);           if(mk) ptr[s] = pk; Put(s,y); Put(s,x); Put(s,y); break; }
+		case 0x08: /* EQU */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b == a); break; }
+		case 0x09: /* NEQ */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b != a); break; }
+		case 0x0a: /* GTH */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b > a); break; }
+		case 0x0b: /* LTH */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pu1(s,b < a); break; }
+		case 0x0c: /* JMP */ { a=Pox(s);                     if(mk) ptr[s] = pk; Jmp(a); break; }
+		case 0x0d: /* JCN */ { a=Pox(s); b=Po1(s);           if(mk) ptr[s] = pk; if(b) Jmp(a); break; }
+		case 0x0e: /* JSR */ { a=Pox(s);                     if(mk) ptr[s] = pk; Pu2(s^1,pc[0]); Jmp(a); break; }
+		case 0x0f: /* STH */ { Get(s,x);                     if(mk) ptr[s] = pk; Pu1(s^1,x[0]); if(m2) Pu1(s^1,x[1]); break; }
+		case 0x10: /* LDZ */ { a=Po1(s);                     if(mk) ptr[s] = pk; Pek(s,a,x,0xff); break; }
+		case 0x11: /* STZ */ { a=Po1(s); Get(s,y);           if(mk) ptr[s] = pk; Pok(a,y,0xff); break; }
+		case 0x12: /* LDR */ { a=Po1(s);                     if(mk) ptr[s] = pk; Pek(s,pc[0] + Sig(a),x,0xffff); break; }
+		case 0x13: /* STR */ { a=Po1(s); Get(s,y);           if(mk) ptr[s] = pk; Pok(pc[0] + Sig(a),y,0xffff); break; }
+		case 0x14: /* LDA */ { a=Po2(s);                     if(mk) ptr[s] = pk; Pek(s,a,x,0xffff); break; }
+		case 0x15: /* STA */ { a=Po2(s); Get(s,y);           if(mk) ptr[s] = pk; Pok(a,y,0xffff); break; }
+		case 0x16: /* DEI */ { a=Po1(s);                     if(mk) ptr[s] = pk; Dei(s,a,x); break; }
+		case 0x17: /* DEO */ { a=Po1(s); Get(s,y);           if(mk) ptr[s] = pk; Deo(a,y); break; }
+		case 0x18: /* ADD */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b + a); break; }
+		case 0x19: /* SUB */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b - a); break; }
+		case 0x1a: /* MUL */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b * a); break; }
+		case 0x1b: /* DIV */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,a ? b / a : 0); break; }
+		case 0x1c: /* AND */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b & a); break; }
+		case 0x1d: /* ORA */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b | a); break; }
+		case 0x1e: /* EOR */ { a=Pox(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b ^ a); break; }
+		case 0x1f: /* SFT */ { a=Po1(s); b=Pox(s);           if(mk) ptr[s] = pk; Pux(s,b >> (a & 0xf) << (a >> 4)); break; }
 		}
 		return ins
 	}
