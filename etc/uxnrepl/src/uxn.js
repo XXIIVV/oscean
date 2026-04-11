@@ -10,6 +10,7 @@ function Uxn (emu)
 	const ptr = new Uint8Array(2);
 	const stk = [new Uint8Array(0x100),new Uint8Array(0x100)]
 	const Sig = n => (n << 24) >> 24
+
 	this.dev = new Uint8Array(0x100)
 	this.get_ptr = (id) => { return ptr[id]; }
 	this.get_stk = (id) => { return stk[id]; }
