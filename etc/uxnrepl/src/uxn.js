@@ -19,10 +19,6 @@ function Uxn (emu)
 	
 	function Stack(u, name, id)
 	{
-		this.PO1 = () => { return dat[id][--ptr[id] & 0xff] }
-		this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
-		this.PU1 = (val) => { dat[id][ptr[id]++ & 0xff] = val }
-		this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
 		this.print = () => {
 			let res = `${name}${ptr[id] - 8 ? ' ' : '|'}`
 			for(let i = ptr[id] - 8; i != ptr[id]; i++) {
@@ -38,12 +34,13 @@ function Uxn (emu)
 	function Jmp(i) { if(m2) pc[0] = i; else pc[0] = (pc[0] + Sig(i)); }
 	function Jmi() { a = ram[pc[0]++] << 8 | ram[pc[0]++]; pc[0] = (pc[0] + a); }
 	
-	function Po1(s) { return s.PO1() }
-	function Po2(s) { return s.PO2() }
+
+	function Po1(s) { return dat[s][--ptr[s] & 0xff] }
+	function Po2(s) { return dat[s][--ptr[s] & 0xff] | (dat[s][--ptr[s] & 0xff] << 8) }
 	function Pox(s) { return m2 ? Po2(s) : Po1(s) }
 	
-	function Pu1(s, x) { s.PU1(x) }
-	function Pu2(s, x) { s.PU2(x) }
+	function Pu1(s, x) { dat[s][ptr[s]++ & 0xff] = x }
+	function Pu2(s, x) { dat[s][ptr[s]++ & 0xff] = x >> 8, dat[s][ptr[s]++ & 0xff] = x }
 	function Pux(s, x) { if(m2) Pu2(s, x); else Pu1(s, x) }
 	
 	function Get(s, o) { if(m2) o[1] = Po1(s); o[0] = Po1(s) }
@@ -71,7 +68,7 @@ function Uxn (emu)
 		m2 = ins & 0x20
 		mr = ins >> 6 & 1
 		mk = ins & 0x80
-		const s = stk[mr]
+		const s = mr
 		const pk = ptr[mr]
 		switch(ins & 0x1f) {
 			case 0x00: /* IMM */ {
@@ -98,8 +95,8 @@ function Uxn (emu)
 			case 0x0b: /* LTH */ { a=Pox(s), b=Pox(s);              if(mk) ptr[mr] = pk; Pu1(s, b < a); break; }
 			case 0x0c: /* JMP */ { a=Pox(s);                        if(mk) ptr[mr] = pk; Jmp(a); break; }
 			case 0x0d: /* JCN */ { a=Pox(s), b=Po1(s);              if(mk) ptr[mr] = pk; if(b) Jmp(a); break; }
-			case 0x0e: /* JSR */ { a=Pox(s);                        if(mk) ptr[mr] = pk; Pu2(stk[mr^1], pc[0]), Jmp(a); break; }
-			case 0x0f: /* STH */ { Get(s, x);                       if(mk) ptr[mr] = pk; Pu1(stk[mr^1], x[0]); if(m2) Pu1(stk[mr^1], x[1]); break; }
+			case 0x0e: /* JSR */ { a=Pox(s);                        if(mk) ptr[mr] = pk; Pu2(mr^1, pc[0]), Jmp(a); break; }
+			case 0x0f: /* STH */ { Get(s, x);                       if(mk) ptr[mr] = pk; Pu1(mr^1, x[0]); if(m2) Pu1(mr^1, x[1]); break; }
 			case 0x10: /* LDZ */ { a=Po1(s);                        if(mk) ptr[mr] = pk; Pek(s, a, x, 0xff); break; }
 			case 0x11: /* STZ */ { a=Po1(s), Get(s, y);             if(mk) ptr[mr] = pk; Pok(a, y, 0xff); break; }
 			case 0x12: /* LDR */ { a=Po1(s);                        if(mk) ptr[mr] = pk; Pek(s, pc[0] + Sig(a), x, 0xffff); break; }
