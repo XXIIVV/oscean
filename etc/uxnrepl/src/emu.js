@@ -23,10 +23,6 @@ function System(emu)
 	this.print_rst = () => {
 		return print_stack(1);
 	}
-
-	this.dei = (port) => {
-		return emu.uxn.dev[port]
-	}
 }
 
 function Console(emu)
@@ -54,24 +50,11 @@ function Console(emu)
 	}
 }
 
-function DateTime(emu)
+function Emu ()
 {
-	this.dei = (port) => {
-		const now = new Date();
-		switch (port) {
-			case 0xc0: return now.getFullYear() >> 8;
-			case 0xc1: return now.getFullYear() & 0xff;
-			case 0xc2: return now.getMonth();
-			case 0xc3: return now.getDate();
-			case 0xc4: return now.getHours();
-			case 0xc5: return now.getMinutes();
-			case 0xc6: return now.getSeconds();
-			case 0xc7: return now.getDay();
-			case 0xc8: return doty() >> 8;
-			case 0xc9: return doty() & 0xff;
-		}
-		return 1;
-	}
+	this.uxn = new Uxn(this)
+	this.system = new System(this)
+	this.console = new Console(this)
 
 	function doty() {
 		let now = new Date()
@@ -80,49 +63,38 @@ function DateTime(emu)
 		let oneDay = 1000 * 60 * 60 * 24
 		return Math.floor(diff / oneDay) - 1
 	}
-}
-
-
-function Emu ()
-{
-	this.uxn = new Uxn(this)
-	this.system = new System(this)
-	this.console = new Console(this)
-	this.datetime = new DateTime(this)
 
 	this.dei = (port) => {
-		if(port >> 4 == 0x0)
-			return this.system.dei(port);
-		if(port >> 4 == 0xc)
-			return this.datetime.dei(port);
+		switch (port) {
+		case 0xc0: { const now = new Date(); return now.getFullYear() >> 8; }
+		case 0xc1: { const now = new Date(); return now.getFullYear() & 0xff; }
+		case 0xc2: { const now = new Date(); return now.getMonth(); }
+		case 0xc3: { const now = new Date(); return now.getDate(); }
+		case 0xc4: { const now = new Date(); return now.getHours(); }
+		case 0xc5: { const now = new Date(); return now.getMinutes(); }
+		case 0xc6: { const now = new Date(); return now.getSeconds(); }
+		case 0xc7: { const now = new Date(); return now.getDay(); }
+		case 0xc8: { const now = new Date(); return doty() >> 8; }
+		case 0xc9: { const now = new Date(); return doty() & 0xff; }
+		}
 		return this.uxn.dev[port]
 	}
 
 	this.deo = (port, val) => {
 		this.uxn.dev[port] = val
 		switch(port){
+		/* System */
 		case 0x00:
-		case 0x01:
-			this.system.vector = (this.uxn.dev[0x00] << 8) | this.uxn.dev[0x01]; break;
+		case 0x01: this.system.vector = (this.uxn.dev[0x00] << 8) | this.uxn.dev[0x01]; break;
 		case 0x06:
-		case 0x07:
-			this.system.meta = (this.uxn.dev[0x06] << 8) | this.uxn.dev[0x07]; break;
-		case 0x0e:
-			this.console.write_string(`${this.system.print_wst()}\n${this.system.print_rst()}`); break;
-		case 0x0f:
-			console.log("Evaluation ended."); break;
+		case 0x07: this.system.meta = (this.uxn.dev[0x06] << 8) | this.uxn.dev[0x07]; break;
+		case 0x0e: this.console.write_string(`${this.system.print_wst()}\n${this.system.print_rst()}`); break;
+		case 0x0f: console.log("Evaluation ended."); break;
+		/* Console */
 		case 0x10:
-		case 0x11:
-			this.console.vector = (this.uxn.dev[0x10] << 8) | this.uxn.dev[0x11]; break;
-		case 0x18:
-			this.console.write(val); break;
-		case 0x19:
-			this.console.error(val); break;
+		case 0x11: this.console.vector = (this.uxn.dev[0x10] << 8) | this.uxn.dev[0x11]; break;
+		case 0x18: this.console.write(val); break;
+		case 0x19: this.console.error(val); break;
 		}
 	}
 }
-
-
-
-
-
