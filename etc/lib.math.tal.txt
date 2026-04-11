@@ -1,5 +1,7 @@
 ( lib.string )
 
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
 |100
 
 @on-reset ( -> )
@@ -39,8 +41,20 @@
 	DUP #04 SFT /<print-nibble>
 	( >> )
 	&<print-nibble> ( byte -- )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	#0f AND DUP #09 GTH #27 MUL ADD
+	( >> )
+	&<print-digit> ( d -- )
+	[ LIT "0 ] ADD #18 DEO
 	JMP2r
+
+@u8/<print-dec> ( u8 -- )
+	DUP #0a LTH ?{
+		DUP #64 LTH ?{
+			( 100 ) DUP #64 DIV /<print-digit>
+			#64 /mod }
+		( 10 ) DUP #0a DIV /<print-digit>
+		#0a /mod }
+	( 1 ) !/<print-digit>
 
 (
 @|u16 )
@@ -64,6 +78,19 @@
 
 @u16/<print> ( short* -- )
 	SWP u8/<print> !u8/<print>
+
+(
+@|u32 )
+
+@u32/<print> ( hs* ls* -- )
+	SWP2 /u16
+	&u16 ( hb lb -- )
+	SWP /u8
+	&u8 ( xx -- )
+	DUP #04 SFT /u4
+	&u4 ( x -- )
+	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD .Console/write DEO
+	JMP2r
 
 (
 @|Tests )

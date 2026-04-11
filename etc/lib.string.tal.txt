@@ -113,8 +113,12 @@
 	( | pop )
 	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
 	( | length )
-	LIT "a /<push>
-	/length #03 NEQ ?&fail
+	LIT "a [ /<push> /length ] #03 NEQ ?&fail
+	( | walk-dec )
+	;dict/12340 /<set>
+	.&buf /walk-dec-u16 ROT POP #3034 NEQ2 ?&fail
+	;dict/123 /<set>
+	.&buf /walk-dec-u8 NIP #7b NEQ ?&fail
 	#01 JMP2r
 	&fail #00 JMP2r
 	&name 0a "ztr: 20 $1
@@ -136,6 +140,76 @@
 	#01 JMP2r
 	&fail #00 JMP2r
 	&name 0a "obj: 20 $1
+
+(
+@|Chr )
+
+@chr/lc ( c -- lowercase )
+	DUP LIT "A SUB #19 GTH ?{ #20 ADD }
+	JMP2r
+
+@chr/uc ( c -- lowercase )
+	DUP LIT "a SUB #19 GTH ?{ #20 SUB }
+	JMP2r
+
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
+@chr/escape ( byte -- byte )
+	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	[ LIT "n ] NEQ ?{ #0a JMP2r }
+	#20 JMP2r
+
+(
+@|Ztr )
+
+@ztr/<set> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@ztr/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ]
+	( | catch overflow )
+	DUP .&cap NEQ ?{ POP POP2 JMP2r }
+	INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@ztr/length ( -- length )
+	,&ptr LDR .&buf SUB JMP2r
+
+@ztr/pop ( -- c )
+	[ LIT2 ff _&ptr ] LDR
+	( | TODO: Catch underflow )
+	ADD STHk ,&ptr STR
+	#00 STHkr STZ
+	STHr LDZ JMP2r
+
+@ztr/<print> ( -- )
+	.&buf
+	&>wp
+		LDZk DUP ?{ POP2 JMP2r }
+		#18 DEO
+		INC !&>wp
+
+@ztr/walk-dec-u16 ( ztr -- ztr u16* )
+	[ LIT2r 0000 ]
+	&>w16
+		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STH2r JMP2r }
+		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
+		ADD2r INC !&>w16
+
+@ztr/walk-dec-u8 ( ztr -- ztr u8 )
+	[ LITr 00 ]
+	&>w8
+		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STHr JMP2r }
+		LITr 0a MULr STH
+		ADDr INC !&>w8
 
 (
 @|Str )
@@ -180,56 +254,12 @@
 	#18 DEO
 	INC2 !/<print>
 
-(
-@|Chr )
-
-@chr/lc ( c -- lowercase )
-	DUP LIT "A SUB #19 GTH ?{ #20 ADD }
-	JMP2r
-
-@chr/uc ( c -- lowercase )
-	DUP LIT "a SUB #19 GTH ?{ #20 SUB }
-	JMP2r
-
-@chr/hex ( c -- val )
-	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
-	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
-	( nil ) POP #ff JMP2r
-
-(
-@|Ztr )
-
-@ztr/<set> ( str* -- )
-	[ LIT2 -&buf _&ptr ] STR
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push>
-		INC2 !&>w
-
-@ztr/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ]
-	( | catch overflow )
-	DUP .&cap NEQ ?{ POP POP2 JMP2r }
-	INCk ,&ptr STR
-	STZ2
-	JMP2r
-
-@ztr/length ( -- length )
-	,&ptr LDR .&buf SUB JMP2r
-
-@ztr/pop ( -- c )
-	[ LIT2 ff _&ptr ] LDR
-	( | TODO: Catch underflow )
-	ADD STHk ,&ptr STR
-	#00 STHkr STZ
-	STHr LDZ JMP2r
-
-@ztr/<print> ( -- )
-	.&buf
-	&>wp
-		LDZk DUP ?{ POP2 JMP2r }
-		#18 DEO
-		INC !&>wp
+@str/<print-esc> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	( | esc )
+	DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk chr/escape }
+	#18 DEO
+	INC2 !/<print>
 
 (
 @|Obj )
@@ -279,6 +309,7 @@
 	&10 "10 $1
 	&1 "1 $1
 	&09 "09 $1
+	&123 "123 $1
 	&12340 "12340 $1
 	&32767 "32767 $1
 	&65535 "65535 $1
