@@ -6,16 +6,16 @@ function Uxn (emu)
 	const x = new Uint8Array(2)
 	const y = new Uint8Array(2)
 	const z = new Uint8Array(2)
-	const ram = new Uint8Array(0x10000)
 	const pc = new Uint16Array(1)
-	this.dev = new Uint8Array(0x100)
-	const stk = [new Uint8Array(0x100), new Uint8Array(0x100)]
+	const ram = new Uint8Array(0x10000)
 	const ptr = new Uint8Array(2);
+	const stk = [new Uint8Array(0x100), new Uint8Array(0x100)]
+	const Sig = n => (n << 24) >> 24
+	this.dev = new Uint8Array(0x100)
 	this.get_ptr = (id) => { return ptr[id]; }
 	this.get_stk = (id) => { return stk[id]; }
 	
 	/* Microcode */
-	const Sig = n => (n << 24) >> 24
 
 	function Jmp(i) { if(m2) pc[0] = i; else pc[0] = (pc[0] + Sig(i)); }
 	function Jmi() { a = ram[pc[0]++] << 8 | ram[pc[0]++]; pc[0] = (pc[0] + a); }
