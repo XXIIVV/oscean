@@ -40,13 +40,13 @@ function Uxn (emu)
 	
 	function Po1(s) { return s.PO1() }
 	function Po2(s) { return s.PO2() }
-	function Pox(s) { return m2 ? s.PO2() : s.PO1() }
+	function Pox(s) { return m2 ? Po2(s) : Po1(s) }
 	
 	function Pu1(s, x) { s.PU1(x) }
 	function Pu2(s, x) { s.PU2(x) }
-	function Pux(s, x) { if(m2) s.PU2(x); else Pu1(s, x) }
+	function Pux(s, x) { if(m2) Pu2(s, x); else Pu1(s, x) }
 	
-	function Get(s, o) { if(m2) o[1] = s.PO1(); o[0] = s.PO1() }
+	function Get(s, o) { if(m2) o[1] = Po1(s); o[0] = Po1(s) }
 	function Put(s, i) { Pu1(s, i[0]); if(m2) Pu1(s, i[1]) }
 	
 	function Dei(s,i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); Put(s, o) }
@@ -98,8 +98,8 @@ function Uxn (emu)
 			case 0x0b: /* LTH */ { a=Pox(s), b=Pox(s);              if(mk) ptr[mr] = pk; Pu1(s, b < a); break; }
 			case 0x0c: /* JMP */ { a=Pox(s);                        if(mk) ptr[mr] = pk; Jmp(a); break; }
 			case 0x0d: /* JCN */ { a=Pox(s), b=Po1(s);              if(mk) ptr[mr] = pk; if(b) Jmp(a); break; }
-			case 0x0e: /* JSR */ { a=Pox(s);                        if(mk) ptr[mr] = pk; stk[mr^1].PU2(pc[0]), Jmp(a); break; }
-			case 0x0f: /* STH */ { Get(s, x);                       if(mk) ptr[mr] = pk; stk[mr^1].PU1(x[0]); if(m2) stk[mr^1].PU1(x[1]); break; }
+			case 0x0e: /* JSR */ { a=Pox(s);                        if(mk) ptr[mr] = pk; Pu2(stk[mr^1], pc[0]), Jmp(a); break; }
+			case 0x0f: /* STH */ { Get(s, x);                       if(mk) ptr[mr] = pk; Pu1(stk[mr^1], x[0]); if(m2) Pu1(stk[mr^1], x[1]); break; }
 			case 0x10: /* LDZ */ { a=Po1(s);                        if(mk) ptr[mr] = pk; Pek(s, a, x, 0xff); break; }
 			case 0x11: /* STZ */ { a=Po1(s), Get(s, y);             if(mk) ptr[mr] = pk; Pok(a, y, 0xff); break; }
 			case 0x12: /* LDR */ { a=Po1(s);                        if(mk) ptr[mr] = pk; Pek(s, pc[0] + Sig(a), x, 0xffff); break; }
