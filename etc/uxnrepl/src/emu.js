@@ -55,9 +55,9 @@ function Emu ()
 	this.uxn = new Uxn(this)
 	this.system = new System(this)
 	this.console = new Console(this)
+	this.date = new Date()
 
-	function doty() {
-		let now = new Date()
+	function doty(now) {
 		let start = new Date(now.getFullYear(), 0, 0)
 		let diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000)
 		let oneDay = 1000 * 60 * 60 * 24
@@ -65,17 +65,19 @@ function Emu ()
 	}
 
 	this.dei = (port) => {
+		if(port & 0xf == 0xc)
+			this.date = new Date()
 		switch (port) {
-		case 0xc0: { const now = new Date(); return now.getFullYear() >> 8; }
-		case 0xc1: { const now = new Date(); return now.getFullYear() & 0xff; }
-		case 0xc2: { const now = new Date(); return now.getMonth(); }
-		case 0xc3: { const now = new Date(); return now.getDate(); }
-		case 0xc4: { const now = new Date(); return now.getHours(); }
-		case 0xc5: { const now = new Date(); return now.getMinutes(); }
-		case 0xc6: { const now = new Date(); return now.getSeconds(); }
-		case 0xc7: { const now = new Date(); return now.getDay(); }
-		case 0xc8: { const now = new Date(); return doty() >> 8; }
-		case 0xc9: { const now = new Date(); return doty() & 0xff; }
+		case 0xc0: { return now.getFullYear() >> 8; }
+		case 0xc1: { return now.getFullYear() & 0xff; }
+		case 0xc2: { return now.getMonth(); }
+		case 0xc3: { return now.getDate(); }
+		case 0xc4: { return now.getHours(); }
+		case 0xc5: { return now.getMinutes(); }
+		case 0xc6: { return now.getSeconds(); }
+		case 0xc7: { return now.getDay(); }
+		case 0xc8: { return doty(now) >> 8; }
+		case 0xc9: { return doty(now) & 0xff; }
 		}
 		return this.uxn.dev[port]
 	}
