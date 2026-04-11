@@ -38,13 +38,7 @@ function Uxn (emu)
 		pc[0] = 0x100
 	}
 	
-	this.eval = (at) => {
-		let steps = 0x8000000
-		pc[0] = at;
-		while(steps-- && this.step());
-	}
-	
-	this.step = () => {
+	function step() {
 		const ins = ram[pc[0]++]
 		const mk = ins >> 7
 		const s = ins >> 6 & 1
@@ -96,6 +90,14 @@ function Uxn (emu)
 		}
 		return ins
 	}
+
+	
+	this.eval = (at) => {
+		let steps = 0x8000000
+		pc[0] = at;
+		while(steps-- && step());
+	}
+	
 
 	this.load = (program) => {
 		for (let i = 0; i <= program.length; i++)
