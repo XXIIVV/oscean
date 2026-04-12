@@ -863,9 +863,7 @@ c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
 </ul>
 
 <h3 id='linear_logic'>On Linear Logic</h3>
-<p>Traditional logic treats propositions as infinite, whereas linear logic accounts for resources. Rejoice is an attempt at making a linear logic playground in which every transformation equates to a transaction that consumes rules.</p>
-
-<p>In Rejoice, the linear logic <kbd>!</kbd> modality applies to rules, not to values. A one-shot fraction can freely duplicate or discard symbols(<code>x^2/x</code>), but the fraction itself is consumed after firing. Anonymous functions and the @label mechanism are what promote rules to unlimited use. This is illustrated with file handles: once file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement. A fraction requiring a consumed symbol doesn't crash, it just becomes dead code.</p>
+<p>Traditional logic treats propositions as infinite, whereas linear logic accounts for resources. Rejoice is an attempt at making a linear logic playground in which every transformation equates to a transaction that consumes rules. This is illustrated with file handles: once file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement.</p>
 
 <pre>
 file^1
@@ -873,22 +871,22 @@ file^1
 	read/file <i>( unreachable )</i>
 </pre>
 
-<p>Labelled rules can fire indefinitely, like a vending machine accepting any number of coins. Without @VendingMachine, the rule fires once and the program ends.</p>
+<p>A one-shot fraction can freely duplicate or discard symbols(<code>x^2/x</code>), but the fraction itself is consumed after firing. In Rejoice, anonymous functions and the @label mechanism are what promote rules to unlimited use. Labelled rules can fire indefinitely, like a vending machine accepting any number of coins. Without @VendingMachine, the rule fires once and the program ends.</p>
 
 <pre>coin^3
 
 @VendingMachine <i>( coin -- candy )</i>
 	[VendingMachine candy]/coin</pre>
 
-<p>Unlike linear types in traditional programming languages like Rust or Clean, where resource tracking constrains what programmers can do with <i>values</i>, in Rejoice linearity governs <i>rules</i>. Entities don't persist because they're protected, but because nothing consumed them.</p>
+<p>Unlike linear types in traditional programming languages like Rust or Clean, where resource tracking constrains what programmers can do with <i>values</i>, in Rejoice, linearity governs <i>rules</i> so entities persist because nothing consumed them, not because they're protected.</p>
 
 <h3 id='reversibility'>On Reversibility</h3>
 
-<p>Fractions are individually <a href='reversible_computing.html'>reversible</a>, the application of the denumerator over the numerator undoes a transformation.</p>
+<p>Multiplying by the inverse of a fraction, undoes the application of that fraction by multiplication, allowing for a certain level of <a href='reversible_computing.html'>reversibility</a>:</p>
 <pre>18 2/3 -> 12
 12 3/2 -> 18</pre>
 
-<p>In a program, things are less simple, if every fraction has exactly one forward rule per input and exactly one reverse rule per output state, the system cannot lose information. In this specific case, the entire program is reversible. Linear logic says that rules are resources consumed on use, so in the case of a logic gate, the gate symbol MUST be spent exactly once, producing a second symbol needed for the reverse.</p>
+<p>In an actual program, made of multiple fractions, things are not as simple. If every fraction has exactly one forward rule per input and exactly one reverse rule per output state, the system cannot lose information. In this specific case, the entire program is reversible. Linear logic says that rules are resources consumed on use, so in the case of a logic gate, the gate symbol MUST be spent exactly once, producing a second symbol needed for the reverse.</p>
 
 <pre>toffoli a b c
 
@@ -908,7 +906,8 @@ file^1
 <img src="../media/refs/billard.png" width="120" alt="Fredkin & Toffoli, 1982" style='float:right;margin-left:30px'>
 
 <p>I've always been interested in the connection between linear logic and reversibility, but lacked a language malleable enough so that reversibility could emerge naturally from its resource model rather than being bolted on top.</p>
-<p>Most programming languages I've come across are designed as if thermodynamics don't apply, and when it is considered, reversibility is either an afterthought or the language's entire point. In a linear resource model, every transformation must account for what it consumes, information cannot be silently acquired or discarded. Reversible computing might be a way toward zero energy dissipation, and this is how I choose to explore it!</p>
+<p>Most programming languages I've come across are designed as if thermodynamics don't apply, and when it is considered, reversibility is either an afterthought or the language's entire point. In a linear resource model, every transformation must account for what it consumes, information cannot be silently acquired or discarded.</p>
+<p>Reversible computing might be a way toward zero energy dissipation, and this is how I choose to explore it!</p>
 
 <h3 id='fractran'>On Fractran</h3>
 <p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label at the top. For example, the Fractran program: 225, 7/3, 7/5</p>
