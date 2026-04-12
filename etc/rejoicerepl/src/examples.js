@@ -312,8 +312,38 @@ d^128
 	Low/task`
 
 /*
-@|Special */
+@|Reversible */
 
+examples.toffoli = `( The Toffoli gate is a reversible CNOT gate with
+	two control bits[a,b] and one target bit[c]: )
+
+toffoli a b c
+
+( a & b: flip c )
+	[t a b]/[toffoli a b c]
+	[t a b c]/[toffoli a b]
+( a: pass through )
+	[t a c]/[toffoli a c]
+	[t a]/[toffoli a]
+( b: pass through )
+	[t b c]/[toffoli b c]
+	[t b]/[toffoli b]
+( c: cleanup )
+	[t c]/[toffoli c]
+	t/toffoli
+
+( reverse )
+	[toffoli a b]/[t a b c]
+	[toffoli a b c]/[t a b]
+	[toffoli a c]/[t a c]
+	[toffoli a]/[t a]
+	[toffoli b c]/[t b c]
+	[toffoli b]/[t b]
+	[toffoli c]/[t c]
+	toffoli/t`
+
+/*
+@|Special */
 
 examples.spirograph = `( inner cog: ) x^40
 ( outer cog  ) a^96
