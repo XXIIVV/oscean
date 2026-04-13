@@ -27,15 +27,13 @@
 	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
 </ul>
 
-<p>Evaluation consists of applying each fraction, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect. The following fraction is then tried, and so on. The program halts when there are no more fractions to apply.</p>
+<p>Evaluation consists of applying each fraction, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect. The following fraction is then tried, and so on. The program halts when the program counter reaches the end of the program.</p>
 
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" class='frame' style='height:450px'></iframe>
 </div>
 
 <q style='font-size:22px'>[] es nihil, identitate. []/n es predecessore. n es successore.</q>
-
-<h3>Basics</h3>
 
 <p>Rejoice is a single-instruction <a href='notation.html'>postfix notation</a>, read from left to right, in which fractions correspond to transformations applied by multiplication on a set of symbols.</p>
 
@@ -68,13 +66,6 @@ x y or
 	true/[y or]
 	false/or
 </pre>
-<pre style='margin-top:-29px'>
-[x y or] true/[x y or] true/[x or] true/[y or] false/or 
-[true] true/[x or] true/[y or] false/or 
-[true] true/[y or] false/or 
-[true] false/or 
-[true]
-</pre>
 
 <p>Lastly, here is an <b>AND</b> gate which also needs a sentinel symbol to capture the state when both inputs aren't present in the bag.</p>
 
@@ -88,16 +79,7 @@ x y and
 
 <h3>Labels</h3>
 
-<p>A @label is a special symbol that represents a jump target. When the corresponding label symbol enters the bag, execution continues from the @label position in the program. A conditional jump is done by inserting a label when specific things are found in the bag. The capitalization of label is merely a convention.</p>
-
-<pre>
-chores
-	SkipPlay/chores
-		play
-	@SkipPlay
-</pre>
-
-<p>Labels allow for programs to loop and drain symbols. For example, here is the implementation of a <b>greater</b> comparison:</p>
+<p>A @label is a special symbol that represents a jump target. When the corresponding label symbol enters the bag, execution continues from the @label position in the program. The capitalization of labels is merely a convention. For example, here is the implementation of a <b>greater-than</b> comparison:</p>
 <pre>
 x^3 y^2
 
@@ -137,32 +119,32 @@ x^3 y^4 'x/y
 x^2 y^5
 
 @Sub <i>( x y -- x|y )</i>
-	Sub/[x y] 'pos/x 'neg/y
-</pre>
-<pre style='margin-top:-29px'>
-[x^2 y^5] Sub/[x y] 'pos/x 'neg/y 
-[x y^4] Sub/[x y] 'pos/x 'neg/y 
-[y^3] Sub/[x y] 'pos/x 'neg/y 
-[y^3] 'pos/x 'neg/y 
-[y^3] ( ) 'neg/y 
-[neg^3] 
+	Sub/[x y]
+	'pos/x
+	'neg/y
 </pre>
 
-<p>Here's a slightly more complex program that finds the <b>product</b> of two numbers using multiple labels.</p>
+<p>Programs to find the <b>product</b> and <b>quotient</b> of two numbers are built from repeated additions and repeated subtractions:</p>
 <pre>
 x^2 y^3
 
 @Mul <i>( x y -- res )</i>
-	[Mul z res]/y 'y/z Mul/x '1/[y res]
+	[Mul z res]/y
+	'y/z
+	Mul/x
+	'1/[y res]
 </pre>
-
-<p>And the <b>quotient</b>:</p>
-<pre>
+<pre style='margin-top:-29px'>
 x^24 y^3
 
 @Div <i>( x y -- res )</i>
-	[Div t]/[y x] res 'y/t [Div x]/x '1/y
+	[Div t]/[y x]
+	res
+	'y/t
+	[Div x]/x
+	'1/y
 </pre>
+
 
 <h3>I/O</h3>
 <p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.bat^2</code> will emit <code>batbat</code>.</p>
@@ -192,6 +174,8 @@ times^100 f b
 <pre style='margin-top:-29px'>
 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, ..</pre>
 
+<div><center style='font-size:30px'>&bull;</center></div>
+
 <img src='../media/refs/rewrite_seele.png' style='width:140px;float:right;margin-left:30px'/>
 
 <h3>On Optimization</h3>
@@ -214,7 +198,8 @@ c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
 </ul>
 
 <h3 id='linear_logic'>On Linear Logic</h3>
-<p>Traditional logic treats propositions as infinite, whereas linear logic accounts for resources. Rejoice is an attempt at making a linear logic playground in which every transformation equates to a transaction that consumes rules. This is illustrated with file handles: once file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement.</p>
+
+<p>Traditional logic treats propositions as infinite, whereas linear logic accounts for resources. This is illustrated with file handles: once file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement. Typically, resource tracking constrains what programmers can do with <i>values</i>, in Rejoice, linearity governs <i>rules</i>, entities persist because nothing consumed them and not because they're protected.</p>
 
 <pre>
 file^1
@@ -222,23 +207,16 @@ file^1
 	read/file <i>( unreachable )</i>
 </pre>
 
-<p>A one-shot fraction can freely duplicate or discard symbols(<code>x^2/x</code>), but the fraction itself is consumed after firing. In Rejoice, anonymous functions and the @label mechanism are what promote rules to unlimited use. Labelled rules can fire indefinitely, like a vending machine accepting any number of coins. Without @VendingMachine, the rule fires once and the program ends.</p>
+<p>A one-shot fraction can freely duplicate or discard symbols(<code>x^2/x</code>), but the fraction itself is consumed after firing. Anonymous functions and the @label mechanism are what promote rules to unlimited use.</p>
 
 <pre>coin^3
 
 @VendingMachine <i>( coin -- candy )</i>
 	[VendingMachine candy]/coin</pre>
 
-<p>Unlike linear types in traditional programming languages like Rust or Clean, where resource tracking constrains what programmers can do with <i>values</i>, in Rejoice, linearity governs <i>rules</i> so entities persist because nothing consumed them, not because they're protected.</p>
-
 <h3 id='reversibility'>On Reversibility</h3>
 
-<p>Multiplying by the inverse of a fraction, undoes the application of that fraction by multiplication, allowing for a certain level of <a href='reversible_computing.html'>reversibility</a>:</p>
-
-<pre>18 2/3 -> 12
-12 3/2 -> 18</pre>
-
-<p>In an actual program, made of multiple fractions, a program is reversible if it has exactly one forward rule match per input state and exactly one reverse rule match per output state. If that holds, the system cannot lose information. </p>
+<p>Multiplying by the inverse of a fraction, undoes the application of that fraction, allowing for a certain level of <a href='reversible_computing.html'>reversibility</a> at the operand level. A program is reversible if it has exactly one forward rule match per input state and exactly one reverse rule match per output state. If that holds, the system cannot lose information.</p>
 
 <pre>
 a^3 b^2 <i>( fwd )</i> '[a c]/b -> a^5 c^2
@@ -246,7 +224,7 @@ a^5 c^2	<i>( bwd )</i> 'b/[a c] -> a^3 b^2</pre>
 
 <img src="../media/refs/billard.png" width="120" alt="Fredkin & Toffoli, 1982" style='float:right;margin-left:30px'>
 
-<p>To find if a program is within the subset of reversible programs: ignore any program with labels and check if there are any pairs of fractions whose denominators are compatible with the same input bag but whose numerators produce the same output. For example, the <code>OR</code> gate is proveably irreversible at compile-time, due to having converging outputs on true.</p>
+<p>To find if a program is within the subset of reversible programs: ignore any program with labels and check if there are any pairs of fractions whose denominators are compatible with the same input bag but whose numerators produce the same output. For example, the <code>OR</code> gate is proveably irreversible at compile-time, due to having converging outputs on <code>true</code>.</p>
 
 <pre>
 x y or
@@ -256,14 +234,8 @@ x y or
     false/or
 </pre>
 
-<p>I've always been interested in the connection between linear logic and reversibility, but lacked a language malleable enough so that reversibility could emerge naturally from its resource model rather than being bolted on top. Most programming languages I've come across are designed as if thermodynamics don't apply, and when it is considered, reversibility is either an afterthought or the language's entire point. </p>
-
-<!--
-<p>Reversible computing might be a way toward zero energy dissipation, and this is how I choose to explore it!</p>
--->
-
 <h3 id='fractran'>On Fractran</h3>
-<p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label at the top. For example, the Fractran program: 225, 7/3, 7/5</p>
+<p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label, at the top of the program, present in each numerator. For example, the Fractran program: 225, 7/3, 7/5</p>
 <pre>r3^2 r5^2
 
 @Fractran <i>( r3 r5 -- r3+r5.r7 )</i>
