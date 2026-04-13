@@ -673,7 +673,7 @@ showpage
 <ul>
 	<li>The <b>program state</b> is a bag of unordered things. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag, or identity, is represented as <code>[]</code>.</li>
 	<li><b>Symbols</b> are things in the bag written as either numeric decimal integers or names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[8 ball^2]</code> and <code>[2^3 ball ball]</code> are equal.</li>
-	<li><b>Transformations</b> are represented as fractions in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
+	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
 </ul>
 
 <p>Evaluation consists of applying each fraction, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect. The following fraction is then tried, and so on. The program halts when there are no more fractions to apply.</p>
@@ -887,17 +887,29 @@ file^1
 <pre>18 2/3 -> 12
 12 3/2 -> 18</pre>
 
-<p>In an actual program, made of multiple fractions, things are not as simple. If every fraction has exactly one forward rule per input and exactly one reverse rule per output state, the system cannot lose information and is reversible. Every transformation must account for what it consumes, information cannot be silently acquired or discarded.</p>
+<p>In an actual program, made of multiple fractions, a program is reversible if it has exactly one forward rule match per input state and exactly one reverse rule match per output state. If that holds, the system cannot lose information. </p>
 
 <pre>
-a^3 b^2 <i>( add     )</i> '[a c]/b -> a^5 c^2
-a^5 c^2	<i>( reverse )</i> 'b/[a c] -> a^3 b^2</pre>
+a^3 b^2 <i>( fwd )</i> '[a c]/b -> a^5 c^2
+a^5 c^2	<i>( bwd )</i> 'b/[a c] -> a^3 b^2</pre>
 
 <img src="../media/refs/billard.png" width="120" alt="Fredkin & Toffoli, 1982" style='float:right;margin-left:30px'>
 
+<p>To find if a program is within the subset of reversible programs: ignore any program with labels and check if there are any pairs of fractions whose denominators are compatible with the same input bag but whose numerators produce the same output. For example, the <code>OR</code> gate is proveably irreversible at compile-time, due to having converging outputs on true.</p>
+
+<pre>
+x y or
+    true/[x y or]
+    true/[x or]
+    true/[y or]
+    false/or
+</pre>
+
 <p>I've always been interested in the connection between linear logic and reversibility, but lacked a language malleable enough so that reversibility could emerge naturally from its resource model rather than being bolted on top. Most programming languages I've come across are designed as if thermodynamics don't apply, and when it is considered, reversibility is either an afterthought or the language's entire point. </p>
 
+<!--
 <p>Reversible computing might be a way toward zero energy dissipation, and this is how I choose to explore it!</p>
+-->
 
 <h3 id='fractran'>On Fractran</h3>
 <p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label at the top. For example, the Fractran program: 225, 7/3, 7/5</p>
