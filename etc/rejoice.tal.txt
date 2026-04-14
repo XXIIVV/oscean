@@ -38,29 +38,26 @@
 (
 @|Token )
 
-@token/on-console-comment ( -> )
-	[ LIT2 ") -Console/read ] DEI NEQ ?{ ;&on-console .Console/vector DEO2 }
-	BRK
-
-@token/on-console-bag ( -> )
-	.Console/read DEI
-	( | handlers )
-	DUP LIT "] NEQ ?{ ;&on-console .Console/vector DEO2 }
-	/<push>
-	BRK
-
 @token/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP #20 GTH ?{
-		/<parse>
-		#0a NEQ ?{ world/<eval> }
-		BRK }
 	DUP LIT "( NEQ ?{
 		;&on-console-comment .Console/vector DEO2
 		POP BRK }
-	DUP LIT "[ NEQ ?{ ;&on-console-bag .Console/vector DEO2 }
+	DUP LIT "[ NEQ ?{
+		,&depth LDR INC ,&depth STR }
+	DUP LIT "] NEQ ?{
+		,&depth LDR #01 SUB ,&depth STR }
+	[ LIT &depth $1 ] ?{
+		DUP #20 GTH ?{
+			/<parse>
+			#0a NEQ ?{ world/<eval> }
+			BRK } }
 	/<push>
+	BRK
+
+@token/on-console-comment ( -> )
+	[ LIT2 ") -Console/read ] DEI NEQ ?{ ;&on-console .Console/vector DEO2 }
 	BRK
 
 @token/<push> ( c -- )
@@ -82,14 +79,14 @@
 	( >> )
 
 @token/<parse-fraction> ( ztr -- )
-	( num bag ) /parse-bag world/<pop-scope>
+	( num bag ) item/parse-any-push world/<pop-scope>
 	world/<push-scope>
 	LDZk LIT "/ EQU ?{
 		( den bag [] ) world/<push-null>
 		world/<pop-scope>
 		POP !/<reset> }
 	INC
-	( den bag ) /parse-bag world/<pop-scope>
+	( den bag ) item/parse-any-push world/<pop-scope>
 	POP !/<reset>
 
 @token/<parse-quote> ( ztr -- )
@@ -103,18 +100,6 @@
 
 @token/<parse-label> ( ztr -- )
 	#00 SWP INC syms/find-alloc label/<create> !/<reset>
-
-@token/parse-bag ( ztr -- ztr )
-	LDZk LIT "[ EQU ?/parse-bag-complex
-	!item/parse-push
-
-@token/parse-bag-complex ( ztr -- ztr )
-	INC ztr/walk-ws
-	&>w
-		item/parse-push
-		&resume ( ztr -- ztr )
-		ztr/walk-ws LDZk [ LIT "] ] NEQ ?&>w
-	INC JMP2r
 
 (
 @|World )
@@ -245,6 +230,10 @@
 		( ref reg ) #7fff AND2 syms/get-name !str/<print> }
 	POP2 JMP2r
 
+@item/parse-any-push ( ztr -- ztr )
+	LDZk LIT "[ EQU ?/parse-wrap-push
+	( >> )
+
 @item/parse-push ( ztr -- ztr )
 	LDZk char/is-dec ?/parse-num-push
 	( | not numeric )
@@ -289,6 +278,12 @@
 @item/parse-prime ( ztr u16* id -- ztr )
 	STH
 	POP2 /walk-count #00 STHr !world/<push-count-id>
+
+@item/parse-wrap-push ( ztr -- ztr )
+	( walk [ ) INC ztr/walk-ws
+	&>wwp
+		/parse-push ztr/walk-ws LDZk [ LIT "] ] NEQ ?&>wwp
+	INC JMP2r
 
 @item/walk-count ( ztr -- ztr count* )
 	LDZk LIT "^ NEQ ?{
