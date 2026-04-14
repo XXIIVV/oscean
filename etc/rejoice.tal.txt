@@ -8,6 +8,7 @@
 	@token/buf $40
 	@item/buf $40
 	@goto/buf $40
+	@symbol/buf $40
 
 |100
 
@@ -35,6 +36,9 @@
 %tote/get-count ( id* -- count* ) {
 	DUP2 ADD2 ;tote/buf ADD2 LDA2 }
 
+%syms/get-name ( id* -- str* ) {
+	DUP2 ADD2 ;syms/buf ADD2 LDA2 }
+
 (
 @|Token )
 
@@ -53,17 +57,13 @@
 			/<parse>
 			#0a NEQ ?{ world/<eval> }
 			BRK } }
-	/<push>
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
 	BRK
 
 @token/on-console-comment ( -> )
 	[ LIT2 ") -Console/read ] DEI NEQ ?{ ;&on-console .Console/vector DEO2 }
 	BRK
-
-@token/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
 
 @token/<reset> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -166,37 +166,6 @@
 	/get-addr ;world/ptr LDA2 SWP2 STA2
 	JMP2r
 
-(
-@|Symbols )
-
-%syms/get-name ( id* -- str* ) {
-	DUP2 ADD2 ;syms/buf ADD2 LDA2 }
-
-@syms/<push> ( dict* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
-	STA2
-	JMP2r
-
-@syms/find-alloc ( str* -- id* )
-	STH2
-	,&ptr LDR2 ;&buf
-	&>lfa
-		LDA2k STH2kr str/compare ?{
-			INC2 INC2 GTH2k ?&>lfa
-		POP2
-		( | alloc )
-		;&buf SUB2 #01 SFT2 STH2r dict/alloc !/<push> }
-	( | found )
-	POP2r NIP2 ;&buf SUB2 #01 SFT2 JMP2r
-
-@syms/<print-count-id> ( id* -- )
-	STH2k /get-name ORAk ?{
-		POP2 DUP2r ADD2r STH2r primes/id-prime !u16/<print-dec> }
-	POP2r
-	( | quoted )
-	LDAk LIT "' NEQ ?{ LDA !char/<print> }
-	!str/<print>
-
 @goto/step ( addr* -- addr* )
 	[ LIT2 -&buf _&ptr ] LDR EQU ?{
 		POP2 ,&ptr LDR #02 SUB DUP ,&ptr STR
@@ -239,12 +208,7 @@
 	( | not numeric )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
-		LDZk
-		( | handlers )
-		DUP #21 LTH ?/parse-sym-push
-		DUP LIT "/ EQU ?/parse-sym-push
-		DUP LIT "] EQU ?/parse-sym-push
-		DUP LIT "^ EQU ?/parse-sym-push
+		LDZk DUP symbol/is-spacer ?/parse-sym-push
 		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 		STZ2
 		INC2 !&>w
@@ -288,7 +252,7 @@
 @item/walk-count ( ztr -- ztr count* )
 	LDZk LIT "^ NEQ ?{
 		INC LDZk char/is-dec ?{
-			( ref reg ) #00 SWP syms/find-alloc #80 SWP JMP2r }
+			( ref reg ) #00 OVR syms/find-alloc #80 SWP !symbol/walk }
 		( num reg ) !dec-ztr/walk-u16 }
 	( def reg ) #0001 JMP2r
 
@@ -442,6 +406,49 @@
 
 (
 @|Dict )
+
+@symbol/is-spacer ( c -- t )
+	DUP LIT 21 LTH ?{
+		DUP LIT "/ EQU ?{
+			DUP LIT "] EQU ?{ LIT "^ EQU JMP2r } } }
+	POP #01 JMP2r
+
+@symbol/walk ( ztr -- ztr )
+	&>ww
+		LDZk /is-spacer ?{ INC2 !&>ww }
+	JMP2r
+
+@symbol/new ( str* -- str* )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
+	&>wn
+		LDAk /is-spacer ?{
+			LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+			STZ2
+			INC2 !&>wn }
+	POP2 ;&buf JMP2r
+
+@syms/find-alloc ( str* -- id* )
+	symbol/new STH2
+	,&ptr LDR2 ;&buf
+	&>lfa
+		LDA2k STH2kr str/compare ?{
+			INC2 INC2 GTH2k ?&>lfa
+		POP2
+		( | alloc )
+		;&buf SUB2 #01 SFT2 STH2r dict/alloc [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+		STA2
+		JMP2r }
+	( | found )
+	POP2r NIP2 ;&buf SUB2 #01 SFT2 JMP2r
+
+@syms/<print-count-id> ( id* -- )
+	STH2k /get-name ORAk ?{
+		POP2 DUP2r ADD2r STH2r primes/id-prime !u16/<print-dec> }
+	POP2r
+	( | quoted )
+	LDAk LIT "' NEQ ?{ LDA !char/<print> }
+	!str/<print>
 
 @primes/id-prime ( id* -- prime* )
 	;&lut ADD2 LDA2 JMP2r
