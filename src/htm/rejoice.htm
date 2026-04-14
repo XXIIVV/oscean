@@ -60,74 +60,80 @@ x y and
 	false/and
 </pre>
 
-<h3>Labels</h3>
+<h3>Arithmetic</h3>
 
-<p>A @label is a special symbol that represents a jump target. When the corresponding label symbol enters the bag, execution continues from the @label position in the program. The capitalization of labels is merely a convention. For example, here is the implementation of a <b>greater-than</b> comparison:</p>
+<p>Exponents can reference other symbols, their value is resolved at the time the fraction is evaluated, for example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
 <pre>
-x^3 y^2
-
-@Gth <i>( x y -- x y true|false )</i>
-	Gth/[x y]
-	true/x Gth/x
-	false/y Gth/y
+x^2 y^5
+	x^y
+	[]/y^y
+</pre>
 </pre>
 <pre style='margin-top:-29px'>
-[x^3 y^2] Gth/[x y] true/x Gth/x false/y Gth/y 
-[x^2 y] Gth/[x y] true/x Gth/x false/y Gth/y 
-[x] Gth/[x y] true/x Gth/x false/y Gth/y 
-[x] true/x Gth/x false/y Gth/y 
-[true] Gth/x false/y Gth/y 
-[true] false/y Gth/y 
-[true] Gth/y 
-[true]
+[x^2 y^5] x^y []/y^y 
+[x^7 y^5] []/y^y 
+[x^7] 
+</pre>
+
+<p>To find the <b>difference</b> between two values, the program removes as many instances of <code>x</code> as there are of <code>y</code>:</p>
+<pre>
+x^5 y^2
+	[]/x^y
+	[]/y^y
+</pre>
+<pre style='margin-top:-29px'>
+[x^5 y^2] []/x^y []/y^y 
+[x^3 y^2] []/y^y 
+[x^3] 
+</pre>
+
+<p>A non-destructive way, in which the original symbols are not consumed by the comparison, to find if <code>x</code> is <b>greater than</b> <code>y</code>, the program tries to copy one register into the other, and vice-versa, if both are possible, the values are <b>equal</b>:</p>
+<pre>
+x^3 y^2 cmp
+    [equ x^y y^x]/[cmp x^y y^x]
+    [gth x^y]/[cmp x^y]
+    [lth y^x]/[cmp y^x]
+</pre>
+<pre style='margin-top:-29px'>
+[x^3 y^2] cmp [equ x^y y^x]/[cmp x^y y^x] [gth x^y]/[cmp x^y] [lth y^x]/[cmp y^x] 
+[x^3 y^2 cmp] [equ x^y y^x]/[cmp x^y y^x] [gth x^y]/[cmp x^y] [lth y^x]/[cmp y^x] 
+[x^3 y^2 cmp] [gth x^y]/[cmp x^y] [lth y^x]/[cmp y^x] 
+[x^3 y^2 gth] [lth y^x]/[cmp y^x] 
+[x^3 y^2 gth]
+</pre>
+
+<h3>Labels</h3>
+
+<p>A @label is a special symbol that represents a jump target. When the corresponding label symbol enters the bag, execution continues from the @label position in the program. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
+<pre>
+x^2 y^3
+
+@Mul ( x y -- res )
+	[Mul res^x]/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^3] [Mul res^x]/y 
+[x^2 y^2 res^2] [Mul res^x]/y 
+[x^2 y res^4] [Mul res^x]/y 
+[x^2 res^6] [Mul res^x]/y 
+[x^2 res^6] 
 </pre>
 
 <h3>Anonymous Functions</h3>
 
-<p>Anonymous functions are operations that are retried until the denominator is no longer present in the bag. For example, the addition fraction <code>@Add [x Add]/y</code>, can also be written as <code>'x/y</code>, telling the compiler to create a symbol at the fraction's position in the program.</p>
+<p>Anonymous functions are operations that are retried until the denominator is no longer present in the bag. For example, here is a program to find the <b>quotient</b>:</p>
 
 <pre>
-x^3 y^4 'x/y
+x^24 y^6 'res/x^y
 </pre>
 <pre style='margin-top:-29px'>
-[x^3] y^4 'x/y 
-[x^3 y^4] ( ) 'x/y 
-[x^7] 
+[x^24 y^6] 'res/x^y 
+[x^18 y^6 res] 'res/x^y 
+[x^12 y^6 res^2] 'res/x^y 
+[x^6 y^6 res^3] 'res/x^y 
+[y^6 res^4] 'res/x^y 
+[y^6 res^4] 
 </pre>
-
-<h3>Arithmetic</h3>
-
-<p>To find the <b>difference</b> between two values, the program removes one of each symbol until exhaustion, leaving either <code>x</code> for a positive result, or <code>y</code> for a negative result:</p>
-<pre>
-x^2 y^5
-
-@Sub <i>( x y -- x|y )</i>
-	Sub/[x y]
-	'pos/x
-	'neg/y
-</pre>
-
-<p>Programs to find the <b>product</b> and <b>quotient</b> of two numbers are built from repeated additions and repeated subtractions:</p>
-<pre>
-x^2 y^3
-
-@Mul <i>( x y -- res )</i>
-	[Mul z res]/y
-	'y/z
-	Mul/x
-	'1/[y res]
-</pre>
-<pre style='margin-top:-29px'>
-x^24 y^3
-
-@Div <i>( x y -- res )</i>
-	[Div t]/[y x]
-	res
-	'y/t
-	[Div x]/x
-	'1/y
-</pre>
-
 
 <h3>I/O</h3>
 <p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.bat^2</code> will emit <code>batbat</code>.</p>
