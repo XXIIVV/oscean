@@ -111,22 +111,14 @@ examples.tropical = `( In Tropical Arithmetic, the multiplication operation is a
 examples.product = `( A program to multiply two numbers
 	and print the result: )
 
-x^2 y^3
-
-@Mul ( x y -- res )
-	[Mul t res]/y 'y/t Mul/x '1/[y res]
-
-.#res`
+x^8 y^3
+	'res^x/y .#res`
 
 examples.quotient = `( A program to divides a number by another
 	and print the result: )
 
 x^24 y^3
-
-@Div ( x y -- res )
-	[Div t]/[y x] res 'y/t [Div x]/x '1/y
-
-.#res`
+	'res/x^y .#res`
 
 examples.gcd = `( A program to find the GCD of two numbers,
 	and print the result: )
@@ -134,7 +126,10 @@ examples.gcd = `( A program to find the GCD of two numbers,
 x^6 y^15
 
 @Gcd ( x y -- x )
-	[Gcd z]/[x y] 'y/x 'x/z [Gcd y]/y
+	'z/[x y]
+	y^x/x^x
+	x^z/z^z 
+	[Gcd y]/y
 
 .#x`
 
@@ -348,17 +343,16 @@ toffoli a b c
 examples.spirograph = `( inner cog: ) x^40
 ( outer cog  ) a^96
 
-( y y2 copy )  
-
-'[y y2]/a
+( a -> y,y2 ) [y^a y2^a]/a^a
 
 @Gcd ( x y -- x )
-	[Gcd z]/[x y] 'y/x 'x/z [Gcd y]/y
+	'z/[x y]
+	y^x/x^x
+	x^z/z^z
+	[Gcd y]/y
 
-@Div ( y2 x -- res )
-	[Div t]/[y2 x] res 'x/t [Div y2]/y2 '1/x
-
-.Turns:\\s .#res`
+( y2/x  ) 'res/y2^x
+( print ) .Turns:\\s .#res`
 
 examples.proquints = `( high byte ) byte1^128
 ( low byte  ) byte2^30
