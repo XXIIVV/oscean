@@ -837,25 +837,6 @@ times^100 f b
 
 <img src='../media/refs/rewrite_seele.png' style='width:140px;float:right;margin-left:30px'/>
 
-<h3>On Optimization</h3>
-<p>There are various levels of optimizations possible, the interpreter implements one in which <i>draining</i> symbols with anonymous functions is done in a single step. This allows for moving or copying values from a single denominator, to any number of symbols, without having to run through each value one at a time.</p>
-
-<pre>
-c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
-</pre>
-<pre style='margin-top:-29px'>
-[] c^5 '[a b]/c 
-[c^5] ( ) '[a b]/c 
-[a^5 b^5] 
-</pre>
-
-<ul>
-	<li><code>'x/a</code>: One symbol to another.</li>
-	<li><code>'[x y]/a</code>: One symbol to many symbols.</li>
-	<li><code>'[x^2 y]/a</code>: One symbol to many symbol, multiple values at a time.</li>
-	<li><code>'[x^2 y]/a^4</code>: Multiple values from one symbol to many symbols.</li>
-</ul>
-
 <h3 id='linear_logic'>On Linear Logic</h3>
 
 <p>Traditional logic treats propositions as infinite, whereas linear logic accounts for resources, using something changes the world. This is illustrated with file handles: once file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement.</p>
@@ -893,6 +874,41 @@ x y or
     true/[x or]
     true/[y or]
     false/or
+</pre>
+
+<h3>On Optimization</h3>
+<p>There are various levels of optimizations possible, the interpreter might choose to <i>drain</i> symbols by anonymous functions in a single step. This allows for moving or copying values from a single denominator, to any number of symbols, without having to run through each value one at a time. But each layer of optimization adds runtime costs.</p>
+
+
+<ul>
+	<li><code>'x/a</code>: One symbol to another.</li>
+	<li><code>'[x y]/a</code>: One symbol to many symbols.</li>
+	<li><code>'[x^2 y]/a</code>: One symbol to many symbol, multiple values at a time.</li>
+	<li><code>'[x^2 y]/a^4</code>: Multiple values from one symbol to many symbols.</li>
+	<li><code>'[x^2 y]/[a^4 b^3]</code>: Multiple values from multiple symbols to many symbols.</li>
+</ul>
+
+<pre>
+c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
+</pre>
+<pre style='margin-top:-29px'>
+[c^5] '[a b]/c 
+[c^4 a b] '[a b]/c 
+[c^3 a^2 b^2] '[a b]/c 
+[c^2 a^3 b^3] '[a b]/c 
+[c a^4 b^4] '[a b]/c 
+[a^5 b^5] '[a b]/c 
+[a^5 b^5] 
+</pre>
+
+<p>It was discovered that a lot of these loop-shaped behaviors are better handled explicitly with variable exponents:</p>
+
+<pre>
+c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
+</pre>
+<pre style='margin-top:-29px'>
+[c^5] [a^c b^c]/c^c 
+[a^5 b^5] 
 </pre>
 
 <h3 id='fractran'>On Fractran</h3>
