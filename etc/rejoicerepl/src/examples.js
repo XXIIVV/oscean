@@ -88,16 +88,13 @@ coin/marble
 
 examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-n^9
+t1 n^9
 
 @Fib ( n -- )
-	[]/n^3 b^1
-	@FibLoop ( n a b -- b )
-		't/a '[t a]/b 'b/t
-		FibLoop/n
-	'[]/a
-
-.#b`
+	t1^t2/t2^t2
+	t2^next/next^next
+	.#t2 .\\s
+	[Fib next^t0 next^t1]/n`
 
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
