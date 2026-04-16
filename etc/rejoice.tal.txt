@@ -22,7 +22,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Apr 20 "2026 $2
+	( date ) "15 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -55,7 +55,8 @@
 	[ LIT &depth $1 ] ?{
 		DUP #20 GTH ?{
 			/<parse>
-			#0a NEQ ?{ world/<eval> }
+			/<reset>
+			#0a NEQ ?{ validator/get-error ?{ world/<eval> } }
 			BRK } }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
@@ -75,6 +76,9 @@
 	( exists ) LDZk ?{ POP JMP2r }
 	( @label ) LDZk LIT "@ EQU ?/<parse-label>
 	( 'quote ) LDZk LIT "' EQU ?/<parse-quote>
+	;world/ptr LDA2 ROT /<parse-operand> !validator/<validate>
+
+@token/<parse-operand> ( ztr -- )
 	world/<push-scope>
 	( >> )
 
@@ -84,10 +88,10 @@
 	LDZk LIT "/ EQU ?{
 		( den bag [] ) world/<push-null>
 		world/<pop-scope>
-		POP !/<reset> }
+		POP JMP2r }
 	INC
 	( den bag ) item/parse-any-push world/<pop-scope>
-	POP !/<reset>
+	POP JMP2r
 
 @token/<parse-quote> ( ztr -- )
 	#0001 ;&quote-name syms/find-alloc DUP2 label/<create>
@@ -99,7 +103,7 @@
 	&quote-name "' [ &id "0 00 ]
 
 @token/<parse-label> ( ztr -- )
-	#00 SWP INC syms/find-alloc label/<create> !/<reset>
+	#00 SWP INC syms/find-alloc !label/<create>
 
 (
 @|World )
@@ -339,11 +343,11 @@
 	( dup addr* ) ORAk ?/<put-label>
 	( pop addr* ) POP2
 	( | add )
-	/mod /get-register ADD2 SWP2 STA2
+	/mod /get-register ADD2 SWP2 #7fff AND2 STA2
 	JMP2r
 
 @tote/<take> ( item* -- )
-	/mod /get-register SUB2 SWP2 STA2
+	/mod /get-register SUB2 SWP2 #7fff AND2 STA2
 	JMP2r
 
 @tote/can-apply ( fraction* -- fraction* t )
@@ -390,6 +394,42 @@
 	POP2 POP2 JMP2r
 
 (
+@|Validator )
+
+@validator/get-error ( -- exists )
+	[ LIT &count $1 ] JMP2r
+
+@validator/<set-error> ( msg* -- )
+	[ LIT2 01 _&count ] STR
+	;dict/err str/<print>
+	str/<print>
+	;token/buf str/<print>
+	[ LIT2 ". 19 ] DEO
+	#0a19 DEO
+	JMP2r
+
+@validator/<validate> ( ptr* -- )
+	( num ) /<validate-fragment>
+	( den ) /<validate-fragment>
+	POP2 JMP2r
+
+@validator/<validate-fragment> ( ptr* -- )
+	LDA2k SWP2 INC2 INC2
+	&>lvf
+		/is-unique ?{ ;dict/err-assign /<set-error> }
+		item/next GTH2k ?&>lvf
+	POP2 JMP2r
+
+@validator/is-unique ( to* from* -- to* from* t )
+	OVR2 OVR2 LDA2k STH2
+	&>lf
+		item/next EQU2k ?{
+			LDA2k STH2kr NEQ2 ?{
+				POP2 POP2 POP2r #00 JMP2r }
+			!&>lf }
+	POP2 POP2 POP2r #01 JMP2r
+
+(
 @|Dict )
 
 @symbol/is-spacer ( c -- t )
@@ -425,7 +465,9 @@
 			INC2 INC2 GTH2k ?&>lfa
 		POP2
 		( | alloc )
-		;&buf SUB2 #01 SFT2 STH2r dict/alloc [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+		;&buf SUB2 #01 SFT2 STH2r dict/alloc
+		( | push )
+		[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 		STA2
 		JMP2r }
 	( | found )
@@ -458,6 +500,8 @@
 		INC2 !&>w
 
 @dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
+	&err "Error: 20 00
+	&err-assign "Duplicate 20 "in 20 00
 
 (
 @|Stdlib )
@@ -465,7 +509,8 @@
 @dec-ztr/walk-u16 ( ztr -- ztr u16* )
 	[ LIT2r 0000 ]
 	&>w16
-		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STH2r JMP2r }
+		LDZk LIT "0 SUB DUP #0a LTH ?{
+			POP STH2r #7fff AND2 JMP2r }
 		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
 		ADD2r INC !&>w16
 

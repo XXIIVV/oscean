@@ -94,7 +94,8 @@ t1 n^9
 	t1^t2/t2^t2
 	t2^next/next^next
 	.#t2 .\\s
-	[Fib next^t0 next^t1]/n`
+	next^t0 next^t1
+	Fib/n`
 
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
@@ -160,14 +161,14 @@ or true false
 ( not ) false/[not true] true/[not false]
 
 ( and )
-true/[and true true]
+true/[and true^2]
 false/[and true false]
-false/[and false false]
+false/[and false^2]
 
 ( or )
 true/[or false true]
-true/[or true true]
-false/[or false false]`
+true/[or true^2]
+false/[or false^2]`
 
 examples.binary_adder = `( Put two binary numbers in the bag:
   Bit   b7 b6 b5 b4 b3 b2 b1 b0 )
@@ -243,14 +244,14 @@ or bt0 bt-
 ( U, id  ) bt+/[e bt+] bt0/[e bt0] bt-/[e bt-] 
 
 ( and )
-bt-/[and bt+ bt-] bt-/[and bt0 bt-] bt-/[and bt- bt-]
-bt0/[and bt+ bt0] bt0/[and bt0 bt0] bt0/[and bt- bt0]
-bt+/[and bt+ bt+] bt+/[and bt0 bt+] bt+/[and bt- bt+]
+bt-/[and bt+ bt-] bt-/[and bt0 bt-] bt-/[and bt-^2]
+bt0/[and bt+ bt0] bt0/[and bt0^2]   bt0/[and bt- bt0]
+bt+/[and bt+^2]   bt+/[and bt0 bt+] bt+/[and bt- bt+]
 
 ( or )
-bt+/[or bt+ bt-] bt0/[or bt0 bt-] bt-/[or bt- bt-]
-bt+/[or bt+ bt0] bt0/[or bt0 bt0] bt-/[or bt- bt0]
-bt+/[or bt+ bt+] bt0/[or bt0 bt+] bt-/[or bt- bt+]`
+bt+/[or bt+ bt-] bt0/[or bt0 bt-] bt-/[or bt-^2]
+bt+/[or bt+ bt0] bt0/[or bt0^2]   bt-/[or bt- bt0]
+bt+/[or bt+^2]   bt0/[or bt0 bt+] bt-/[or bt- bt+]`
 
 /*
 @|Hex */
