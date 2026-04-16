@@ -305,18 +305,18 @@
 %tote/next-cell ( addr* -- next* ) {
 	INC2 INC2 }
 
-@tote/get-register ( count/reg* -- value* )
-	OVR #80 AND ?{ JMP2r }
-	#7fff AND2 /get-addr LDA2 JMP2r
-
 %tote/lacks ( addr* -- addr* t ) {
-	( addr* mod* ) INC2k INC2 LDA2 /get-register OVR2 LDA2 /get-count GTH2 }
+	( addr* mod* ) /get-register OVR2 LDA2 /get-count GTH2 }
 
-%tote/mod ( item* -- addr* count* mod* ) {
-	( item* . mod* ) INC2k INC2 LDA2 STH2
-	( id* . mod* ) LDA2
-	( addr* count* . mod* ) DUP2 ADD2 ;&buf ADD2 LDA2k
-	( addr* count+mod* ) STH2r }
+%tote/<mod-item> ( count* id* -- ) {
+	tote/get-addr LDA2k ROT2 ADD2 SWP2 STA2 }
+
+%tote/<take> ( item* -- ) {
+	/get-register #0000 SWP2 SUB2 SWP2 LDA2 /<mod-item> }
+
+@tote/get-register ( item* -- item* value* )
+	INC2k INC2 LDA2 OVR #80 AND ?{ JMP2r }
+	#7fff AND2 /get-addr LDA2 JMP2r
 
 @tote/<put-print> ( item* name* -- )
 	str/<set-print>
@@ -327,13 +327,6 @@
 		INC2 ORAk ?&>lpp
 	POP2 POP2r !str/<set-debug>
 
-@tote/<put-emit> ( name* -- )
-	LDAk LIT "# NEQ ?str/<print>
-	INC2 syms/find-alloc /get-count !u16/<print-dec>
-
-@tote/<put-label> ( item* addr* -- )
-	NIP2 !goto/<push>
-
 @tote/<put> ( item* -- )
 	LDA2k syms/get-name
 	( dup name* ) LDAk LIT ". EQU ?/<put-print>
@@ -341,14 +334,14 @@
 	( | detect label )
 	LDA2k label/get
 	( dup addr* ) ORAk ?/<put-label>
-	( pop addr* ) POP2
-	( | add )
-	/mod /get-register ADD2 SWP2 #7fff AND2 STA2
-	JMP2r
+	( pop addr* ) POP2 !queue/<put>
 
-@tote/<take> ( item* -- )
-	/mod /get-register SUB2 SWP2 #7fff AND2 STA2
-	JMP2r
+@tote/<put-emit> ( name* -- )
+	LDAk LIT "# NEQ ?str/<print>
+	INC2 syms/find-alloc /get-count !u16/<print-dec>
+
+@tote/<put-label> ( item* addr* -- )
+	NIP2 !goto/<push>
 
 @tote/can-apply ( fraction* -- fraction* t )
 	( den/from* ) LDA2k
@@ -360,6 +353,7 @@
 @tote/<apply> ( fraction* -- )
 	/<print>
 	/can-apply ?{ POP2 JMP2r }
+	queue/<reset>
 	( | put )
 	LDA2k OVR2 /next-cell
 	&>lap
@@ -371,7 +365,7 @@
 	&>lat
 		DUP2 /<take>
 		item/next GTH2k ?&>lat
-	POP2 POP2 JMP2r
+	POP2 POP2 !queue/<apply>
 
 @tote/<print> ( -- )
 	[ LIT2 "[ 19 ] DEO
@@ -391,6 +385,27 @@
 	&>lc
 		#0000 OVR2 STA2
 		/next-cell GTH2k ?&>lc
+	POP2 POP2 JMP2r
+
+@queue/<reset> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@queue/<put> ( item* -- item* )
+	( id* ) LDA2 /<push>
+	( count* ) tote/get-register
+	( >> )
+	&<push> ( value* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@queue/<apply> ( -- )
+	,&ptr LDR2 ;&buf
+	&>l
+		EQU2k ?{
+			INC2k INC2 LDA2 OVR2 LDA2 tote/<mod-item>
+			item/next !&>l }
 	POP2 POP2 JMP2r
 
 (
@@ -611,6 +626,9 @@
 	05b3 05bf 05c9 05cb 05cf 05d1 05d5 05db
 	05e7 05f3 05fb 0607 060d 0611 0617 061f
 	0623 062b 062f 063d 0641 0647 0649 064d ]
+
+@queue/buf ( id*, mod*, id*, mod*.. )
+	$40
 
 @tote/buf ( length*, length*, length*.. )
 	$200 &buf-end
