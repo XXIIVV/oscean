@@ -58,7 +58,7 @@ false not
 [true]
 </pre>
 
-<p>The different cases are sequenced one after the other, here is a <b>OR</b> gate. Note the need for a <i>sentinel</i> symbol, <code>or</code>, that persists through each case. Without which, the false case could not be reached.</p>
+<p>The different cases are sequenced one after the other, here is a <b>OR</b> gate. Note the need for a <i>sentinel</i> symbol, <code>or</code>, that persists through each case, without which, the false case could not be reached.</p>
 <pre>
 x y or
 	true/[x y or]
@@ -104,16 +104,17 @@ x^5 y^2
 [x^3] 
 </pre>
 
-<p>A non-destructive way, in which the original symbols are not consumed by the comparison, to find if <code>x</code> is <b>greater than</b> <code>y</code>, the program tries to fit one register into the other:</p>
+<p>The following finds whether x is greater than y without consuming the original symbols:</p>
 <pre>
 x^7 y^6 gth
 	[false y^x]/[gth y^x]
 	true/gth
 </pre>
 <pre style='margin-top:-29px'>
-[x^6 y^6 gth] [false y^x]/[gth y^x] true/gth 
-[x^6 y^6 false] true/gth 
-[x^6 y^6 false] 
+[x^7 y^6] gth [false y^x]/[gth y^x] true/gth 
+[x^7 y^6 gth] [false y^x]/[gth y^x] true/gth 
+[x^7 y^6 gth] true/gth 
+[x^7 y^6 true] 
 </pre>
 
 <h3>Labels</h3>
@@ -190,7 +191,7 @@ times^100 f b
 
 <h3 id='linear_logic'>On Linear Logic</h3>
 
-<p>Traditional logic treats propositions as infinite, whereas linear logic accounts for resources, using something changes the world. This is illustrated with file handles: once file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement.</p>
+<p>Traditional logic treats propositions as inexhaustible, whereas linear logic accounts for resources, using something changes the world. This is illustrated with file handles: once the file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement.</p>
 
 <pre>
 file^1
@@ -205,11 +206,11 @@ file^1
 @VendingMachine <i>( coin -- candy )</i>
 	[VendingMachine candy]/coin</pre>
 
-<p>Typically, resource tracking constrains what programmers can do with <i>values</i>, in Rejoice, linearity governs <i>rules</i>, entities persist because nothing consumed them and not because they're protected.</p>
+<p>Typically, resource tracking constrains what programmers can do with <i>values</i>, but here, entities persist because nothing consumed them, not because they're protected.</p>
 
 <h3 id='reversibility'>On Reversibility</h3>
 
-<p>Multiplying by the inverse of a fraction, undoes the application of that fraction, allowing for a certain level of <a href='reversible_computing.html'>reversibility</a> at the operand level. A program is reversible if it has exactly one forward rule match per input state and exactly one reverse rule match per output state. If that holds, the system cannot lose information.</p>
+<p>Multiplying by the inverse of a fraction undoes the application of that fraction, allowing for a certain level of <a href='reversible_computing.html'>reversibility</a> at the operand level. A program is reversible if it has exactly one forward rule match per input state and exactly one reverse rule match per output state. If that holds, the system cannot lose information.</p>
 
 <pre>
 a^3 b^2 <i>( fwd )</i> '[a c]/b -> a^5 c^2
@@ -217,7 +218,7 @@ a^5 c^2	<i>( bwd )</i> 'b/[a c] -> a^3 b^2</pre>
 
 <img src="../media/refs/billard.png" width="120" alt="Fredkin & Toffoli, 1982" style='float:right;margin-left:30px'>
 
-<p>To find if a program is within the subset of reversible programs: ignore any program with labels and check if there are any pairs of fractions whose denominators are compatible with the same input bag but whose numerators produce the same output. For example, the <code>OR</code> gate is proveably irreversible at compile-time, due to having converging outputs on <code>true</code>.</p>
+<p>To find if a program is within the subset of reversible programs: ignore any program with labels and check if there are any pairs of fractions whose denominators are compatible with the same input bag but whose numerators produce the same output. For example, the <code>OR</code> gate is provably irreversible at compile-time, due to having converging outputs on <code>true</code>.</p>
 
 <pre>
 x y or
@@ -228,7 +229,7 @@ x y or
 </pre>
 
 <h3>On Optimization</h3>
-<p>There are various levels of optimizations possible, the interpreter might choose to <i>drain</i> symbols by anonymous functions in a single step. This allows for moving or copying values from a single denominator, to any number of symbols, without having to run through each value one at a time. But each layer of optimization adds runtime costs.</p>
+<p>There are various levels of optimizations possible, the interpreter might choose to <i>drain</i> symbols by anonymous functions in a single step. This allows for moving or copying values from a single denominator to any number of symbols, without having to run through each value one at a time. But each layer of optimization adds runtime costs.</p>
 
 
 <ul>
@@ -252,7 +253,7 @@ c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
 [a^5 b^5] 
 </pre>
 
-<p>It was discovered that a lot of these loop-shaped behaviors are better handled explicitly with variable exponents:</p>
+<p>Many of these loop-shaped behaviors are better handled explicitly with variable exponents instead of labels:</p>
 
 <pre>
 c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
@@ -263,7 +264,7 @@ c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
 </pre>
 
 <h3 id='fractran'>On Fractran</h3>
-<p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label, at the top of the program, present in each numerator. For example, the Fractran program: 225, 7/3, 7/5</p>
+<p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label, at the top of the program, present in each numerator. For example, the Fractran program: [3^2 5^2], 7/3, 7/5</p>
 <pre>r3^2 r5^2
 
 @Fractran <i>( r3 r5 -- r3+r5.r7 )</i>
@@ -281,7 +282,7 @@ c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
 [r7^4]
 </pre>
 
-<h3 id='beastiary'>Beastiary</h3>
+<h3 id='Bestiary'>Bestiary</h3>
 
 <table border='1'>
 	<tr><th colspan='3'>Balanced Multiset Combinators</th></tr>
@@ -291,24 +292,24 @@ c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
 	<tr><td><code>[x y]/[y x]</code></td><td>Penguin</td>    <td>Orderless testing</td></tr>
 	<tr><td><code>[x y]/[x z]</code></td><td>Catalyst</td><td>Guarded rewrite</td></tr>
 
-	<tr><th colspan='3'>Strenghtening Multiset Combinators</th></tr>
+	<tr><th colspan='3'>Strengthening Multiset Combinators</th></tr>
 	<tr><td><code>x</code></td>       <td>Regent</td>          <td>Production</td></tr>
 	<tr><td><code>x^x</code></td><td>Echo</td>    <td>Double</td></tr>
 	<tr><td><code>x^y</code></td><td>Narcissus</td>    <td>Addition/Power</td></tr>
 
 	<tr><th colspan='3'>Weakening Multiset Combinators</th></tr>
 	<tr><td><code>[]/x</code></td>       <td>Lamp</td>            <td>Weakening</td></tr>
-	<tr><td><code>[]/[x x]</code></td>     <td>Gemini</td>          <td>Merge elimination</td></tr>
-	<tr><td><code>[]/[x y]</code></td>   <td>Lovers</td>          <td>Parallel erase</td></tr>
 	<tr><td><code>[]/x^x</code></td><td>Ouroboros</td> <td>Drain</td></tr>
 	<tr><td><code>[]/x^y</code></td><td>Thief</td> <td>Subtraction</td></tr>
+	<tr><td><code>[]/x^z</code></td>     <td>Gemini</td>          <td>Merge elimination</td></tr>
+	<tr><td><code>[]/[x y]</code></td>   <td>Lovers</td>          <td>Parallel erase</td></tr>
 
 	<tr><th colspan='3'>Reducing Multiset Combinators</th></tr>
-	<tr><td><code>x/y^z</code></td>      <td>Centaur</td>         <td>Contraction</td></tr>
 	<tr><td><code>x/x^z</code></td>      <td>Siren</td>           <td>Dereliction</td></tr>
+	<tr><td><code>x/y^x</code></td><td>Judge</td>  <td>Gth/Equ</td></tr>
+	<tr><td><code>x/y^z</code></td>      <td>Centaur</td>         <td>Contraction</td></tr>
 	<tr><td><code>x/[x y]</code></td>    <td>Sphinx's Lamp</td>        <td>Selective erase</td></tr>
 	<tr><td><code>x/[y z]</code></td>    <td>Chimera</td>         <td>Composition</td></tr>
-	<tr><td><code>x/y^x</code></td><td>Judge</td>  <td>Gth/Equ</td></tr>
 
 	<tr><th colspan='3'>Increasing Multiset Combinators</th></tr>
 	<tr><td><code>x^y/x</code></td><td>Hydra</td>    <td>Generalized Expansion</td></tr>
