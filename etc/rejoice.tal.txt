@@ -22,7 +22,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "15 20 "Apr 20 "2026 $2
+	( date ) "16 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -413,12 +413,20 @@
 	( den ) /<validate-fragment>
 	POP2 JMP2r
 
+%validator/not-label ( ptr* -- ptr* ) {
+	LDA2k label/get-addr LDA2 #0000 EQU2 }
+
 @validator/<validate-fragment> ( ptr* -- )
 	LDA2k SWP2 INC2 INC2
+	( count labels ) [ LIT2r 0200 ]
 	&>lvf
+		/not-label ?{ INCr }
 		/is-unique ?{ ;dict/err-assign /<set-error> }
 		item/next GTH2k ?&>lvf
-	POP2 JMP2r
+	POP2
+	( | Multiple labels )
+	GTHr STHr ?{ ;dict/err-jumps !/<set-error> }
+	JMP2r
 
 @validator/is-unique ( to* from* -- to* from* t )
 	OVR2 OVR2 LDA2k STH2
@@ -502,6 +510,7 @@
 @dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
 	&err "Error: 20 00
 	&err-assign "Duplicate 20 "in 20 00
+	&err-jumps "Ambiguous 20 "jump 20 "in 20 00
 
 (
 @|Stdlib )
