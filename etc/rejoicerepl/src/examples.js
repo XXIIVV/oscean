@@ -100,7 +100,7 @@ examples.collatz = `( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4,
 n^7
 
 @Collatz ( n -- n^1 )
-	.#n .\s
+	.#n .\\s
 	[n^2 Continue]/n^2 End @Continue
 	x^n 'y/x^2 
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
