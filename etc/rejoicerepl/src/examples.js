@@ -95,12 +95,14 @@ n^10
 
 .#x`
 
-examples.collatz = `n^7
+examples.collatz = `( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
 
-@Collatz ( n -- n^1 )
-	.#n .\\s
+n^7
+
+@Collatz ( n -- )
+	( print ) .#n .\\s
 	x^n 'y/x^2 
-		End/[none^y x n]
+	End/[none^y x n]
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
 		[Collatz n^y]/[n^n y^y] 
 	@End ( -- )`
