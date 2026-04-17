@@ -88,14 +88,9 @@ coin/marble
 
 examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-t1 n^9
+( Find the Fibonacci number: ) n^10
 
-@Fib ( n -- )
-	t1^t2/t2^t2
-	t2^next/next^next
-	.#t2 .\\s
-	next^t0 next^t1
-	Fib/n`
+y '[y^x x^y]/[x^x n]`
 
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
