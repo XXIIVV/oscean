@@ -101,8 +101,8 @@ n^7
 
 @Collatz ( n -- n^1 )
 	.#n .\\s
-	[n^2 Continue]/n^2 End @Continue
 	x^n 'y/x^2 
+	[Continue y]/y End @Continue
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
 		[Collatz n^y]/[n^n y^y] 
 	@End`
