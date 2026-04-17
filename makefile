@@ -4,7 +4,7 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom
+run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom etc/rejoicerepl/src/rejoice.js
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ ${EMU} bin/oscean.rom
@@ -40,3 +40,12 @@ bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
 bin/img.rom: src/img.tal
 	@ ${ASM} src/img.tal bin/img.rom
+
+# Repls
+
+bin/format-js.rom: etc/format-js.tal.txt
+	@ ${ASM} etc/format-js.tal.txt bin/format-js.rom
+etc/rejoicerepl/src/rejoice.js: bin/format-js.rom etc/rejoice.tal.txt
+	@ ${ASM} etc/rejoice.tal.txt rejoice
+	@ uxncli bin/format-js.rom rejoice > etc/rejoicerepl/src/rejoice.js
+	@ rm -f rejoice rejoice.sym
