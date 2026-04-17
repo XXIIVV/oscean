@@ -311,9 +311,6 @@
 %tote/<mod-item> ( count* id* -- ) {
 	tote/get-addr LDA2k ROT2 ADD2 SWP2 STA2 }
 
-%tote/<take> ( item* -- ) {
-	/get-register #0000 SWP2 SUB2 SWP2 LDA2 /<mod-item> }
-
 @tote/get-register ( item* -- item* value* )
 	INC2k INC2 LDA2 OVR #80 AND ?{ JMP2r }
 	#7fff AND2 /get-addr LDA2 JMP2r
@@ -363,7 +360,7 @@
 	( | take )
 	LDA2k SWP2 /next-cell
 	&>lat
-		DUP2 /<take>
+		DUP2 queue/<take>
 		item/next GTH2k ?&>lat
 	POP2 POP2 !queue/<apply>
 
@@ -390,6 +387,10 @@
 @queue/<reset> ( -- )
 	;&buf ,&ptr STR2
 	JMP2r
+
+@queue/<take> ( item* -- item* )
+	LDA2 /<push>
+	tote/get-register #0000 SWP2 SUB2 !/<push>
 
 @queue/<put> ( item* -- item* )
 	( id* ) LDA2 /<push>
