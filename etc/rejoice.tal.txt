@@ -22,7 +22,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "16 20 "Apr 20 "2026 $2
+	( date ) "17 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -38,6 +38,12 @@
 
 %syms/get-name ( id* -- str* ) {
 	DUP2 ADD2 ;syms/buf ADD2 LDA2 }
+
+%label/get-addr ( id* -- addr* ) {
+	DUP2 ADD2 ;label/buf ADD2 }
+
+%item/next ( item* -- next* ) {
+	#0004 ADD2 }
 
 (
 @|Token )
@@ -76,7 +82,11 @@
 	( exists ) LDZk ?{ POP JMP2r }
 	( @label ) LDZk LIT "@ EQU ?/<parse-label>
 	( 'quote ) LDZk LIT "' EQU ?/<parse-quote>
-	;world/ptr LDA2 ROT /<parse-operand> !validator/<validate>
+	( | validate token )
+	;world/ptr LDA2 ROT /<parse-operand>
+	( num ) validator/<validate-fragment>
+	( den ) validator/<validate-fragment>
+	POP2 JMP2r
 
 @token/<parse-operand> ( ztr -- )
 	world/<push-scope>
@@ -106,86 +116,46 @@
 	#00 SWP INC syms/find-alloc !label/<create>
 
 (
-@|World )
+@|Validator )
 
-@world/<push-null> ( -- )
-	#0000 DUP2
-	( >> )
+%validator/not-label ( ptr* -- ptr* ) {
+	LDA2k label/get-addr LDA2 #0000 EQU2 }
 
-@world/<push-count-id> ( count* id* -- )
-	/<push>
-	( >> )
+@validator/get-error ( -- exists )
+	[ LIT &count $1 ] JMP2r
 
-@world/<push> ( short* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
-	STA2
+@validator/<set-error> ( msg* -- )
+	[ LIT2 01 _&count ] STR
+	;dict/err str/<print>
+	str/<print>
+	;token/buf str/<print>
+	[ LIT2 ". 19 ] DEO
+	#0a19 DEO
 	JMP2r
 
-@world/<push-scope> ( -- )
-	,&ptr LDR2 ,&scope STR2
-	#ffff !/<push>
-
-@world/<pop-scope> ( -- )
-	,&ptr LDR2 [ LIT2 &scope $2 ] STA2
+@validator/<validate-fragment> ( ptr* -- )
+	LDA2k SWP2 INC2 INC2
+	( count labels ) [ LIT2r 0200 ]
+	&>lvf
+		/not-label ?{ INCr }
+		/is-unique ?{ ;dict/err-assign /<set-error> }
+		item/next GTH2k ?&>lvf
+	POP2
+	( | Multiple labels )
+	GTHr STHr ?{ ;dict/err-jumps !/<set-error> }
 	JMP2r
 
-@world/<print> ( addr* -- )
-	,&ptr LDR2 SWP2 [ LIT2r 0800 ]
-	&>l
-		GTHkr STHr ?{
-			( | trim at 8 fractions )
-			LIT ". DUP char/<print>
-			char/<print> !&print-end }
-		DUP2 fraction/<print>
-		#2019 DEO
-		LDA2 LDA2 INCr GTH2k ?&>l
-	&print-end ( to* from* . count* -- )
-	POP2 POP2 POP2r #0a19 DEO
-	JMP2r
-
-@world/<eval> ( -- )
-	tote/<clear>
-	;&buf [ LIT2r 0001 ]
-	&>w
-		LDA2k ORA ?{ !&end }
-		ORAkr STHr ?{ !&end }
-		DUP2 tote/<apply>
-		DUP2 /<print>
-		goto/step INC2r !&>w
-
-	&end ( addr* -- )
-	POP2 tote/<print>
-	( | steps )
-	;dict/reached str/<print>
-	STH2r u16/<print-dec>
-	;dict/steps !str/<print>
-
-%label/get-addr ( id* -- addr* ) {
-	DUP2 ADD2 ;label/buf ADD2 }
-
-%label/get ( id* -- addr* ) {
-	label/get-addr LDA2 }
-
-@label/<create> ( id* -- )
-	/get-addr ;world/ptr LDA2 SWP2 STA2
-	JMP2r
-
-@goto/step ( addr* -- addr* )
-	[ LIT2 -&buf _&ptr ] LDR EQU ?{
-		POP2 ,&ptr LDR #02 SUB DUP ,&ptr STR
-		LDZ2 JMP2r }
-	LDA2 LDA2 JMP2r
-
-@goto/<push> ( addr* -- )
-	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
-	STZ2
-	JMP2r
+@validator/is-unique ( to* from* -- to* from* t )
+	OVR2 OVR2 LDA2k STH2
+	&>lf
+		item/next EQU2k ?{
+			LDA2k STH2kr NEQ2 ?{
+				POP2 POP2 POP2r #00 JMP2r }
+			!&>lf }
+	POP2 POP2 POP2r #01 JMP2r
 
 (
 @|Bag/Items )
-
-%item/next ( item* -- next* ) {
-	#0004 ADD2 }
 
 %item/not-quote ( item* -- item* t ) {
 	LDA2k syms/get-name LDA LIT "' NEQ }
@@ -220,14 +190,18 @@
 @item/parse-sym-push ( ztr c -- ztr count* id* )
 	POP
 	( identity ) [ LIT2 -&buf _&ptr ] LDR EQU ?world/<push-null>
-	/walk-count ;&buf syms/find-alloc !world/<push-count-id>
+	/walk-count ;&buf
+	( | emit symbol )
+	LDA2k [ LIT2 ".# ] NEQ2 ?{
+		NIP2 INC2k INC2 syms/find-alloc SWP2 }
+	syms/find-alloc !world/<push-count-id>
 
 @item/parse-num-push ( ztr -- ztr )
 	dec-ztr/walk-u16
 	( | check if not number 1 )
 	DUP2 #0001 NEQ2 ?{ POP2 !world/<push-null> }
 	( | check if not already prime )
-	DUP2 primes/prime-id DUP ?/parse-prime
+	DUP2 primes/find-id DUP ?/parse-prime
 	POP
 	( | factorize )
 	( value ) [ LIT2r 0002 ]
@@ -240,7 +214,7 @@
 			&>wpf
 				OVR2 OVR2 u16/mod ORA ?{
 					INCr STH2k DIV2 STH2r !&>wpf }
-			primes/prime-id #00 SWP #00 STHr SWP2 world/<push-count-id> }
+			primes/find-id #00 SWP #00 STHr SWP2 world/<push-count-id> }
 		INC2r !&>wpn
 
 @item/parse-prime ( ztr u16* id -- ztr )
@@ -260,14 +234,6 @@
 			( ref reg ) #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
 		( num reg ) !dec-ztr/walk-u16 }
 	( def reg ) #0001 JMP2r
-
-%fraction/den-length ( fraction* -- fraction* len* ) {
-	LDA2k LDA2k SWP2 SUB2 }
-
-%fraction/is-quoted ( fraction* -- fraction* t ) {
-	DUP2 INC2k INC2
-	( f* num[0].id ) LDA2
-	( f* jump* = ) label/get EQU2 }
 
 @fraction/<print> ( addr* -- )
 	( num ) LDA2k OVR2 INC2 INC2 bag/<print>
@@ -297,6 +263,77 @@
 	JMP2r
 
 (
+@|World )
+
+@world/<push-null> ( -- )
+	#0000 DUP2
+	( >> )
+
+@world/<push-count-id> ( count* id* -- )
+	/<push>
+	( >> )
+
+@world/<push> ( short* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@world/<push-scope> ( -- )
+	,&ptr LDR2 ,&scope STR2
+	#ffff !/<push>
+
+@world/<pop-scope> ( -- )
+	,&ptr LDR2 [ LIT2 &scope $2 ] STA2
+	JMP2r
+
+@world/<print> ( addr* -- )
+	,&ptr LDR2 SWP2 [ LITr f8 ]
+	&>l
+		STHkr ?{
+			( trim ) ;dict/ellipses str/<print> !&print-end }
+		DUP2 fraction/<print>
+		#2019 DEO
+		LDA2 LDA2 INCr GTH2k ?&>l
+	&print-end ( to* from* . count* -- )
+	POP2 POP2 POPr #0a19 DEO
+	JMP2r
+
+@world/<eval> ( -- )
+	tote/<clear>
+	;&buf [ LIT2r 0001 ]
+	&>w
+		LDA2k ORA ?{ !&end }
+		ORAkr STHr ?{ !&end }
+		DUP2 tote/<apply>
+		DUP2 /<print>
+		goto/step INC2r !&>w
+
+	&end ( addr* -- )
+	POP2 tote/<print>
+	( | steps )
+	;dict/reached str/<print>
+	STH2r u16/<print-dec>
+	;dict/steps !str/<print>
+
+%label/get ( id* -- addr* ) {
+	label/get-addr LDA2 }
+
+@label/<create> ( id* -- )
+	/get-addr ;world/ptr LDA2 SWP2 STA2
+	JMP2r
+
+@goto/step ( addr* -- addr* )
+	[ LIT2 -&buf _&ptr ] LDR EQU ?{
+		POP2 ,&ptr LDR #02 SUB DUP ,&ptr STR
+		LDZ2 JMP2r }
+	LDA2 LDA2 JMP2r
+
+@goto/<push> ( addr* -- )
+	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
+	STZ2
+	JMP2r
+
+(
 @|Tote )
 
 %tote/get-addr ( id* -- addr* ) {
@@ -317,12 +354,17 @@
 
 @tote/<put-print> ( item* name* -- )
 	str/<set-print>
-	( walk dot ) INC2 STH2
+	( walk dot ) INC2
+	( is emitter ) LDAk LIT "# EQU ?/<put-emit>
+	STH2
 	/next-cell LDA2 #0000 SWP2 SUB2
 	&>lpp
-		STH2kr /<put-emit>
+		STH2kr str/<print>
 		INC2 ORAk ?&>lpp
 	POP2 POP2r !str/<set-debug>
+
+@tote/<put-emit> ( item* name* -- )
+	POP2 INC2 INC2 LDA2 /get-addr LDA2 u16/<print-dec> !str/<set-debug>
 
 @tote/<put> ( item* -- )
 	LDA2k syms/get-name
@@ -332,10 +374,6 @@
 	LDA2k label/get
 	( dup addr* ) ORAk ?/<put-label>
 	( pop addr* ) POP2 !queue/<put>
-
-@tote/<put-emit> ( name* -- )
-	LDAk LIT "# NEQ ?str/<print>
-	INC2 syms/find-alloc /get-count !u16/<print-dec>
 
 @tote/<put-label> ( item* addr* -- )
 	NIP2 !goto/<push>
@@ -410,51 +448,17 @@
 	POP2 POP2 JMP2r
 
 (
-@|Validator )
-
-@validator/get-error ( -- exists )
-	[ LIT &count $1 ] JMP2r
-
-@validator/<set-error> ( msg* -- )
-	[ LIT2 01 _&count ] STR
-	;dict/err str/<print>
-	str/<print>
-	;token/buf str/<print>
-	[ LIT2 ". 19 ] DEO
-	#0a19 DEO
-	JMP2r
-
-@validator/<validate> ( ptr* -- )
-	( num ) /<validate-fragment>
-	( den ) /<validate-fragment>
-	POP2 JMP2r
-
-%validator/not-label ( ptr* -- ptr* ) {
-	LDA2k label/get-addr LDA2 #0000 EQU2 }
-
-@validator/<validate-fragment> ( ptr* -- )
-	LDA2k SWP2 INC2 INC2
-	( count labels ) [ LIT2r 0200 ]
-	&>lvf
-		/not-label ?{ INCr }
-		/is-unique ?{ ;dict/err-assign /<set-error> }
-		item/next GTH2k ?&>lvf
-	POP2
-	( | Multiple labels )
-	GTHr STHr ?{ ;dict/err-jumps !/<set-error> }
-	JMP2r
-
-@validator/is-unique ( to* from* -- to* from* t )
-	OVR2 OVR2 LDA2k STH2
-	&>lf
-		item/next EQU2k ?{
-			LDA2k STH2kr NEQ2 ?{
-				POP2 POP2 POP2r #00 JMP2r }
-			!&>lf }
-	POP2 POP2 POP2r #01 JMP2r
-
-(
 @|Dict )
+
+%primes/get-prime ( id* -- prime* ) {
+	;primes/lut ADD2 LDA2 }
+
+@primes/find-id ( prime* -- id )
+	STH2
+	#0000
+	&>l
+		DUP2k ADD2 /get-prime STH2kr EQU2 ?{ INC DUP ?&>l }
+	POP2r NIP JMP2r
 
 @symbol/is-spacer ( c -- t )
 	DUP LIT 21 LTH ?{
@@ -477,43 +481,37 @@
 			INC2 !&>wn }
 	POP2 ;&buf JMP2r
 
+@syms/find ( str* -- id* )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>lf
+		LDA2k STH2kr str/compare ?{
+			INC2 INC2 GTH2k ?&>lf
+		POP2r POP2 POP2 #ffff JMP2r }
+	( | found )
+	POP2r NIP2 ;&buf SUB2 #01 SFT2 JMP2r
+
 @syms/find-alloc ( str* -- id* )
 	symbol/new
 	( >> )
-
-@syms/find-alloc-force ( str* -- id* )
-	STH2
-	,&ptr LDR2 ;&buf
-	&>lfa
-		LDA2k STH2kr str/compare ?{
-			INC2 INC2 GTH2k ?&>lfa
+	&find-alloc-force ( str* -- id* )
+	DUP2 /find INC2k ORA ?{
 		POP2
 		( | alloc )
-		;&buf SUB2 #01 SFT2 STH2r dict/alloc
+		,&ptr LDR2 ;&buf SUB2 #01 SFT2 SWP2 dict/alloc
 		( | push )
 		[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 		STA2
 		JMP2r }
-	( | found )
-	POP2r NIP2 ;&buf SUB2 #01 SFT2 JMP2r
+	NIP2 JMP2r
 
 @syms/<print-count-id> ( id* -- )
 	STH2k /get-name ORAk ?{
-		POP2 DUP2r ADD2r STH2r primes/id-prime !u16/<print-dec> }
+		POP2 DUP2r ADD2r STH2r primes/get-prime !u16/<print-dec> }
 	POP2r
 	( | quoted )
 	LDAk LIT "' NEQ ?{ LDA !char/<print> }
 	!str/<print>
-
-@primes/id-prime ( id* -- prime* )
-	;&lut ADD2 LDA2 JMP2r
-
-@primes/prime-id ( prime* -- id )
-	STH2
-	#0000
-	&>l
-		DUP2k ADD2 /id-prime STH2kr EQU2 ?{ INC DUP ?&>l }
-	POP2r NIP JMP2r
 
 @dict/alloc ( src* -- ptr* )
 	,&ptr LDR2 SWP2
@@ -527,6 +525,7 @@
 	&err "Error: 20 00
 	&err-assign "Duplicate 20 "in 20 00
 	&err-jumps "Ambiguous 20 "jump 20 "in 20 00
+	&ellipses ".. 00
 
 (
 @|Stdlib )

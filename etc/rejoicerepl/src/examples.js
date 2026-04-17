@@ -88,9 +88,12 @@ coin/marble
 
 examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-( Find the Fibonacci number: ) n^10
+( Print the Fibonacci number: )
 
-y '[y^x x^y]/[x^x n]`
+n^10
+	y '[y^x x^y]/[x^x n]
+
+.#x`
 
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
@@ -105,13 +108,17 @@ examples.product = `( A program to multiply two numbers
 	and print the result: )
 
 x^8 y^3
-	'res^x/y .#res`
+	'res^x/y 
+
+.#res`
 
 examples.quotient = `( A program to divides a number by another
 	and print the result: )
 
 x^24 y^3
-	'res/x^y .#res`
+	'res/x^y 
+
+.#res`
 
 examples.gcd = `( A program to find the GCD of two numbers,
 	and print the result: )
