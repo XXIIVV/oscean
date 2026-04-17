@@ -95,17 +95,15 @@ n^10
 
 .#x`
 
-examples.collatz = `( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
-
-n^7
+examples.collatz = `n^7
 
 @Collatz ( n -- n^1 )
 	.#n .\\s
 	x^n 'y/x^2 
-	[Continue y]/y End @Continue
+		End/[none^y x n]
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
 		[Collatz n^y]/[n^n y^y] 
-	@End`
+	@End ( -- )`
 
 examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
