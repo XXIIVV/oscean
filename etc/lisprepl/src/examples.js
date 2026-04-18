@@ -1,11 +1,7 @@
-/* Inspired from https://doc.rust-lang.org/rust-by-example/ */
-
-let examples = {
+let examples = {}
 
 
-"hello": 
-
-`(define double
+examples.hello_world = `(define double
 	(lambda (x) (+ x x)))
 
 (if 
@@ -16,7 +12,7 @@ let examples = {
 (print 
 	'(hello world))`,
 
-"factorial":
+examples.factorial = 
 
 `(define fac 
 	(lambda (n)
@@ -26,7 +22,7 @@ let examples = {
 
 (print (fac 5))`,
 
-"fizzbuzz": 
+examples.fizzbuzz = 
 
 `(define print-ln
 	(lambda (s)
@@ -45,5 +41,3 @@ let examples = {
 			())))
 
 (fizzbuzz 1 1 1)`
-
-}
