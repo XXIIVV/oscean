@@ -112,7 +112,7 @@ function Emu ()
 /*
 @|Generics */
 
-function Repl()
+function Repl(rom, keyword)
 {
 	this.init = () => {
 		// Connect to interface
@@ -156,6 +156,7 @@ function Repl()
 		});
 
 		this.run_el.addEventListener("click", this.run)
+		this.run_el.value = keyword
 		document.body.className = "active"
 
 	}
@@ -167,14 +168,14 @@ function Repl()
 
 	this.select_example = (value) => {
 		this.editor_el.value = examples[value]
-		this.logs_el.innerHTML = `Press <b>Reduce</b> to evaluate.`
+		this.logs_el.innerHTML = `Press <b>${keyword}</b> to evaluate.`
 	}
 
 	this.run = () => {
-		let query = this.editor_el.value.split(/\r?\n/).join(" ")+' \n'
+		let query = this.editor_el.value+'\n'
 		let program = new Uint8Array(0x10000)
 		let emu = new Emu()
-		emu.uxn.load(rejoice).eval(0x0100)
+		emu.uxn.load(rom).eval(0x0100)
 		for (let i = 0; i < query.length; i++)
 			emu.console.input(query.charAt(i).charCodeAt(0), 1)
 		emu.console.input(0x00, 4)

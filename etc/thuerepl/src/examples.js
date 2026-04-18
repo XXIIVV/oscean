@@ -4,7 +4,7 @@ let examples = {
 /*
 @|Hello-World */
 
-"hello": `hello::=bye
+"hello_world": `hello::=bye
 ::=
 hello world`,
 
