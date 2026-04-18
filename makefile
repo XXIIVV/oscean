@@ -30,7 +30,7 @@ grab:
 	@ mkdir -p etc/solrela
 	@ cp -r ../solrela/index.html ../solrela/src/ ../solrela/media/ etc/solrela/
 
-repl: etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js
+repl: etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js etc/thuerepl/src/thue.js etc/neurrepl/src/neur.js etc/modalrepl/src/modal.js
 
 .PHONY: run clean bal lint push grab
 
@@ -55,3 +55,15 @@ etc/lisprepl/src/heol.js: bin/format-js.rom etc/heol.tal.txt
 	@ ${ASM} etc/heol.tal.txt heol
 	@ uxncli bin/format-js.rom heol > etc/lisprepl/src/heol.js
 	@ rm -f heol heol.sym
+etc/thuerepl/src/thue.js: bin/format-js.rom etc/thue.tal.txt
+	@ ${ASM} etc/thue.tal.txt thue
+	@ uxncli bin/format-js.rom thue > etc/thuerepl/src/thue.js
+	@ rm -f thue thue.sym
+etc/neurrepl/src/neur.js: bin/format-js.rom etc/neur.tal.txt
+	@ ${ASM} etc/neur.tal.txt neur
+	@ uxncli bin/format-js.rom neur > etc/neurrepl/src/neur.js
+	@ rm -f neur neur.sym
+etc/modalrepl/src/modal.js: bin/format-js.rom etc/modal.tal.txt
+	@ ${ASM} etc/modal.tal.txt modal
+	@ uxncli bin/format-js.rom modal > etc/modalrepl/src/modal.js
+	@ rm -f modal modal.sym
