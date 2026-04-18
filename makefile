@@ -30,7 +30,7 @@ grab:
 	@ mkdir -p etc/solrela
 	@ cp -r ../solrela/index.html ../solrela/src/ ../solrela/media/ etc/solrela/
 
-repl: etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js etc/thuerepl/src/thue.js etc/neurrepl/src/neur.js etc/modalrepl/src/modal.js
+repl: etc/uxnrepl/src/asm.js etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js etc/thuerepl/src/thue.js etc/neurrepl/src/neur.js etc/modalrepl/src/modal.js
 
 .PHONY: run clean bal lint push grab
 
@@ -47,6 +47,10 @@ bin/img.rom: src/img.tal
 
 bin/format-js.rom: etc/format-js.tal.txt
 	@ ${ASM} etc/format-js.tal.txt bin/format-js.rom
+etc/uxnrepl/src/asm.js: bin/format-js.rom etc/drifloon.tal.txt
+	@ ${ASM} etc/drifloon.tal.txt assembler
+	@ uxncli bin/format-js.rom assembler > etc/uxnrepl/src/asm.js
+	@ rm -f assembler assembler.sym
 etc/rejoicerepl/src/rejoice.js: bin/format-js.rom etc/rejoice.tal.txt
 	@ ${ASM} etc/rejoice.tal.txt rejoice
 	@ uxncli bin/format-js.rom rejoice > etc/rejoicerepl/src/rejoice.js

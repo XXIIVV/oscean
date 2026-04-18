@@ -30,121 +30,13 @@
 		<img src='../../media/refs/makima.png'/></p>
 	</noscript>
 	<textarea id="editor" spellcheck="false" style='display:none'></textarea>
-	<div id='term'>Press <b>Reduce</b> to evaluate.</div>
+	<div id='logs'>Press <b>Reduce</b> to evaluate.</div>
 	<div id='menu'>
 		<input type="button" id="run" value="Reduce">
-		<span id='wst'><a href='../../site/rejoice.html' target='_blank'>Read Manual</a></span>
-		<select name="cars" id="examples">
-			<option value="hello">Hello World</option>  
-			<option value="colors">Colors</option>
-			<option value="multisets">Multisets</option>
-			<option value="primes">Primes</option>
-			<option value="fractions">Fractions</option>
-
-			<option value="product">Product</option>
-			<option value="quotient">Quotient</option>
-			<option value="gcd">GCD</option>
-
-			<option value="fib">Fibonacci</option>
-			<option value="collatz">Collatz</option>
-			<option value="fizzbuzz">FizzBuzz</option>
-
-			<option value="binary_logic">Binary Logic</option>
-			<option value="binary_print">Binary Print</option>
-			<option value="binary_adder">Binary Adder</option> 
-
-			<option value="ternary_logic">Ternary Logic</option>
-			<option value="ternary_print">Ternary Print</option>
-			<option value="ternary_adder">Ternary Adder</option>
-
-			<option value="toffoli">Toffoli Logic</option>
-
-			<option value="hex_print">Hexadecimal Print</option> 
-			<option value="heptavintimal_print">Heptavintimal Print</option> 
-
-			<option value="spirograph">Spirograph</option>
-			<option value="proquints">Proquints</option>
-		</select>
+		<span id='result'><a href='../../site/rejoice.html' target='_blank'>Read Manual</a></span>
+		<select id="examples"></select>
 	</div>
-	<script type="text/javascript">
-'use strict'
-
-const term_el = document.getElementById("term")
-const editor_el = document.getElementById("editor")
-const wst_el = document.getElementById("wst")
-const run_el = document.getElementById("run")
-const examples_el = document.getElementById("examples")
-
-/*
-@|Helpers */
-
-function open_popup(text) {
-	const popup = window.open('', 'Popup', 'width=400,height=300');
-	popup.document.body.innerHTML = `<pre>${text}</pre>`;
-}
-
-function select_example(value) {
-	editor_el.value = examples[value]
-	term_el.innerHTML = `Press <b>Reduce</b> to evaluate.`
-}
-
-function run() {
-	let query = editor_el.value.split(/\r?\n/).join(" ")+' \n'
-	let program = new Uint8Array(0x10000)
-	let emu = new Emu()
-	emu.uxn.load(rejoice).eval(0x0100)
-	for (let i = 0; i < query.length; i++)
-		emu.console.input(query.charAt(i).charCodeAt(0), 1)
-	emu.console.input(0x00, 4)
-	emu.console.stdout_body = emu.console.stdout_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
-	if(emu.console.stdout_body.includes('\n')) {
-		open_popup(emu.console.stdout_body)
-		wst_el.innerHTML = "Result in new window"
-	} else
-		wst_el.innerHTML = emu.console.stdout_body
-	// Trim console
-	term_el.innerHTML = emu.console.stderr_body.trim().replaceAll("Î»", "").trimStart().trimEnd().split('\n').slice(-50).join('\n')
-	term_el.scrollTop = term_el.scrollHeight;
-}
-
-/*
-@|Bindings */
-
-examples_el.addEventListener('change', (e) => {
-	select_example(e.currentTarget.value)
-}, true);
-
-editor_el.addEventListener("keydown", (e) => {
-	let { keyCode } = e
-	let { value, selectionStart, selectionEnd } = editor_el
-	if (keyCode === 9) { // TAB = 9
-		e.preventDefault()
-		editor_el.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
-		editor_el.setSelectionRange(selectionStart+1, selectionStart+1)
-	}
-	else if (event.ctrlKey && event.key === 'Enter') 
-		run();
-});
-
-run_el.addEventListener("click", run)
-
-/*
-@|Unlock */
-
-document.body.className = "active"
-
-// Select option from url
-
-const choice = window.location.hash.slice(1)
-if(examples[choice]) {
-	for (let i = 0; i < examples_el.options.length; i++) 
-		if (examples_el.options[i].value === choice) 
-		    examples_el.selectedIndex = i;
-	select_example(choice)
-} else
-	editor_el.value = examples.hello
-
-	</script>
+	<script type="text/javascript">new Repl().init()</script>
 	<style>
 		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
 		body a { color: black; }
@@ -152,16 +44,16 @@ if(examples[choice]) {
 		noscript { width: 100%; height:100%; background:red }
 		textarea { resize:none; width:calc(100vw - 20px); height:100vh; border:0; padding:10px; margin:0px; background:#72dec2; tab-size: 2; }
 		textarea:focus { outline: none !important; }
-		div#term { background:#8ff2d9; padding:10px; color:black; height:85px; overflow-x:hidden; overflow-y:scroll; white-space:pre; display:none }
+		div#logs { background:#8ff2d9; padding:10px; color:black; height:85px; overflow-x:hidden; overflow-y:scroll; white-space:pre; display:none }
 		div#menu { height:25px; background:#b2ffeb; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
 		div#menu select { float:right }
 		div#menu a { text-decoration: none }
 		div#menu a:hover { text-decoration: underline }
 		body.active textarea { height:calc(100% - 170px); }
-		body.active #term, body.active #menu, body.active #editor { display:block !important }
+		body.active #logs, body.active #menu, body.active #editor { display:block !important }
 		#run { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
 		#run:hover { background: #fff; color:#000 }
-		
+
 		dialog { background:#a4f4e0; display: none; padding: 10px; padding-bottom: 0; }
 		dialog[open] { display: block; }
 		dialog > * { margin: 0; margin-bottom: 10px; }

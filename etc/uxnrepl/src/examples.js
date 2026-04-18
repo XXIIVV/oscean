@@ -239,5 +239,8 @@ POP2 BRK
         BRK
     }
      LIT2 "0 -Console/write DEO     ( Print failure )`
-}
 
+/*
+@|11. Time */
+
+}

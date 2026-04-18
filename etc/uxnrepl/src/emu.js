@@ -108,3 +108,84 @@ function Emu ()
 		}
 	}
 }
+
+/*
+@|Generics */
+
+function Repl()
+{
+	this.init = () => {
+		// Connect to interface
+		this.logs_el = document.getElementById("logs")
+		this.editor_el = document.getElementById("editor")
+		this.result_el = document.getElementById("result")
+		this.run_el = document.getElementById("run")
+		this.examples_el = document.getElementById("examples")
+		// Load examples
+		Object.keys(examples).forEach(key => {
+			const name = key.replace(/_/g, " ")
+				.split(' ')
+				.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+				.join(' ')
+			this.examples_el.add(new Option(name, key))
+		});
+		// Load example from hash
+		const choice = window.location.hash.slice(1)
+		if(examples[choice]) {
+			for (let i = 0; i < this.examples_el.options.length; i++) 
+				if (this.examples_el.options[i].value === choice) 
+					this.examples_el.selectedIndex = i;
+			this.select_example(choice)
+		} else
+			this.editor_el.value = examples.hello_world
+		// Connect examples
+		this.examples_el.addEventListener('change', (e) => {
+			this.select_example(e.currentTarget.value)
+		}, true);
+		// Connect textarea
+		this.editor_el.addEventListener("keydown", (e) => {
+			let { keyCode } = e
+			let { value, selectionStart, selectionEnd } = this.editor_el
+			if (keyCode === 9) { // TAB = 9
+				e.preventDefault()
+				this.editor_el.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
+				this.editor_el.setSelectionRange(selectionStart+1, selectionStart+1)
+			}
+			else if (event.ctrlKey && event.key === 'Enter') 
+				this.run();
+		});
+
+		this.run_el.addEventListener("click", this.run)
+		document.body.className = "active"
+
+	}
+
+	this.popup = (text) => {
+		const popup = window.open('', 'Popup', 'width=400,height=300');
+		popup.document.body.innerHTML = `<pre>${text}</pre>`;
+	}
+
+	this.select_example = (value) => {
+		this.editor_el.value = examples[value]
+		this.logs_el.innerHTML = `Press <b>Reduce</b> to evaluate.`
+	}
+
+	this.run = () => {
+		let query = this.editor_el.value.split(/\r?\n/).join(" ")+' \n'
+		let program = new Uint8Array(0x10000)
+		let emu = new Emu()
+		emu.uxn.load(rejoice).eval(0x0100)
+		for (let i = 0; i < query.length; i++)
+			emu.console.input(query.charAt(i).charCodeAt(0), 1)
+		emu.console.input(0x00, 4)
+		emu.console.stdout_body = emu.console.stdout_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
+		if(emu.console.stdout_body.includes('\n')) {
+			repl.popup(emu.console.stdout_body)
+			this.result_el.innerHTML = "Result in new window"
+		} else
+			this.result_el.innerHTML = emu.console.stdout_body
+		// Trim console
+		this.logs_el.innerHTML = emu.console.stderr_body.trim().replaceAll("Î»", "").trimStart().trimEnd().split('\n').slice(-50).join('\n')
+		this.logs_el.scrollTop = this.logs_el.scrollHeight;
+	}
+}

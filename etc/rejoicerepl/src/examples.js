@@ -1,6 +1,6 @@
 let examples = {}
 
-examples.hello = `( Put a marble and five coins in the bag: )
+examples.hello_world = `( Put a marble and five coins in the bag: )
 
 marble coin^5
 
@@ -17,20 +17,6 @@ candy/coin
 
 .Count: .#ticket`
 
-examples.gaude = `( Salve ad Gaude, ludo de symbolo et sacco. )
-
-( Insere 1 calculo et 5 nummo in sacco: )
-calculo nummo^5
-
-( Consume 1 nummo, inse 1 bellaria: )
-bellaria/nummo
-
-( Consume 2 nummo pro tessera, quam diu possibile: )
-@Tesserarum ( nummo -- tessera )
-    [Tesserarum tessera]/nummo^2
-
-( Ad fine, imprime resultato: )
-.Computus: .#tessera`
 
 /*
 @|Etc */
@@ -86,7 +72,7 @@ coin/marble
 
 []/coin^2`
 
-examples.fib = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
+examples.fibonacci = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
 ( Print the Fibonacci number: )
 
@@ -389,3 +375,21 @@ tasks^4
 @Next ( dest -- )
 	[v0 tasks^3]/tasks^4 [c1 tasks^2]/tasks^3
 	[v1 tasks^1]/tasks^2 [c2]/tasks`
+
+/*
+@|Extra */
+
+examples.gaude = `( Salve ad Gaude, ludo de symbolo et sacco. )
+
+( Insere 1 calculo et 5 nummo in sacco: )
+calculo nummo^5
+
+( Consume 1 nummo, inse 1 bellaria: )
+bellaria/nummo
+
+( Consume 2 nummo pro tessera, quam diu possibile: )
+@Tesserarum ( nummo -- tessera )
+    [Tesserarum tessera]/nummo^2
+
+( Ad fine, imprime resultato: )
+.Computus: .#tessera`
