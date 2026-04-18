@@ -73,19 +73,17 @@ function Emu ()
 	}
 
 	this.dei = (port) => {
-		if(port & 0xf == 0xc)
-			this.date = new Date()
 		switch (port) {
-		case 0xc0: { return now.getFullYear() >> 8; }
-		case 0xc1: { return now.getFullYear() & 0xff; }
-		case 0xc2: { return now.getMonth(); }
-		case 0xc3: { return now.getDate(); }
-		case 0xc4: { return now.getHours(); }
-		case 0xc5: { return now.getMinutes(); }
-		case 0xc6: { return now.getSeconds(); }
-		case 0xc7: { return now.getDay(); }
-		case 0xc8: { return doty(now) >> 8; }
-		case 0xc9: { return doty(now) & 0xff; }
+		case 0xc0: { return new Date().getFullYear() >> 8; }
+		case 0xc1: { return new Date().getFullYear() & 0xff; }
+		case 0xc2: { return new Date().getMonth(); }
+		case 0xc3: { return new Date().getDate(); }
+		case 0xc4: { return new Date().getHours(); }
+		case 0xc5: { return new Date().getMinutes(); }
+		case 0xc6: { return new Date().getSeconds(); }
+		case 0xc7: { return new Date().getDay(); }
+		case 0xc8: { return doty(new Date()) >> 8; }
+		case 0xc9: { return doty(new Date()) & 0xff; }
 		}
 		return this.uxn.dev[port]
 	}
