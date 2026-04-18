@@ -4,7 +4,7 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom etc/rejoicerepl/src/rejoice.js
+run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom repl
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ ${EMU} bin/oscean.rom
@@ -30,6 +30,8 @@ grab:
 	@ mkdir -p etc/solrela
 	@ cp -r ../solrela/index.html ../solrela/src/ ../solrela/media/ etc/solrela/
 
+repl: etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js
+
 .PHONY: run clean bal lint push grab
 
 bin/oscean.rom: src/oscean.tal
@@ -49,3 +51,7 @@ etc/rejoicerepl/src/rejoice.js: bin/format-js.rom etc/rejoice.tal.txt
 	@ ${ASM} etc/rejoice.tal.txt rejoice
 	@ uxncli bin/format-js.rom rejoice > etc/rejoicerepl/src/rejoice.js
 	@ rm -f rejoice rejoice.sym
+etc/lisprepl/src/heol.js: bin/format-js.rom etc/heol.tal.txt
+	@ ${ASM} etc/heol.tal.txt heol
+	@ uxncli bin/format-js.rom heol > etc/lisprepl/src/heol.js
+	@ rm -f heol heol.sym

@@ -95,7 +95,11 @@ function Uxn (emu)
 	this.eval = (at) => {
 		let steps = 0x8000000
 		pc[0] = at;
-		while(steps-- && this.step());
+		while(this.step())
+			if(--steps == 0) { 
+				emu.console.error_string("\nUxn is exhausted.");
+				break;
+			}
 	}
 	
 	this.load = (program) => {

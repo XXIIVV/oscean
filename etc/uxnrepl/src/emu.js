@@ -43,6 +43,14 @@ function Console(emu)
 		this.stderr_body += String.fromCharCode(char)
 	}
 
+	this.error_string = (s) => {
+		this.stderr_body += s
+	}
+
+	this.error_byte = (b) => {
+		this.stderr_body += b.toString(16)
+	}
+
 	this.input = (char, type) => {
 		emu.uxn.dev[0x17] = type
 		emu.uxn.dev[0x12] = char
@@ -97,6 +105,8 @@ function Emu ()
 		case 0x11: this.console.vector = (this.uxn.dev[0x10] << 8) | this.uxn.dev[0x11]; break;
 		case 0x18: this.console.write(val); break;
 		case 0x19: this.console.error(val); break;
+		case 0x1a: this.console.error_byte(val); break;
+		case 0x1b: this.console.error_byte(val); break;
 		}
 	}
 }
