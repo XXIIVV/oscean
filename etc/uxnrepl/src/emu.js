@@ -181,7 +181,7 @@ function Repl(rom, keyword)
 		emu.console.input(0x00, 4)
 		emu.console.stdout_body = emu.console.stdout_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
 		if(emu.console.stdout_body.includes('\n')) {
-			repl.popup(emu.console.stdout_body)
+			this.popup(emu.console.stdout_body)
 			this.result_el.innerHTML = "Result in new window"
 		} else
 			this.result_el.innerHTML = emu.console.stdout_body

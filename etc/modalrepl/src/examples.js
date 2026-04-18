@@ -1,10 +1,6 @@
-/* Inspired from https://doc.rust-lang.org/rust-by-example/ */
+let examples = {}
 
-let examples = {
-/*
-@|0.Hello-World */
-
-"0_mod": `<> (Welcome to the Modal playground,
+examples.hello_world = `<> (Welcome to the Modal playground,
     Click the Rewrite button to evaluate the program.
     Select other examples with the dropdown.)
 
@@ -21,12 +17,9 @@ let examples = {
 
 <> (print-bool (Bool ?:)) (done.)
 
-(print-bool (equal baz baz))`,
+(print-bool (equal baz baz))`
 
-/*
-@|Add */
-
-"add": `<> (Add 2 + 3, print the result)
+examples.add = `<> (Add 2 + 3, print the result)
 
 <> (add (?a) ?b) (add ?a (?b))
 <> (add 0 ?b) (sum ?b)
@@ -34,10 +27,7 @@ let examples = {
 
 (print (add 3 2))`,
 
-/*
-@|1 */
-
-"1_mod": `<> (Reverse a List)
+examples.reverse_list = `<> (Reverse a List)
 
 <> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
 <> (reverse List ?empty ?list) (print List ?list)
@@ -46,10 +36,7 @@ let examples = {
 
 (reverse List (m (o (d (a (l ()))))) ())`,
 
-/*
-@|Tic-tac-toe */
-
-"tic-tac-toe": `<> (Tic-tac-toe
+examples.tic_tac_toe = `<> (Tic-tac-toe
     All the winning boards: )
 
 <> (?x ?x ?x
@@ -81,10 +68,7 @@ let examples = {
  d e f
  g h i)`,
 
-/*
-@|Multiply */
-
-"multiply": `<> (Multiply 2 * 5, print the result)
+examples.product = `<> (Multiply 2 * 5, print the result)
 
 <> (?a * (?b)) ((?a * ?b) + ?a)
 <> ((?a) + ?b) (?a + (?b))
@@ -96,10 +80,7 @@ let examples = {
 
 ((2 * 5) (wait))` ,
 
-/*
-@|Find */
-
-"find": `<> (Find a value in a list)
+examples.find =  `<> (Find a value in a list)
 
 <> ((find ?target) ?target (?next ?tail)) (?head (found ?target) ?next ?tail)
 <> ((find ?target) ?head (?next ?tail)) (?head ((find ?target) ?next ?tail))
@@ -109,10 +90,7 @@ let examples = {
 
 ((find e) a (b (c (d (e (f (g (h ()))))))))`,
 
-/*
-@|FizzBuzz */
-
-"fizzbuzz": 
+examples.fizzbuzz =  
 `<> (For a hundred numbers:
       - When divisible by 15, print FizzBuzz
       - When divisible by 3, print Fizz
@@ -130,10 +108,7 @@ let examples = {
 
 (1 1 1)`,
 
-/*
-@|Fib */
-
-"fib": 
+examples.fibonacci = 
 `<> (Print the nth Fibonacci number)
 
 <> (fib 0) 0
@@ -147,4 +122,3 @@ let examples = {
 
 ((fib 6) (wait))`
 
-}
