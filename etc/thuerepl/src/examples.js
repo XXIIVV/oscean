@@ -1,25 +1,15 @@
-/* Inspired from https://doc.rust-lang.org/rust-by-example/ */
+let examples = {}
 
-let examples = {
-/*
-@|Hello-World */
-
-"hello_world": `hello::=bye
+examples.hello_world = `hello::=bye
 ::=
 hello world`,
 
-/*
-@|Add */
-
-"add": `a+b::=aa+
+examples.add = `a+b::=aa+
 +=?::=
 ::=
-aaa+bbbbb=?`,
+aaa+bbbbb=?`
 
-/*
-@|Roll */
-
-"roll": `%text,::=~You rolled: 
+examples.roll_dice = `%text,::=~You rolled: 
 %dice::=~1.
 %dice::=~2.
 %dice::=~3.
@@ -27,12 +17,9 @@ aaa+bbbbb=?`,
 %dice::=~5.
 %dice::=~6.
 ::=
-%%text,dice`,
+%%text,dice`
 
-/*
-@|Hexbin */
-
-"hexbin": `>0::=0000>
+examples.hexadecimal_to_binary = `>0::=0000>
 >1::=0001>
 >2::=0010>
 >3::=0011>
@@ -51,12 +38,9 @@ aaa+bbbbb=?`,
 > ::= >
 >.::=
 ::=
->0c6e 6ecc.`,
+>0c6e 6ecc.`
 
-/*
-@|Proquints */
-
-"proquints": `c0000::=~b
+examples.proquints = `c0000::=~b
 c0001::=~d
 c0010::=~f
 c0011::=~g
@@ -78,12 +62,9 @@ v10::=~o
 v11::=~u
 *-::=~-
 ::=
-cvcvc*cvcvc0000110001101110-0110111011001100`,
+cvcvc*cvcvc0000110001101110-0110111011001100`
 
-/*
-@|Sierpinski */
-
-"sierpinski": `#::=
+examples.sierpinski_triangle = `#::=
 X::=~_
 Y::=~*
 Z::=~\\n
@@ -99,7 +80,5 @@ _*::=*_Y
 @*-::=@_*
 ::=
 @_*...............................|`
-
-}
 
 /* This is a littlekludgy. */
