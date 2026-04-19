@@ -274,7 +274,9 @@ examples.print_time = `( Print the time in the hh:mm:ss format )
 	LIT "0 ADD #18 DEO
 	JMP2r`
 
-examples.fizzbuzz = `#6501
+examples.fizzbuzz = `( Print the fizzbuzz sequence)
+
+#6501
 
 @fizzbuzz ( n i -- )
 	#00 OVR #03 DIVk MUL SUB ?{
@@ -292,7 +294,9 @@ examples.fizzbuzz = `#6501
 	INC GTHk ?fizzbuzz
 	POP2 BRK`
 
-examples.sierpinski = `@sierpinski ( -> )
+examples.sierpinski = `( Draw the Sierpiński triangle )
+
+@sierpinski ( -> )
 	( mask ) [ LIT2r 0a18 ] [ LIT2r 2018 ] 
 	( size ) [ LIT2 &size 1001 ] SUB
 	&>ver ( -- )
@@ -307,7 +311,9 @@ examples.sierpinski = `@sierpinski ( -> )
 		#01 SUB INCk ?&>ver
 	POP POP2r POP2r BRK`
 
-examples.mandelbrot = `|0020 @W
+examples.mandelbrot = `( Draw the mandelbrot fractal )
+
+|0020 @W
 |0016 @H
 |0003 @Z
 |00e0 @A/x
