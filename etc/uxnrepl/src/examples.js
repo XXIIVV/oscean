@@ -237,3 +237,135 @@ examples.debugging = `( The stack states can be printed at any point during
         BRK
     }
      LIT2 "0 -Console/write DEO     ( Print failure )`
+
+examples.fibonacci = `( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
+
+#0009 fibo BRK
+
+@fibo ( num* -- numfib* )
+	#0001 GTH2k ?{ POP2 JMP2r }
+	SUB2k fibo STH2
+	INC2 SUB2 fibo STH2r ADD2 JMP2r`
+
+/*
+@|DateTime */
+
+examples.print_time = `( Print the time in the hh:mm:ss format )
+
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1
+
+|100
+
+@on-reset ( -> )
+	.DateTime/hour DEI u8/<print-dec>
+	LIT2 ": 18 DEO
+	.DateTime/minute DEI u8/<print-dec>
+	LIT2 ": 18 DEO
+	.DateTime/second DEI u8/<print-dec>
+	#0a18 DEO
+	BRK
+
+@u8/<print-dec> ( u8 -- )
+	DUP #0a DIV /<print-digit>
+	#0a DIVk MUL SUB
+	( >> )
+
+@u8/<print-digit> ( d -- )
+	LIT "0 ADD #18 DEO
+	JMP2r`
+
+examples.fizzbuzz = `#6501
+
+@fizzbuzz ( n i -- )
+	#00 OVR #03 DIVk MUL SUB ?{
+		INC LIT2 "F 18 DEO
+		LIT2 "i 18 DEO
+		LIT2 "z 18 DEOk DEO }
+	OVR #05 DIVk MUL SUB ?{
+		INC LIT2 "B 18 DEO
+		LIT2 "u 18 DEO
+		LIT2 "z 18 DEOk DEO }
+	?{
+		DUP #0a DIVk DUP #30 ADD #18 DEO
+		MUL SUB #30 ADD #18 DEO }
+	#0a18 DEO
+	INC GTHk ?fizzbuzz
+	POP2 BRK`
+
+examples.sierpinski = `@sierpinski ( -> )
+	( mask ) [ LIT2r 0a18 ] [ LIT2r 2018 ] 
+	( size ) [ LIT2 &size 1001 ] SUB
+	&>ver ( -- )
+		DUP INCk
+		&>pad ( length -- )
+			DEOkr
+			#01 SUB DUP ?&>pad
+		&>fill ( length i -- )
+			ANDk DUP2r ?{ POP2r ORA2kr } DEOr DEOkr
+			INC ADDk ,&size LDR LTH ?&>fill
+		POP2 OVR2r DEOr
+		#01 SUB INCk ?&>ver
+	POP POP2r POP2r BRK`
+
+examples.mandelbrot = `|0020 @W
+|0016 @H
+|0003 @Z
+|00e0 @A/x
+|00c0 &y
+|0090 @B/x
+|0060 &y
+|0006 @bits
+|fc00 &mask
+|0100 @LIMIT
+|0013 @MAXITER
+
+|100
+
+@on-reset ( -> )
+	mandelbrot/<draw>
+	BRK
+
+%mandelbrot/<emit> ( i2 i -- ) {
+	( i ) #01 SUB #00 SWP ;&lut ADD2 LDA #18 DEO
+	( i2 ) POP }
+
+%mandelbrot/<lb> ( -- ) {
+	#0a18 DEO }
+
+@mandelbrot/<draw> ( -- )
+	[ LIT2 -H -Z ] MUL ,&h/z STR
+	[ LIT2 -W -Z ] MUL ,&w/z STR
+	[ LIT2 -A/y -Z ] DIV ,&y/z STR
+	[ LIT2 -A/x -Z ] DIV ,&x/z STR
+	( | render )
+	[ LIT2 &h/z $1 00 ]
+	&>y
+		( y ) #00 OVR [ LIT2 00 &y/z $1 ] MUL2 ;H DIV2 ;B/y SUB2 ,&y0 STR2
+		[ LIT2 &w/z $1 00 ]
+		&>x
+			( x ) #00 OVR [ LIT2 00 &x/z $1 ] MUL2 ;W DIV2 ;B/x SUB2 ,&x0 STR2
+			( -- . x* y* ) [ LIT2r 0000 ] DUP2r
+			( i 0 ) [ LIT2 -MAXITER 00 ]
+			&>i
+				( . x* y* y* x* ) SWP2kr
+				( x sqr ) DUP2r MUL2r STH2r /sign
+				( y sqr ) DUP2r MUL2r STH2r /sign
+				( test ) ADD2k ;LIMIT GTH2 ?&break
+				MUL2r STH2r /sign #10 SFT2 [ LIT2 &y0 $2 ] ADD2 STH2
+				SUB2 STH2
+				[ LIT2r &x0 $2 ] ADD2r SWP2r
+				( .. ) INC GTHk ?&>i
+			!{
+			&break POP2 POP2 }
+		/<emit>
+		( . x* y* -- ) POP2r POP2r
+		( .. ) INC GTHk ?&>x
+	POP2 /<lb>
+	INC GTHk ?&>y
+	POP2 JMP2r
+
+@mandelbrot/sign ( x* -- res* )
+	.bits SFT2 OVR #02 AND ?{ JMP2r }
+	;bits/mask ORA2 JMP2r
+
+	&lut "Q80XCTI1l!i;:"^',. 20`
