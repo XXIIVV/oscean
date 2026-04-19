@@ -378,7 +378,7 @@ tasks^4
 
 examples.sierpinski = `y4 y3 y2 y1 y0 width height^31
 @Rows ( width height -- )
-	( indent ) i^height '.\s/i
+	( indent ) i^height '.\\s/i
 	c^width 
 	@Cols ( c -- )
 		[]/x^x x^c []/x
