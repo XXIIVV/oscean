@@ -10,7 +10,15 @@ examples.hello_world = `(define double
 	'wrong)
 
 (print 
-	'(hello world))`,
+	'(Heol! Lisp))`,
+
+examples.fibonacci = `(define fib
+  (lambda (n)
+    (if (< n 2)
+      n
+      (+ (fib (- n 1)) (fib (- n 2))))))
+
+(print (fib 9))`
 
 examples.factorial = 
 
@@ -20,13 +28,29 @@ examples.factorial =
 			1 
 			(* n (fac (- n 1))))))
 
-(print (fac 5))`,
+(print (fac 5))`
+
+examples.map = `(define print-ln
+  (lambda (s)
+    (and (print s) (print '\s))))
+
+(define map
+  (lambda (f lst)
+    (if (eq? lst '())
+      '()
+      (cons (f (car lst)) (map f (cdr lst))))))
+
+(define double (lambda (x) (* x 2)))
+(define add1   (lambda (x) (+ x 1)))
+
+(print-ln (map double '(1 2 3 4 5)))
+(print-ln (map add1   '(1 2 3 4 5)))`
 
 examples.fizzbuzz = 
 
 `(define print-ln
 	(lambda (s)
-		(and (print s) (print '-))))
+		(and (print s) (print '\\n))))
 
 (define fizzbuzz
 	(lambda (n f b)
