@@ -120,6 +120,25 @@ function Repl(rom, keyword)
 		this.editor_el = document.getElementById("editor")
 		this.result_el = document.getElementById("result")
 		this.run_el = document.getElementById("run")
+		this.load_examples()
+		// Connect textarea
+		this.editor_el.addEventListener("keydown", (e) => {
+			let { keyCode } = e
+			let { value, selectionStart, selectionEnd } = this.editor_el
+			if (keyCode === 9) { // TAB = 9
+				e.preventDefault()
+				this.editor_el.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
+				this.editor_el.setSelectionRange(selectionStart+1, selectionStart+1)
+			}
+			else if (event.ctrlKey && event.key === 'Enter') 
+				this.run();
+		});
+		this.run_el.addEventListener("click", this.run)
+		this.run_el.value = keyword
+		document.body.className = "active"
+	}
+
+	this.load_examples = () => {
 		this.examples_el = document.getElementById("examples")
 		// Load examples
 		Object.keys(examples).forEach(key => {
@@ -142,23 +161,6 @@ function Repl(rom, keyword)
 		this.examples_el.addEventListener('change', (e) => {
 			this.select_example(e.currentTarget.value)
 		}, true);
-		// Connect textarea
-		this.editor_el.addEventListener("keydown", (e) => {
-			let { keyCode } = e
-			let { value, selectionStart, selectionEnd } = this.editor_el
-			if (keyCode === 9) { // TAB = 9
-				e.preventDefault()
-				this.editor_el.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
-				this.editor_el.setSelectionRange(selectionStart+1, selectionStart+1)
-			}
-			else if (event.ctrlKey && event.key === 'Enter') 
-				this.run();
-		});
-
-		this.run_el.addEventListener("click", this.run)
-		this.run_el.value = keyword
-		document.body.className = "active"
-
 	}
 
 	this.popup = (text) => {

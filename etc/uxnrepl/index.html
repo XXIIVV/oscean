@@ -20,7 +20,7 @@
 <body>
 	<textarea id="editor" spellcheck="false">
 ( This is a comment, and is ignored by the assembler.
-  Click the Run button to evaluate the program.
+  Click the Eval button to evaluate the program.
   Select the next example with the dropdown. )
 
 ;text                   ( Push text pointer )
@@ -36,12 +36,14 @@
 
 	"Hello 20 "World! 00
 </textarea>
-	<div id='logs'>Press <b>Run</b> to evaluate.</div>
+	<div id='logs'>Press <b>Eval</b> to run the program.</div>
 	<div id='menu'>
-		<input type="button" id="run" value="Run"> <input type="button" id="step" value="Step">
-		<span id='result'>Ready.</span>
-		<input type="button" id="dump" class="option" value="Hex">
-		<input type="button" id="save" class="option" value="Rom">
+		<input type="button" id="eval" value="Eval">
+		<input type="button" id="run" value="Run">
+		<input type="button" id="step" value="Step">
+		<span id='result'><a href='../../site/heol.html' target='_blank'>Read Manual</a></span>
+		<input type="button" id="hex" class="option" value="Hex">
+		<input type="button" id="rom" class="option" value="Rom">
 		<select id="examples"></select>
 	</div>
 	<style>
@@ -59,17 +61,164 @@
 		div#menu .option { float:right; margin-left:10px; cursor:pointer }
 		body.active textarea { height:calc(100% - 170px) }
 		body.active #logs, body.active #menu, body.active #editor { display:block !important }
-		#run, #step { cursor:pointer; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
+		#run, #step, #eval { cursor:pointer; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
 		/* Overrides */
 		body ::selection { background:#000;color:#fff }
 		textarea { background:#efefef }
 		div#logs { background:#8ff2d9; color:black }
 		div#menu { background:#72dec2 }
-		#run { background:#000; color:white }
-		#run:hover { background: #fff; color:#000 }
+		#eval { background:#000; color:white }
+		#eval:hover { background: #fff; color:#000 }
 		#step { background: #fff; color:black}
-		#run:hover, #step:hover { background: #58ac96; color:#000 }
+		#step:hover { background: #58ac96; color:#000 }
+		#run { display:none }
 	</style>
-	<script src="src/repl.js"></script>
+	<script>
+'use strict'
+
+const repl = new Repl(assembler, "Run").init()
+
+let emulator
+let ended = 0
+
+const logs_el = document.getElementById("logs")
+const editor_el = document.getElementById("editor")
+const result_el = document.getElementById("result")
+const eval_el = document.getElementById("eval")
+const step_el = document.getElementById("step")
+
+const opcodes = [
+	"LIT", "INC", "POP", "NIP", "SWP", "ROT", "DUP", "OVR",
+	"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
+	"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
+	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"]
+
+function assemble(query, program) {
+	let emu_asm = new Emu()
+	let rom_length = 0
+	emu_asm.console.write = (char) => { program[rom_length++] = char }
+	emu_asm.uxn.load(assembler).eval(0x0100)
+	logs_el.innerHTML = ""
+	for (let i = 0; i < query.length; i++)
+		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
+	emu_asm.console.input(0x0a, 2)
+	emu_asm.console.input(0x00, 4)
+	result_el.innerHTML = `> ${emu_asm.console.stdout_body}`
+	logs_el.innerHTML = emu_asm.console.stderr_body
+	logs_el.scrollTop = logs_el.scrollHeight;
+	return rom_length
+}
+
+function make_opcode(byte) {
+	if(byte == 0x00) return "BRK"
+	if(byte == 0x20) return "JCI"
+	if(byte == 0x40) return "JMI"
+	if(byte == 0x60) return "JSI"
+	if((byte & 0x1f) == 0) return "LIT" + (byte & 0x20 ? "2" : "") + (byte & 0x40 ? "r" : "")
+	return opcodes[byte & 0x1f] + (byte & 0x20 ? "2" : "") + (byte & 0x80 ? "k" : "") + (byte & 0x40 ? "r" : "")
+}
+
+function status(v, run, step) {
+	ended = v
+	eval_el.value = run
+	if(step)
+		step_el.value = step, step_el.style.display = "inline-block"
+	else
+		step_el.style.display = "none"
+}
+
+function setup() {
+	let program = new Uint8Array(0x10000)
+	let res = assemble(editor_el.value, program)
+	emulator = new Emu()
+	emulator.uxn.load(program).init()
+	return res
+}
+
+function run() {
+	let res = setup()
+	if(!res) {
+		result_el.innerHTML = "Compilation failed."
+		status(1, "Eval", 0)
+		return
+	}
+	emulator.uxn.eval(0x100)
+	logs_el.innerHTML += emulator.console.stdout_body
+	if(emulator.console.stdout_body)
+		logs_el.scrollTop = logs_el.scrollHeight;
+	result_el.innerHTML = emulator.system.print_wst()
+	status(1, "Restart", "Step")
+}
+
+// Editor
+
+eval_el.addEventListener("click", run)
+
+editor_el.addEventListener("keydown", (e) => {
+	let { keyCode } = e
+	let { value, selectionStart, selectionEnd } = editor
+	if (keyCode === 9) { // TAB = 9
+		e.preventDefault()
+		editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
+		editor.setSelectionRange(selectionStart+1, selectionStart+1)
+	}
+	else if (event.ctrlKey && event.key === 'Enter')
+		run();
+	if(!ended)
+		status(1, "Restart", "Step")
+});
+
+step_el.addEventListener("click", () => {
+	if(!emulator || ended) {
+		let res = setup()
+		if(!res) {
+			result_el.innerHTML = "Compilation failed."
+			status(1, "Eval", 0)
+			return
+		}
+		ended = 0;
+	}
+	let opc = emulator.uxn.step()
+	if(emulator.console.stdout_body)
+		logs_el.innerHTML = emulator.console.stdout_body
+	logs_el.scrollTop = logs_el.scrollHeight;
+	if(!opc) {
+		status(1, "Restart", "Done")
+		return;
+	}
+	result_el.innerHTML = emulator.system.print_wst()
+	status(0, "Finish", make_opcode(opc))
+})
+
+document.getElementById("rom").addEventListener("click", () => {
+	let program = new Uint8Array(0x10000)
+	let length = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+	if(length) {
+		let cropped = new Uint8Array(length)
+		for(let i = 0; i < length; i++)
+			cropped[i] = program[i]
+		let blob = new Blob([cropped]);
+		let blobUrl = URL.createObjectURL(blob);
+		let link = document.createElement("a");
+		link.href = blobUrl;
+		link.download = "saved.rom"
+		link.click()
+		URL.revokeObjectURL(blobUrl)
+		link.remove()
+	}
+})
+
+document.getElementById("hex").addEventListener("click", () => {
+	let program = new Uint8Array(0x10000)
+	let length = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+	if(length) {
+		let body = ""
+		for(let i = 0; i < length; i++)
+			body += `${program[i].toString(16).padStart(2, '0')}${(i + 1) % 0x10 ? ' ' : '\n'}`
+		repl.popup(body)
+	}
+})
+
+</script>
 </body>
 </html>
