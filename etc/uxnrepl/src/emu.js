@@ -182,7 +182,7 @@ function Repl(rom, keyword)
 		for (let i = 0; i < query.length; i++)
 			emu.console.input(query.charAt(i).charCodeAt(0), 1)
 		emu.console.input(0x00, 4)
-		emu.console.stdout_body = emu.console.stdout_body.trim().replaceAll("Î»", "").trimStart().trimEnd()
+		emu.console.stdout_body = emu.console.stdout_body.trimEnd()
 		if(emu.console.stdout_body.includes('\n')) {
 			this.popup(emu.console.stdout_body)
 			this.result_el.innerHTML = "Result in new window"

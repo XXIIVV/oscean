@@ -376,6 +376,25 @@ tasks^4
 	[v0 tasks^3]/tasks^4 [c1 tasks^2]/tasks^3
 	[v1 tasks^1]/tasks^2 [c2]/tasks`
 
+examples.sierpinski = `y4 y3 y2 y1 y0 width height^31
+@Rows ( width height -- )
+	( indent ) i^height '.\\s/i
+	c^width 
+	@Cols ( c -- )
+		x^c []/x
+		( binary ) x4/x^16 x3/x^8 x2/x^4 x1/x^2 x0/x
+		[Cols .\\s\\s y4]/[c y4 x4 x3^x3 x2^x2 x1^x1 x0^x0]
+		[Cols .\\s\\s y3]/[c y3 x3 x4^x4 x2^x2 x1^x1 x0^x0]
+		[Cols .\\s\\s y2]/[c y2 x2 x4^x4 x3^x3 x1^x1 x0^x0]
+		[Cols .\\s\\s y1]/[c y1 x1 x4^x4 x3^x3 x2^x2 x0^x0]
+		[Cols .\\s\\s y0]/[c y0 x0 x4^x4 x3^x3 x2^x2 x1^x1]
+		[Cols .\\s*]/[c x4^x4 x3^x3 x2^x2 x1^x1 x0^x0]
+	[Rows width .\\n]/[height y0]
+	[Rows width .\\n y0]/[height y1]
+	[Rows width .\\n y1 y0]/[height y2]
+	[Rows width .\\n y2 y1 y0]/[height y3]
+	[Rows width .\\n y3 y2 y1 y0]/[height y4]`
+
 /*
 @|Extra */
 
