@@ -1,7 +1,7 @@
-	( dovem pro tle )
+( dovem pro tle )
 
-|00 	@System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 	@Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
 |000
 
@@ -14,15 +14,19 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;token/on-console .Console/vector DEO2
 	( | Prefabs )
-	;dict/identity syms/find-alloc-force POP2 BRK
+	;dict/identity syms/find-alloc-force POP2
+	( | Modes )
+	.Console/type DEI ?{ ;token/on-console-interactive .Console/vector DEO2
+		BRK }
+	;token/on-console .Console/vector DEO2
+	BRK
 
 @meta $1
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Apr 20 "2026 $2
+	( date ) "19 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -48,15 +52,30 @@
 (
 @|Token )
 
+@token/on-console-interactive ( -> )
+	.Console/read DEI DUP /<append>
+	#0a NEQ ?{ validator/get-error ?{ world/<eval> } }
+	BRK
+
 @token/on-console ( -> )
-	[ LIT2 04 -Console/type ] DEI NEQ ?{ validator/get-error ?{ world/<eval> }
-		BRK }
-	( | append )
-	.Console/read DEI
-	( | handlers )
+	.Console/read DEI /<append>
+	[ LIT2 04 -Console/type ] DEI NEQ ?{
+		validator/get-error ?{ world/<eval>
+			#800f DEO
+			BRK }
+		#010f DEO }
+	BRK
+
+@token/on-console-comment ( -> )
+	[ LIT2 ") -Console/read ] DEI NEQ ?{
+		[ LIT2 &callback $2 ] .Console/vector DEO2 }
+	BRK
+
+@token/<append> ( c -- )
 	DUP LIT "( NEQ ?{
+		.Console/vector DEI2 ,&callback STR2
 		;&on-console-comment .Console/vector DEO2
-		POP BRK }
+		POP JMP2r }
 	DUP LIT "[ NEQ ?{
 		,&depth LDR INC ,&depth STR }
 	DUP LIT "] NEQ ?{
@@ -64,14 +83,10 @@
 	[ LIT &depth $1 ] ?{
 		DUP #20 GTH ?{ /<parse>
 			/<reset>
-			POP BRK } }
+			POP JMP2r } }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
-	BRK
-
-@token/on-console-comment ( -> )
-	[ LIT2 ") -Console/read ] DEI NEQ ?{ ;&on-console .Console/vector DEO2 }
-	BRK
+	JMP2r
 
 @token/<reset> ( -- )
 	[ LIT2 -&buf _&ptr ] STR

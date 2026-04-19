@@ -177,6 +177,7 @@ function Repl(rom, keyword)
 		let query = this.editor_el.value+'\n'
 		let program = new Uint8Array(0x10000)
 		let emu = new Emu()
+		emu.uxn.dev[0x17] = query != ""
 		emu.uxn.load(rom).eval(0x0100)
 		for (let i = 0; i < query.length; i++)
 			emu.console.input(query.charAt(i).charCodeAt(0), 1)
