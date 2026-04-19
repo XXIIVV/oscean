@@ -188,7 +188,7 @@
 	POP2 POP2 POP2 .err LDZ2 JMP2r
 
 	&prim ( env* t* f* -- res* )
-	ord #20 SFT2 ;prim/lut INC2 INC2 ADD2 LDA2 JMP2
+	ord #20 SFT2 ;prim/lut+2 ADD2 LDA2 JMP2
 
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
@@ -220,8 +220,8 @@
 	POP2 POP2 POP2r
 	( | listen )
 	&>w
-		;dict/prompt str/<print>
 		.env LDZ2 read eval <print>
+		#0a <emit>
 		.env LDZ2 ord ;cons/ptr STA2 !&>w
 
 @f-cons ( env* t* -- res* )
@@ -440,7 +440,7 @@
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
-@dict/err "ERR 00 &pair 20 ". 20 00 &prompt 0a cebb 20 00
+@dict/err "ERR 00 &pair 20 ". 20 00
 	&tru "#t 00
 	&nil-list "() 00
 	&lambda "lambda 00
@@ -465,16 +465,17 @@
 	&< "< 00
 
 @prim/lut [
-	=dict/eval =f-eval =dict/quote =f-quote
-	=dict/print =f-print =dict/cons =f-cons
-	=dict/car =f-car =dict/cdr =f-cdr
-	=dict/eq? =f-eq =dict/pair? =f-pair
-	=dict/if =f-if =dict/let* =f-leta
-	=dict/lambda =f-lambda =dict/define =f-define
-	=dict/< =f-lt =dict/or =f-or
-	=dict/and =f-and =dict/not =f-not
-	=dict/+ =f-add =dict/- =f-sub
-	=dict/* =f-mul =dict// =f-div ] &lutend
+	=dict/eval &lut+2 =f-eval =dict/quote
+	=f-quote =dict/print =f-print =dict/cons
+	=f-cons =dict/car =f-car =dict/cdr
+	=f-cdr =dict/eq? =f-eq =dict/pair?
+	=f-pair =dict/if =f-if =dict/let*
+	=f-leta =dict/lambda =f-lambda =dict/define
+	=f-define =dict/< =f-lt =dict/or
+	=f-or =dict/and =f-and =dict/not
+	=f-not =dict/+ =f-add =dict/-
+	=f-sub =dict/* =f-mul =dict//
+	=f-div ] &lutend
 
 @sym/mem
 |1ff0 @cons/mem
