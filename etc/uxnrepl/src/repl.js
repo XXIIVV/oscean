@@ -3,9 +3,9 @@
 let emulator
 let ended = 0
 
-const term_el = document.getElementById("term")
+const logs_el = document.getElementById("logs")
 const editor_el = document.getElementById("editor")
-const wst_el = document.getElementById("wst")
+const result_el = document.getElementById("result")
 const run_el = document.getElementById("run")
 const step_el = document.getElementById("step")
 const save_el = document.getElementById("save")
@@ -23,14 +23,14 @@ function assemble(query, program) {
 	let rom_length = 0
 	emu_asm.console.write = (char) => { program[rom_length++] = char }
 	emu_asm.uxn.load(assembler).eval(0x0100)
-	term_el.innerHTML = ""
+	logs_el.innerHTML = ""
 	for (let i = 0; i < query.length; i++)
 		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
 	emu_asm.console.input(0x0a, 2)
 	emu_asm.console.input(0x00, 4)
-	wst_el.innerHTML = `> ${emu_asm.console.stdout_body}`
-	term_el.innerHTML = emu_asm.console.stderr_body
-	term_el.scrollTop = term_el.scrollHeight;
+	result_el.innerHTML = `> ${emu_asm.console.stdout_body}`
+	logs_el.innerHTML = emu_asm.console.stderr_body
+	logs_el.scrollTop = logs_el.scrollHeight;
 	return rom_length
 }
 
@@ -67,15 +67,15 @@ function print_stack(id) {
 function run() {
 	let res = setup()
 	if(!res) {
-		wst_el.innerHTML = "Compilation failed."
+		result_el.innerHTML = "Compilation failed."
 		status(1, "Run", 0)
 		return
 	}
 	emulator.uxn.eval(0x100)
-	term_el.innerHTML += emulator.console.stdout_body
+	logs_el.innerHTML += emulator.console.stdout_body
 	if(emulator.console.stdout_body)
-		term_el.scrollTop = term_el.scrollHeight;
-	wst_el.innerHTML = emulator.system.print_wst()
+		logs_el.scrollTop = logs_el.scrollHeight;
+	result_el.innerHTML = emulator.system.print_wst()
 	status(1, "Restart", "Step")
 }
 
@@ -83,7 +83,7 @@ function step() {
 	if(!emulator || ended) {
 		let res = setup()
 		if(!res) {
-			wst_el.innerHTML = "Compilation failed."
+			result_el.innerHTML = "Compilation failed."
 			status(1, "Run", 0)
 			return
 		}
@@ -91,13 +91,13 @@ function step() {
 	}
 	let opc = emulator.uxn.step()
 	if(emulator.console.stdout_body)
-		term_el.innerHTML = emulator.console.stdout_body
-	term_el.scrollTop = term_el.scrollHeight;
+		logs_el.innerHTML = emulator.console.stdout_body
+	logs_el.scrollTop = logs_el.scrollHeight;
 	if(!opc) {
 		status(1, "Restart", "Done")
 		return;
 	}
-	wst_el.innerHTML = emulator.system.print_wst()
+	result_el.innerHTML = emulator.system.print_wst()
 	status(0, "Finish", make_opcode(opc))
 }
 
@@ -156,7 +156,7 @@ editor_el.addEventListener("keydown", (e) => {
 
 examples_el.addEventListener('change', (e) => {
 	editor_el.value = examples[e.currentTarget.value]
-	term_el.innerHTML = `Press <b>Run</b> to evaluate.`
+	logs_el.innerHTML = `Press <b>Run</b> to evaluate.`
 	status(1, "Run", "Step")
 }, true);
 
