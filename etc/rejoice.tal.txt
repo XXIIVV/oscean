@@ -1,7 +1,7 @@
-( dovem pro tle )
+	( dovem pro tle )
 
-|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|00 	@System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 	@Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
 |000
 
@@ -49,6 +49,9 @@
 @|Token )
 
 @token/on-console ( -> )
+	[ LIT2 04 -Console/type ] DEI NEQ ?{ validator/get-error ?{ world/<eval> }
+		BRK }
+	( | append )
 	.Console/read DEI
 	( | handlers )
 	DUP LIT "( NEQ ?{
@@ -59,11 +62,9 @@
 	DUP LIT "] NEQ ?{
 		,&depth LDR #01 SUB ,&depth STR }
 	[ LIT &depth $1 ] ?{
-		DUP #20 GTH ?{
-			/<parse>
+		DUP #20 GTH ?{ /<parse>
 			/<reset>
-			#0a NEQ ?{ validator/get-error ?{ world/<eval> } }
-			BRK } }
+			POP BRK } }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	BRK
