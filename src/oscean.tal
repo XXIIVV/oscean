@@ -515,12 +515,14 @@
 	JMP2r
 
 @album-module/<build> ( name* -- name* )
-	;diary/buf
+	[ LITr 00 ] ;diary/buf
 	&>w
 		log/has-no-picture ?{
-			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo> } }
+			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo>
+				INCr } }
 		str/cap LDAk ?&>w
-	POP2 JMP2r
+	POP2 STHr ?{ ;term/name ;warnings/no-photo warning/<print> }
+	JMP2r
 
 @portal-module/<build> ( -- )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
@@ -938,6 +940,7 @@
 	&hidden "Hidden: 20 00
 	&duplicate "Duplicate 20 "diary: 20 00
 	&unknown "Unknown 20 "diary: 20 00
+	&no-photo "No 20 "photos: 20 00
 
 @path/lexicon "src/tables/lexicon 00
 	&sitemap "src/htm/sitemap.htm 00
