@@ -2,6 +2,7 @@
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 |000
 
@@ -15,6 +16,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | Prefabs )
+	random/<init>
 	;dict/identity syms/find-alloc-force POP2
 	( | Modes )
 	.Console/type DEI ?{ ;token/on-console-interactive .Console/vector DEO2
@@ -26,7 +28,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "19 20 "Apr 20 "2026 $2
+	( date ) "20 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -54,16 +56,13 @@
 
 @token/on-console-interactive ( -> )
 	.Console/read DEI DUP /<append>
-	#0a NEQ ?{ validator/get-error ?{ world/<eval> } }
+	#0a NEQ ?{ world/<eval> }
 	BRK
 
 @token/on-console ( -> )
 	.Console/read DEI /<append>
-	[ LIT2 04 -Console/type ] DEI NEQ ?{
-		validator/get-error ?{ world/<eval>
-			#800f DEO
-			BRK }
-		#010f DEO }
+	[ LIT2 04 -Console/type ] DEI NEQ ?{ world/<eval>
+		#800f DEO }
 	BRK
 
 @token/on-console-comment ( -> )
@@ -98,13 +97,6 @@
 	( exists ) LDZk ?{ POP JMP2r }
 	( @label ) LDZk LIT "@ EQU ?/<parse-label>
 	( 'quote ) LDZk LIT "' EQU ?/<parse-quote>
-	( | validate token )
-	;world/ptr LDA2 ROT /<parse-operand>
-	( num ) validator/<validate-fragment>
-	( den ) validator/<validate-fragment>
-	POP2 JMP2r
-
-@token/<parse-operand> ( ztr -- )
 	world/<push-scope>
 	( >> )
 
@@ -130,35 +122,6 @@
 
 @token/<parse-label> ( ztr -- )
 	#00 SWP INC syms/find-alloc !label/<create>
-
-(
-@|Validator )
-
-%validator/not-label ( ptr* -- ptr* ) {
-	LDA2k label/get-addr LDA2 #0000 EQU2 }
-
-@validator/get-error ( -- exists )
-	[ LIT &count $1 ] JMP2r
-
-@validator/<set-error> ( msg* -- )
-	[ LIT2 01 _&count ] STR
-	;dict/err str/<print>
-	str/<print>
-	;token/buf str/<print>
-	[ LIT2 ". 19 ] DEO
-	#0a19 DEO
-	JMP2r
-
-@validator/<validate-fragment> ( ptr* -- )
-	LDA2k SWP2 INC2 INC2
-	( count labels ) [ LIT2r 0200 ]
-	&>lvf
-		/not-label ?{ INCr }
-		item/next GTH2k ?&>lvf
-	POP2
-	( | Multiple labels )
-	GTHr STHr ?{ ;dict/err-jumps !/<set-error> }
-	JMP2r
 
 (
 @|Bag/Items )
@@ -329,12 +292,14 @@
 	JMP2r
 
 @goto/step ( addr* -- addr* )
-	[ LIT2 -&buf _&ptr ] LDR EQU ?{
-		POP2 ,&ptr LDR #02 SUB DUP ,&ptr STR
-		LDZ2 JMP2r }
-	LDA2 LDA2 JMP2r
+	,&count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
+	POP2 [ LIT2 00 _&count ] STR
+	[ LIT2 -&buf _&ptr ] STR
+	STHkr #01 GTH ?{ POPr .&buf LDZ2 JMP2r }
+	random/make ADD STHr DIVk MUL SUB DUP ADD .&buf ADD LDZ2 JMP2r
 
 @goto/<push> ( addr* -- )
+	[ LIT &count $1 ] INC ,&count STR
 	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
 	STZ2
 	JMP2r
@@ -528,8 +493,6 @@
 		INC2 !&>w
 
 @dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
-	&err "Error: 20 00
-	&err-jumps "Ambiguous 20 "jump 20 "in 20 00
 	&ellipses ".. 00
 
 (
@@ -594,6 +557,25 @@
 		NIP char/<print-digit>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
+
+@random/<init> ( -- )
+	[ LIT2 00 -DateTime/second ] DEI
+	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
+	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
+	JMP2r
+
+@random/make ( -- number* )
+	[ LIT2 &x $2 ]
+	( ) DUP2 #50 SFT2 EOR2
+	( ) DUP2 #03 SFT2 EOR2
+	( ) [ LIT2 &y $2 ]
+	( ) DUP2 ,&x STR2
+	DUP2 #01 SFT2 EOR2 EOR2
+	( ) ,&y STR2k POP JMP2r
 
 (
 @|Buffers )
