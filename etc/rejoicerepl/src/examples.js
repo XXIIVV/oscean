@@ -96,8 +96,8 @@ examples.random=`( flip a coin )
 
 [Head Tail]
 
-@Head .You\\sflipped\\s:\\sHead. End
-@Tail .You\\sflipped\\s:\\sTail.
+@Head .Head End
+@Tail .Tail
 @End
 `
 examples.fibonacci=`( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
