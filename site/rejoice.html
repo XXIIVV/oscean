@@ -14,7 +14,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="self">rejoice</a></li></ul><ul><li><a href="gaude.html">gaude</a></li></ul></nav>
+<nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="self">rejoice</a></li></ul><ul><li><a href="rejoice_devlog.html">rejoice devlog</a></li><li><a href="gaude.html">gaude</a></li></ul></nav>
 <main><h2>Rejoice!</h2>
 
 <p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language in which data is encoded as <a href='multisets.html'>multisets</a> that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
@@ -192,138 +192,6 @@ times^100 f b
 </pre>
 <pre style='margin-top:-29px'>
 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, ..</pre>
-
-<div><center style='font-size:30px'>&bull;</center></div>
-
-<img src='../media/refs/rewrite_seele.png' class="right" style='width:140px'/>
-
-<h3 id='linear_logic'>On Linear Logic</h3>
-
-<p>Traditional logic treats propositions as inexhaustible, whereas linear logic accounts for resources, using something changes the world. This is illustrated with file handles: once the file is consumed, any fraction requiring it in its denominator simply won't fire; the resource is inaccessible through absence rather than enforcement.</p>
-
-<pre>
-file^1
-	closed/file
-	read/file <i>( unreachable )</i>
-</pre>
-
-<p>A one-shot fraction can freely duplicate or discard symbols(<code>x^2/x</code>), but the fraction itself is consumed after firing. Anonymous functions and the @label mechanism are what promote rules to unlimited use.</p>
-
-<pre>coin^3
-
-@VendingMachine <i>( coin -- candy )</i>
-	[VendingMachine candy]/coin</pre>
-
-<p>Typically, resource tracking constrains what programmers can do with <i>values</i>, but here, entities persist because nothing consumed them, not because they're protected.</p>
-
-<h3 id='reversibility'>On Reversibility</h3>
-
-<p>Multiplying by the inverse of a fraction undoes the application of that fraction, allowing for a certain level of <a href='reversible_computing.html'>reversibility</a> at the operand level. A program is reversible if it has exactly one forward rule match per input state and exactly one reverse rule match per output state. If that holds, the system cannot lose information.</p>
-
-<pre>
-a^3 b^2 <i>( fwd )</i> '[a c]/b -> a^5 c^2
-a^5 c^2	<i>( bwd )</i> 'b/[a c] -> a^3 b^2</pre>
-
-<img src="../media/refs/billard.png" width="120" alt="Fredkin & Toffoli, 1982" class="right">
-
-<p>To find if a program is within the subset of reversible programs: ignore any program with labels and check if there are any pairs of fractions whose denominators are compatible with the same input bag but whose numerators produce the same output. For example, the <code>OR</code> gate is provably irreversible at compile-time, due to having converging outputs on <code>true</code>.</p>
-
-<pre>
-x y or
-    true/[x y or]
-    true/[x or]
-    true/[y or]
-    false/or
-</pre>
-
-<h3>On Optimization</h3>
-<p>There are various levels of optimizations possible, the interpreter might choose to <i>drain</i> symbols by anonymous functions in a single step. This allows for moving or copying values from a single denominator to any number of symbols, without having to run through each value one at a time. But each layer of optimization adds runtime costs.</p>
-
-
-<ul>
-	<li><code>'x/a</code>: One symbol to another.</li>
-	<li><code>'[x y]/a</code>: One symbol to many symbols.</li>
-	<li><code>'[x^2 y]/a</code>: One symbol to many symbols, multiple values at a time.</li>
-	<li><code>'[x^2 y]/a^4</code>: Multiple values from one symbol to many symbols.</li>
-	<li><code>'[x^2 y]/[a^4 b^3]</code>: Multiple values from multiple symbols to many symbols.</li>
-</ul>
-
-<pre>
-c^5 '[a b]/c <i>( c = 5; a = b = c; )</i>
-</pre>
-<pre style='margin-top:-29px'>
-[c^5] '[a b]/c 
-[c^4 a b] '[a b]/c 
-[c^3 a^2 b^2] '[a b]/c 
-[c^2 a^3 b^3] '[a b]/c 
-[c a^4 b^4] '[a b]/c 
-[a^5 b^5] '[a b]/c 
-[a^5 b^5] 
-</pre>
-
-<p>Many of these loop-shaped behaviors are better handled explicitly with variable exponents instead of labels:</p>
-
-<pre>
-c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
-</pre>
-<pre style='margin-top:-29px'>
-[c^5] [a^c b^c]/c^c 
-[a^5 b^5] 
-</pre>
-
-<h3 id='fractran'>On Fractran</h3>
-<p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label, at the top of the program, present in each numerator. For example, the Fractran program: [3^2 5^2], 7/3, 7/5</p>
-<pre>r3^2 r5^2
-
-@Fractran <i>( r3 r5 -- r3+r5.r7 )</i>
-	[Fractran r7]/r3
-	[Fractran r7]/r5</pre>
-<pre style='margin-top:-29px'>
-[r3^2 r5^2] [Fractran r7]/r3 [Fractran r7]/r5 
-[r3 r5^2 r7] [Fractran r7]/r3 [Fractran r7]/r5 
-[r5^2 r7^2] [Fractran r7]/r3 [Fractran r7]/r5 
-[r5^2 r7^2] [Fractran r7]/r5 
-[r5 r7^3] [Fractran r7]/r3 [Fractran r7]/r5 
-[r5 r7^3] [Fractran r7]/r5 
-[r7^4] [Fractran r7]/r3 [Fractran r7]/r5 
-[r7^4] [Fractran r7]/r5 
-[r7^4]
-</pre>
-
-<h3 id='bestiary'>Bestiary</h3>
-
-<table border='1'>
-	<tr><th colspan='3'>Balanced Multiset Combinators</th></tr>
-	<tr><td><code>[]</code></td>         <td>Lyrebird</td>        <td>Identity</td></tr>
-	<tr><td><code>x/x</code></td>        <td>Sphinx</td>  <td>Selective identity</td></tr>
-	<tr><td><code>x/y</code></td>        <td>Faun</td>    <td>Rewrite</td></tr>
-	<tr><td><code>[x y]/[y x]</code></td><td>Penguin</td>    <td>Orderless testing</td></tr>
-	<tr><td><code>[x y]/[x z]</code></td><td>Remora</td><td>Catalyst/Guarded rewrite</td></tr>
-
-	<tr><th colspan='3'>Strengthening Multiset Combinators</th></tr>
-	<tr><td><code>x^x</code></td>     <td>Parrot</td>    <td>Double</td></tr>
-	<tr><td><code>x^y</code></td>     <td>Pufferfish</td>    <td>Addition/Power</td></tr>
-	<tr><td><code>x^y/x</code></td>   <td>Hydra</td>    <td>Generalized Expansion</td></tr>
-	<tr><td><code>x^z/y</code></td>   <td>Medusa</td>          <td>Expansion</td></tr>
-	<tr><td><code>[x y]/x</code></td> <td>Stork</td>          <td>Selective production</td></tr>
-	<tr><td><code>[x y]/z</code></td> <td>Slug</td> <td>Decomposition</td></tr>
-	<tr><td><code>y^x/x^x</code></td> <td>Butterfly</td><td>Transfer</td></tr>
-
-	<tr><th colspan='3'>Weakening Multiset Combinators</th></tr>
-	<tr><td><code>[]/x</code></td>       <td>Mayfly</td>            <td>Weakening</td></tr>
-	<tr><td><code>[]/x^x</code></td>     <td>Ouroboros</td> <td>Drain</td></tr>
-	<tr><td><code>[]/x^y</code></td>     <td>Cuckoo</td>          <td>Merge elimination</td></tr>
-	<tr><td><code>[]/[x y]</code></td>   <td>Locust</td>          <td>Parallel erase</td></tr>
-
-	<tr><td><code>x/x^z</code></td>      <td>Pelican</td>           <td>Dereliction</td></tr>
-	<tr><td><code>x/y^x</code></td>      <td>Crane</td>  <td>Gth/Equ</td></tr>
-	<tr><td><code>x/y^z</code></td>      <td>Centaur</td>         <td>Contraction</td></tr>
-	<tr><td><code>x/[x y]</code></td>    <td>Mantis</td>        <td>Selective erase</td></tr>
-	<tr><td><code>x/[y z]</code></td>    <td>Chimera</td>         <td>Composition</td></tr>
-
-</table>
-
-<!-- the distance between and to the opposite side of -->
 
 <ul>
 	<li><a href='../etc/rejoice.tal.txt' target='_blank'>Source</a>, Uxntal.</li>
