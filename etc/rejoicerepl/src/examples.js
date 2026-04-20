@@ -113,8 +113,7 @@ n^7
 	@End ( -- )`
 examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 @Rows ( width height -- )
-	( indent ) i^height '.\\s/i
-	c^width 
+	[c^width i^height] '.\\s/i
 	@Cols ( c -- )
 		x^c/x^x []/x
 		[Cols .\\s\\s y4]/[c y4 x^16] []/x^16
@@ -132,9 +131,10 @@ examples.stack_machine=`( 3-items Stack Primitives: )
 
 a^12 b^34 c^56
 
-( swap ) [a^b b^a]/[a^a b^b]
-( rot  ) [a^c b^a c^b]/[a^a b^b c^c]
-( pop  ) [a^b b^c]/[a^a b^b c^c]`
+( swp ) [a^b b^a]/[a^a b^b]
+( rot ) [a^c b^a c^b]/[a^a b^b c^c]
+( pop ) [a^b b^c]/[a^a b^b c^c]
+( dup ) [a^a b^a c^b]/[a^a b^b c^c]`
 examples.binary_logic=`( Put a logic gate and binary states in the bag: )
 
 or true false
