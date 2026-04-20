@@ -88,8 +88,7 @@ x^6 y^15
 
 @Gcd ( x y -- x )
 	'z/[x y]
-	y^x/x^x
-	x^z/z^z 
+	[y^x x^z]/[x^x z^z]
 	[Gcd y]/y
 
 .#x`
@@ -295,8 +294,7 @@ examples.spirograph=`( inner cog: ) x^40
 
 @Gcd ( x y -- x )
 	'z/[x y]
-	y^x/x^x
-	x^z/z^z
+	[y^x x^z]/[x^x z^z]
 	[Gcd y]/y
 
 ( y2/x  ) 'res/y2^x
