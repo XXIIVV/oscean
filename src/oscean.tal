@@ -403,8 +403,15 @@
 (
 @|Build )
 
+%stash-depth ( name* -- name* . depth ) {
+	DUP2k #0002 SUB2 LDA chr/hex STH
+	str/cap }
+
 %stop-at-siblings ( name* -- name* t ) {
 	LDAk chr/hex STHkr INC LTH }
+
+%when-depth+1 ( name* -- name* t ) {
+	LDAk chr/hex STHkr INC NEQ }
 
 @page/build ( name* -- name* )
 	DUP2 path-site/make .File2/name DEO2
@@ -461,11 +468,10 @@
 
 	&<build-children> ( name* -- name* )
 	;tag/ul html/<open>
-	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
-	( start after ) str/cap
+	stash-depth
 	&>w
 		stop-at-siblings ?&end
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
+		when-depth+1 ?{
 			;tag/li html/<open>
 			INC2k INC2 html/<local>
 			;tag/li html/<close> }
@@ -546,11 +552,10 @@
 	JMP2r
 
 @portal-module/<build> ( name* -- name* )
-	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
-	( start after ) str/cap
+	stash-depth
 	&>w
 		stop-at-siblings ?&end1
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
+		when-depth+1 ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
@@ -560,25 +565,23 @@
 	( restore diary ) DUP2 !diary/<load>
 
 @archive-module/<build> ( name* -- name* )
-	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
-	( start after ) str/cap
+	stash-depth
 	&>w
 		stop-at-siblings ?&end2
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
+		when-depth+1 ?{ INC2 INC2 DUP2 <build-include> }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end2 ( name* . depth -- )
 	POP2 POPr JMP2r
 
 @portal-archive-module/<build> ( name* -- name* )
-	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
-	( start after ) str/cap
+	stash-depth
 	&>w
 		stop-at-siblings ?&end3
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
+		when-depth+1 ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
-		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{ INC2 INC2 DUP2 <build-include> }
+		when-depth+1 ?{ INC2 INC2 DUP2 <build-include> }
 		INC2 INC2 str/cap LDAk ?&>w
 	&end3 ( name* . depth -- )
 	POP2 POPr JMP2r
