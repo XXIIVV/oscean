@@ -502,38 +502,41 @@
 	JMP2r
 	&null ffff
 
+(
+@|Modules )
+
 @page/<build-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
-	( ) DUP [ LIT ", ] NEQ ?{ POP !module/<build-album> }
+	( ) DUP [ LIT ", ] NEQ ?{ POP !album-module/<build> }
 	diary/count #0002 LTH2 ?{ ;term/name ;warnings/hidden warning/<print> }
-	( ) DUP [ LIT "; ] NEQ ?{ POP !module/<build-portal> }
+	( ) DUP [ LIT "; ] NEQ ?{ POP !portal-module/<build> }
 	( ) DUP [ LIT ". ] NEQ ?{ POP !module/<build-both> }
-	( ) [ LIT ": ] NEQ ?{ !module/<build-archive> }
+	( ) [ LIT ": ] NEQ ?{ !archive-module/<build> }
 	JMP2r
 
-@module/<build-album> ( name* -- name* )
+@album-module/<build> ( name* -- name* )
 	;diary/buf
-	&>wba
+	&>w
 		log/has-no-picture ?{
 			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo> } }
-		str/cap LDAk ?&>wba
+		str/cap LDAk ?&>w
 	POP2 JMP2r
 
-@module/<build-portal> ( -- )
+@portal-module/<build> ( -- )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
-	&>wbp
+	&>w
 		( stop at sibling ) LDAk chr/hex STHkr EQU ?&end1
 		( when depth+1 ) LDAk chr/hex STHkr INC NEQ ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
-		INC2 INC2 str/cap LDAk ?&>wbp
+		INC2 INC2 str/cap LDAk ?&>w
 	&end1 ( name* . depth -- )
 	POP2 POPr
 	( restore diary ) DUP2 !diary/<load>
 
-@module/<build-archive> ( name* -- name* )
+@archive-module/<build> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chr/hex STH
 	( start after ) str/cap
 	&>wbr
