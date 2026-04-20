@@ -169,6 +169,7 @@ function Repl(rom, keyword)
 	}
 
 	this.select_example = (value) => {
+		window.location.hash = value
 		this.editor_el.value = examples[value]
 		this.logs_el.innerHTML = `Press <b>${keyword}</b> to evaluate.`
 	}

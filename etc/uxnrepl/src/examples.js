@@ -1,8 +1,5 @@
-let examples = {}
-/*
-@|0.Hello-World */
-
-examples.hello_world = `( This is a comment, and is ignored by the assembler.
+let examples={}
+examples.hello_world=`( This is a comment, and is ignored by the assembler.
   Click the Run button to evaluate the program.
   Select the next example with the dropdown. )
 
@@ -17,12 +14,8 @@ examples.hello_world = `( This is a comment, and is ignored by the assembler.
 
 @text                   ( Create text label )
 
-    "Hello 20 "World! 00`,
-
-/*
-@|1.Stack */
-
-examples.stack = `( The Uxn virtual machine has a working stack of 256 bytes.
+    "Hello 20 "World! 00`
+examples.stack=`( The Uxn virtual machine has a working stack of 256 bytes.
   A byte is a value between the hexadecimal numbers 00 and ff. )
 
 #0a          ( Push 0a byte to the stack )
@@ -36,12 +29,8 @@ NIP POP      ( Nip the 0b byte, pop the 0a byte )
 #02 #10 ADD  ( 02 + 10 = 12 )
 #04 #08 SUB  ( 04 - 08 = fc )
 #08 #04 MUL  ( 08 * 04 = 20 )
-#10 #02 DIV  ( 10 / 02 = 08 )`,
-
-/*
-@|2.Literals */
-
-examples.numbers = `( A literal is a number to be pushed to the stack,
+#10 #02 DIV  ( 10 / 02 = 08 )`
+examples.numbers=`( A literal is a number to be pushed to the stack,
   Uxntal supports various ways of creating literal bytes. )
 
     80 12  ( A number will be interpreted as an opcode )
@@ -57,12 +46,8 @@ LIT2 1234  ( a0 is the numerical value of the LIT2 opcode )
 ( ASCII characters can also be made into literal bytes. )
 
 LIT "H #18 DEO  ( Push the letter H, send to Console/write )
-LIT2 "i 18 DEO  ( Push the letter i, send to Console/write )`,
-
-/*
-@|3.Functions */
-
-examples.functions = `( Function labels are followed by a comment that explains
+LIT2 "i 18 DEO  ( Push the letter i, send to Console/write )`
+examples.functions=`( Function labels are followed by a comment that explains
   the expected transformation, in the format: before -- after )
 
 #12 double  ( Apply the "double" function on the number 12 )
@@ -76,12 +61,8 @@ BRK         ( Halt program with a BRK )
 
 @double ( value -- res )
   DUP ADD
-  JMP2r`,
-
-/*
-@|4.Variables */
-
-examples.variables = `( The program location can be moved to create labels of different values,
+  JMP2r`
+examples.variables=`( The program location can be moved to create labels of different values,
   but must always be returned to 100, which is where all Uxn programs begin. )
 
 |000               ( Move program location to Zero-page )
@@ -95,12 +76,8 @@ examples.variables = `( The program location can be moved to create labels of di
 .zep8 LDZ          ( Get byte in zero-page variable "zep8" )
 
 #3456 .zep16 STZ2  ( Set zero-page variable "zep16" to 3456 )
-.zep16 LDZ2        ( Get short in zero-page variable "zep16" )`,
-
-/*
-@|5.If/Else */
-
-examples.if_else = `( Immediate conditional jumps in Uxntal is done
+.zep16 LDZ2        ( Get short in zero-page variable "zep16" )`
+examples.if_else=`( Immediate conditional jumps in Uxntal is done
   by checking if the top of the stack is not zero. )
 
 #80           ( Push a value on stack )
@@ -114,12 +91,8 @@ examples.if_else = `( Immediate conditional jumps in Uxntal is done
 #08 #04 EQU ?label INC @label  ( 81 )
 #08 #04 NEQ ?&a INC &a         ( 82 )
 #08 #04 GTH ?{ INC }           ( 83 )
-#08 #04 LTH ,&b JCN INC &b     ( 83 )`,
-
-/*
-@|6.Loop */
-
-examples.loops = `( Basic loops are done by pushing a limit and an iterator
+#08 #04 LTH ,&b JCN INC &b     ( 83 )`
+examples.loops=`( Basic loops are done by pushing a limit and an iterator
   and comparing the bounds against the iterator each cycle )
 
 #08                  ( Push limit )
@@ -133,12 +106,8 @@ BRK                  ( Halt. )
 @print-num ( int -- )
   LIT "0 ADD         ( Add number to ascii character 0 )
   #18 DEO            ( Send to Console/write )
-  JMP2r`,
-
-/*
-@|7.Enums&Structs */
-
-examples.enums = `( Programs can utilize up to ff00 of memory,
+  JMP2r`
+examples.enums=`( Programs can utilize up to ff00 of memory,
   the program location is where the program data is written in memory. )
 
 |1234 ( Move program location to 1234 )
@@ -155,12 +124,8 @@ $10   ( Move program location by 10, to 1244 )
   but if the location has moved, it must be set back.
   Every Uxn program begins at 100. )
 
-|100 .struct/b`,
-
-/*
-@|8.Macros */
-
-examples.macros = `( A macro is an inline function, but it must be created before. )
+|100 .struct/b`
+examples.macros=`( A macro is an inline function, but it must be created before. )
 
 %MOD ( num div -- res ) { DIVk MUL SUB }
 %EMIT ( num ) { LIT "0 ADD #18 DEO }
@@ -177,12 +142,8 @@ POP2 BRK
     LDAk DUP ?{ POP POP2 JMP2r } #18 DEO INC2 !print-str
 
 @fizz 20 "fizz 00
-@buzz 20 "buzz 00`,
-
-/*
-@|9.Objects */
-
-examples.objects = `( Uxntal objects are statically allocated data-structures
+@buzz 20 "buzz 00`
+examples.objects=`( Uxntal objects are statically allocated data-structures
   with methods accessible via sublabels. )
 
 @on-reset ( -> )
@@ -215,12 +176,8 @@ examples.objects = `( Uxntal objects are statically allocated data-structures
 @dict/a "foo $1
   &b "bar $1
 
-@obj/buf $40 &cap`,
-
-/*
-@|10.Debugging */
-
-examples.debugging = `( The stack states can be printed at any point during
+@obj/buf $40 &cap`
+examples.debugging=`( The stack states can be printed at any point during
   evaluation using the System/debug port. The depth of each stack
   can be polled for error handling. )
 
@@ -237,8 +194,7 @@ examples.debugging = `( The stack states can be printed at any point during
         BRK
     }
      LIT2 "0 -Console/write DEO     ( Print failure )`
-
-examples.fibonacci = `( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
+examples.fibonacci=`( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
 
 #0009 fibo BRK
 
@@ -246,11 +202,7 @@ examples.fibonacci = `( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x
 	#0001 GTH2k ?{ POP2 JMP2r }
 	SUB2k fibo STH2
 	INC2 SUB2 fibo STH2r ADD2 JMP2r`
-
-/*
-@|DateTime */
-
-examples.print_time = `( Print the time in the hh:mm:ss format )
+examples.print_time=`( Print the time in the hh:mm:ss format )
 
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1
 
@@ -273,8 +225,7 @@ examples.print_time = `( Print the time in the hh:mm:ss format )
 @u8/<print-digit> ( d -- )
 	LIT "0 ADD #18 DEO
 	JMP2r`
-
-examples.fizzbuzz = `( Print the fizzbuzz sequence)
+examples.fizzbuzz=`( Print the fizzbuzz sequence )
 
 #6501
 
@@ -293,8 +244,7 @@ examples.fizzbuzz = `( Print the fizzbuzz sequence)
 	#0a18 DEO
 	INC GTHk ?fizzbuzz
 	POP2 BRK`
-
-examples.sierpinski = `( Draw the Sierpiński triangle )
+examples.sierpinski=`( Draw the Sierpiński triangle )
 
 @sierpinski ( -> )
 	( mask ) [ LIT2r 0a18 ] [ LIT2r 2018 ] 
@@ -310,8 +260,7 @@ examples.sierpinski = `( Draw the Sierpiński triangle )
 		POP2 OVR2r DEOr
 		#01 SUB INCk ?&>ver
 	POP POP2r POP2r BRK`
-
-examples.mandelbrot = `( Draw the mandelbrot fractal )
+examples.mandelbrot=`( Draw the mandelbrot fractal )
 
 |0020 @W
 |0016 @H
