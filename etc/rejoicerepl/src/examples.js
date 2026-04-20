@@ -116,7 +116,7 @@ examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 	( indent ) i^height '.\\s/i
 	c^width 
 	@Cols ( c -- )
-		[]/x^x x^c []/x
+		x^c/x^x []/x
 		[Cols .\\s\\s y4]/[c y4 x^16] []/x^16
 		[Cols .\\s\\s y3]/[c y3 x^8] []/x^8
 		[Cols .\\s\\s y2]/[c y2 x^4] []/x^4
