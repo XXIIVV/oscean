@@ -507,7 +507,7 @@
 
 @page/<build-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
-	( ) DUP [ LIT ", ] NEQ ?{ POP !album-module/<build> }
+	( ) DUP [ LIT "+ ] NEQ ?{ POP !album-module/<build> }
 	diary/count #0002 LTH2 ?{ ;term/name ;warnings/hidden warning/<print> }
 	( ) DUP [ LIT "; ] NEQ ?{ POP !portal-module/<build> }
 	( ) DUP [ LIT ". ] NEQ ?{ POP !module/<build-both> }
@@ -521,7 +521,9 @@
 			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo>
 				INCr } }
 		str/cap LDAk ?&>w
-	POP2 STHr ?{ ;term/name ;warnings/no-photo warning/<print> }
+	POP2
+	( | Catch no photo )
+	STHr ?{ ;term/name ;warnings/no-photo warning/<print> }
 	JMP2r
 
 @portal-module/<build> ( -- )
