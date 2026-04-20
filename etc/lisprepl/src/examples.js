@@ -1,7 +1,5 @@
-let examples = {}
-
-
-examples.hello_world = `(define double
+let examples={}
+examples.hello_world=`(define double
 	(lambda (x) (+ x x)))
 
 (if 
@@ -10,9 +8,8 @@ examples.hello_world = `(define double
 	'wrong)
 
 (print 
-	'(Heol! Lisp))`,
-
-examples.fibonacci = `(define fib
+	'(Heol! Lisp))`
+examples.fibonacci=`(define fib
   (lambda (n)
     (if (< n 2)
       n
@@ -29,26 +26,14 @@ examples.factorial =
 			(* n (fac (- n 1))))))
 
 (print (fac 5))`
+examples.factorial=`(define fac 
+	(lambda (n)
+		(if (< n 2)
+			1 
+			(* n (fac (- n 1))))))
 
-examples.map = `(define print-ln
-  (lambda (s)
-    (and (print s) (print '\s))))
-
-(define map
-  (lambda (f lst)
-    (if (eq? lst '())
-      '()
-      (cons (f (car lst)) (map f (cdr lst))))))
-
-(define double (lambda (x) (* x 2)))
-(define add1   (lambda (x) (+ x 1)))
-
-(print-ln (map double '(1 2 3 4 5)))
-(print-ln (map add1   '(1 2 3 4 5)))`
-
-examples.fizzbuzz = 
-
-`(define print-ln
+(print (fac 5))`
+examples.fizzbuzz=`(define print-ln
 	(lambda (s)
 		(and (print s) (print '\\n))))
 
@@ -65,8 +50,22 @@ examples.fizzbuzz =
 			())))
 
 (fizzbuzz 1 1 1)`
+examples.map=`(define print-ln
+  (lambda (s)
+    (and (print s) (print '\\s))))
 
-examples.combinators = `(define I (lambda (a) a))
+(define map
+  (lambda (f lst)
+    (if (eq? lst '())
+      '()
+      (cons (f (car lst)) (map f (cdr lst))))))
+
+(define double (lambda (x) (* x 2)))
+(define add1   (lambda (x) (+ x 1)))
+
+(print-ln (map double '(1 2 3 4 5)))
+(print-ln (map add1   '(1 2 3 4 5)))`
+examples.combinators=`(define I (lambda (a) a))
 (define K (lambda (a) (lambda (b) a)))
 (define B (lambda (f) (lambda (g) (lambda (x) (f (g x))))))
 (define S (lambda (f) (lambda (g) (lambda (x) ((f x) (g x))))))
@@ -89,4 +88,4 @@ examples.combinators = `(define I (lambda (a) a))
 (print (print_church three)) 
 (print (print_church ((add two) three))) 
 (print (print_church ((mul two) three))) 
-(print (print_church ((mul three) four))) `
+(print (print_church ((mul three) four)))`

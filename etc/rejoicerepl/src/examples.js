@@ -1,6 +1,5 @@
-let examples = {}
-
-examples.hello_world = `( Put a marble and five coins in the bag: )
+let examples={}
+examples.hello_world=`( Put a marble and five coins in the bag: )
 
 marble coin^5
 
@@ -16,12 +15,7 @@ candy/coin
 ( To print the result: )
 
 .Count: .#ticket`
-
-
-/*
-@|Etc */
-
-examples.primes = `( Multiplying is the same as adding prime factors.
+examples.primes=`( Multiplying is the same as adding prime factors.
 	The product 10[2 5] and 21[3 7], is the sum of their primes. )
 
 10 21
@@ -33,8 +27,7 @@ examples.primes = `( Multiplying is the same as adding prime factors.
 1/3
 
 ( The result is 70[2 5 7]. )`
-
-examples.fractions = `( A whole number, equal to 7/1: )
+examples.fractions=`( A whole number, equal to 7/1: )
 7
 
 ( A proper fraction, less than 1: )
@@ -48,11 +41,7 @@ examples.fractions = `( A whole number, equal to 7/1: )
 
 ( The previous fraction, reduced: )
 5/2`
-
-examples.postfix = `( .. )
-`
-
-examples.multisets = `( Put a marble in the bag )
+examples.multisets=`( Put a marble in the bag )
 
 marble
 
@@ -71,54 +60,28 @@ coin/marble
 ( Giveaway the two coins )
 
 []/coin^2`
-
-examples.fibonacci = `( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
-
-( Print the Fibonacci number: )
-
-n^10
-	y '[y^x x^y]/[x^x n]
-
-.#x`
-
-examples.collatz = `( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
-
-n^7
-
-@Collatz ( n -- )
-	( print ) .#n .\\s
-	x^n 'y/x^2 
-	End/[none^y x n]
-		[Collatz n^n n^n n^n n]/[y^y n^n x] 
-		[Collatz n^y]/[n^n y^y] 
-	@End ( -- )`
-
-examples.tropical = `( In Tropical Arithmetic, the multiplication operation is addition,
+examples.tropical=`( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
 
 ( × 153 ) [a^1 b^5 c^3]
 (    61 )     [b^6 c^1]
 (   --- )
-(   1b4 )
-`
-
-examples.product = `( A program to multiply two numbers
+(   1b4 )`
+examples.product=`( A program to multiply two numbers
 	and print the result: )
 
 x^8 y^3
 	'res^x/y 
 
 .#res`
-
-examples.quotient = `( A program to divides a number by another
+examples.quotient=`( A program to divides a number by another
 	and print the result: )
 
 x^24 y^3
 	'res/x^y 
 
 .#res`
-
-examples.gcd = `( A program to find the GCD of two numbers,
+examples.gcd=`( A program to find the GCD of two numbers,
 	and print the result: )
 
 x^6 y^15
@@ -130,31 +93,43 @@ x^6 y^15
 	[Gcd y]/y
 
 .#x`
+examples.fibonacci=`( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-examples.fizzbuzz = `( Prints numbers from 1 to 100,
-	replacing multiples of 3 with Fizz,
-	multiples of 5 with Buzz,
-	and multiples of both with FizzBuzz )
+( Print the Fibonacci number: )
 
-times^100 f b
+n^10
+	y '[y^x x^y]/[x^x n]
 
-@Loop ( times f b -- num f b )
-	[num f b .FizzBuzz\\n Loop]/[times f^3 b^5]
-	[num f b .Fizz\\n Loop]/[times f^3]
-	[num f b .Buzz\\n Loop]/[times b^5]
-	[num f b .#num .\\n Loop]/times
-`
-examples.colors = `red^2 blue^2 yellow^2
-	violet/[red blue]
-	green/[blue yellow]
-	orange/[red yellow]
-	black/[violet green orange]
-`
+.#x`
+examples.collatz=`( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
 
-/*
-@|Binary */
+n^7
 
-examples.binary_logic = `( Put a logic gate and binary states in the bag: )
+@Collatz ( n -- )
+	( print ) .#n .\\s
+	x^n 'y/x^2 
+	End/[none^y x n]
+		[Collatz n^n n^n n^n n]/[y^y n^n x] 
+		[Collatz n^y]/[n^n y^y] 
+	@End ( -- )`
+examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
+@Rows ( width height -- )
+	( indent ) i^height '.\\s/i
+	c^width 
+	@Cols ( c -- )
+		[]/x^x x^c []/x
+		[Cols .\\s\\s y4]/[c y4 x^16] []/x^16
+		[Cols .\\s\\s y3]/[c y3 x^8] []/x^8
+		[Cols .\\s\\s y2]/[c y2 x^4] []/x^4
+		[Cols .\\s\\s y1]/[c y1 x^2] []/x^2
+		[Cols .\\s\\s y0]/[c y0 x] 
+		[Cols .\\s*]/c
+	[Rows width .\\n]/[height y0]
+	[Rows width .\\n y0]/[height y1]
+	[Rows width .\\n y1 y0]/[height y2]
+	[Rows width .\\n y2 y1 y0]/[height y3]
+	[Rows width .\\n y3 y2 y1 y0]/[height y4]`
+examples.binary_logic=`( Put a logic gate and binary states in the bag: )
 
 or true false
 
@@ -169,8 +144,20 @@ false/[and false^2]
 true/[or false true]
 true/[or true^2]
 false/[or false^2]`
+examples.binary_print=`( Input a decimal number: )
 
-examples.binary_adder = `( Put two binary numbers in the bag:
+d^92
+
+( Decimal to Binary )
+
+'b7/d^128 'b6/d^64 'b5/d^32 'b4/d^16
+'b3/d^8   'b2/d^4  'b1/d^2  'b0/d
+
+( Print 8 bits )
+
+.#b7 .#b6 .#b5 .#b4 .\\s
+.#b3 .#b2 .#b1 .#b0`
+examples.binary_adder=`( Put two binary numbers in the bag:
   Bit   b7 b6 b5 b4 b3 b2 b1 b0 )
 
 ( 73  )    b6       b3       b0
@@ -185,55 +172,7 @@ b5/[b4^2] b6/[b5^2] b7/[b6^2]
 
 d^128/b7 d^64/b6 d^32/b5 d^16/b4
 d^8/b3   d^4/b2  d^2/b1  d/b0`
-
-
-examples.binary_print = `( Input a decimal number: )
-
-d^92
-
-( Decimal to Binary )
-
-'b7/d^128 'b6/d^64 'b5/d^32 'b4/d^16
-'b3/d^8   'b2/d^4  'b1/d^2  'b0/d
-
-( Print 8 bits )
-
-.#b7 .#b6 .#b5 .#b4 .\\s
-.#b3 .#b2 .#b1 .#b0`
-
-/*
-@|Ternary */
-
-examples.ternary_print = `( Input a decimal number: )
-
-d^92
-
-( Decimal to Unsigned Ternary )
-
-'b5/d^243 'b4/d^81 'b3/d^27   
-'b2/d^9   'b1/d^3  'b0/d
-
-( Print 6 trits )
-
-.#b5 .#b4 .#b3 .\\s
-.#b2 .#b1 .#b0`
-
-examples.ternary_adder = `( Put two ternary numbers in the bag: )
-
-( 73  )    t3^2 t2^2      t0
-( 124 ) t4 t3   t2   t1^2 t0
-
-( Adder with Carry )
-
-t1/[t0^3] t2/[t1^3] t3/[t2^3]
-t4/[t3^3] t5/[t4^3] t6/[t5^3]
-
-( Ternary to Decimal )
-
-'d^243/t5 'd^81/t4 'd^27/t3 
-'d^9/t2   'd^3/t1  'd/t0`
-
-examples.ternary_logic = `( Put a logic gate and balanced ternary states in the bag: )
+examples.ternary_logic=`( Put a logic gate and balanced ternary states in the bag: )
 
 or bt0 bt-
 
@@ -252,11 +191,34 @@ bt+/[and bt+^2]   bt+/[and bt0 bt+] bt+/[and bt- bt+]
 bt+/[or bt+ bt-] bt0/[or bt0 bt-] bt-/[or bt-^2]
 bt+/[or bt+ bt0] bt0/[or bt0^2]   bt-/[or bt- bt0]
 bt+/[or bt+^2]   bt0/[or bt0 bt+] bt-/[or bt- bt+]`
+examples.ternary_print=`( Input a decimal number: )
 
-/*
-@|Hex */
+d^92
 
-examples.hex_print = `( Input a decimal number: )
+( Decimal to Unsigned Ternary )
+
+'b5/d^243 'b4/d^81 'b3/d^27   
+'b2/d^9   'b1/d^3  'b0/d
+
+( Print 6 trits )
+
+.#b5 .#b4 .#b3 .\\s
+.#b2 .#b1 .#b0`
+examples.ternary_adder=`( Put two ternary numbers in the bag: )
+
+( 73  )    t3^2 t2^2      t0
+( 124 ) t4 t3   t2   t1^2 t0
+
+( Adder with Carry )
+
+t1/[t0^3] t2/[t1^3] t3/[t2^3]
+t4/[t3^3] t5/[t4^3] t6/[t5^3]
+
+( Ternary to Decimal )
+
+'d^243/t5 'd^81/t4 'd^27/t3 
+'d^9/t2   'd^3/t1  'd/t0`
+examples.hexadecimal_print=`( Input a decimal number: )
 
 d^92
 
@@ -275,11 +237,7 @@ d^92
 
 @Next ( task -- )
 	Low/task`
-
-/*
-@|Heptavintimal */
-
-examples.heptavintimal_print = `( Input a decimal number: )
+examples.heptavintimal_print=`( Input a decimal number: )
 
 d^128
 
@@ -303,11 +261,7 @@ d^128
 
 @Next ( task -- )
 	Low/task`
-
-/*
-@|Reversible */
-
-examples.toffoli = `( The Toffoli gate is a reversible CNOT gate with
+examples.toffoli=`( The Toffoli gate is a reversible CNOT gate with
 	two control bits[a,b] and one target bit[c]: )
 
 toffoli a b c
@@ -334,11 +288,7 @@ toffoli a b c
 	[toffoli b]/[t b]
 	[toffoli c]/[t c]
 	toffoli/t`
-
-/*
-@|Special */
-
-examples.spirograph = `( inner cog: ) x^40
+examples.spirograph=`( inner cog: ) x^40
 ( outer cog  ) a^96
 
 ( a -> y,y2 ) [y^a y2^a]/a^a
@@ -351,53 +301,7 @@ examples.spirograph = `( inner cog: ) x^40
 
 ( y2/x  ) 'res/y2^x
 ( print ) .Turns:\\s .#res`
-
-examples.proquints = `( high byte ) byte1^128
-( low byte  ) byte2^30
-
-tasks^4
-
-    c^8/byte1^128 c^4/byte1^64 c^2/byte1^32  c/byte1^16 Con
-@v0 v^2/byte1^8   v/byte1^4                             Vow
-@c1 c^8/byte1^2   c^4/byte1    c^2/byte2^128 c/byte2^64 Con
-@v1 v^2/byte2^32  v/byte2^16                            Vow
-@c2 c^8/byte2^8   c^4/byte2^4  c^2/byte2^2   c/byte2    Con
-
-@Con ( c -- )
-	[Next .z]/c^15 [Next .v]/c^14 [Next .t]/c^13 [Next .s]/c^12
-	[Next .r]/c^11 [Next .p]/c^10 [Next .n]/c^9  [Next .m]/c^8
-	[Next .l]/c^7  [Next .k]/c^6  [Next .j]/c^5  [Next .h]/c^4
-	[Next .g]/c^3  [Next .f]/c^2  [Next .d]/c    [Next .b]/[]
-
-@Vow ( v -- )
-	[Next .u]/v^3  [Next .o]/v^2  [Next .i]/v    [Next .a]/[]
-
-@Next ( dest -- )
-	[v0 tasks^3]/tasks^4 [c1 tasks^2]/tasks^3
-	[v1 tasks^1]/tasks^2 [c2]/tasks`
-
-examples.sierpinski = `y4 y3 y2 y1 y0 width height^31
-@Rows ( width height -- )
-	( indent ) i^height '.\\s/i
-	c^width 
-	@Cols ( c -- )
-		[]/x^x x^c []/x
-		[Cols .\\s\\s y4]/[c y4 x^16] []/x^16
-		[Cols .\\s\\s y3]/[c y3 x^8] []/x^8
-		[Cols .\\s\\s y2]/[c y2 x^4] []/x^4
-		[Cols .\\s\\s y1]/[c y1 x^2] []/x^2
-		[Cols .\\s\\s y0]/[c y0 x] 
-		[Cols .\\s*]/c
-	[Rows width .\\n]/[height y0]
-	[Rows width .\\n y0]/[height y1]
-	[Rows width .\\n y1 y0]/[height y2]
-	[Rows width .\\n y2 y1 y0]/[height y3]
-	[Rows width .\\n y3 y2 y1 y0]/[height y4]`
-
-/*
-@|Extra */
-
-examples.gaude = `( Salve ad Gaude, ludo de symbolo et sacco. )
+examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
 
 ( Insere 1 calculo et 5 nummo in sacco: )
 calculo nummo^5
