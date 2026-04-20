@@ -8,7 +8,6 @@
 
 	@token/buf $40
 	@item/buf $40
-	@goto/buf $40
 	@symbol/buf $40
 
 |100
@@ -294,14 +293,15 @@
 @goto/step ( addr* -- addr* )
 	,&count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
 	POP2 [ LIT2 00 _&count ] STR
-	[ LIT2 -&buf _&ptr ] STR
-	STHkr #01 GTH ?{ POPr .&buf LDZ2 JMP2r }
-	random/make ADD STHr DIVk MUL SUB DUP ADD .&buf ADD LDZ2 JMP2r
+	;&buf ,&ptr STR2
+	STHkr #01 GTH ?{ POPr ;&buf LDA2 JMP2r }
+	random/make #00 STHr DIV2k MUL2 SUB2 DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r
 
 @goto/<push> ( addr* -- )
 	[ LIT &count $1 ] INC ,&count STR
-	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
-	STZ2
+	[ LIT2 &ptr =&buf ] INC2k INC2
+	( clamp ) ;&buf-end LTH2k [ JMP SWP2 POP2 ] ,&ptr STR2
+	STA2
 	JMP2r
 
 (
@@ -347,7 +347,12 @@
 	( pop addr* ) POP2 !queue/<put>
 
 @tote/<put-label> ( item* addr* -- )
-	NIP2 !goto/<push>
+	STH2
+	INC2 INC2 LDA2 #0000
+	&>lpl
+		STH2kr goto/<push>
+		INC2 GTH2k ?&>lpl
+	POP2 POP2 POP2r JMP2r
 
 @tote/can-apply ( fraction* -- fraction* t )
 	( den/from* ) LDA2k
@@ -616,6 +621,8 @@
 
 @queue/buf ( id*, mod*, id*, mod*.. )
 	$40
+
+@goto/buf $200 &buf-end
 
 @tote/buf ( length*, length*, length*.. )
 	$200 &buf-end

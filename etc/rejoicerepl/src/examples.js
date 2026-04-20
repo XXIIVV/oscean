@@ -137,9 +137,15 @@ examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 	[Rows width .\\n y3 y2 y1 y0]/[height y4]`
 examples.stack_machine=`( 3-items Stack Primitives: )
 
-a^12 b^34 c^56
+n^56 
+( push ) [b^a a^n c^b]/[a^a b^b c^c n^n]
+n^34
+( push ) [b^a a^n c^b]/[a^a b^b c^c n^n]
+n^12
+( push ) [b^a a^n c^b]/[a^a b^b c^c n^n]
 
-( swp ) [a^b b^a]/[a^a b^b]
+( swap ) [a^b b^a]/[a^a b^b]
+
 ( rot ) [a^c b^a c^b]/[a^a b^b c^c]
 ( pop ) [a^b b^c]/[a^a b^b c^c]
 ( dup ) [a^a b^a c^b]/[a^a b^b c^c]`
