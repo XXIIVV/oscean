@@ -15,18 +15,16 @@ candy/coin
 ( To print the result: )
 
 .Count: .#ticket`
-examples.primes=`( Multiplying is the same as adding prime factors.
-	The product 10[2 5] and 21[3 7], is the sum of their primes. )
+examples.primes=`( Check if number n, is prime: )
 
-10 21
+n^11 i^2 pow^4
+@Loop ( n i -- n i )     
+	( lteq=pow<=n ) t^n lteq/t^pow []/[t^t pow^pow]
+	( lteq..Prime ) Lteq/lteq .Prime End @Lteq
+	( rem=n%i )     t^n '[]/t^i rem/t []/t^t
+	[Loop i pow^i pow^i pow]/rem
 
-( Division is the same as subtracting prime factors.
-	Multiplying by the fraction 1/3, is the same as dividing by 3.
-	And the result is the subtraction of the prime factor 3. )
-
-1/3
-
-( The result is 70[2 5 7]. )`
+.Not\\sPrime @End`
 examples.fractions=`( A whole number, equal to 7/1: )
 7
 
