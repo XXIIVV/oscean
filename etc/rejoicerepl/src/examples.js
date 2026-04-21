@@ -67,13 +67,19 @@ examples.tropical=`( In Tropical Arithmetic, the multiplication operation is add
 (    61 )     [b^6 c^1]
 (   --- )
 (   1b4 )`
-examples.product=`( A program to multiply two numbers
-	and print the result: )
+examples.product=`( Generate the multiplication table up to 12x12 )
 
-x^8 y^3
-	'res^x/y 
-
-.#res`
+@Col ( -- )
+	y
+	@Row ( y -- y )
+		x
+		( x y2 mul ) y2^y '[res^x]/y2
+		( pad ) [Skip-c res^100]/res^100 .\\s @Skip-c
+		( pad ) [Skip-d res^10]/res^10   .\\s @Skip-d
+		( res ) .#res/res^res
+		[]/x^12 [Row x .\\s]/x
+	[]/y^12 [Col y .\\n]/y
+`
 examples.quotient=`( A program to divides a number by another
 	and print the result: )
 
