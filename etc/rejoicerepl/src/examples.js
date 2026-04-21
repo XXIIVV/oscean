@@ -100,14 +100,11 @@ examples.random=`( flip a coin )
 @Tail .Tail
 @End
 `
-examples.fibonacci=`( 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
+examples.fibonacci=`( Print the Fibonacci sequence: 
+	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-( Print the Fibonacci number: )
-
-n^10
-	y '[y^x x^y]/[x^x n]
-
-.#x`
+n^10 y ( n y -- x y )
+	'[y^x x^y .#x .\\s]/[x^x n]`
 examples.collatz=`( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
 
 n^7
@@ -137,18 +134,17 @@ examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 	[Rows width .\\n y3 y2 y1 y0]/[height y4]`
 examples.stack_machine=`( 3-items Stack Primitives: )
 
-n^56 
-( push ) [b^a a^n c^b]/[a^a b^b c^c n^n]
-n^34
-( push ) [b^a a^n c^b]/[a^a b^b c^c n^n]
-n^12
-( push ) [b^a a^n c^b]/[a^a b^b c^c n^n]
+n^56 ( 56 )       [b^a a^n c^b]/[a^a b^b c^c n^n]
+n^34 ( 34 56 )    [b^a a^n c^b]/[a^a b^b c^c n^n]
+n^12 ( 12 34 56 ) [b^a a^n c^b]/[a^a b^b c^c n^n]
 
-( swap ) [a^b b^a]/[a^a b^b]
-
-( rot ) [a^c b^a c^b]/[a^a b^b c^c]
-( pop ) [a^b b^c]/[a^a b^b c^c]
-( dup ) [a^a b^a c^b]/[a^a b^b c^c]`
+( swp 34 12 56 )  [a^b b^a]/[a^a b^b]
+( rot 56 34 12 )  [a^c b^a c^b]/[a^a b^b c^c]
+( pop 34 12 )     [a^b b^c]/[a^a b^b c^c]
+( dup 34 34 12 )  [a^a b^a c^b]/[a^a b^b c^c]
+( add 68 12 )     [a^b b^c]/[b^b c^c]
+( sub 56 )        []/[a^b b^b]
+( put )           .#a`
 examples.binary_logic=`( Put a logic gate and binary states in the bag: )
 
 or true false
