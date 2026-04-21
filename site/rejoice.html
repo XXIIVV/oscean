@@ -27,13 +27,11 @@
 	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
 </ul>
 
-<q style='font-size:22px'>[] es nihil, identitate. []/n es predecessore. n es successore.</q>
-
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" style='height:450px'></iframe>
 </div>
 
-<p>Rejoice is a single-instruction <a href='notation.html'>postfix notation</a>, read from left to right, in which fractions correspond to transformations applied by multiplication on a set of symbols.</p>
+<p>Rejoice is a single-instruction <a href='notation.html'>postfix notation</a>, read from left to right, in which fractions correspond to transformations applied by multiplication on a set of symbols, arithmetic emerges entirely from the application of fractions.</p>
 
 <pre>
 3 4 + 2 - . <i style='float:right'>( In Forth )</i>
@@ -79,9 +77,9 @@ x y and
 
 <h3>Variable Exponents</h3>
 
-<p>Variable exponents are symbols used as the exponent value in a fraction. Their value is resolved when the fraction is evaluated, for example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
+<p>Numbers are stored as counts, for example, <code>x^5</code> indicates five instances of x. Variable exponents, like <code>x^y</code>, are symbols used as the exponent value in a fraction, their value is resolved when the fraction is evaluated, for example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
 <pre>
-x^2 y^5
+x^2 y^5 <i>( Copy y instances onto x, then drain y: )</i>
 	x^y
 	[]/y^y
 </pre>
@@ -94,7 +92,7 @@ x^2 y^5
 
 <p>To find the <b>difference</b> between two values, the program removes as many instances of <code>x</code> as there are of <code>y</code>:</p>
 <pre>
-x^5 y^2
+x^5 y^2 <i>( Remove as many x as there are y, then drain y: )</i>
 	[]/x^y
 	[]/y^y
 </pre>
@@ -104,9 +102,9 @@ x^5 y^2
 [x^3] 
 </pre>
 
-<p>The following finds whether x is <b>equal</b> to y:</p>
+<p>The following finds whether <code>x</code> is <b>equal</b> to <code>y</code>:</p>
 <pre>
-x^6 y^6
+x^6 y^6 <i>( Fires only when x and y are equal counts, consuming both: )</i>
 	eq/[x^y y^x]
 </pre>
 <pre style='margin-top:-29px'>
@@ -157,12 +155,27 @@ x^24 y^6 'res/x^y
 [y^6 res^4] 
 </pre>
 
+<p>The <b>Fibonacci</b> numbers can be found with a single anonymous function, by swapping <code>x</code> and <code>y</code> while a counter <code>n</code> is present:</p>
+<pre>
+n^6 y <i>( n y -- n.fib y )</i>
+	'[y^x x^y]/[x^x n]
+</pre>
+<pre style='margin-top:-29px'>
+[n^6 y] '[y^x x^y]/[x^x n] 
+[n^5 y x] '[y^x x^y]/[x^x n] 
+[n^4 y^2 x] '[y^x x^y]/[x^x n] 
+[n^3 y^3 x^2] '[y^x x^y]/[x^x n] 
+[n^2 y^5 x^3] '[y^x x^y]/[x^x n] 
+[n y^8 x^5] '[y^x x^y]/[x^x n] 
+[y^13 x^8] '[y^x x^y]/[x^x n] 
+[y^13 x^8] 
+</pre>
+
 <ul>
 	<li><b>Multiplication</b>: <code>( x y -- x r=x*y ) 'r^x/y</code></li>
 	<li><b>Division</b>: <code>( x y -- y r=x/y ) 'r/x^y</code></li>
 	<li><b>Square</b>: <code>( x -- x res=x*x ) y^x '[res^x]/y</code></li>
 	<li><b>Modulo</b>: <code>( x y -- x=x%y y ) '[]/x^y</code></li>
-	<li><b>Fibonacci</b>: <code>( n y -- n.fib y ) '[y^x x^y]/[x^x n]</code></li>
 </ul>
 
 <h3>I/O</h3>
@@ -199,6 +212,8 @@ times^100 f b
 	<li>Read a translation <a href='gaude.html'>in Peano's Latino Sine Flexione</a>.</li>
 	<li><b>Multiset Languages</b>: <a href='fractran.html'>Fractran</a>, <a href='bagel.html'>Bägel</a>.</li>
 </ul>
+
+<q style='font-size:22px'>[] es nihil, identitate. []/n es predecessore. n es successore.</q>
 
 <img src='../media/generic/rrrr.png' width='170'/>
 <ul></ul><p><b>incoming: </b><a href="left.html">left</a> <a href="multisets.html">multisets</a> <a href="tropical_arithmetic.html">tropical arithmetic</a> <a href="concatenative.html" class="parent">concatenative</a> <a href="fractran.html">fractran</a> <a href="bagel.html">bagel</a> <a href="latino_sine_flexione.html">latino sine flexione</a> <a href="meta.html">meta</a> <a href="2026.html">2026</a> </p></main>

@@ -41,25 +41,21 @@ examples.fractions=`( A whole number, equal to 7/1: )
 
 ( The previous fraction, reduced: )
 5/2`
-examples.multisets=`( Put a marble in the bag )
+examples.multisets=`( Draw tiles from a Scrabble bag, 120/1: )
 
-marble
+A A B C A
 
-( Put a second marble in the bag )
+( Discard the C, 1/5: )
 
-marble
+[]/C
 
-( Trade a marble for a coin )
+( Put the C back, 5/1:  )
 
-coin/marble
+C
 
-( Replace the last marble using its prime factor name )
+( Trade all three As for one E, 7/8: )
 
-3/2
-
-( Giveaway the two coins )
-
-[]/coin^2`
+E/[A A A]`
 examples.tropical=`( In Tropical Arithmetic, the multiplication operation is addition,
 	akin to how a product is the addition prime factors.
 
