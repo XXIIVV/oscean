@@ -42,44 +42,17 @@ examples.multisets=`( Put a marble in the bag )
 
 marble
 
-( Put a second marble in the bag )
+( Put three more marbles in the bag )
 
-marble
+marble^3
 
-( Trade a marble for a coin )
+( Trade each marble for a coin )
 
-coin/marble
+'coin/marble
 
-( Replace the last marble using its prime factor name )
-
-3/2
-
-( Giveaway the two coins )
+( Discard two coins )
 
 []/coin^2`
-examples.tropical=`( In Tropical Arithmetic, the multiplication operation is addition,
-	akin to how a product is the addition prime factors.
-
-( × 153 ) [a^1 b^5 c^3]
-(    61 )     [b^6 c^1]
-(   --- )
-(   1b4 )
-
-( mul: just combine the bags )
-.mul:\\s .#a .\\s .#b .\\s .#c .\\n []/[a^a b^b c^c]
-
-( min: drain pairs, count = smaller exponent )
-.min:\\s a b^5 b2^6 c^3 c2
-'ra/[a a2] 'rb/[b b2] 'rc/[c c2]
-[]/[a^a a2^a2 b^b b2^b2 c^c c2^c2]
-.#ra .\\s .#rb .\\s .#rc .\\n []/[ra^ra rb^rb rc^rc]
-
-( max: drain pairs, rename remainder, restore min )
-.max:\\s a b^5 b2^6 c^3 c2
-'ra/[a a2] a/a2 a^ra []/ra^ra
-'rb/[b b2] b/b2 b^rb []/rb^rb
-'rc/[c c2] c/c2 c^rc []/rc^rc
-.#a .\\s .#b .\\s .#c`
 examples.product=`( Generate the multiplication table up to 12x12 )
 
 @Col ( -- )
@@ -93,13 +66,6 @@ examples.product=`( Generate the multiplication table up to 12x12 )
 		[]/x^12 [Row x .\\s]/x
 	[]/y^12 [Col y .\\n]/y
 `
-examples.quotient=`( A program to divides a number by another
-	and print the result: )
-
-x^24 y^3
-	'res/x^y 
-
-.#res`
 examples.gcd=`( A program to find the GCD of two numbers,
 	and print the result: )
 
