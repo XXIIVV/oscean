@@ -1,20 +1,19 @@
 let examples={}
-examples.hello_world=`( Put a marble and five coins in the bag: )
+examples.hello_world=`( The forge contains 3 ingots of lead )
+lead^3
 
-marble coin^5
+( Double the amount of ingots, add the philosopher's stone )
+lead^lead stone
 
-( Replace a coin with a candy: )
+( The philosopher stone turns four ingots into gold )
+'gold/[stone lead^4]
 
-candy/coin
+( Inspect the result )
+.It's\\s take [True Fool]/[take gold]
 
-( Trade two coins for a ticket for as long as possible: )
-
-@TicketBooth ( coint -- coin ticket )
-	[TicketBooth ticket]/coin^2
-
-( To print the result: )
-
-.Count: .#ticket`
+@Fool  .pyrite.. Done
+@True  .gold!
+@Done`
 examples.primes=`( Check if number n, is prime: )
 
 n^11 i^2 pow^4
@@ -64,7 +63,23 @@ examples.tropical=`( In Tropical Arithmetic, the multiplication operation is add
 ( × 153 ) [a^1 b^5 c^3]
 (    61 )     [b^6 c^1]
 (   --- )
-(   1b4 )`
+(   1b4 )
+
+( mul: just combine the bags )
+.mul:\\s .#a .\\s .#b .\\s .#c .\\n []/[a^a b^b c^c]
+
+( min: drain pairs, count = smaller exponent )
+.min:\\s a b^5 b2^6 c^3 c2
+'ra/[a a2] 'rb/[b b2] 'rc/[c c2]
+[]/[a^a a2^a2 b^b b2^b2 c^c c2^c2]
+.#ra .\\s .#rb .\\s .#rc .\\n []/[ra^ra rb^rb rc^rc]
+
+( max: drain pairs, rename remainder, restore min )
+.max:\\s a b^5 b2^6 c^3 c2
+'ra/[a a2] a/a2 a^ra []/ra^ra
+'rb/[b b2] b/b2 b^rb []/rb^rb
+'rc/[c c2] c/c2 c^rc []/rc^rc
+.#a .\\s .#b .\\s .#c`
 examples.product=`( Generate the multiplication table up to 12x12 )
 
 @Col ( -- )
