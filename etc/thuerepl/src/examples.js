@@ -1,8 +1,11 @@
 let examples = {}
 
-examples.hello_world = `hello::=bye
+examples.hello_world = `kingdom, no knight.::=A kingdom was lost, all for the want of a nail.
+no horse::=no knight
+no shoe::=no horse
+no nail::=no shoe
 ::=
-hello world`,
+kingdom, no nail.`,
 
 examples.add = `a+b::=aa+
 +=?::=
