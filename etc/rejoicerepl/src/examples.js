@@ -85,14 +85,17 @@ examples.random=`( flip a coin )
 @Tail .Tail
 @End
 `
-examples.sorting=`( Sort four numbers )
+examples.sorting=`( Sort four numbers from largest to smallest: )
 
 a^5 b^12 c^91 d^54
 
 @Loop
-	t^b true/t^a []/t^t [Loop a^b b^a]/[true a^a b^b] 
-	t^c true/t^b []/t^t [Loop b^c c^b]/[true b^b c^c]
-	t^d true/t^c []/t^t [Loop c^d d^c]/[true c^c d^d]`
+	[true b^a]/b^a [Loop a^b b^a]/[true a^a b^b]
+	[true c^b]/c^b [Loop b^c c^b]/[true b^b c^c]
+	[true d^c]/d^c [Loop c^d d^c]/[true c^c d^d]
+
+( Print them: )
+	.#a .\\s .#b .\\s .#c .\\s .#d`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
