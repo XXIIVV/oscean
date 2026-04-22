@@ -1,18 +1,15 @@
-let examples = {}
-
-examples.hello_world = `kingdom, no knight.::=A kingdom was lost, all for the want of a nail.
+let examples={}
+examples.hello_world=`kingdom, no knight.::=A kingdom was lost, all for the want of a nail.
 no horse::=no knight
 no shoe::=no horse
 no nail::=no shoe
 ::=
-kingdom, no nail.`,
-
-examples.add = `a+b::=aa+
+kingdom, no nail.`
+examples.sum=`a+b::=aa+
 +=?::=
 ::=
 aaa+bbbbb=?`
-
-examples.roll_dice = `%text,::=~You rolled: 
+examples.roll_dice=`%text,::=~You rolled: 
 %dice::=~1.
 %dice::=~2.
 %dice::=~3.
@@ -21,8 +18,7 @@ examples.roll_dice = `%text,::=~You rolled:
 %dice::=~6.
 ::=
 %%text,dice`
-
-examples.hexadecimal_to_binary = `>0::=0000>
+examples.hexadecimal_print=`>0::=0000>
 >1::=0001>
 >2::=0010>
 >3::=0011>
@@ -42,8 +38,7 @@ examples.hexadecimal_to_binary = `>0::=0000>
 >.::=
 ::=
 >0c6e 6ecc.`
-
-examples.proquints = `c0000::=~b
+examples.proquints=`c0000::=~b
 c0001::=~d
 c0010::=~f
 c0011::=~g
@@ -66,8 +61,7 @@ v11::=~u
 *-::=~-
 ::=
 cvcvc*cvcvc0000110001101110-0110111011001100`
-
-examples.sierpinski_triangle = `#::=
+examples.sierpinski_triangle=`#::=
 X::=~_
 Y::=~*
 Z::=~\\n
@@ -83,5 +77,3 @@ _*::=*_Y
 @*-::=@_*
 ::=
 @_*...............................|`
-
-/* This is a littlekludgy. */

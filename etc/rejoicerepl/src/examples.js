@@ -9,7 +9,7 @@ lead^lead stone
 'gold/[stone lead^4]
 
 ( Inspect the result )
-.It's\\s take [True Fool]/[take gold]
+take .It's\\s [True Fool]/[take gold]
 
 @Fool  .pyrite.. Done
 @True  .gold!
