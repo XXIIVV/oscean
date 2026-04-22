@@ -16,7 +16,10 @@ take .It's\\s [True Fool]/[take gold]
 @Done`
 examples.primes=`( Check if number n, is prime: )
 
-n^11 i^2 pow^4
+n^29 
+
+i^2 pow^4
+
 @Loop ( n i -- n i )     
 	( lteq=pow<=n ) t^n lteq/t^pow []/[t^t pow^pow]
 	( lteq..Prime ) Lteq/lteq .Prime End @Lteq
@@ -101,7 +104,8 @@ examples.fibonacci=`( Print the Fibonacci sequence:
 
 n^10 y ( n y -- x y )
 	'[y^x x^y .#x .\\s]/[x^x n]`
-examples.collatz=`( 7: 7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
+examples.collatz=`( Print the Collatz sequence for n^7: 
+	7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
 
 n^7
 
@@ -111,7 +115,7 @@ n^7
 	End/[none^y x n]
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
 		[Collatz n^y]/[n^n y^y] 
-	@End ( -- )`
+	@End`
 examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 @Rows ( width height -- )
 	[c^width i^height] '.\\s/i
@@ -139,8 +143,8 @@ n^12 ( 12 34 56 ) [b^a a^n c^b]/[a^a b^b c^c n^n]
 ( pop 34 12 )     [a^b b^c]/[a^a b^b c^c]
 ( dup 34 34 12 )  [a^a b^a c^b]/[a^a b^b c^c]
 ( add 68 12 )     [a^b b^c]/[b^b c^c]
-( sub 56 )        []/[a^b b^b]
-( put )           .#a`
+( sub 56 )        []/[a^b b^b c^c]
+( put )           [.#a a^b b^c]/[a^a b^b c^c]`
 examples.binary_logic=`( Put a logic gate and binary states in the bag: )
 
 or true false
