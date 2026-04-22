@@ -335,11 +335,11 @@
 	( walk dot ) INC2
 	( is emitter ) LDAk LIT "# EQU ?/<put-emit>
 	STH2
-	/next-cell LDA2 #0000 SWP2 SUB2
+	tote/get-register #0000 SWP2 SUB2
 	&>lpp
 		STH2kr str/<print>
 		INC2 ORAk ?&>lpp
-	POP2 POP2r !str/<set-debug>
+	POP2 POP2 POP2r !str/<set-debug>
 
 @tote/<put-emit> ( item* name* -- )
 	POP2 INC2 INC2 LDA2 /get-addr LDA2 u16/<print-dec> !str/<set-debug>
@@ -407,10 +407,15 @@
 
 @queue/<reset> ( -- )
 	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
 	JMP2r
 
 @queue/<take> ( item* -- item* )
-	LDA2 /<push>
+	LDA2k /find INC2k ORA ?{
+		POP2 LDA2 /<push>
+		tote/get-register #0000 SWP2 SUB2 !/<push> }
+	( | TODO: item* addr* )
+	POP2 LDA2 /<push>
 	tote/get-register #0000 SWP2 SUB2 !/<push>
 
 @queue/<put> ( item* -- item* )
@@ -421,6 +426,15 @@
 	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
+
+@queue/find ( item* -- addr* )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>lf
+		LDA2k STH2kr EQU2 ?{
+			item/next GTH2k ?&>lf
+		POP2r POP2 POP2 #ffff JMP2r }
+	NIP2 POP2r JMP2r
 
 @queue/<apply> ( -- )
 	,&ptr LDR2 ;&buf
