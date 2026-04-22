@@ -301,6 +301,19 @@ examples.spirograph=`( inner cog: ) x^40
 
 ( y2/x  ) 'res/y2^x
 ( print ) .Turns:\\s .#res`
+examples.wdr_computer=`( The Know-how Computer is an educational model of a computer
+	consisting of a pen, paper, and matches.
+  Let's pretend that we're a register machine pretending
+	to be moving matches in and out of a bag. )
+
+r2^5
+
+@l1 ( jmp 4 ) l4
+@l2 ( inc 1 ) r1
+@l3 ( dec 2 ) []/r2
+@l4 ( isz 2 ) [l5 r2]/r2 l6
+@l5 ( jmp 2 ) l2
+@l6 ( stp )`
 examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
 
 ( Insere 1 calculo et 5 nummo in sacco: )
