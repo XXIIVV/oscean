@@ -228,12 +228,12 @@
 		str/cap LDAk ?&>wf
 	POP2 #ffff JMP2r
 
-@diary/count ( -- count* )
-	[ LIT2r 0000 ] ;&buf
+@diary/count ( -- count )
+	[ LITr 00 ] ;&buf
 	&>wc
-		log/has-no-picture ?{ INC2r }
+		log/has-no-picture ?{ INCr }
 		str/cap LDAk ?&>wc
-	POP2 STH2r JMP2r
+	POP2 STHr JMP2r
 
 (
 @|Diaries )
@@ -532,26 +532,20 @@
 
 @page/<build-module> ( term* -- term* )
 	DUP2 #0001 SUB2 LDA
-	( ) DUP [ LIT "+ ] NEQ ?{ POP !album-module/<build> }
-	( ) diary/count #0002 LTH2 ?{ ;term/name ;warnings/hidden warning/<print> }
 	( ) DUP [ LIT "; ] NEQ ?{ POP !portal-archive-module/<build> }
 	( ) DUP [ LIT ". ] NEQ ?{ POP !portal-module/<build> }
-	( ) [ LIT ", ] NEQ ?{ !archive-module/<build> }
-	JMP2r
-
-@album-module/<build> ( name* -- name* )
-	[ LITr 00 ] ;diary/buf
-	&>w
+	( ) DUP [ LIT ", ] NEQ ?{ POP !archive-module/<build> }
+	[ LIT "# ] NEQ ?{ JMP2r }
+	( | Build diary )
+	;diary/buf
+	&>wbd
 		log/has-no-picture ?{
-			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo>
-				INCr } }
-		str/cap LDAk ?&>w
-	POP2
-	( | Catch no photo )
-	STHr ?{ ;term/name ;warnings/no-photo warning/<print> }
-	JMP2r
+			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo> } }
+		str/cap LDAk ?&>wbd
+	POP2 JMP2r
 
 @portal-module/<build> ( name* -- name* )
+	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
 		stop-at-siblings ?&end1
@@ -565,6 +559,7 @@
 	( restore diary ) DUP2 !diary/<load>
 
 @archive-module/<build> ( name* -- name* )
+	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
 		stop-at-siblings ?&end2
@@ -574,6 +569,7 @@
 	POP2 POPr JMP2r
 
 @portal-archive-module/<build> ( name* -- name* )
+	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
 		stop-at-siblings ?&end3
