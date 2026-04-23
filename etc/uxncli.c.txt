@@ -23,14 +23,14 @@ typedef unsigned short Uint16;
 typedef void (*deo_handler)(void);
 typedef Uint8 (*dei_handler)(void);
 
-Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
+static Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
 static unsigned int uxn_eval(Uint16 pc);
 static int rL1, rL2;
 
 /* clang-format off */
 
 #define BANKS 0x10
-#define BANKS_CAP BANKS * 0x10000
+#define BANKS_CAP (BANKS * 0x10000)
 
 static inline Uint16 peek2(const Uint8 *d) { return ((Uint16)d[0] << 8) | d[1]; }
 static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
@@ -91,7 +91,7 @@ system_deo_expansion(void)
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
 	} else
-		fprintf(stderr, "Unknown command: %s\n", &ram[exp]);
+		fprintf(stderr, "Unknown command: %02x\n", ram[exp]);
 }
 
 /* clang-format off */
@@ -210,7 +210,7 @@ put_statfile(Uint8 *dest, const char *filepath, const char *basename)
 	char pathbuf[0x2000];
 	make_pathfile(pathbuf, filepath, basename);
 	err = stat(pathbuf, &st);
-	dir = S_ISDIR(st.st_mode);
+	dir = !err && S_ISDIR(st.st_mode);
 	dest += put_stat(dest, 4, st.st_size, err, dir, 1);
 	dest += put_text(dest, " ");
 	dest += put_text(dest, basename);
@@ -347,7 +347,7 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
 	err = stat(ufs[id].filepath, &st);
-	dir = S_ISDIR(st.st_mode);
+	dir = !err && S_ISDIR(st.st_mode);
 	return put_stat(&ram[addr], len, st.st_size, err, dir, 0);
 }
 
@@ -381,16 +381,20 @@ static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0
 
 #include <time.h>
 
-time_t datetime_seconds;
-struct tm *datetime_t, datetime_zt = {0};
+static int datetime_busy;
+static time_t datetime_seconds;
+static struct tm *datetime_t, datetime_zt = {0};
 
-void
+static void
 datetime_update(void)
 {
-	datetime_seconds = time(NULL);
-	datetime_t = localtime(&datetime_seconds);
-	if(datetime_t == NULL)
-		datetime_t = &datetime_zt;
+	if(!datetime_busy) {
+		datetime_seconds = time(NULL);
+		datetime_t = localtime(&datetime_seconds);
+		if(datetime_t == NULL)
+			datetime_t = &datetime_zt;
+		datetime_busy = 1;
+	}
 }
 
 /* clang-format off */
@@ -438,16 +442,16 @@ static const deo_handler deo_handlers[256] = {
 	[0x19] = console_deo_stderr,
 	[0x1a] = console_deo_hb,
 	[0x1b] = console_deo_lb,
-	[0xab] = filea_deo_length,
 	[0xa5] = filea_deo_stat,
 	[0xa6] = filea_deo_delete,
 	[0xa9] = filea_deo_name,
+	[0xab] = filea_deo_length,
 	[0xad] = filea_deo_read,
 	[0xaf] = filea_deo_write,
-	[0xbb] = fileb_deo_length,
 	[0xb5] = fileb_deo_stat,
 	[0xb6] = fileb_deo_delete,
 	[0xb9] = fileb_deo_name,
+	[0xbb] = fileb_deo_length,
 	[0xbd] = fileb_deo_read,
 	[0xbf] = fileb_deo_write};
 
@@ -472,70 +476,73 @@ emu_deo(const Uint8 port, const Uint8 value)
 @|Uxn --------------------------------------------------------------- */
 
 #define OPC(opc, A, B) {\
-	case 0x00|opc:case 0x40|opc:{const int d=0;A B} break;\
-	case 0x20|opc:case 0x60|opc:{const int d=1;A B} break;\
-	case 0x80|opc:case 0xc0|opc:{const int d=0,k=*p;A *p=k;B} break;\
-	case 0xa0|opc:case 0xe0|opc:{const int d=1,k=*p;A *p=k;B} break;}
-#define DEC s[--(*p)]
-#define INC s[(*p)++]
-#define FLIP s = stk[!r], p = &ptr[!r];
-#define JUMP(x) b = ram[pc] << 8, b |= ram[pc + 1], pc += x + 2;
-#define DROP(o,m) o = DEC; if(m) o |= DEC << 8;
-#define TAKE(o) if(d) o[1] = DEC; o[0] = DEC;
-#define PUSH(i,m) { if(m) c = (i), INC = c >> 8, INC = c; else INC = i; }
-#define GIVE(i) INC = i[0]; if(d) INC = i[1];
-#define DEVO(o,r) emu_deo(o, r[0]); if(d) emu_deo(o + 1, r[1]);
-#define DEVI(i,r) r[0] = emu_dei(i); if(d) r[1] = emu_dei(i + 1);
-#define POKE(o,r,m) ram[o] = r[0]; if(d) ram[(o + 1) & m] = r[1];
-#define PEEK(i,r,m) r[0] = ram[i]; if(d) r[1] = ram[(i + 1) & m];
+	case 0x00|opc: {const Uint8 d=0,r=0;A B} break;\
+	case 0x20|opc: {const Uint8 d=1,r=0;A B} break;\
+	case 0x40|opc: {const Uint8 d=0,r=1;A B} break;\
+	case 0x60|opc: {const Uint8 d=1,r=1;A B} break;\
+	case 0x80|opc: {const Uint8 d=0,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xa0|opc: {const Uint8 d=1,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xc0|opc: {const Uint8 d=0,r=1,k=ptr[1];A ptr[1]=k;B} break;\
+	case 0xe0|opc: {const Uint8 d=1,r=1,k=ptr[1];A ptr[1]=k;B} break;}
+#define DEC(m) stk[m][--ptr[m]]
+#define INC(m) stk[m][ptr[m]++]
+#define IMM a = ram[pc++] << 8, a |= ram[pc++];
+#define MOV pc = d ? (Uint16)a : pc + (Sint8)a;
+#define POx(o,m) o = DEC(r); if(m) o |= DEC(r) << 8;
+#define PUx(i,m,s) if(m) c = (i), INC(s) = c >> 8, INC(s) = c; else INC(s) = i;
+#define GOT(o) if(d) o[1] = DEC(r); o[0] = DEC(r);
+#define PUT(i,s) INC(s) = i[0]; if(d) INC(s) = i[1];
+#define DEO(o,v) emu_deo(o, v[0]); if(d) emu_deo(o + 1, v[1]);
+#define DEI(i,v) v[0] = emu_dei(i); if(d) v[1] = emu_dei(i + 1); PUT(v,r)
+#define POK(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
+#define PEK(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUT(v,r)
 
-static unsigned
+static unsigned int
 uxn_eval(Uint16 pc)
 {
-	Uint16 a, b, c, x[2], y[2], z[2];
-	for(;;) {
-	Uint8 op = ram[pc++], r = (op >> 6) & 1, *s = stk[r], *p = &ptr[r];
-	switch(op) {
-	/* BRK */ case 0x00:return 1;
-	/* JCI */ case 0x20:if(DEC) JUMP(b) else pc += 2; break;
-	/* JMI */ case 0x40:JUMP(b) break;
-	/* JSI */ case 0x60:JUMP(0) PUSH(pc,1) pc += b; break;
-	/* LI2 */ case 0xa0:INC = ram[pc++]; /* Fall-through */
-	/* LIT */ case 0x80:INC = ram[pc++]; break;
-	/* L2r */ case 0xe0:INC = ram[pc++]; /* Fall-through */
-	/* LIr */ case 0xc0:INC = ram[pc++]; break;
-	/* INC */ OPC(0x01,DROP(a,d),PUSH(a + 1,d))
-	/* POP */ OPC(0x02,*p -= 1 + d;,{})
-	/* NIP */ OPC(0x03,TAKE(x) *p -= 1 + d;,GIVE(x))
-	/* SWP */ OPC(0x04,TAKE(x) TAKE(y),GIVE(x) GIVE(y))
-	/* ROT */ OPC(0x05,TAKE(x) TAKE(y) TAKE(z),GIVE(y) GIVE(x) GIVE(z))
-	/* DUP */ OPC(0x06,TAKE(x),GIVE(x) GIVE(x))
-	/* OVR */ OPC(0x07,TAKE(x) TAKE(y),GIVE(y) GIVE(x) GIVE(y))
-	/* EQU */ OPC(0x08,DROP(a,d) DROP(b,d),PUSH(b == a,0))
-	/* NEQ */ OPC(0x09,DROP(a,d) DROP(b,d),PUSH(b != a,0))
-	/* GTH */ OPC(0x0a,DROP(a,d) DROP(b,d),PUSH(b > a,0))
-	/* LTH */ OPC(0x0b,DROP(a,d) DROP(b,d),PUSH(b < a,0))
-	/* JMP */ OPC(0x0c,DROP(a,d),pc = d ? a : pc + (Sint8)a;)
-	/* JCN */ OPC(0x0d,DROP(a,d) DROP(b,0),if(b) pc = d ? a : pc + (Sint8)a;)
-	/* JSR */ OPC(0x0e,DROP(a,d),FLIP PUSH(pc,1) pc = d ? a : pc + (Sint8)a;)
-	/* STH */ OPC(0x0f,TAKE(x),FLIP PUSH(x[0],0) if(d) PUSH(x[1],0))
-	/* LDZ */ OPC(0x10,DROP(a,0),PEEK(a, x, 0xff) GIVE(x))
-	/* STZ */ OPC(0x11,DROP(a,0) TAKE(y),POKE(a, y, 0xff))
-	/* LDR */ OPC(0x12,DROP(a,0),PEEK(pc + (Sint8)a, x, 0xffff) GIVE(x))
-	/* STR */ OPC(0x13,DROP(a,0) TAKE(y),POKE(pc + (Sint8)a, y, 0xffff))
-	/* LDA */ OPC(0x14,DROP(a,1),PEEK(a, x, 0xffff) GIVE(x))
-	/* STA */ OPC(0x15,DROP(a,1) TAKE(y),POKE(a, y, 0xffff))
-	/* DEI */ OPC(0x16,DROP(a,0),DEVI(a, x) GIVE(x))
-	/* DEO */ OPC(0x17,DROP(a,0) TAKE(y),DEVO(a, y))
-	/* ADD */ OPC(0x18,DROP(a,d) DROP(b,d),PUSH(b + a,d))
-	/* SUB */ OPC(0x19,DROP(a,d) DROP(b,d),PUSH(b - a,d))
-	/* MUL */ OPC(0x1a,DROP(a,d) DROP(b,d),PUSH(b * a,d))
-	/* DIV */ OPC(0x1b,DROP(a,d) DROP(b,d),PUSH(a ? b / a : 0,d))
-	/* AND */ OPC(0x1c,DROP(a,d) DROP(b,d),PUSH(b & a,d))
-	/* ORA */ OPC(0x1d,DROP(a,d) DROP(b,d),PUSH(b | a,d))
-	/* EOR */ OPC(0x1e,DROP(a,d) DROP(b,d),PUSH(b ^ a,d))
-	/* SFT */ OPC(0x1f,DROP(a,0) DROP(b,d),PUSH(b >> (a & 0xf) << (a >> 4),d))
-	}} return 0;
+	unsigned int a, b, c, x[2], y[2], z[2];
+	for(;;)
+	switch(ram[pc++]) {
+	/* BRK */ case 0x00: return 1;
+	/* JCI */ case 0x20: if(DEC(0)) { IMM pc += a; } else pc += 2; break;
+	/* JMI */ case 0x40: IMM pc += a; break;
+	/* JSI */ case 0x60: IMM PUx(pc, 1, 1) pc += a; break;
+	/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
+	/* LIT */ case 0x80: INC(0) = ram[pc++]; break;
+	/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
+	/* LIr */ case 0xc0: INC(1) = ram[pc++]; break;
+	/* INC */ OPC(0x01,POx(a,d),PUx(a + 1,d,r))
+	/* POP */ OPC(0x02,ptr[r] -= 1 + d;,{})
+	/* NIP */ OPC(0x03,GOT(x) ptr[r] -= 1 + d;,PUT(x,r))
+	/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x,r) PUT(y,r))
+	/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y,r) PUT(x,r) PUT(z,r))
+	/* DUP */ OPC(0x06,GOT(x),PUT(x,r) PUT(x,r))
+	/* OVR */ OPC(0x07,GOT(x) GOT(y),PUT(y,r) PUT(x,r) PUT(y,r))
+	/* EQU */ OPC(0x08,POx(a,d) POx(b,d),PUx(b == a,0,r))
+	/* NEQ */ OPC(0x09,POx(a,d) POx(b,d),PUx(b != a,0,r))
+	/* GTH */ OPC(0x0a,POx(a,d) POx(b,d),PUx(b > a,0,r))
+	/* LTH */ OPC(0x0b,POx(a,d) POx(b,d),PUx(b < a,0,r))
+	/* JMP */ OPC(0x0c,POx(a,d),MOV)
+	/* JCN */ OPC(0x0d,POx(a,d) POx(b,0),if(b) MOV)
+	/* JSR */ OPC(0x0e,POx(a,d),PUx(pc,1,!r) MOV)
+	/* STH */ OPC(0x0f,GOT(x),PUT(x,!r))
+	/* LDZ */ OPC(0x10,POx(a,0),PEK(a, x, 0xff))
+	/* STZ */ OPC(0x11,POx(a,0) GOT(y),POK(a, y, 0xff))
+	/* LDR */ OPC(0x12,POx(a,0),PEK(pc + (Sint8)a, x, 0xffff))
+	/* STR */ OPC(0x13,POx(a,0) GOT(y),POK(pc + (Sint8)a, y, 0xffff))
+	/* LDA */ OPC(0x14,POx(a,1),PEK(a, x, 0xffff))
+	/* STA */ OPC(0x15,POx(a,1) GOT(y),POK(a, y, 0xffff))
+	/* DEI */ OPC(0x16,POx(a,0),DEI(a, x))
+	/* DEO */ OPC(0x17,POx(a,0) GOT(y),DEO(a, y))
+	/* ADD */ OPC(0x18,POx(a,d) POx(b,d),PUx(b + a, d,r))
+	/* SUB */ OPC(0x19,POx(a,d) POx(b,d),PUx(b - a, d,r))
+	/* MUL */ OPC(0x1a,POx(a,d) POx(b,d),PUx(b * a, d,r))
+	/* DIV */ OPC(0x1b,POx(a,d) POx(b,d),PUx(a ? b / a : 0, d,r))
+	/* AND */ OPC(0x1c,POx(a,d) POx(b,d),PUx(b & a, d,r))
+	/* ORA */ OPC(0x1d,POx(a,d) POx(b,d),PUx(b | a, d,r))
+	/* EOR */ OPC(0x1e,POx(a,d) POx(b,d),PUx(b ^ a, d,r))
+	/* SFT */ OPC(0x1f,POx(a,0) POx(b,d),PUx(b >> (a & 0xf) << (a >> 4), d,r))
+	} return 0;
 }
 
 /* clang-format on */
@@ -545,22 +552,24 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 17 Feb 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara Emulator(cli), 23 Apr 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
 	if(uxn_eval(0x100) && console_vector) {
 		for(; i < argc; i++) {
-			char c, *p = argv[i];
+			int c;
+			char *p = argv[i];
 			while(!dev[0x0f] && (c = *p++))
 				console_input(c, CONSOLE_ARG);
 			console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
 		}
 		while(!dev[0x0f]) {
-			char c = fgetc(stdin);
-			if(feof(stdin)) break;
+			int c = fgetc(stdin);
+			if(c == EOF) break;
 			console_input(c, CONSOLE_STD);
+			datetime_busy = 0;
 		}
 		console_input('\n', CONSOLE_END);
 	}
