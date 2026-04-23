@@ -27,7 +27,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "21 20 "Apr 20 "2026 $2
+	( date ) "22 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -320,8 +320,8 @@
 %tote/next-cell ( addr* -- next* ) {
 	INC2 INC2 }
 
-%tote/lacks ( addr* -- addr* t ) {
-	( addr* mod* ) /get-register OVR2 LDA2 /get-count GTH2 }
+%tote/has-item ( count* id -- t ) {
+	tote/get-addr LDA2 ADD2 POP #80 AND }
 
 %tote/<mod-item> ( count* id* -- ) {
 	tote/get-addr LDA2k ROT2 ADD2 SWP2 STA2 }
@@ -335,7 +335,7 @@
 	( walk dot ) INC2
 	( is emitter ) LDAk LIT "# EQU ?/<put-emit>
 	STH2
-	tote/get-register #0000 SWP2 SUB2
+	/get-register #0000 SWP2 SUB2
 	&>lpp
 		STH2kr str/<print>
 		INC2 ORAk ?&>lpp
@@ -361,28 +361,22 @@
 		INC2 GTH2k ?&>lpl
 	POP2 POP2 POP2r JMP2r
 
-@tote/can-apply ( fraction* -- fraction* t )
-	( den/from* ) LDA2k
-	( den/from* den/to* ) LDA2k SWP2 /next-cell
-	&>lca
-		/lacks ?{ item/next GTH2k ?&>lca }
-	EQU2 JMP2r
-
 @tote/<apply> ( fraction* -- )
 	/<print>
-	/can-apply ?{ POP2 JMP2r }
+	( | take )
 	queue/<reset>
+	LDA2k LDA2k SWP2 /next-cell
+	&>lac
+		DUP2 queue/<take>
+		item/next GTH2k ?&>lac
+	POP2 POP2
+	( | validate )
+	queue/can-apply ?{ POP2 JMP2r }
 	( | put )
-	LDA2k OVR2 /next-cell
+	LDA2k SWP2 /next-cell
 	&>lap
 		DUP2 /<put>
 		item/next GTH2k ?&>lap
-	POP2 POP2 LDA2
-	( | take )
-	LDA2k SWP2 /next-cell
-	&>lat
-		DUP2 queue/<take>
-		item/next GTH2k ?&>lat
 	POP2 POP2 !queue/<apply>
 
 @tote/<print> ( -- )
@@ -410,19 +404,33 @@
 	#0000 ;&buf STA2
 	JMP2r
 
-@queue/<take> ( item* -- item* )
+@queue/<take> ( item* -- )
 	LDA2k /find INC2k ORA ?{
-		POP2 LDA2 /<push>
-		tote/get-register #0000 SWP2 SUB2 !/<push> }
-	( | TODO: item* addr* )
-	POP2 LDA2 /<push>
-	tote/get-register #0000 SWP2 SUB2 !/<push>
+		POP2
+		( | Not null )
+		tote/get-register ORAk ?{ POP2 POP2 JMP2r }
+		SWP2
+		( id* ) LDA2 /<push>
+		( count* ) #0000 SWP2 SUB2 !/<push> }
+	( | merge offset )
+	INC2 INC2 STH2
+	tote/get-register STH2kr LDA2 SWP2 SUB2 STH2r STA2
+	POP2 JMP2r
 
 @queue/<put> ( item* -- item* )
-	( id* ) LDA2 /<push>
-	( count* ) tote/get-register
-	( >> )
-	&<push> ( value* -- )
+	LDA2k /find INC2k ORA ?{
+		POP2
+		( | Not null )
+		tote/get-register ORAk ?{ POP2 POP2 JMP2r }
+		SWP2
+		( id* ) LDA2 /<push>
+		( count* ) !/<push> }
+	( | merge offset )
+	INC2 INC2 STH2
+	tote/get-register STH2kr LDA2 ADD2 STH2r STA2
+	POP2 JMP2r
+
+@queue/<push> ( value* -- )
 	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
@@ -435,6 +443,15 @@
 			item/next GTH2k ?&>lf
 		POP2r POP2 POP2 #ffff JMP2r }
 	NIP2 POP2r JMP2r
+
+@queue/can-apply ( -- t )
+	,&ptr LDR2 ;&buf
+	&>lca
+		EQU2k ?{
+			INC2k INC2 LDA2 OVR2 LDA2 tote/has-item ?&fail
+			item/next !&>lca }
+	POP2 POP2 #01 JMP2r
+	&fail POP2 POP2 #00 JMP2r
 
 @queue/<apply> ( -- )
 	,&ptr LDR2 ;&buf
