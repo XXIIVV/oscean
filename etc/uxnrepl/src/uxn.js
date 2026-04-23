@@ -90,6 +90,7 @@ function Uxn (emu)
 
 	this.init = () => {
 		pc[0] = 0x100
+		return this
 	}
 
 	this.eval = (at) => {

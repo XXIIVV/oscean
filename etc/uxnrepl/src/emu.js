@@ -6,8 +6,8 @@ function System(emu)
 	this.meta = 0
 
 	function print_stack(id) {
-		let ptr = emu.uxn.get_ptr(id)
-		let stk = emu.uxn.get_stk(id)
+		const ptr = emu.uxn.get_ptr(id)
+		const stk = emu.uxn.get_stk(id)
 		let res = `${id ? 'RST' : 'WST'}${ptr - 8 ? ' ' : '|'}`
 		for(let i = ptr - 8; i != ptr; i++) {
 			res += ('0' + stk[i & 0xff].toString(16)).slice(-2)
@@ -54,7 +54,8 @@ function Console(emu)
 	this.input = (char, type) => {
 		emu.uxn.dev[0x17] = type
 		emu.uxn.dev[0x12] = char
-		emu.uxn.eval(this.vector)
+		if(this.vector)
+			emu.uxn.eval(this.vector)
 	}
 }
 
@@ -63,7 +64,6 @@ function Emu ()
 	this.uxn = new Uxn(this)
 	this.system = new System(this)
 	this.console = new Console(this)
-	this.date = new Date()
 
 	function doty(now) {
 		let start = new Date(now.getFullYear(), 0, 0)
@@ -130,7 +130,7 @@ function Repl(rom, keyword)
 				this.editor_el.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
 				this.editor_el.setSelectionRange(selectionStart+1, selectionStart+1)
 			}
-			else if (event.ctrlKey && event.key === 'Enter') 
+			else if (e.ctrlKey && e.key === 'Enter') 
 				this.run();
 		});
 		this.run_el.addEventListener("click", this.run)
@@ -156,7 +156,7 @@ function Repl(rom, keyword)
 					this.examples_el.selectedIndex = i;
 			this.select_example(choice)
 		} else
-			this.editor_el.value = examples.hello_world
+			this.select_example(0)
 		// Connect examples
 		this.examples_el.addEventListener('change', (e) => {
 			this.select_example(e.currentTarget.value)
@@ -169,15 +169,14 @@ function Repl(rom, keyword)
 	}
 
 	this.select_example = (value) => {
-		this.editor_el.value = examples[value]
+		this.editor_el.value = value ? examples[value] : examples.hello_world
 		this.logs_el.innerHTML = `Press <b>${keyword}</b> to evaluate.`
 	}
 
 	this.run = () => {
 		let query = this.editor_el.value+'\n'
-		let program = new Uint8Array(0x10000)
 		let emu = new Emu()
-		emu.uxn.dev[0x17] = query != ""
+		emu.uxn.dev[0x17] = 1
 		emu.uxn.load(rom).eval(0x0100)
 		for (let i = 0; i < query.length; i++)
 			emu.console.input(query.charAt(i).charCodeAt(0), 1)
@@ -189,7 +188,7 @@ function Repl(rom, keyword)
 		} else
 			this.result_el.innerHTML = emu.console.stdout_body
 		// Trim console
-		this.logs_el.innerHTML = emu.console.stderr_body.trim().replaceAll("Î»", "").trimStart().trimEnd().split('\n').slice(-50).join('\n')
+		this.logs_el.innerHTML = emu.console.stderr_body.trim().split('\n').slice(-50).join('\n')
 		this.logs_el.scrollTop = this.logs_el.scrollHeight;
 	}
 }
