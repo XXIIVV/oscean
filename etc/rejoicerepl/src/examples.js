@@ -11,9 +11,8 @@ lead^lead stone
 ( Inspect the result )
 take ."It's " [True Fool]/[take gold]
 
-@Fool  .pyrite.. Done
-@True  .gold!
-@Done`
+@Fool  .pyrite.. End
+@True  .gold! @End`
 examples.primes=`( Check if number n, is prime: )
 
 n^29 
@@ -85,36 +84,37 @@ examples.random=`( flip a coin )
 [Head Tail]
 
 @Head .Head End
-@Tail .Tail
-@End
+@Tail .Tail @End
 `
-examples.sort=`( Sort four numbers from largest to smallest: )
+examples.sort=`( Sort numbers in a list from largest to smallest: )
 
-a^5 b^12 c^91 d^54
+( a list ) a^12 b^34 c^56 d^78 e^91 f^23
 
-@Loop
+@Loop ( -- )
 	[true b^a]/b^a [Loop a^b b^a]/[true a^a b^b]
 	[true c^b]/c^b [Loop b^c c^b]/[true b^b c^c]
 	[true d^c]/d^c [Loop c^d d^c]/[true c^c d^d]
+	[true e^d]/e^d [Loop d^e e^d]/[true d^d e^e]
+	[true f^e]/f^e [Loop e^f f^e]/[true e^e f^f]
 
 ( Print them: )
-	.#a .\\s .#b .\\s .#c .\\s .#d`
+
+.#a .\\s .#b .\\s .#c .\\s .#d .\\s .#e .\\s .#f`
 examples.search=`( Search for a number in a list: )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
 ( target ) target^78
 
-@Loop ( target -- )
+@Loop ( target -- target )
 	Found/[a^target target^a] i
 	Found/[b^target target^b] i
 	Found/[c^target target^c] i
 	Found/[d^target target^d] i
 	Found/[e^target target^e] i
 	Found/[f^target target^f] i
-	.Not\\sfound.\\n End
+	."Not found."\\n End
 @Found ( i -- )
-	."Found at index: " .#i .\\n
-@End`
+	."Found at index: " .#i .\\n @End`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
@@ -130,8 +130,7 @@ n^7
 	x^n 'y/x^2 
 	End/[none^y x n]
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
-		[Collatz n^y]/[n^n y^y] 
-	@End`
+		[Collatz n^y]/[n^n y^y] @End`
 examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 @Rows ( width height -- )
 	[c^width i^height] '.\\s/i
