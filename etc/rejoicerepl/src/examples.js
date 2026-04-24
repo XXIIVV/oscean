@@ -334,12 +334,12 @@ examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
 ( Insere 1 calculo et 5 nummo in sacco: )
 calculo nummo^5
 
-( Consume 1 nummo, inse 1 bellaria: )
+( Consume 1 nummo, insere 1 bellaria: )
 bellaria/nummo
 
 ( Consume 2 nummo pro tessera, quam diu possibile: )
-@Tesserarum ( nummo -- tessera )
-    [Tesserarum tessera]/nummo^2
+@Tessera ( nummo -- tessera )
+    [Tessera tessera]/nummo^2
 
 ( Ad fine, imprime resultato: )
-.Computus: .#tessera`
+.Computo: .#tessera`
