@@ -9,7 +9,7 @@ lead^lead stone
 'gold/[stone lead^4]
 
 ( Inspect the result )
-take .It's\\s [True Fool]/[take gold]
+take ."It's " [True Fool]/[take gold]
 
 @Fool  .pyrite.. Done
 @True  .gold!
@@ -26,7 +26,7 @@ i^2 pow^4
 	( rem=n%i )     t^n '[]/t^i rem/t []/t^t
 	[Loop i pow^i pow^i pow]/rem
 
-.Not\\sPrime @End`
+."Not Prime" @End`
 examples.fractions=`( A whole number, equal to 7/1: )
 7
 
@@ -88,7 +88,7 @@ examples.random=`( flip a coin )
 @Tail .Tail
 @End
 `
-examples.sorting=`( Sort four numbers from largest to smallest: )
+examples.sort=`( Sort four numbers from largest to smallest: )
 
 a^5 b^12 c^91 d^54
 
@@ -113,10 +113,8 @@ examples.search=`( Search for a number in a list: )
 	Found/[f^target target^f] i
 	.Not\\sfound.\\n End
 @Found ( i -- )
-	.Found\\sat\\sindex:\\s .#i .\\n
-@End
-
-`
+	."Found at index: " .#i .\\n
+@End`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
@@ -342,7 +340,7 @@ examples.spirograph=`( inner cog: ) x^40
 	[Gcd y]/y
 
 ( y2/x  ) 'res/y2^x
-( print ) .Turns:\\s .#res`
+( print ) ."Turns: " .#res`
 examples.wdr_computer=`( The Know-how Computer is an educational model of a computer
 	consisting of a pen, paper, and matches.
   Let's pretend that we're a register machine pretending

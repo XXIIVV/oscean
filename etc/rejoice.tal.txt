@@ -27,7 +27,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Apr 20 "2026 $2
+	( date ) "24 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -63,13 +63,27 @@
 
 @token/on-console-comment ( -> )
 	[ LIT2 ") -Console/read ] DEI NEQ ?{
-		[ LIT2 &callback $2 ] .Console/vector DEO2 }
+		[ LIT2 &comment-callback $2 ] .Console/vector DEO2 }
 	BRK
+
+@token/on-console-string ( -> )
+	[ LIT2 "" -Console/read ] DEI NEQk ?{
+		[ LIT2 &string-callback $2 ] .Console/vector DEO2
+		BRK }
+	DUP #20 NEQ ?{
+		POP [ LIT "\ ] /<append>
+		[ LIT "s ] }
+	/<append>
+	POP BRK
 
 @token/<append> ( c -- )
 	DUP LIT "( NEQ ?{
-		.Console/vector DEI2 ,&callback STR2
+		.Console/vector DEI2 ,&comment-callback STR2
 		;&on-console-comment .Console/vector DEO2
+		POP JMP2r }
+	DUP LIT "" NEQ ?{
+		.Console/vector DEI2 ,&string-callback STR2
+		;&on-console-string .Console/vector DEO2
 		POP JMP2r }
 	DUP LIT "[ NEQ ?{
 		,&depth LDR INC ,&depth STR }
