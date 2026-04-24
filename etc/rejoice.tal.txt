@@ -6,9 +6,9 @@
 
 |000
 
-	@token/buf $40
-	@item/buf $40
-	@symbol/buf $40
+	@token/buf $40 &buf-end
+	@item/buf $40 &buf-end
+	@symbol/buf $40 &buf-end
 
 |100
 
@@ -27,7 +27,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Apr 20 "2026 $2
+	( date ) "23 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -37,9 +37,6 @@
 
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
-
-%tote/get-count ( id* -- count* ) {
-	DUP2 ADD2 ;tote/buf ADD2 LDA2 }
 
 %syms/get-name ( id* -- str* ) {
 	DUP2 ADD2 ;syms/buf ADD2 LDA2 }
@@ -82,7 +79,8 @@
 		DUP #20 GTH ?{ /<parse>
 			/<reset>
 			POP JMP2r } }
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -&buf ] INCk
+	( clamp ) .&buf-end LTHk [ JMP SWP ] POP ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -152,7 +150,8 @@
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
 		LDZk DUP symbol/is-spacer ?/parse-sym-push
-		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		[ LIT2 00 &ptr -&buf ] INCk
+		( clamp ) .&buf-end LTHk [ JMP SWP ] POP ,&ptr STR
 		STZ2
 		INC !&>w
 
@@ -249,7 +248,8 @@
 	( >> )
 
 @world/<push> ( short* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	[ LIT2 &ptr =&buf ] INC2k INC2
+	( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -307,7 +307,7 @@
 @goto/<push> ( addr* -- )
 	[ LIT &count $1 ] INC ,&count STR
 	[ LIT2 &ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k [ JMP SWP2 POP2 ] ,&ptr STR2
+	( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -431,7 +431,8 @@
 	POP2 JMP2r
 
 @queue/<push> ( value* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	[ LIT2 &ptr =&buf ] INC2k INC2
+	( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -441,7 +442,7 @@
 	&>lf
 		LDA2k STH2kr EQU2 ?{
 			item/next GTH2k ?&>lf
-		POP2r POP2 POP2 #ffff JMP2r }
+		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @queue/can-apply ( -- t )
@@ -491,7 +492,8 @@
 	[ LIT2 00 -&buf ] STZ
 	&>wn
 		LDAk /is-spacer ?{
-			LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+			LDAk [ LIT2 00 &ptr -&buf ] INCk
+			( clamp ) .&buf-end LTHk [ JMP SWP ] POP ,&ptr STR
 			STZ2
 			INC2 !&>wn }
 	POP2 ;&buf JMP2r
@@ -504,7 +506,7 @@
 			INC2 INC2 GTH2k ?&>lf
 		POP2r POP2 POP2 #ffff JMP2r }
 	( | found )
-	POP2r NIP2 ;&buf SUB2 #01 SFT2 JMP2r
+	POP2r NIP2 JMP2r
 
 @syms/find-alloc ( str* -- id* )
 	symbol/new
@@ -512,14 +514,13 @@
 	&find-alloc-force ( str* -- id* )
 	LDAk ?{ POP2 #0000 JMP2r }
 	DUP2 /find INC2k ORA ?{
-		POP2
-		( | alloc )
-		,&ptr LDR2 ;&buf SUB2 #01 SFT2 SWP2 dict/alloc
+		( str* null* ) POP2
+		( ptr* str* ) ,&ptr LDR2 OVR2 dict/alloc
 		( | push )
-		[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
-		STA2
-		JMP2r }
-	NIP2 JMP2r
+		[ LIT2 &ptr =&buf ] INC2k INC2
+		( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
+		STA2 }
+	NIP2 ;&buf SUB2 #01 SFT2 JMP2r
 
 @syms/<print-count-id> ( id* -- )
 	STH2k /get-name ORAk ?{
@@ -532,7 +533,8 @@
 @dict/alloc ( src* -- ptr* )
 	,&ptr LDR2 SWP2
 	&>w
-		LDAk DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		LDAk DUP [ LIT2 &ptr =&buf ] INC2k
+		( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
 		STA
 		?{ POP2 JMP2r }
 		INC2 !&>w
@@ -660,7 +662,7 @@
 	0623 062b 062f 063d 0641 0647 0649 064d ]
 
 @queue/buf ( id*, mod*, id*, mod*.. )
-	$40
+	$40 &buf-end
 
 @goto/buf $200 &buf-end
 
@@ -668,14 +670,15 @@
 	$200 &buf-end
 
 @syms/buf ( dict*, dict*, dict*, dict*.. )
-	$200
+	$200 &buf-end
 
 @label/buf ( addr*, addr*, addr*, addr*.. )
-	$200
+	$200 &buf-end
 
 @dict/buf ( str[], 00, str[], 00.. )
-	$400
+	$400 &buf-end
 
 @world/buf ( id*, count*, id*, count*.. )
 
 
+|fffe &buf-end 
