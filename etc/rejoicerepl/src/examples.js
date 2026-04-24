@@ -234,6 +234,15 @@ t4/[t3^3] t5/[t4^3] t6/[t5^3]
 
 'd^243/t5 'd^81/t4 'd^27/t3 
 'd^9/t2   'd^3/t1  'd/t0`
+examples.decimal_print=`( Print the result of a division with decimal points: )
+
+n^10 d^6
+
+( *100  ) 'x^100/n
+( /d    ) 'd1/x^d []/d^d
+( /100  ) 'int/d1^100
+( /10   ) 'd0/d1^10
+( print ) .#int .. .#d0 .#d1`
 examples.hexadecimal_print=`( Input a decimal number: )
 
 d^92
@@ -334,12 +343,12 @@ examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
 ( Insere 1 calculo et 5 nummo in sacco: )
 calculo nummo^5
 
-( Consume 1 nummo, insere 1 bellaria: )
+( Consume 1 nummo, inse 1 bellaria: )
 bellaria/nummo
 
 ( Consume 2 nummo pro tessera, quam diu possibile: )
-@Tessera ( nummo -- tessera )
-    [Tessera tessera]/nummo^2
+@Tesserarum ( nummo -- tessera )
+    [Tesserarum tessera]/nummo^2
 
 ( Ad fine, imprime resultato: )
-.Computo: .#tessera`
+.Computus: .#tessera`
