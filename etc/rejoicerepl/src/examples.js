@@ -99,6 +99,24 @@ a^5 b^12 c^91 d^54
 
 ( Print them: )
 	.#a .\\s .#b .\\s .#c .\\s .#d`
+examples.search=`( Search for a number in a list: )
+
+( a list ) a^12 b^34 c^56 d^78 e^91 f^23
+( target ) target^78
+
+@Loop ( target -- )
+	Found/[a^target target^a] i
+	Found/[b^target target^b] i
+	Found/[c^target target^c] i
+	Found/[d^target target^d] i
+	Found/[e^target target^e] i
+	Found/[f^target target^f] i
+	.Not\\sfound.\\n End
+@Found ( i -- )
+	.Found\\sat\\sindex:\\s .#i .\\n
+@End
+
+`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
