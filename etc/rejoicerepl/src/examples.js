@@ -353,6 +353,15 @@ r2^5
 @l4 ( isz 2 ) [l5 r2]/r2 l6
 @l5 ( jmp 2 ) l2
 @l6 ( stp )`
+examples.pounds_to_kilograms=`( Convert pounds to kilograms )
+
+( libra pondo: ) lb^165
+
+'kg-ld^45/lb
+'kg-hd/kg-ld^100
+'kg-0d/kg-ld^10
+
+.#kg-hd .. .#kg-0d .#kg-ld .kg`
 examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
 
 ( Insere 1 calculo et 5 nummo in sacco: )
