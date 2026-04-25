@@ -133,7 +133,7 @@ n^7
 		[Collatz n^y]/[n^n y^y] @End`
 examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 @Rows ( width height -- )
-	[c^width i^height] '.\\s/i
+	c^width ." "^height
 	@Cols ( c -- )
 		x^c/x^x []/x
 		[Cols .\\s\\s y4]/[c y4 x^16] []/x^16
