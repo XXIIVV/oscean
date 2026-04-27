@@ -294,18 +294,6 @@
 	,&ptr LDR2 [ LIT2 &scope $2 ] STA2
 	JMP2r
 
-@world/<print> ( addr* -- )
-	,&ptr LDR2 SWP2 [ LITr f8 ]
-	&>l
-		STHkr ?{
-			( trim ) ;dict/ellipses str/<print> !&print-end }
-		DUP2 fraction/<print>
-		#2019 DEO
-		LDA2 LDA2 INCr GTH2k ?&>l
-	&print-end ( to* from* . count* -- )
-	POP2 POP2 POPr #0a19 DEO
-	JMP2r
-
 @world/<eval> ( -- )
 	tote/<clear>
 	;&buf [ LIT2r 0001 ]
@@ -313,7 +301,8 @@
 		LDA2k ORA ?{ !&end }
 		tote/<print>
 		DUP2 tote/<apply>
-		DUP2 /<print>
+		DUP2 fraction/<print>
+		#0a19 DEO
 		goto/step INC2r !&>w
 
 	&end ( addr* -- )
@@ -408,7 +397,12 @@
 	&>lap
 		DUP2 /<put>
 		item/next GTH2k ?&>lap
-	POP2 POP2 !queue/<apply>
+	POP2 POP2
+	( | multiplier )
+	fraction/is-unquoted ?{
+		fraction/den-length #0006 NEQ2 ?{
+			LDA2 INC2 INC2 fraction/get-multiplier !queue/<apply> } }
+	POP2 #0001 !queue/<apply>
 
 @tote/<print> ( -- )
 	[ LIT2 "[ 19 ] DEO
@@ -461,13 +455,9 @@
 	#0000 ;&buf STA2
 	JMP2r
 
-@queue/<apply> ( fraction* -- )
-	( multiplier ) [ LIT2r 0001 ]
-	( | drain )
-	fraction/is-unquoted ?{
-		fraction/den-length #0006 NEQ2 ?{
-			POP2r LDA2k INC2 INC2 fraction/get-multiplier STH2 } }
-	POP2 ,&ptr LDR2 ;&buf
+@queue/<apply> ( fraction* mul* -- )
+	STH2
+	,&ptr LDR2 ;&buf
 	&>l
 		EQU2k ?{
 			INC2k INC2 LDA2 STH2kr s16/mul OVR2 LDA2 tote/<mod-item>
@@ -659,7 +649,7 @@
 @s16/mul ( val* mul* -- res* )
 	STH2
 	OVR #80 AND ?{ STH2r MUL2 JMP2r }
-	#0000 SWP2 SUB2 STH2r MUL2 #0000 SWP2 SUB2 JMP2r
+	#0000 DUP2 ROT2 SUB2 STH2r MUL2 SUB2 JMP2r
 
 @u16/<print-dec> ( u16* -- )
 	[ LIT2r ff00 ]

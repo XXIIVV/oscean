@@ -189,7 +189,11 @@ function Repl(rom, keyword)
 		} else
 			this.result_el.innerHTML = emu.console.stdout_body
 		// Trim console
-		this.logs_el.innerHTML = emu.console.stderr_body.trim().split('\n').slice(-50).join('\n')
+		let segments = emu.console.stderr_body.trim().split('\n')
+		if(segments.length > 50)
+			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n')
+		else
+			this.logs_el.innerHTML = segments.join('\n')
 		this.logs_el.scrollTop = this.logs_el.scrollHeight
 		this.editor_el.focus()
 	}
