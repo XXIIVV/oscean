@@ -115,6 +115,18 @@ examples.search=`( Search for a number in a list: )
 	."Not found."\\n End
 @Found ( i -- )
 	."Found at index: " .#i .\\n @End`
+examples.fizzbuzz=`( Prints numbers from 1 to 100,
+	replacing multiples of 3 with Fizz,
+	multiples of 5 with Buzz,
+	and multiples of both with FizzBuzz )
+
+times^100 f b
+
+@Loop ( times f b -- num f b )
+	[num f b .FizzBuzz\\n Loop]/[times f^3 b^5]
+	[num f b .Fizz\\n Loop]/[times f^3]
+	[num f b .Buzz\\n Loop]/[times b^5]
+	[num f b .#num .\\n Loop]/times`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
@@ -357,11 +369,19 @@ examples.pounds_to_kilograms=`( Convert pounds to kilograms )
 
 ( libra pondo: ) lb^165
 
-'kg-ld^45/lb
-'kg-hd/kg-ld^100
-'kg-0d/kg-ld^10
+'d1^45/lb
+'dc/d1^100
+'d0/d1^10
 
-.#kg-hd .. .#kg-0d .#kg-ld .kg`
+.#dc .. .#d0 .#d1 .kg`
+examples.fahrenheit_to_celsius=`( Convert Fahrenheit to Celsius )
+
+( degrees: ) f^55
+
+[]/f^32 't^50/f 'c/t^9
+'c-hd/c^10
+
+.#c-hd .. .#c .°C`
 examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
 
 ( Insere 1 calculo et 5 nummo in sacco: )
