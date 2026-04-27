@@ -7,8 +7,8 @@
 |000
 
 	@token/buf $70 &buf-end
-	@item/buf $40 &buf-end
-	@symbol/buf $40 &buf-end
+	@item/buf $30 &buf-end
+	@symbol/buf $30 &buf-end
 
 |100
 
@@ -94,7 +94,9 @@
 			/<reset>
 			POP JMP2r } }
 	[ LIT2 00 &ptr -&buf ] INCk
-	( clamp ) .&buf-end LTHk [ JMP SWP ] POP ,&ptr STR
+	( clamp ) .&buf-end LTHk ?{ ;dict/err-buffer err/<set>
+		SWP }
+	POP ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -165,7 +167,9 @@
 	&>w
 		LDZk DUP symbol/is-spacer ?/parse-sym-push
 		[ LIT2 00 &ptr -&buf ] INCk
-		( clamp ) .&buf-end LTHk [ JMP SWP ] POP ,&ptr STR
+		( clamp ) .&buf-end LTHk ?{ ;dict/err-buffer err/<set>
+			SWP }
+		POP ,&ptr STR
 		STZ2
 		INC !&>w
 
@@ -263,7 +267,9 @@
 
 @world/<push> ( short* -- )
 	[ LIT2 &ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
+	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer err/<set>
+		SWP2 }
+	POP2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -321,7 +327,9 @@
 @goto/<push> ( addr* -- )
 	[ LIT &count $1 ] INC ,&count STR
 	[ LIT2 &ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
+	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer err/<set>
+		SWP2 }
+	POP2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -445,7 +453,9 @@
 
 @queue/<push> ( value* -- )
 	[ LIT2 &ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
+	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer err/<set>
+		SWP2 }
+	POP2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -506,7 +516,9 @@
 	&>wn
 		LDAk /is-spacer ?{
 			LDAk [ LIT2 00 &ptr -&buf ] INCk
-			( clamp ) .&buf-end LTHk [ JMP SWP ] POP ,&ptr STR
+			( clamp ) .&buf-end LTHk ?{ ;dict/err-buffer err/<set>
+				SWP }
+			POP ,&ptr STR
 			STZ2
 			INC2 !&>wn }
 	POP2 ;&buf JMP2r
@@ -531,7 +543,9 @@
 		( ptr* str* ) ,&ptr LDR2 OVR2 dict/alloc
 		( | push )
 		[ LIT2 &ptr =&buf ] INC2k INC2
-		( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
+		( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer err/<set>
+			SWP2 }
+		POP2 ,&ptr STR2
 		STA2 }
 	NIP2 ;&buf SUB2 #01 SFT2 JMP2r
 
@@ -547,13 +561,22 @@
 	,&ptr LDR2 SWP2
 	&>w
 		LDAk DUP [ LIT2 &ptr =&buf ] INC2k
-		( clamp ) ;&buf-end LTH2k [ JMP SWP2 ] POP2 ,&ptr STR2
+		( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer err/<set>
+			SWP2 }
+		POP2 ,&ptr STR2
 		STA
 		?{ POP2 JMP2r }
 		INC2 !&>w
 
 @dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
 	&ellipses ".. 00
+	&err-buffer "Buffer 20 "overflow. 0a00
+
+@err/<set> ( err* -- )
+	str/<print>
+	#0000 .Console/vector DEO2
+	#010f DEO
+	JMP2r
 
 (
 @|Stdlib )
