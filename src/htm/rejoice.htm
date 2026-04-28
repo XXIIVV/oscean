@@ -14,7 +14,7 @@
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" style='height:450px'></iframe>
 </div>
 
-<p>A program is a sequence of instructions, separated by spaces, written in the <a href='notation.html'>postfix notation</a>. Each instruction is a fraction that corresponds to an exchange of resources on a <a href='multisets.html'>list of unsorted symbols</a>. The empty bag <code>[]</code> is identity; <code>x/[]</code> always applies, and only <code>[]/x</code> applies when <code>x</code> is found in the bag.</p>
+<p>A program is a sequence of instructions, separated by spaces, written in the <a href='notation.html'>postfix notation</a>. Each instruction is a fraction that corresponds to an exchange of resources on a <a href='multisets.html'>list of unsorted symbols</a>. The empty bag <code>[]</code> is identity; <code>x/[]</code> always applies, and <code>[]/x</code> only applies when <code>x</code> is found in the bag.</p>
 
 <pre>
 3 4 + 2 - . <i style='float:right'>( In Forth )</i>
@@ -23,7 +23,7 @@
 n^3 n^4 []/n^2 .#n<i style='float:right'>( In Rejoice )</i>
 </pre>
 
-<p>Evaluation consists of applying each fraction in a sequence, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect.</p>
+<p>Evaluation consists of applying each fraction in a sequence, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added to the bag; otherwise the fraction is skipped having had no effect.</p>
 
 <!-- a * b/a = b -->
 <pre>
@@ -39,7 +39,7 @@ n^3 n^4 []/n^2 .#n<i style='float:right'>( In Rejoice )</i>
 
 <h3>Logic</h3>
 
-<p>Logic is implemented by sequencing fractions for each possible state of the gate. Each fraction consumes the <i>sentinel</i> symbol to ensure that only one clause fires. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
+<p>Logic is implemented by sequencing fractions for each possible state of the gate. The fractions consume a dedicated symbol, which we'll call a <i>sentinel</i>, to ensure only one clause fires. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
 <pre>
 false not
 	true/[false not]
@@ -131,7 +131,7 @@ x^2 y^3
 [x^2 res^6] 
 </pre>
 
-<p>When two labels enter the bag at the same time, one is picked at random.</p>
+<p>When two labels enter the bag at the same time, one is picked at random. For example, a program that returns the result of a coin toss:</p>
 
 <pre>
 ( flip a coin ) [Head Tail] 
@@ -143,7 +143,7 @@ x^2 y^3
 
 <h3>Anonymous Functions</h3>
 
-<p>Anonymous functions are syntactic sugar for labels in single-operand operations that are repeatedly retried until the denominator is no longer present in the bag before continuing evaluation. For example, here is a program to find the <b>quotient</b>:</p>
+<p>A common operation is to loop over a fraction until exhaustion. Anonymous functions are syntactic sugar so that fractions that are repeatedly applied until exhaustion don't need to be named. For example, here is a program to find the <b>quotient</b>:</p>
 
 <pre>
 x^24 y^6 'res/x^y
@@ -181,7 +181,7 @@ n^6 y <i>( n y -- n.fib y )</i>
 </ul>
 
 <h3>I/O</h3>
-<p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.bat^2</code> will emit <code>batbat</code>.</p>
+<p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.hello^3</code> will emit <code>hellohellohello</code>.</p>
 
 <pre>
 pigs^3

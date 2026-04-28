@@ -321,9 +321,11 @@
 	&end ( addr* -- )
 	POP2 tote/<print>
 	( | steps )
-	;dict/reached str/<print>
+	;dict/reached-a str/<print>
 	STH2r u16/<print-dec>
-	;dict/steps !str/<print>
+	;dict/reached-b str/<print>
+	syms/get-length #01 SFT2 #0001 SUB2 u16/<print-dec>
+	;dict/reached-c !str/<print>
 
 @goto/step ( addr* -- addr* )
 	,&+count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
@@ -413,9 +415,15 @@
 			LDA2 INC2 INC2 fraction/get-multiplier !queue/<apply> } }
 	POP2 #0001 !queue/<apply>
 
+@tote/get-range ( -- to* from* )
+	( from* ) ;&buf
+	( from* to-ptr* ) DUP2 syms/get-length ADD2 ;&buf-end
+	( from* min* ) [ LTH2k JMP SWP2 POP2 ]
+	( to* from* ) SWP2 JMP2r
+
 @tote/<print> ( -- )
 	[ LIT2 "[ 19 ] DEO
-	[ LIT2r ff00 ] ;&buf-end ;&buf
+	[ LIT2r ff00 ] /get-range
 	&>lp
 		LDA2k #0000 EQU2 ?{
 			OVRr STHr ?{ #2019 DEO }
@@ -427,7 +435,7 @@
 	JMP2r
 
 @tote/<clear> ( -- )
-	;&buf-end ;&buf
+	/get-range
 	&>lc
 		#0000 OVR2 STA2
 		/next-cell GTH2k ?&>lc
@@ -539,6 +547,9 @@
 	STA2
 	JMP2r
 
+@syms/get-length ( -- length* )
+	,&+ptr LDR2 ;&buf SUB2 JMP2r
+
 @syms/find ( str* -- id* )
 	STH2
 	,&+ptr LDR2 ;&buf
@@ -584,7 +595,7 @@
 		?{ POP2 JMP2r }
 		INC2 !&>w
 
-@dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
+@dict/identity "[] 00 &reached-a 0a "Reached 20 "in 20 00 &reached-b 20 "steps, 20 "with 20 00 &reached-c 20 "symbols. 0a00
 	&err-buffer "buffer 20 "overflow. 0a00
 	&dict "Dict 00
 	&token "Token 00
@@ -677,7 +688,7 @@
 	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
 	[ LIT2 00 -DateTime/day ] DEI #04 SFT2
 	( ) [ LIT2 00 -DateTime/month ] DEI #10 SFT2 EOR2
-	( ) [ LIT -DateTime/year ] DEI2 #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/second ] DEI #60 SFT2 EOR2
 	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
 	JMP2r
 
