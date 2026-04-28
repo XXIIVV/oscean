@@ -17,21 +17,21 @@
 <nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="self">rejoice</a></li></ul><ul><li><a href="rejoice_devlog.html">rejoice devlog</a></li><li><a href="gaude.html">gaude</a></li></ul></nav>
 <main><h2>Rejoice!</h2>
 
-<p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language in which data is encoded as <a href='multisets.html'>multisets</a> that compose by multiplication. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
+<p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language in which logic and arithmetic emerge entirely from the application of fractions. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
 
 <h3>Basics</h3>
 
 <ul>
-	<li>The <b>program state</b> is a bag of unordered things. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag, or identity, is represented as <code>[]</code>.</li>
+	<li>The <b>program state</b> is a bag of unordered things where elements are combined by union and <code>^n</code> denotes multiplicity. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag is represented as <code>[]</code>.</li>
 	<li><b>Symbols</b> are things in the bag written as either numeric decimal integers or names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[8 ball^2]</code> and <code>[2^3 ball ball]</code> are equal.</li>
-	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code>, means to replace two <code>cat</code> with one <code>owl</code>.</li>
+	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/[cat^2]</code> means to replace two <code>cats</code> with one <code>owl</code>.</li>
 </ul>
 
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html" frameborder="0" style='height:450px'></iframe>
 </div>
 
-<p>Rejoice is a single-instruction <a href='notation.html'>postfix notation</a>, read from left to right, in which fractions correspond to transformations applied by multiplication on a set of symbols, arithmetic emerges entirely from the application of fractions. </p>
+<p>A program is a sequence of instructions, separated by spaces, written in the <a href='notation.html'>postfix notation</a>. Each instruction is a fraction that corresponds to an exchange of resources on a <a href='multisets.html'>list of unsorted symbols</a>. The empty bag <code>[]</code> is identity; <code>x/[]</code> always applies, and <code>[]/x</code> applies when <code>x</code> is in the bag.</p>
 
 <pre>
 3 4 + 2 - . <i style='float:right'>( In Forth )</i>
@@ -40,13 +40,13 @@
 n^3 n^4 []/n^2 .#n<i style='float:right'>( In Rejoice )</i>
 </pre>
 
-<p>Evaluation consists of applying each fraction, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect. The following fraction is then tried, and so on. The program halts when the program counter reaches the end of the program.</p>
+<p>Evaluation consists of applying each fraction in a sequence, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added; otherwise the fraction has no effect. Execution is a single sequential pass over the program data, each instruction is attempted exactly once in order and the program halts when the program counter reaches the end of the program.</p>
 
 <!-- a * b/a = b -->
 <pre>
 [cat bat rat^2]      <i>( I have 1 cat, 1 bat and 2 rats )</i>
     [cat bat^3]/rat  <i>( If I have 1 rat, I replace it with 1 cat & 3 bats )</i>
-    []/[rat cat^2]   <i>( If I have have 1 rat and 2 cats, I discard them )</i>
+    []/[rat cat^2]   <i>( If I have 1 rat and 2 cats, I discard them )</i>
     yak/bat^cat      <i>( If I have at least as many bats as cats..
                           .. I replace the amount of cats in bats with 1 yak )</i>
 [bat^4 yak]          <i>( I am left with 4 bats and 1 yak )</i>
@@ -54,7 +54,7 @@ n^3 n^4 []/n^2 .#n<i style='float:right'>( In Rejoice )</i>
 
 <h3>Logic</h3>
 
-<p>Logic is implemented by sequencing fractions for each possible state of the gate. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
+<p>Logic is implemented by sequencing fractions for each possible state of the gate. Each fraction consumes the <i>sentinel</i> symbol to ensure that only one clause fires. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
 <pre>
 false not
 	true/[false not]
@@ -87,7 +87,8 @@ x y and
 
 <h3 id='exponents'>Variable Exponents</h3>
 
-<p>Numbers are stored as counts, for example, <code>x^5</code> indicates five instances of x. Variable exponents, like <code>x^y</code>, are symbols used as the exponent value in a fraction, their value is resolved when the fraction is evaluated, for example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
+<p>Numbers are stored as counts, for example, <code>x^5</code> indicates five instances of x. Variable exponents are symbols used as the exponent value in a fraction. For a fraction containing x^y, the value of y is read as the number of instances of the symbol y in the bag resolved when the fraction is evaluated. When a symbol used as an exponent is absent from the bag, its value is zero. For example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
+
 <pre>
 x^2 y^5 <i>( Copy y instances onto x, then drain y: )</i>
 	x^y
@@ -130,7 +131,7 @@ x^6 y^6 <i>( Fires only when x and y are equal counts, consuming both: )</i>
 
 <h3>Labels</h3>
 
-<p>A @label is a special symbol that represents a jump target. When the corresponding label symbol enters the bag, the label symbol is immediately consumed and execution continues from the @label position in the program. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
+<p>A @label is a special syntax that represents position in the program. After each instruction, if a symbol matching the name of an existing label is present in the bag, the symbol is consumed, and execution jumps immediately to that label position. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
 <pre>
 x^2 y^3
 
@@ -157,7 +158,7 @@ x^2 y^3
 
 <h3>Anonymous Functions</h3>
 
-<p>Anonymous functions are operations that are retried until the denominator is no longer present in the bag. For example, here is a program to find the <b>quotient</b>:</p>
+<p>Anonymous functions are operations that are repeatedly retried until the denominator is no longer present in the bag before continuing evaluation. For example, here is a program to find the <b>quotient</b>:</p>
 
 <pre>
 x^24 y^6 'res/x^y
