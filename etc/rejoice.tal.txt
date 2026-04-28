@@ -6,9 +6,10 @@
 
 |000
 
-	@token/buf $70 &buf-end
-	@item/buf $30 &buf-end
-	@symbol/buf $30 &buf-end
+	@token/+buf ( str[], 00.. )
+	$7e &+buf-end $2
+	@item/+buf ( str[], 00.. )
+	$7e &+buf-end $2
 
 |100
 
@@ -27,13 +28,13 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Apr 20 "2026 $2
+	( date ) "28 20 "Apr 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
 
 %u16/not-divisible ( u16* div* -- t ) {
-	u16/mod #0000 NEQ2 }
+	u16/mod ORA }
 
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
@@ -89,28 +90,28 @@
 		;&on-console-string .Console/vector DEO2
 		POP JMP2r }
 	DUP LIT "[ NEQ ?{
-		,&depth LDR INC ,&depth STR }
+		,&+depth LDR INC ,&+depth STR }
 	DUP LIT "] NEQ ?{
-		,&depth LDR #01 SUB ,&depth STR }
-	[ LIT &depth $1 ] ?{
+		,&+depth LDR #01 SUB ,&+depth STR }
+	[ LIT &+depth $1 ] ?{
 		DUP #20 GTH ?{ POP /<parse> !/<reset> } }
-	[ LIT2 00 &ptr -&buf ] INCk
-	( clamp ) .&buf-end LTHk ?{ ;dict/err-buffer ;dict/token err/<set>
+	[ LIT2 00 &+ptr -&+buf ] INCk
+	( clamp ) .&+buf-end LTHk ?{ ;dict/err-buffer ;dict/token err/<set>
 		SWP }
-	POP ,&ptr STR
+	POP ,&+ptr STR
 	STZ2
 	JMP2r
 
 @token/<reset> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
-	[ LIT2 00 -&buf ] STZ
+	[ LIT2 -&+buf _&+ptr ] STR
+	[ LIT2 00 -&+buf ] STZ
 	JMP2r
 
 @token/<parse> ( -- )
-	.&buf
+	.&+buf
 	( exists ) LDZk ?{ POP JMP2r }
-	( @label ) LDZk LIT "@ EQU ?/<parse-label>
-	( 'quote ) LDZk LIT "' EQU ?/<parse-quote>
+	( @label ) LDZk LIT "@ EQU ?label/<parse>
+	( 'quote ) LDZk LIT "' EQU ?label/<parse-quote>
 	world/<push-scope>
 	( >> )
 
@@ -118,24 +119,29 @@
 	( num bag ) item/parse-any-push world/<pop-scope>
 	world/<push-scope>
 	LDZk LIT "/ EQU ?{
-		( den bag [] ) world/<push-null>
+		( den bag [] ) world/<push-identity>
 		world/<pop-scope>
 		POP JMP2r }
 	INC
 	( den bag ) item/parse-any-push world/<pop-scope>
 	POP JMP2r
 
-@token/<parse-quote> ( ztr -- )
-	#0001 ;&quote-name syms/find-alloc DUP2 label/<create>
+@label/<parse-quote> ( ztr -- )
+	#0001 ;&quote-name syms/find-alloc DUP2 /<create>
 	world/<push-scope>
 	world/<push-count-id>
 	,&id LDR INC ,&id STR
-	INC !/<parse-fraction>
+	INC !token/<parse-fraction>
 
 	&quote-name "' [ &id "0 00 ]
 
-@token/<parse-label> ( ztr -- )
-	#00 SWP INC syms/find-alloc !label/<create>
+@label/<parse> ( ztr -- )
+	#00 SWP INC syms/find-alloc
+	( >> )
+
+@label/<create> ( id* -- )
+	/get-addr world/get-ptr SWP2 STA2
+	JMP2r
 
 (
 @|Bag/Items )
@@ -164,20 +170,24 @@
 	LDZk char/is-dec ?/parse-num-push
 	LDZk [ LIT "[ ] EQU ?/parse-empty
 	( | not numeric )
-	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 -&+buf _&+ptr ] STR
 	&>w
 		LDZk DUP symbol/is-spacer ?/parse-sym-push
-		[ LIT2 00 &ptr -&buf ] INCk
-		( clamp ) .&buf-end LTHk ?{ ;dict/err-buffer ;dict/item err/<set>
-			SWP }
-		POP ,&ptr STR
-		STZ2
+		/<push>
 		INC !&>w
+
+@item/<push> ( c -- )
+	[ LIT2 00 &+ptr -&+buf ] INCk
+	( clamp ) .&+buf-end LTHk ?{ ;dict/err-buffer ;dict/item err/<set>
+		SWP }
+	POP ,&+ptr STR
+	STZ2
+	JMP2r
 
 @item/parse-sym-push ( ztr c -- ztr )
 	POP
-	( identity ) [ LIT2 -&buf _&ptr ] LDR EQU ?world/<push-null>
-	/walk-count ;&buf
+	( identity ) [ LIT2 -&+buf _&+ptr ] LDR EQU ?world/<push-identity>
+	/walk-count ;&+buf
 	( | emit symbol )
 	LDA2k [ LIT2 ".# ] NEQ2 ?{
 		NIP2 INC2k INC2 syms/find-alloc SWP2 }
@@ -186,7 +196,7 @@
 @item/parse-num-push ( ztr -- ztr )
 	dec-ztr/walk-u16
 	( | check if not number 1 )
-	DUP2 #0001 NEQ2 ?{ POP2 !world/<push-null> }
+	DUP2 #0001 NEQ2 ?{ POP2 !world/<push-identity> }
 	( | check if not already prime )
 	DUP2 primes/find-id DUP ?/parse-prime
 	POP
@@ -270,8 +280,11 @@
 (
 @|World )
 
-@world/<push-null> ( -- )
-	#0000 DUP2
+@world/get-ptr ( -- ptr* )
+	,&+ptr LDR2 JMP2r
+
+@world/<push-identity> ( -- )
+	#0000 #0000
 	( >> )
 
 @world/<push-count-id> ( count* id* -- )
@@ -279,19 +292,19 @@
 	( >> )
 
 @world/<push> ( short* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2
+	[ LIT2 &+ptr =&buf ] INC2k INC2
 	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/world err/<set>
 		SWP2 }
-	POP2 ,&ptr STR2
+	POP2 ,&+ptr STR2
 	STA2
 	JMP2r
 
 @world/<push-scope> ( -- )
-	,&ptr LDR2 ,&scope STR2
+	,&+ptr LDR2 ,&+scope STR2
 	#ffff !/<push>
 
 @world/<pop-scope> ( -- )
-	,&ptr LDR2 [ LIT2 &scope $2 ] STA2
+	,&+ptr LDR2 [ LIT2 &+scope $2 ] STA2
 	JMP2r
 
 @world/<eval> ( -- )
@@ -312,23 +325,19 @@
 	STH2r u16/<print-dec>
 	;dict/steps !str/<print>
 
-@label/<create> ( id* -- )
-	/get-addr ;world/ptr LDA2 SWP2 STA2
-	JMP2r
-
 @goto/step ( addr* -- addr* )
-	,&count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
-	POP2 [ LIT2 00 _&count ] STR
-	;&buf ,&ptr STR2
+	,&+count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
+	POP2 [ LIT2 00 _&+count ] STR
+	;&buf ,&+ptr STR2
 	STHkr #01 GTH ?{ POPr ;&buf LDA2 JMP2r }
 	random/make #00 STHr DIV2k MUL2 SUB2 DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r
 
 @goto/<push> ( addr* -- )
-	[ LIT &count $1 ] INC ,&count STR
-	[ LIT2 &ptr =&buf ] INC2k INC2
+	[ LIT &+count $1 ] INC ,&+count STR
+	[ LIT2 &+ptr =&buf ] INC2k INC2
 	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/goto err/<set>
 		SWP2 }
-	POP2 ,&ptr STR2
+	POP2 ,&+ptr STR2
 	STA2
 	JMP2r
 
@@ -341,7 +350,7 @@
 %tote/next-cell ( addr* -- next* ) {
 	INC2 INC2 }
 
-%tote/has-item ( count* id -- t ) {
+%tote/has-item ( count* id* -- t ) {
 	tote/get-addr LDA2 ADD2 POP #80 AND }
 
 %tote/<mod-item> ( count* id* -- ) {
@@ -451,13 +460,13 @@
 	POP2 JMP2r
 
 @queue/<reset> ( -- )
-	;&buf ,&ptr STR2
-	#0000 ;&buf STA2
+	;&+buf ,&+ptr STR2
+	#0000 ;&+buf STA2
 	JMP2r
 
 @queue/<apply> ( fraction* mul* -- )
 	STH2
-	,&ptr LDR2 ;&buf
+	,&+ptr LDR2 ;&+buf
 	&>l
 		EQU2k ?{
 			INC2k INC2 LDA2 STH2kr s16/mul OVR2 LDA2 tote/<mod-item>
@@ -465,16 +474,16 @@
 	POP2 POP2 POP2r JMP2r
 
 @queue/<push> ( value* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/queue err/<set>
+	[ LIT2 &+ptr =&+buf ] INC2k INC2
+	( clamp ) ;&+buf-end LTH2k ?{ ;dict/err-buffer ;dict/queue err/<set>
 		SWP2 }
-	POP2 ,&ptr STR2
+	POP2 ,&+ptr STR2
 	STA2
 	JMP2r
 
 @queue/find ( item* -- addr* )
 	STH2
-	,&ptr LDR2 ;&buf
+	,&+ptr LDR2 ;&+buf
 	&>lf
 		LDA2k STH2kr EQU2 ?{
 			item/next GTH2k ?&>lf
@@ -482,13 +491,12 @@
 	NIP2 POP2r JMP2r
 
 @queue/can-apply ( -- t )
-	,&ptr LDR2 ;&buf
+	,&+ptr LDR2 ;&+buf
 	&>lca
 		EQU2k ?{
-			INC2k INC2 LDA2 OVR2 LDA2 tote/has-item ?&fail
-			item/next !&>lca }
-	POP2 POP2 #01 JMP2r
-	&fail POP2 POP2 #00 JMP2r
+			( item* count* ) INC2k INC2 LDA2
+			( item* count* id* ) OVR2 LDA2 tote/has-item ?{ item/next !&>lca } }
+	EQU2 JMP2r
 
 (
 @|Dict )
@@ -516,21 +524,24 @@
 	JMP2r
 
 @symbol/new ( str* -- str* )
-	[ LIT2 -&buf _&ptr ] STR
-	[ LIT2 00 -&buf ] STZ
+	;&+buf ,&+ptr STR2
+	#0000 ;&+buf STA2
 	&>wn
-		LDAk /is-spacer ?{
-			LDAk [ LIT2 00 &ptr -&buf ] INCk
-			( clamp ) .&buf-end LTHk ?{ ;dict/err-buffer ;dict/symbol err/<set>
-				SWP }
-			POP ,&ptr STR
-			STZ2
+		LDAk /is-spacer ?{ LDAk /<push>
 			INC2 !&>wn }
-	POP2 ;&buf JMP2r
+	POP2 ;&+buf JMP2r
+
+@symbol/<push> ( c -- )
+	#00 [ LIT2 &+ptr =&+buf ] INC2k
+	( clamp ) ;&+buf-end LTH2k ?{ ;dict/err-buffer ;dict/symbol err/<set>
+		SWP2 }
+	POP2 ,&+ptr STR2
+	STA2
+	JMP2r
 
 @syms/find ( str* -- id* )
 	STH2
-	,&ptr LDR2 ;&buf
+	,&+ptr LDR2 ;&buf
 	&>lf
 		LDA2k STH2kr str/compare ?{
 			INC2 INC2 GTH2k ?&>lf
@@ -545,12 +556,12 @@
 	LDAk ?{ POP2 #0000 JMP2r }
 	DUP2 /find INC2k ORA ?{
 		( str* null* ) POP2
-		( ptr* str* ) ,&ptr LDR2 OVR2 dict/alloc
+		( ptr* str* ) ,&+ptr LDR2 OVR2 dict/alloc
 		( | push )
-		[ LIT2 &ptr =&buf ] INC2k INC2
+		[ LIT2 &+ptr =&buf ] INC2k INC2
 		( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/syms err/<set>
 			SWP2 }
-		POP2 ,&ptr STR2
+		POP2 ,&+ptr STR2
 		STA2 }
 	NIP2 ;&buf SUB2 #01 SFT2 JMP2r
 
@@ -563,18 +574,17 @@
 	!str/<print>
 
 @dict/alloc ( src* -- ptr* )
-	,&ptr LDR2 SWP2
+	,&+ptr LDR2 SWP2
 	&>w
-		LDAk DUP [ LIT2 &ptr =&buf ] INC2k
-		( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/dict err/<set>
+		LDAk DUP [ LIT2 &+ptr =&buf ] INC2k
+		( clamp ) ;&buf-end LTH2k ?{ ;&err-buffer ;&dict err/<set>
 			SWP2 }
-		POP2 ,&ptr STR2
+		POP2 ,&+ptr STR2
 		STA
 		?{ POP2 JMP2r }
 		INC2 !&>w
 
 @dict/identity "[] 00 &reached 0a "Reached 20 "in 20 00 &steps 20 "steps. 0a00
-	&ellipses ".. 00
 	&err-buffer "buffer 20 "overflow. 0a00
 	&dict "Dict 00
 	&token "Token 00
@@ -604,6 +614,24 @@
 		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
 		ADD2r INC !&>w16
 
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	( | esc )
+	[ LIT &+esc 01 ] ?{
+		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape } }
+	char/<print>
+	INC2 !/<print>
+
+@str/<set-print> ( -- )
+	[ LIT2 18 _char/port ] STR
+	[ LIT2 00 _&+esc ] STR
+	JMP2r
+
+@str/<set-debug> ( -- )
+	[ LIT2 19 _char/port ] STR
+	[ LIT2 01 _&+esc ] STR
+	JMP2r
+
 @char/<print-digit> ( d -- )
 	LIT "0 ADD
 	( >> )
@@ -628,24 +656,6 @@
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>wc
 
-@str/<print> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	( | esc )
-	[ LIT &esc 01 ] ?{
-		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape } }
-	char/<print>
-	INC2 !/<print>
-
-@str/<set-print> ( -- )
-	#18 ;char/port STA
-	#00 ;&esc STA
-	JMP2r
-
-@str/<set-debug> ( -- )
-	#19 ;char/port STA
-	#01 ;&esc STA
-	JMP2r
-
 @s16/mul ( val* mul* -- res* )
 	STH2
 	OVR #80 AND ?{ STH2r MUL2 JMP2r }
@@ -665,9 +675,9 @@
 	[ LIT2 00 -DateTime/second ] DEI
 	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
 	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
-	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
-	( ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
-	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	[ LIT2 00 -DateTime/day ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/month ] DEI #10 SFT2 EOR2
+	( ) [ LIT -DateTime/year ] DEI2 #60 SFT2 EOR2
 	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
 	JMP2r
 
@@ -717,15 +727,16 @@
 	05e7 05f3 05fb 0607 060d 0611 0617 061f
 	0623 062b 062f 063d 0641 0647 0649 064d ]
 
-@queue/buf ( id*, mod*, id*, mod*.. )
-	$40 &buf-end
+@symbol/+buf ( str[], 00.. )
+	$40 &+buf-end
 
-@goto/buf $200 &buf-end
+@syms/buf ( dict*, dict*, dict*, dict*.. )
+	$200 &buf-end
 
 @tote/buf ( length*, length*, length*.. )
 	$200 &buf-end
 
-@syms/buf ( dict*, dict*, dict*, dict*.. )
+@goto/buf ( addr*, addr*.. )
 	$200 &buf-end
 
 @label/buf ( addr*, addr*, addr*, addr*.. )
@@ -733,6 +744,9 @@
 
 @dict/buf ( str[], 00, str[], 00.. )
 	$400 &buf-end
+
+@queue/+buf ( id*, count*, id*, count*.. )
+	$80 &+buf-end
 
 @world/buf ( id*, count*, id*, count*.. )
 
