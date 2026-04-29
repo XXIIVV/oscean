@@ -15,17 +15,17 @@ take ."It's " [True Fool]/[take gold]
 @True  .gold! @End`
 examples.primes=`( Check if number n, is prime: )
 
-n^29 
+n^23 .#n
 
 i^2 pow^4
 
 @Loop ( n i -- n i )     
 	( lteq=pow<=n ) t^n lteq/t^pow []/[t^t pow^pow]
-	( lteq..Prime ) Lteq/lteq .Prime End @Lteq
+	( lteq..Prime ) Lteq/lteq ." is prime" End @Lteq
 	( rem=n%i )     t^n '[]/t^i rem/t []/t^t
 	[Loop i pow^i pow^i pow]/rem
 
-."Not Prime" @End`
+." is not prime" @End`
 examples.fractions=`( A whole number, equal to 7/1: )
 7
 
@@ -73,6 +73,8 @@ examples.gcd=`( A program to find the GCD of two numbers,
 
 x^6 y^15
 
+."The GDC of " .#x ." and " .#y ." is "
+
 @Gcd ( x y -- x )
 	'z/[x y]
 	[y^x x^z]/[x^x z^z]
@@ -83,9 +85,9 @@ examples.random=`( flip a coin )
 
 [Head Tail]
 
-@Head .Head End
-@Tail .Tail @End
-`
+@Head ."You flipped head" Halt
+@Tail ."You flipped tail"
+@Halt`
 examples.sort=`( Sort numbers in a list from largest to smallest: )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
