@@ -1,0 +1,2447 @@
+( let's go!! )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|06 @Tile/length
+|03 @Gravity
+|0190 @Screen/w
+|00f0 @Screen/h
+|00c8 @Screen/center
+|0078 @Screen/center-50
+|0078 @Screen/middle
+|0028 @Screen/middle-50
+
+|000
+
+	@player/x $2 &y $2 &hor $2 &ver $2 &grip $1 &jumpready $1 &jump $1 &flip $1
+	@camera/x $2 &y $2 &center $2 &middle $2 &mod $2
+	@splash/x $2 &y $2
+	@grind/x $2 &y $2 &flip $1
+	@bubble/id $2
+	@keybird/id $2 &a &x1 $2 &y1 $2 &b $1c &x2 $2 &y2 $2 &jumpready $1
+	@scene/room $2
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	( | Playdate resolution )
+	;Screen/w .Screen/width DEO2
+	;Screen/h .Screen/height DEO2
+	( | Center )
+	;Screen/w #01 SFT2 .camera/center STZ2
+	;Screen/h #01 SFT2 .camera/middle STZ2
+	random/<init>
+	drool/<enter>
+	BRK
+
+@meta 00
+	( name ) "Polycat 0a
+	( details ) "A 20 "Platformer 20 "Game 0a
+	( author ) "By 20 "Hundred 20 "Rabbits 0a
+	( date ) "28 20 "Apr 20 "2026 00 00
+
+%Screen/<set-pos> ( x* y* -- ) {
+	.Screen/y DEO2
+	.Screen/x DEO2 }
+
+(
+@|Game )
+
+@drool/<leave> ( -- )
+	( >> )
+
+@game/<boot> ( -- )
+	#720f .System/r DEO2
+	#7b0f .System/g DEO2
+	#760f .System/b DEO2
+	( >> )
+
+@game/<start> ( -- )
+	;player/on-control .Controller/vector DEO2
+	;&on-frame .Screen/vector DEO2
+	#00 ;player/fidle STA
+	#ff00 ;&wipe STA2
+	#0000 ;timer/t STA2
+	#42 ;text/color-num STA
+	#02 ;text/color-char STA
+	#42 ;timer/color-dot STA
+	#00 ;lock-two-fiv/bird STA
+	#00 ;lock-two-eig/bird STA
+	#0000 keybird/<init>
+	;world/one/spawn LDA2 player/<set-pos>
+	;world/one !scene/<enter>
+
+@game/<end> ( -- )
+	;&on-frame-end .Screen/vector DEO2
+	#43 ;text/color-num STA
+	#43 ;timer/color-dot STA
+	JMP2r
+
+@game/<credit> ( -- )
+	;&on-frame-credit .Screen/vector DEO2
+	#4f ;text/color-char STA
+	;&on-button-credit .Controller/vector DEO2
+	JMP2r
+
+@game/30fps ( -- bang )
+	[ LIT2 00 &f $1 ] EQU DUP ,&f STR
+	JMP2r
+
+@game/on-frame ( -> )
+	player/when-frame bubble/when-frame keybird/when-frame
+	( ) /30fps ?{ camera/when-frame scene/when-frame }
+	BRK
+
+@game/on-frame-end ( -> )
+	[ LIT2 66 -Screen/auto ] DEO
+	;Screen/h #0000 [ LIT2r 0a -Screen/sprite ]
+	&>l
+		;gradient/sprite .Screen/addr DEO2
+		DUP2 [ LIT2 &wipe ff00 ] ADD2 .Screen/x DEO2
+		DUP2 .Screen/y DEO2
+		DEOkr
+		#0008 ADD2 GTH2k ?&>l
+	POP2 POP2 POP2r
+	( inc ) ,&wipe LDR2 #0008 ADD2
+	( end ) DUP2 #0200 EQU2 ?{
+		,&wipe STR2
+		player/<draw>
+		;timer/t LDA2 timer/<draw>
+		BRK }
+	POP2 /<credit>
+	BRK
+
+@game/on-frame-credit ( -> )
+	/30fps ?{
+		#0000 #0000 Screen/<set-pos>
+		[ LIT2 82 -Screen/pixel ] DEO
+		player/<draw-happy>
+		;timer/t LDA2 timer/<draw>
+		.camera/center LDZ2 .camera/middle LDZ2 #0040 SUB2 Screen/<set-pos>
+		;dict/credit text/<draw-center> }
+	BRK
+
+@game/on-button-credit ( -> )
+	.Controller/button DEI #01 AND ?{ BRK }
+	#0000 #0000 Screen/<set-pos>
+	[ LIT2 c0 -Screen/pixel ] DEO
+	/<start>
+	BRK
+
+(
+@|Camera )
+
+@camera/when-frame ( -- )
+	#0000 .player/x LDZ2 #03 SFT2 SUB2 .&center LDZ2 ADD2 .&x STZ2
+	#0000 .player/y LDZ2 #03 SFT2 SUB2 #0030 ADD2 .&mod LDZ2 ADD2 .&middle LDZ2 ADD2 .&y STZ2
+	JMP2r
+
+%camera/<set> ( x* y* -- ) {
+	.camera/y LDZ2 ADD2 .Screen/y DEO2
+	.camera/x LDZ2 ADD2 .Screen/x DEO2 }
+
+(
+@|Scene )
+
+@scene/when-frame ( -- )
+	#0000 #0000 Screen/<set-pos>
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | draw scene )
+	.&room LDZ2 LDA2k SWP2 INC2 INC2
+	&>ldo
+		DUP2k
+		( x ) LDA2k #00 SWP #50 SFT2 STH2
+		( y ) #00 SWP #50 SFT2 STH2r camera/<set>
+		( object* ) #0004 ADD2 LDA2 LDA2 JSR2
+		( next ) ;Tile/length ADD2 GTH2k ?&>ldo
+	POP2 POP2 player/<draw>
+	( | draw moss )
+	#2000
+	&>ldd
+		moss/<draw>
+		INC GTHk ?&>ldd
+	POP2
+	( | tile )
+	keybird/<draw>
+	splash/<draw>
+	grind/<draw>
+	bubble/<draw> !timer/<draw-inc>
+
+@scene/<add-collider> ( tile* -- tile* )
+	STH2k LDA2k #00 SWP #50 SFT2 STH2
+	( x ) #00 SWP STH2r ADD2
+	( 1 ) STH2r #0004 ADD2 LDA2 INC2 INC2 LDA ROT ROT ;room/collisions ADD2 STA
+	JMP2r
+
+@scene/<clear-colliders> ( -- )
+	;&cmd-c .System/expansion DEO2
+	JMP2r
+
+	&cmd-c [ 00 0400 0000 =room/collisions 00 ]
+
+@scene/<enter> ( room* -- )
+	DUP2 .&room STZ2
+	( | particles )
+	splash/<destroy>
+	grind/<destroy>
+	keybird/<destroy>
+	( | colliders )
+	/<clear-colliders>
+	LDA2k SWP2 INC2 INC2
+	&>lec
+		DUP2 #0004 ADD2 LDA2 INC2 INC2 LDA #00 EQU ?{ /<add-collider> }
+		;Tile/length ADD2 GTH2k ?&>lec
+	POP2 POP2 !moss/<update>
+
+(
+@|Player )
+
+@player/when-frame ( -- )
+	( | controls )
+	.Controller/button DEI
+	( | handlers )
+	DUP #01 AND
+	( u ) DUP ?{ /on-a-up }
+	( d ) #00 EQU ?{ /on-a }
+	( | ctrl )
+	DUP #21 NEQ ?{
+		[ LIT2 00 -Controller/button ] DEO
+		[ LIT2 00 -&jump ] STZ }
+	DUP #41 NEQ ?{
+		.&hor LDZ2 #0008 SUB2 .&hor STZ2
+		[ LIT2 00 -&flip ] STZ }
+	DUP #81 NEQ ?{
+		.&hor LDZ2 #0008 ADD2 .&hor STZ2
+		[ LIT2 01 -&flip ] STZ }
+	( | default )
+	DUP #10 NEQ ?{ #0020 .camera/mod STZ2 }
+	DUP #20 NEQ ?{ #ffb0 .camera/mod STZ2 }
+	DUP #40 NEQ ?{
+		.&hor LDZ2 #0018 SUB2 .&hor STZ2
+		[ LIT2 00 -&flip ] STZ }
+	DUP #80 NEQ ?{
+		.&hor LDZ2 #0018 ADD2 .&hor STZ2
+		[ LIT2 01 -&flip ] STZ }
+	POP
+	( | apply force horizontal )
+	.&hor LDZ2 DUP2 .&x LDZ2 ADD2 .&x STZ2
+	half .&hor STZ2
+	( | apply force gravity )
+	.&ver LDZ2 .&y LDZ2 OVR2 SUB2 .&y STZ2
+	;Gravity SUB2 .&ver STZ2
+	/<collide-ver>
+	/<collide-hor>
+	( fall ) [ LIT2 20 -&y ] LDZ LTH ?game/<start>
+	JMP2r
+
+%scene/get-collider ( x y -- collider ) {
+	#50 SFT2 ADD2 ;room/collisions ADD2 LDA }
+
+@player/<collide-ver> ( -- )
+	.&ver LDZ2 ORAk ?{ POP2 JMP2r }
+	POP #80 AND ?{
+		( | collide up )
+		( x ) [ LIT2 00 -&x ] LDZ
+		( y ) [ LIT2 00 -&y ] LDZ2 #0100 SUB2 POP scene/get-collider #04 AND #00 EQU ?{
+			( bump head ) #0000 .&ver STZ2
+			.&y LDZ2 #0040 ADD2 #88 SFT2 .&y STZ2
+			JMP2r } }
+	( | collide down )
+	( x ) [ LIT2 00 -&x ] LDZ
+	( y ) [ LIT2 00 -&y ] LDZ2 #0004 ADD2 POP scene/get-collider #08 AND #00 EQU ?{
+		.&y LDZ2 #88 SFT2 .&y STZ2
+		#0000 .&ver STZ2 !/<walk> }
+	JMP2r
+
+@player/<collide-hor> ( -- )
+	.&hor LDZ2 ORAk ?{ POP2 JMP2r }
+	POP #80 AND ?{
+		( | right )
+		( x ) [ LIT2 00 -&x ] LDZ2 #0080 ADD2 POP
+		( y ) [ LIT2 00 -&y ] LDZ2 #0040 SUB2 POP scene/get-collider #02 AND #00 EQU ?{
+			.&x LDZ2 #88 SFT2 #0080 ADD2 .&x STZ2
+			#0000 .&hor STZ2 !/<grip> } }
+	( | left )
+	( x ) [ LIT2 00 -&x ] LDZ2 #0080 SUB2 POP
+	( y ) [ LIT2 00 -&y ] LDZ2 #0040 SUB2 POP scene/get-collider #01 AND #00 EQU ?{
+		.&x LDZ2 #88 SFT2 #0080 ADD2 .&x STZ2
+		#0000 .&hor STZ2 !/<grip> }
+	JMP2r
+
+@player/on-control ( -> )
+	[ LIT2 0f -Controller/button ] DEI AND
+	( | handlers )
+	DUP #03 NEQ ?{ /<wall-jump>
+		/<ungrip> }
+	DUP #02 NEQ ?{ /<action> }
+	DUP #08 NEQ ?{ game/<start> }
+	?{ #0000 .camera/mod STZ2 }
+	BRK
+
+@player/on-a-up ( -- )
+	.&jump LDZ ?{ JMP2r }
+	.&jumpready LDZ ?{ JMP2r }
+	!/<jump>
+
+@player/on-a ( -- )
+	.&jumpready LDZ ?{ !/<double-jump> }
+	.&jump LDZ INC DUP #21 LTH ?{ POP JMP2r }
+	.&jump STZ
+	( resist ) .&hor LDZ2 half half .&hor STZ2
+	JMP2r
+
+@player/<walk> ( -- )
+	.&jumpready LDZ ?{
+		[ LIT2 01 -&jumpready ] STZ
+		[ LIT2 01 -keybird/jumpready ] STZ
+		/<ungrip>
+		.&x LDZ2 .&y LDZ2 splash/<init> }
+	.&hor LDZ2 ORA ?{ JMP2r }
+	[ LIT2 &fwalk $2 ] INC2 ,&fwalk STR2
+	#80 ;&fidle STA
+	JMP2r
+
+@player/<grip> ( -- )
+	.&jumpready LDZ ?{
+		[ LIT2 01 -Controller/button ] DEI AND ?{ JMP2r }
+		#fffe .&ver STZ2
+		[ LIT2 01 -&grip ] STZ
+		[ LIT2 00 -&jump ] STZ
+		[ LIT2 &fgrip $2 ] INC2 ,&fgrip STR2
+		.&x LDZ2 .&y LDZ2 .&flip LDZ !grind/<init> }
+	JMP2r
+
+@player/<ungrip> ( -- )
+	[ LIT2 00 -&grip ] STZ
+	JMP2r
+
+@player/<jump> ( -- )
+	[ LIT2 00 -&jump ] LDZ #14 GTHk [ JMP SWP ] POP DUP ADD
+	( ) .&ver LDZ2 ADD2 .&ver STZ2
+	[ LIT2 00 -&jump ] STZ
+	[ LIT2 00 -&jumpready ] STZ
+	JMP2r
+
+@player/<wall-jump> ( -- )
+	.&grip LDZ ?{ JMP2r }
+	[ LIT2 20 -&jump ] STZ
+	#0000 .&ver STZ2 !/<jump>
+
+@player/<double-jump> ( -- )
+	.keybird/jumpready LDZ ?{ JMP2r }
+	.keybird/id LDZ2 ORA ?{ JMP2r }
+	( | .&x LDZ2 #0020 SUB2 .&y LDZ2 splash/<init> )
+	[ LIT2 00 -keybird/jumpready ] STZ
+	[ LIT2 18 -&jump ] STZ
+	#0000 .&ver STZ2 !/<jump>
+
+@player/<action> ( -- )
+	.bubble/id LDZ2 ORAk ?{ POP2 JMP2r }
+	( tile* data* ) INC2k INC2 LDA2
+	( tile* data* object* ) OVR2 #0004 ADD2 LDA2
+	( tile* data* object/handler* ) #0003 ADD2 LDA2 JMP2
+
+@player/is-not-hover ( x y -- )
+	( x ) .&x LDZ
+	( y ) .&y LDZ2 #0008 SUB2 POP NEQ2 JMP2r
+
+@player/<set-pos> ( x y -- )
+	#00 SWP #00
+	( offset ) SWP2 #0080 ADD2 SWP2 #0100 ADD2 .&y STZ2
+	.&x STZ2
+	JMP2r
+
+@player/<draw> ( -- )
+	.&grip LDZ ?/<draw-grip>
+	.&jump LDZ ?/<draw-crawl>
+	.&ver LDZ2 ORA ?/<draw-jump>
+	( | idle )
+	[ LIT &fidle 80 ] INCk ,&fidle STR
+	?{
+		( | draw idle )
+		[ LIT2 00 _&fidle ] STR
+		[ LIT2 00 &fwait 00 ] INCk ,&fwait STR
+		#02 SFT2 #0006 DIV2k MUL2 SUB2 #0180 MUL2 ;&sprite-idle ADD2 .Screen/addr DEO2 !/<draw-body> }
+	;&fwalk LDA2 #02 SFT2 #0006 DIV2k MUL2 SUB2 #0180 MUL2 ;&sprite ADD2 .Screen/addr DEO2
+	( >> )
+
+@player/<draw-body> ( -- )
+	[ LIT2 36 -Screen/auto ] DEO
+	.&flip LDZ ?{
+		( x ) .&x LDZ2 #03 SFT2 #0008 ADD2
+		( y ) .&y LDZ2 #0180 SUB2 #03 SFT2 camera/<set>
+		[ LIT2 95 -Screen/sprite ] DEOk DEOk DEOk DEOk DEOk DEO
+		JMP2r }
+	( x ) .&x LDZ2 #03 SFT2 #0010 SUB2
+	( y ) .&y LDZ2 #0180 SUB2 #03 SFT2 camera/<set>
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEOk DEOk DEO
+	JMP2r
+
+@player/<draw-grip> ( -- )
+	;&fgrip LDA2 #02 SFT2 #0003 AND2 #0180 MUL2 ;&sprite-grind ADD2 .Screen/addr DEO2 !/<draw-body>
+
+@player/<draw-jump> ( -- )
+	;&sprite-jump .Screen/addr DEO2 !/<draw-body>
+
+@player/<draw-crawl> ( -- )
+	;&fwalk LDA2 #02 SFT2 #0003 DIV2k MUL2 SUB2 #0180 MUL2 ;&sprite-crawl ADD2 .Screen/addr DEO2 !/<draw-body>
+
+@player/<draw-happy> ( -- )
+	[ LIT2 &fhappy $2 ] INC2k ,&fhappy STR2
+	( slow ) #02 SFT2 #0003 AND2 #0180 MUL2 ;&sprite-happy ADD2 .Screen/addr DEO2 !/<draw-body>
+
+(
+@|Particles )
+
+@bubble/<unset> ( -- )
+	#0000
+	( >> )
+
+@bubble/<set> ( tile* -- )
+	.&id STZ2
+	JMP2r
+
+@bubble/<draw> ( -- )
+	.&id LDZ2 ORAk ?{ POP2 JMP2r }
+	POP2
+	( x ) .player/x LDZ2 #03 SFT2 #0010 SUB2
+	( y ) .player/y LDZ2 #03 SFT2 #0058 SUB2 camera/<set>
+	;&sprite .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	JMP2r
+
+@bubble/when-frame ( -- )
+	/<unset>
+	.scene/room LDZ2 LDA2k SWP2 INC2 INC2
+	&>le
+		LDA2k player/is-not-hover ?{
+			DUP2 #0004 ADD2 LDA2 INC2 INC2 LDA #10 AND #00 EQU ?{ DUP2 /<set> } }
+		;Tile/length ADD2 GTH2k ?&>le
+	POP2 POP2 JMP2r
+
+@keybird/<init> ( tile* -- )
+	.&id STZ2
+	JMP2r
+
+@keybird/<draw> ( -- )
+	.&id LDZ2 ORAk ?{ POP2 JMP2r }
+	INC2 INC2 LDA2 [ LIT2 &f $2 ] INC2k ,&f STR2
+	#02 SFT2 #0005 DIV2k MUL2 SUB2 #80 SFT2 ADD2 .Screen/addr DEO2
+	.player/flip LDZ ?{
+		( x ) .&x2 LDZ2 #03 SFT2 #0010 ADD2
+		( y ) .&y2 LDZ2 #03 SFT2 #0030 SUB2 camera/<set>
+		[ LIT2 36 -Screen/auto ] DEO
+		[ LIT2 95 -Screen/sprite ] DEOk DEOk DEOk DEO
+		JMP2r }
+	( x ) .&x2 LDZ2 #03 SFT2 #0020 SUB2
+	( y ) .&y2 LDZ2 #03 SFT2 #0030 SUB2 camera/<set>
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	JMP2r
+
+@keybird/<destroy> ( -- )
+	;&cmd-clear .System/expansion DEO2
+	JMP2r
+
+	&cmd-clear [ 00 001c 0000 =&b 00 ]
+
+@keybird/when-frame ( -- )
+	.&id LDZ2 ORA ?{ JMP2r }
+	.player/x LDZ2 .&x1 STZ2
+	.player/y LDZ2 .&y1 STZ2
+	;&cmd .System/expansion DEO2
+	JMP2r
+
+	&cmd [ 02 0020 0000 =&a 0000 =&b ]
+
+@splash/<init> ( x* y* -- )
+	.&y STZ2
+	.&x STZ2
+	[ LIT2 08 _&f ] STR
+	JMP2r
+
+@splash/<destroy> ( -- )
+	[ LIT2 00 _&f ] STR
+	JMP2r
+
+@splash/<draw> ( -- )
+	[ LIT &f $1 ] ?{ JMP2r }
+	[ LIT2 ff _&f ] LDR ADD ,&f STR
+	;&sprite .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	.&x LDZ2 #03 SFT2 .&y LDZ2 #03 SFT2 camera/<set>
+	.Screen/x DEI2k #0010 SUB2 ROT DEO2
+	.Screen/y DEI2k #0010 SUB2 ROT DEO2
+	[ LIT2 0a -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@grind/<init> ( x* y* -- )
+	.&flip STZ
+	.&y STZ2
+	.&x STZ2
+	[ LIT2 08 _&f ] STR
+	JMP2r
+
+@grind/<destroy> ( -- )
+	[ LIT2 00 _&f ] STR
+	JMP2r
+
+@grind/<draw> ( -- )
+	[ LIT &f $1 ] ?{ JMP2r }
+	[ LIT2 ff _&f ] LDR ADD ,&f STR
+	;&sprite .Screen/addr DEO2
+	[ LIT2 35 -Screen/auto ] DEO
+	.&x LDZ2 #03 SFT2 .&y LDZ2 #03 SFT2 camera/<set>
+	.&flip LDZ ?{
+		.Screen/x DEI2k #0010 SUB2 ROT DEO2
+		.Screen/y DEI2k #0020 SUB2 ROT DEO2
+		[ LIT2 0a -Screen/sprite ] DEOk DEO
+		JMP2r }
+	.Screen/x DEI2k #0008 ADD2 ROT DEO2
+	.Screen/y DEI2k #0020 SUB2 ROT DEO2
+	[ LIT2 1a -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@moss/<clear> ( -- )
+	;&cmd-d .System/expansion DEO2
+	JMP2r
+
+	&cmd-d [ 00 0020 0000 =&mem 00 ]
+
+@moss/<update> ( -- )
+	/<clear>
+	#2000
+	&>ledx
+		/<place>
+		INC GTHk ?&>ledx
+	POP2 JMP2r
+
+@moss/<place> ( x -- x )
+	STHk #2000
+	&>ledy
+		#00 OVR #00 STHkr SWP2 scene/get-collider #0f AND ?{
+			INC GTHk ?&>ledy
+		POP2 POPr JMP2r }
+	( | place moss )
+	#00 STHr ;&mem ADD2 STA
+	POP JMP2r
+
+@moss/<draw> ( x -- x )
+	DUP #00 OVR ;&mem ADD2 LDA DUP ?{ POP2 JMP2r }
+	( x ) #00 SWP #50 SFT2 STH2
+	( y ) #00 SWP #50 SFT2 STH2r camera/<set>
+	.Screen/y DEI2k #0008 SUB2 ROT DEO2
+	#00 OVR #03 AND #60 SFT2 ;&sprite ADD2 .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 05 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+(
+@|Timer )
+
+@timer/<draw-inc> ( -- )
+	[ LIT2 &t $2 ] INC2k ,&t STR2
+	( >> )
+
+@timer/<draw> ( count* -- )
+	.camera/center LDZ2 #000c SUB2 #0018 Screen/<set-pos>
+	[ LIT2 01 -Screen/auto ] DEO
+	( to seconds ) #0003 DIV2
+	( x00 ) STH2k #000a DIV2
+	( 0x0 ) STH2k #000a DIV2
+	( 0x0 ) STH2k #000a DIV2 text/<draw-num>
+	POP STHr text/<draw-num>
+	POPr STHr text/<draw-num>
+	;dot-icn .Screen/addr DEO2
+	[ LIT2 &color-dot 42 -Screen/sprite ] DEO
+	POPr STHr text/<draw-num>
+	POPr JMP2r
+
+(
+@|Text )
+
+@text/<draw-center> ( str* -- )
+	str/len #31 SFT2 .Screen/x DEI2 SWP2 SUB2 .Screen/x DEO2
+	( >> )
+
+@text/<draw> ( str* -- )
+	[ LIT2 01 -Screen/auto ] DEO
+	&>ld
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<draw-char>
+		INC2 !&>ld
+
+@text/<draw-char> ( char -- )
+	DUP #20 GTH ?{
+		POP .Screen/x DEI2k #0008 ADD2 ROT DEO2
+		JMP2r }
+	LIT "a SUB #00 SWP #30 SFT2 ;&uc ADD2 .Screen/addr DEO2
+	[ LIT2 &color-char 02 -Screen/sprite ] DEO
+	JMP2r
+
+@text/<draw-num> ( num -- )
+	#0a DIVk MUL SUB #00 SWP #30 SFT2 ;&num ADD2 .Screen/addr DEO2
+	[ LIT2 &color-num 42 -Screen/sprite ] DEO
+	JMP2r
+
+(
+@|Utils )
+
+@str/len ( str* -- str* length* )
+	DUP2k /cap SWP2 INC2 SUB2 JMP2r
+
+@str/cap ( str* -- end* )
+	LDAk ?{ INC2 JMP2r }
+	INC2 !/cap
+
+@half ( value* -- opp* )
+	DUP2 abs2 #0002 GTH2 ?{ POP2 #0000 JMP2r }
+	DUP2 #0f SFT2 EQU ?{
+		INC2 INC2
+		( clamp ) #fff0 GTH2k [ JMP SWP2 ] POP2 JMP2r }
+	#0002 SUB2
+	( clamp ) #0010 LTH2k [ JMP SWP2 ] POP2 JMP2r
+
+@abs2 ( a* -- f )
+	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
+	JMP2r
+
+@<phex> ( short* -- )
+	SWP /b
+	&b ( byte -- )
+	DUP #04 SFT /c
+	&c ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+(
+@|Random )
+
+@random/<init> ( -- )
+	[ LIT2 00 -DateTime/second ] DEI
+	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&+x STR2
+	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&+y STR2
+	JMP2r
+
+@random/create ( -- number* )
+	[ LIT2 &+x $2 ]
+	( ) DUP2 #50 SFT2 EOR2
+	( ) DUP2 #03 SFT2 EOR2
+	( ) [ LIT2 &+y $2 ]
+	( ) DUP2 ,&+x STR2
+	DUP2 #01 SFT2 EOR2 EOR2
+	( ) ,&+y STR2k POP JMP2r
+
+~src/events.tal( @|Events )
+
+@block [ =&req-draw ( pass-through ) 0f ]
+
+@block/req-draw ( event* -- )
+	( id ) INC2 INC2 LDA2 .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEO
+	JMP2r
+
+@doodad [ =&req-draw ( pass-through ) 00 ]
+
+@doodad/req-draw ( event* -- )
+	( id ) INC2 INC2 LDA2 .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	JMP2r
+
+@door [ =&req-draw 10 =&req-action ]
+
+@door/req-draw ( event* -- )
+	.Screen/y DEI2k #0010 SUB2 ROT DEO2
+	( id ) INC2 INC2 LDA2 LDA2k .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEOk DEOk DEO
+	.Screen/x DEI2k #0010 ADD2 ROT DEO2
+	.Screen/y DEI2k #0040 SUB2 ROT DEO2
+	INC2 INC2 LDA2 !text/<draw-center>
+
+@door/req-action ( tile* data* -- )
+	( room ) #0004 ADD2
+	( pos ) INC2k INC2 LDA2 LDA2 player/<set-pos>
+	LDA2 scene/<enter>
+	POP2 JMP2r
+
+@locked-door [ =&req-draw 10 =&req-action ]
+
+@locked-door/req-draw ( tile* event* -- tile* )
+	.Screen/y DEI2k #0010 SUB2 ROT DEO2
+	( unlocked ) OVR2 INC2 INC2 LDA2 #000a ADD2 LDA STH
+	( id ) INC2 INC2 LDA2 LDA2k
+	( addr+unlocked ) #00 STHr #0180 MUL2 ADD2 .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEOk DEOk DEO
+	.Screen/x DEI2k #0010 ADD2 ROT DEO2
+	.Screen/y DEI2k #0040 SUB2 ROT DEO2
+	INC2 INC2 LDA2 !text/<draw-center>
+
+@locked-door/req-action ( tile* data* -- )
+	DUP2 #000a ADD2 LDA ?{
+		DUP2 #0008 ADD2 LDA2 .keybird/id LDZ2 EQU2 ?{ POP2 POP2 JMP2r }
+		( | unlock )
+		#000a ADD2 #01 ROT ROT STA
+		#0000 .keybird/id STZ2
+		POP2 JMP2r }
+	( | when unlocked )
+	!door/req-action
+
+@perch [ =&req-draw 10 =&req-action ]
+
+@perch/req-draw ( event* -- )
+	.keybird/id LDZ2 EQU2 STH
+	#00 STHr #80 SFT2 ;&sprite ADD2 .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	JMP2r
+
+@perch/req-action ( tile* data* -- )
+	POP2 DUP2 .keybird/id LDZ2 NEQ2 ?{ POP2 #0000 }
+	!keybird/<init>
+
+@sign [ =&req-draw 00 =&req-action ]
+
+@sign/req-draw ( event* -- )
+	.Screen/y DEI2k ROT DEO2
+	( id ) INC2 INC2 LDA2 LDA2k .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	.Screen/x DEI2k #0010 ADD2 ROT DEO2
+	.Screen/y DEI2k #0030 SUB2 ROT DEO2
+	INC2 INC2 LDA2 !text/<draw-center>
+
+@sign/req-action ( tile* data* -- )
+	<phex>
+	#2018 DEO
+	<phex>
+	#0a18 DEO
+	JMP2r
+
+@flag [ =&req-draw 10 =&req-action ]
+
+@flag/req-draw ( event* -- )
+	POP2 .Screen/y DEI2k ROT DEO2
+	( keys ) #00 ;lock-two-fiv/bird LDA ;lock-two-eig/bird LDA ADD
+	( ) #80 SFT2 ;&sprite ADD2 .Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	JMP2r
+
+@flag/req-action ( tile* data* -- )
+	POP2 POP2
+	;lock-two-fiv/bird LDA
+	;lock-two-eig/bird LDA
+	AND ?{ JMP2r }
+	!game/<end>
+
+( We don't have to be mean because,
+	remember,
+	no matter where you go,
+	there you are. )
+
+~src/world.tal(
+@|World )
+
+@world/one
+={
+	08 17 =block/sprite-6 =block
+	08 18 =block/sprite-2 =block
+	09 18 =block/sprite-1 =block
+	0a 18 =block/sprite-7 =block
+	&one/spawn
+		0a 17 =flag/sprite =flag
+		0b 17 =doodad/1 =doodad
+	0b 18 =block/sprite-1 =block
+	0c 18 =block/sprite-1 =block
+	( guide )
+	0c 17 =tutorial-one =sign
+	( hole )
+	0d 18 =block/sprite-6 =block
+	0d 19 =block/sprite-2 =block
+	0e 19 =block/sprite-5 =block
+	10 19 =block/sprite-5 =block
+	11 19 =block/sprite-3 =block
+	11 18 =block/sprite-6 =block
+	( end )
+	12 18 =block/sprite-1 =block
+	13 18 =block/sprite-1 =block
+	&one/door-to-two
+		13 17 =door-one-two =door
+	14 18 =block/sprite-1 =block
+	15 18 =block/sprite-3 =block
+	15 17 =block/sprite-5 =block
+	( platform )
+	0e 11 =block/sprite-4 =block
+	0f 11 =block/sprite-7 =block
+	&one/door-from-eig
+		0f 10 =door-one-eig =door
+	10 11 =block/sprite-4 =block
+	10 10 =doodad/3 =doodad
+}
+
+@world/two
+={
+	07 17 =doodad/3 =doodad
+	07 18 =block/sprite-4 =block
+	08 18 =block/sprite-4 =block
+	08 17 =doodad/2 =doodad
+	09 18 =block/sprite-4 =block
+	&two/door-from-one
+		09 17 =door-two-one =door
+	0a 18 =block/sprite-4 =block
+	0a 17 =doodad/1 =doodad
+	0b 18 =block/sprite-4 =block
+	0c 18 =block/sprite-4 =block
+	0d 18 =block/sprite-4 =block
+		0d 17 =tutorial-two =sign
+	0e 18 =block/sprite-4 =block
+	0f 18 =block/sprite-4 =block
+	0f 17 =block/sprite-1 =block
+
+	( mid-level )
+	0f 16 =block/sprite-2 =block
+	10 16 =block/sprite-1 =block
+	11 16 =block/sprite-1 =block
+	&two/door-to-thr
+		11 15 =door-two-thr =door
+	12 16 =block/sprite-1 =block
+	13 16 =block/sprite-3 =block
+	13 15 =block/sprite-5 =block
+	13 14 =doodad/4 =doodad
+
+	( gate I )
+	0a 14 =block/sprite-4 =block
+	0b 14 =block/sprite-4 =block
+	&two/door-to-fiv
+		0b 13 =lock-two-fiv =locked-door
+	0c 14 =block/sprite-4 =block
+
+	( gate II )
+	05 13 =block/sprite-4 =block
+	06 13 =block/sprite-4 =block
+	&two/door-to-eig
+		06 12 =lock-two-eig =locked-door
+	07 13 =block/sprite-4 =block
+}
+
+@world/thr
+={
+	15 17 =doodad/2 =doodad
+	15 18 =block/sprite-4 =block
+	14 18 =block/sprite-4 =block
+	13 18 =block/sprite-4 =block
+	&thr/door-from-two
+		13 17 =door-thr-two =door
+	12 18 =block/sprite-4 =block
+	11 18 =block/sprite-4 =block
+	11 17 =tutorial-thr =sign
+	10 18 =block/sprite-4 =block
+	0f 18 =block/sprite-4 =block
+	( vertical wall )
+	0f 17 =block/sprite-1 =block
+	0f 16 =block/sprite-2 =block
+	0f 15 =block/sprite-6 =block
+	( backwall )
+	12 14 =block/sprite-3 =block
+	12 13 =block/sprite-1 =block
+	12 12 =block/sprite-2 =block
+	12 11 =block/sprite-7 =block
+	( high-platform )
+	0a 12 =doodad/3 =doodad
+	0a 13 =block/sprite-2 =block
+	0a 14 =block/sprite-4 =block
+	0b 14 =block/sprite-4 =block
+	0c 14 =block/sprite-4 =block
+	&thr/door-to-fou
+		0c 13 =door-thr-fou =door
+	0d 14 =block/sprite-4 =block
+	0e 14 =block/sprite-4 =block
+	0f 14 =block/sprite-5 =block
+	0f 13 =doodad/2 =doodad
+}
+
+@world/fou
+={
+	( higher level )
+	11 08 =block/sprite-2 =block
+	11 07 =doodad/2 =doodad
+	12 08 =block/sprite-1 =block
+	12 07 =doodad/4 =doodad
+	13 08 =block/sprite-1 =block
+	&fou/door-from-thr
+		13 07 =door-fou-thr =door
+	14 08 =block/sprite-1 =block
+	15 08 =block/sprite-3 =block
+	15 07 =doodad/1 =doodad
+	( lower level )
+	0d 0c =block/sprite-2 =block
+	0e 0c =block/sprite-1 =block
+	0d 0b =tutorial-fou =sign
+	0f 0c =block/sprite-7 =block
+	&key-1
+		0f 0b =keybird/sprite =perch
+	10 0c =block/sprite-1 =block
+	11 0c =block/sprite-3 =block
+}
+
+(
+@|Part2 )
+
+@world/fiv
+={
+	14 18 =block/sprite-4 =block
+	13 18 =block/sprite-4 =block
+	&fiv/door-from-two
+		13 17 =door-fiv-two =door
+	12 18 =block/sprite-4 =block
+	( a )
+	0f 16 =block/sprite-3 =block
+	0f 15 =block/sprite-1 =block
+	0f 14 =block/sprite-5 =block
+	0f 13 =doodad/1 =doodad
+	( b )
+	0c 14 =block/sprite-3 =block
+	0c 13 =block/sprite-1 =block
+	0c 12 =block/sprite-5 =block
+	0c 11 =doodad/2 =doodad
+	( c )
+	09 12 =block/sprite-3 =block
+	09 11 =block/sprite-1 =block
+	09 10 =block/sprite-5 =block
+	09 0f =doodad/3 =doodad
+	( d )
+	06 10 =block/sprite-3 =block
+	06 0f =block/sprite-1 =block
+	06 0e =block/sprite-5 =block
+	06 0d =doodad/4 =doodad
+	&fiv/door-to-six
+		06 0d =door-fiv-six =door
+}
+
+@world/six
+={
+	0f 05 =block/sprite-2 =block
+	10 05 =block/sprite-5 =block
+	10 04 =doodad/3 =doodad
+	11 05 =block/sprite-1 =block
+	12 05 =block/sprite-5 =block
+	13 05 =block/sprite-6 =block
+	13 04 =doodad/2 =doodad
+	&six/door-from-fiv
+		13 04 =door-six-fiv =door
+	14 05 =block/sprite-1 =block
+	14 04 =doodad/1 =doodad
+	16 05 =block/sprite-7 =block
+	( a )
+	0f 06 =block/sprite-1 =block 
+	10 06 =block/sprite-2 =block
+	11 06 =block/sprite-5 =block
+	12 06 =block/sprite-2 =block
+	13 06 =block/sprite-1 =block
+	14 06 =block/sprite-5 =block 
+	( b )
+	0f 07 =block/sprite-2 =block
+	10 07 =block/sprite-1 =block
+	11 07 =block/sprite-5 =block
+	12 07 =block/sprite-1 =block
+	13 07 =block/sprite-6 =block
+	( c )
+	0f 08 =block/sprite-1 =block
+	10 08 =block/sprite-2 =block
+	11 08 =block/sprite-1 =block
+	12 08 =block/sprite-5 =block
+	( d )
+	0f 09 =block/sprite-1 =block
+	10 09 =block/sprite-5 =block
+	11 09 =block/sprite-6 =block
+	( e )
+	0f 0a =block/sprite-2 =block
+	10 0a =block/sprite-5 =block
+	( f )
+	10 0d =block/sprite-7 =block
+	&six/door-to-sev
+		10 0c =door-six-sev =door
+	10 0e =block/sprite-3 =block
+	11 0d =block/sprite-4 =block
+	11 0c =doodad/3 =doodad
+}
+
+@world/sev
+={
+	10 1a =block/sprite-4 =block
+	11 19 =doodad/3 =doodad
+	11 1a =block/sprite-4 =block
+	12 1a =block/sprite-4 =block
+	13 1a =block/sprite-4 =block
+	&sev/door-from-six
+		13 19 =door-sev-six =door
+
+	10 16 =doodad/1 =doodad
+	10 17 =block/sprite-5 =block
+
+	13 13 =doodad/2 =doodad
+	13 14 =block/sprite-1 =block
+	13 15 =block/sprite-3 =block
+
+	10 10 =doodad/3 =doodad
+	10 11 =block/sprite-2 =block
+	10 12 =block/sprite-5 =block
+
+	13 0d =doodad/4 =doodad
+	13 0e =block/sprite-1 =block
+	13 0f =block/sprite-3 =block
+
+	10 0b =block/sprite-2 =block
+	10 0c =block/sprite-6 =block
+
+	13 0a =block/sprite-2 =block
+	&key-2
+		13 09 =keybird/sprite =perch
+	14 0a =block/sprite-1 =block
+	15 0a =block/sprite-3 =block
+	15 09 =tutorial-sev =sign
+}
+
+@world/eig
+={
+	12 1d =block/sprite-4 =block
+	13 1d =block/sprite-4 =block
+	&eig/door-from-two
+		13 1c =door-eig-two =door
+	14 1d =block/sprite-4 =block
+	13 1a =block/sprite-4 =block
+	13 17 =block/sprite-4 =block
+	13 14 =block/sprite-4 =block
+	&eig/door-to-one
+		13 13 =door-eig-one =door
+}
+
+(
+@|Doors )
+
+@door-one-two =door/sprite-2 =dict/two =world/two =world/two/door-from-one
+@door-two-one =door/sprite-2 =dict/one =world/one =world/one/door-to-two
+@door-two-thr =door/sprite-2 =dict/thr =world/thr =world/thr/door-from-two
+@door-thr-two =door/sprite-2 =dict/two =world/two =world/two/door-to-thr
+@door-thr-fou =door/sprite-2 =dict/fou =world/fou =world/fou/door-from-thr
+@door-fou-thr =door/sprite-2 =dict/thr =world/thr =world/thr/door-to-fou
+@lock-two-fiv =lock/sprite =dict/fiv =world/fiv =world/fiv/door-from-two =world/key-1 &bird 00
+@lock-two-eig =lock/sprite =dict/eig =world/eig =world/eig/door-from-two =world/key-2 &bird 00
+@door-fiv-two =lock/sprite-unlocked =dict/two =world/two =world/two/door-to-fiv
+@door-eig-two =lock/sprite-unlocked =dict/two =world/two =world/two/door-to-eig
+@door-fiv-six =door/sprite-2 =dict/six =world/six =world/six/door-from-fiv
+@door-six-fiv =door/sprite-2 =dict/fiv =world/fiv =world/fiv/door-to-six
+@door-six-sev =door/sprite-2 =dict/sev =world/sev =world/sev/door-from-six
+@door-sev-six =door/sprite-2 =dict/six =world/six =world/six/door-to-sev
+@door-eig-one =door/sprite-2 =dict/one =world/one =world/one/door-from-eig
+@door-one-eig =door/sprite-2 =dict/eig =world/eig =world/eig/door-to-one
+
+(
+@|Signs )
+
+@tutorial-one =sign/sprite =dict/tutorial-one
+@tutorial-two =sign/sprite =dict/tutorial-two
+@tutorial-thr =sign/sprite =dict/tutorial-thr
+@tutorial-fou =sign/sprite =dict/tutorial-fou
+@tutorial-sev =sign/sprite =dict/tutorial-sev
+
+(
+@|Dict )
+
+@dict/credit "thank 20 "you 20 "for 20 "playing. 20 00
+
+@dict/tutorial-one "jump 20 "a 00
+@dict/tutorial-two "hold 20 "a 00
+@dict/tutorial-thr "kick 20 "a 20 "b 00
+@dict/tutorial-fou "toutau 20 "rafau 00
+@dict/tutorial-sev "demor 20 "rafau 00
+
+@dict/one "rise 00 ( lobby )
+@dict/two "dauri 00 ( fork )
+@dict/thr "siul 00 ( jump )
+@dict/fou "dotou 00 ( platform )
+@dict/fiv "toutau 00 ( collapse<key> )
+@dict/six "riutou 00 ( block )
+@dict/sev "resau 00 ( tower )
+@dict/eig "demor 00 ( lion<key> )
+
+~src/drool.tal( Animated by Andrew Alderwick, 2021 )
+
+@drool/on-button ( -> )
+	.Controller/button DEI ?{ BRK }
+	/<leave>
+	BRK
+
+@drool/on-frame-setup ( -> )
+	;&buf #00c8 OVR ,&f LDR MUL2 ADD2 DUP2 #00c8 ADD2 SWP2
+	&>loop-rabbits
+		DUP2 rabbit/<move>
+		INC2 INC2 GTH2k ?&>loop-rabbits
+	POP2 POP2
+	( | incr frame )
+	[ LIT &f $1 ] INCk ,&f STR
+	#05 EQU ?{ BRK }
+	;&on-frame-anim .Screen/vector DEO2
+	BRK
+
+@drool/on-frame-anim ( -> )
+	( | incr counter )
+	[ LIT2 ff &counter $1 ] ADD DUP ,&counter STR
+	DUP #e0 LTH ?{
+		( frame ) #00 OVR #e0 SUB #20 SWP SUB #02 SFT
+		( addr* ) #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2 }
+	( | Clean )
+	INCk #0000
+	&>clear-loop
+		ROTk rabbit/<draw>
+		INC DUP #64 LTH ?&>clear-loop
+	POP2 POP
+	( | Draw )
+	#0f00
+	&>draw-loop
+		ROTk rabbit/<draw>
+		INC DUP #64 LTH ?&>draw-loop
+	POP2 ?{ ;&on-frame-sunset .Screen/vector DEO2 }
+	BRK
+
+@drool/on-frame-sunset ( -> )
+	;&counter LDA #02 SUB
+	( ) DUP ;&counter STA
+	( ) DUP #1f GTH ?{
+		( frame ) #00 OVR #02 SFT
+		( addr* ) #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2
+		#6400
+		&>loop-sunset
+			#03 OVR #00 rabbit/<draw>
+			INC GTHk ?&>loop-sunset
+		POP2 }
+	?{ /<leave> }
+	BRK
+
+@drool/<enter> ( -- )
+	#0f0f .System/r DEO2
+	#000f .System/g DEO2
+	#000f .System/b DEO2
+	[ LIT2 00 -Screen/auto ] DEO
+	[ LIT2r =&buf ]
+	( | )
+	#0f05
+	&>x
+		#0f05
+		&>y
+			ROTk SWP STH2kr STA2
+			POP INC2r INC2r INC GTHk ?&>y
+		POP2 INC GTHk ?&>x
+	POP2 POP2r occupied/<init>
+	#00 ;&f STA
+	;&on-frame-setup .Screen/vector DEO2
+	;&on-button .Controller/vector DEO2
+	JMP2r
+
+%occupied/get-addr ( x y -- addr* ) {
+	#00 SWP #0014 MUL2 ROT #00 SWP ADD2 ;occupied/buf ADD2 }
+
+%occupied/<set> ( x y value -- ) {
+	STH
+	occupied/get-addr STH2
+	STAr }
+
+%occupied/get ( x y -- value ) {
+	occupied/get-addr LDA }
+
+@occupied/<init> ( -- )
+	#1400
+	&>y2
+		#1400
+		&>x2
+			ROTk #00 /<set>
+			POP INC GTHk ?&>x2
+		POP2 INC GTHk ?&>y2
+	POP2
+	( | )
+	;&buf-cap ;&buf
+	&>li
+		LDA2k #01 /<set>
+		INC2 INC2 GTH2k ?&>li
+	POP2 POP2 JMP2r
+
+@occupied/check-move ( possible* new-x new-y -- possible'* )
+	DUP2 /get ?{
+		OVR2r [ LIT2r 00c8 ] SUB2r
+		( possible* new-x new-y / previous-frame-addr* ) &>l
+			;drool/buf-next STH2kr GTH2 ?&history-okay
+			DUP2 STH2kr LDA2 EQU2 ?&history-clash
+			[ LIT2r 00c8 ] SUB2r !&>l
+		&history-okay POP2r OVR2 STA2
+		INC2 INC2 JMP2r
+		&history-clash POP2r }
+	POP2 JMP2r
+
+@rabbit/<move> ( addr* -- )
+	STH2k LDA2 DUP2 #00 occupied/<set>
+	;&moves-buf
+	( up ) OVR2 #01 SUB occupied/check-move
+	( down ) OVR2 INC INC occupied/check-move
+	( left ) OVR2 #0100 SUB2 occupied/check-move
+	( right ) OVR2 #0100 ADD2 occupied/check-move
+	( ) ;&moves-buf SUB2 DUP ?{
+		POP2
+		&write ( x y / addr* )
+		DUP2 #01 occupied/<set>
+		STH2r #00c8 ADD2 STA2
+		JMP2r }
+	NIP2
+	( num-possible-times-2* / addr* ) random/create SWP2 DIV2k MUL2 SUB2 #fe AND
+	( chosen-move* / addr* ) ;&moves-buf ADD2 LDA2 !&write
+
+@rabbit/<draw> ( color n counter -- )
+	OVR LTHk ?&<finish>
+	SUB
+	( color n timeline ) DUP #63 GTH ?&<start>
+	#17 DIVk STHk MUL SUB
+	( color n stage-timeline / frame ) DUP #07 GTH ?&<static>
+	( | rabbit is in-between two frames )
+	#08 OVR SUB ,&from-weight STR
+	,&to-weight STR
+	( color n / frame ) #00 SWP DUP2 ADD2 ;drool/buf ADD2 #00c8 #00 STHr MUL2 ADD2
+	( color from-addr* ) LDA2k STH2
+	#00c8 ADD2 LDA2
+	&>l
+		( y ) STHr /mix ;Screen/middle-50 ADD2 .Screen/y DEO2
+		( x ) STHr /mix ;Screen/center-50 ADD2 .Screen/x DEO2
+		.Screen/sprite DEO
+		JMP2r
+	
+		&<start> ( color n counter -- )
+		[ LITr 04 ]
+		( >> )
+		&<static> ( color n counter / frame -- )
+		INCr POP #00 SWP DUP2 ADD2 ;drool/buf ADD2 #00c8
+		( ) #00 STHr MUL2 ADD2 LDA2 STH2k !&>l
+
+	&<finish> ( color n counter n -- )
+	POP [ LITr ff ] !&<static>
+
+@rabbit/mix ( to-z from-z -- mixed* )
+	#00 SWP
+	( ) [ LIT2 00 &from-weight 00 ] MUL2 ROT #00 SWP
+	( ) [ LIT2 00 &to-weight 00 ] MUL2 ADD2 JMP2r
+
+~src/assets.tal(
+@|Assets )
+
+@fill-icn [ aa55 aa55 aa55 aa55 ]
+
+@dot-icn [ 0000 0000 0000 0030 ]
+
+@gradient/sprite [
+ffff ffff ffff ffff 7eff ffff ffff ff7e
+3c7e ffff ffff 7e3c 183c 7eff ff7e 3c18
+0018 3c7e 7e3c 1800 0000 183c 3c18 0000
+0000 0018 1800 0000 ]
+
+@splash/sprite [
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 2000 0000
+	0000 0000 0000 0000 4000 2814 0e07 830f
+	0004 0008 20d0 cfff 0000 0020 0080 0080 ]
+
+@grind/sprite [
+	0000 0000 0000 0000 0004 1101 8380 0452
+	a0c8 d0f0 e0f0 e0e0 e0e0 c0c0 e0e0 c080
+	8000 4000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@moss/sprite [
+0000 0000 0000 007d 0000 0000 0000 00a8
+0000 0000 0000 002f 0000 0000 0000 0050
+0400 0000 0000 0000 0814 0000 0000 0000
+0404 0000 0400 0000 4000 0000 0000 0000
+0000 0000 0000 0416 0000 0000 0000 64ef
+0000 0000 0408 68fc 0000 0000 0000 0070
+0004 0000 0000 0000 4e04 0400 0400 0000
+0800 0000 0000 0000 2000 0020 0000 0000
+0000 0000 0001 032b 0000 0000 0010 7cfc
+0000 0010 0898 78fe 0000 0000 0000 405d
+0100 0000 0000 0000 0c08 0008 0000 0000
+0000 0000 0000 0000 4004 0000 0000 0000
+0000 0000 0000 02ba 0000 0008 000a 1e7f
+0000 0000 0008 263f 0000 0000 0080 c0d4
+0220 0000 0000 0000 1800 0800 0000 0000
+1600 0400 0000 0000 2000 0000 0000 0000 ]
+
+@doodad/1 ( 0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1209 053f 037f 0000 0000 0000 0000
+0000 0000 4050 90a2 0000 0000 0000 0000
+0000 0010 20ac f0c0 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+017c 031c 0307 0802 0000 0000 0000 0000
+aa6b 9316 eb53 cd15 0080 4041 0020 2222
+d860 80b8 c060 8000 0080 0000 0000 0000
+090a 2c9f 504e 305e 0000 0000 0810 0020 ]
+
+@doodad/2 ( 0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0006 3776 7fff 0000 0000 0001 0000
+60f0 f87b 6baf 7aae 0000 0000 1010 8151
+0103 337a bfba ddec 0000 0001 0005 0203
+c0e0 e0e6 ced6 ecdb 0000 0000 0008 1020 ]
+
+@doodad/3 ( 0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 00c0 0000 0000 0000 00c0
+0000 0000 0000 1f7f 0000 0000 0000 1f7f
+0000 0000 0000 e0b0 0000 0000 0000 e0f0
+0101 0d1b 3b3a 7b36 0101 0f1f 3f2f 2449
+e1b3 f3fb fcff 7ffb e1f7 ff7f bfdf b504
+f7ef dfbf bf3f 9fea ffff ffef fed9 e415
+f8f8 fcfc f0ee 7ef4 f8f8 fcfc feb7 8c0a ]
+
+@doodad/4 ( 0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001e 3f3f 7e3c 0000 001e 3f7d 2fd3
+0000 0303 9f7f fffe 0000 0000 9cfe 7f15
+000c 1cb8 f07c ac98 0000 0000 0080 5060 ]
+
+@bubble/sprite [
+0000 0001 070f 0f1f 0000 0001 070f 0f1f
+0000 00f1 fbff ffff 0000 00f1 fbff ffff
+0000 7cff ffff ffff 0000 7cff ffff ffff
+0000 0000 80c0 e0e0 0000 0000 80c0 e0e0
+1f1f 1f1f 0f0f 070f 1f1f 1f1f 0f0f 070f
+ffff ffff ffff ffff ffff ffff f1f8 f9f9
+ffff ffff ffff ffff ffff ffff 1fcf cf1f
+e0e0 e0c0 f8fc fcfe e0e0 e0c0 f8fc fcfe
+1f1f 3f3f 3f3f 3f1f 1f1f 3f3f 3f3f 3f1f
+ffff ffff ffff ffff f9f9 f9f2 ffff ffff
+ffff ffff ffff ffff cfcf cf1f ffff ffff
+fefe fefe fcfc f8e0 fefe fefe fcfc f8e0
+1f0f 0300 0000 0000 1f0f 0300 0000 0000
+ffff df1f 0f03 0000 ffff df1f 0f03 0000
+fefe fdfd f8e4 0e04 fefe fdfd f8e4 0e04
+00c0 e0e0 c000 0000 00c0 e0e0 c000 0000 ]
+
+@text/num [
+	38c6 c6c6 c6c6 c638 8c78 1818 1818 187e
+	3c4e 860e 1c38 72fe 807e 0c10 7c0e 8e7c
+	0e1c 1c3c 6cff 0c1e c6f8 40c0 fc0e ce7c
+	3ac4 c0c0 fcce ce7c 807e 3e0c 1830 60c0
+	807c cece 7cce ce7c 807c cece 7c18 3060 ]
+
+@text/uc [
+	781c 3c36 3e66 66c3 ee73 636e 6363 63de
+	3c66 ccc0 c0c0 e67c ee73 6363 6363 63de
+	fe66 6078 6063 667c fe66 6078 6060 6060
+	3c66 c6c0 dec6 663c c6c6 c6ce fee6 c6c6
+	3018 1818 1818 180c 1e0c 0c0c 0c1c 3860
+	c66c 6c78 786c 6cc6 e060 6060 6066 7e78
+	c6ee fed6 c6c6 c6c6 c6c6 e6f6 dece c6c6
+	7cce c6c6 c6c6 e67c fc66 6666 6c60 60c0
+	7ce6 c6c6 c6c6 ce7f ee73 666c 6666 63c3
+	3a66 603c 0606 665c fe30 60c0 c0c2 c67c
+	e666 6666 6666 6e3f c366 6666 6666 3c18
+	c3c3 c3d3 cbdf 7762 c3c3 663c 3c66 c3c3
+	c366 663c 1818 1818 7ec6 0c18 fe60 c3fe ]
+
+@flag/sprite [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0038 7c74 6c38 0010 387c fefe fe7c 3838
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1010 1010 1010 1010 3838 3838 3838 3838
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0300 0000 0000 0003 0403
+0000 0000 037f ff7f 0000 0003 7c80 0080
+1010 1010 d090 d090 3838 38f8 3868 2868
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0300 0000 0001 4621 7c03 0000 0000 0000
+d010 1010 1091 52b4 38f8 3838 3838 3818
+0000 0000 0000 0080 0000 0000 0000 0000 ]
+
+( 1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0038 7c74 6c38 0010 387c fefe fe7c 3838
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0003
+0000 0000 0000 037f 0000 0000 0003 7c80
+1010 1010 1010 d090 3838 3838 38f8 3868
+0000 0000 0000 0000 0000 0000 0000 0000
+0300 0000 0000 0000 0403 0000 0000 0000
+ff7f 0300 0000 0000 0080 7c03 0000 0000
+d090 d010 1010 1010 2868 38f8 3828 2828
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0001 4621 0000 0000 0000 0000
+1010 1010 1091 52b4 3838 3838 3838 3818
+0000 0000 0000 0080 0000 0000 0000 0000 ]
+
+( 2 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0003
+0038 7c74 6c38 0010 387c fefe fe7c 38f8
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0300 0000 0000 0003 0403 0000 0000
+037f ff7f 0300 0000 7c80 0080 7c03 0000
+d090 d090 d010 1010 3868 2868 38f8 3828
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1010 1010 1010 1010 2828 3838 3828 2828
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0001 4621 0000 0000 0000 0000
+1010 1010 1091 52b4 3838 3838 3838 3818
+0000 0000 0000 0080 0000 0000 0000 0000 ]
+
+@sign/sprite [
+0000 0000 0007 011f 0000 0000 0000 1e3f
+0000 0000 00f4 60ff 0000 0000 0000 9f57
+0000 0000 0001 1eff 0000 0000 0000 e1ff
+0000 0000 0040 00f8 0000 0000 0000 f85c
+342f 2a2b 2a2d 2b2c 7f7f 7f7f 7f7f 7f7f
+a0fb 9fdf bcd9 987c 5fff ffff ffff ffff
+0aff c5f6 7b3c 2e74 ffff ffff ffff ffff
+4cf4 74f4 9474 f4d4 fefe fefe fefe fefe
+2f2b 2f30 1f00 0000 777f 717f 3f1f 0000
+b7b9 ff40 ff00 0007 ffff ffff ffff 0f0f
+b7b7 ff00 ff00 0040 ffff ffff ffff e0e0
+7414 f40c f800 0000 fefe fefe fcf8 0000
+0000 0101 0100 0f07 0000 0000 0000 0000
+0606 c5e3 b5d7 7eed 0f0f 0f0c 4a28 0112
+c080 875f 7e7c f7ef e0e0 e0e0 c080 0810
+0000 0000 00c0 8000 0000 0000 0000 0000 ]
+
+@block/sprite-1 [
+fdbd 7fbf 6f75 dee1 ffff ffff ffff ffff
+fbfb fafb fbc0 3fbd ffff ffff ffff ffff
+f7f7 fbfc ffdf 7f57 ffff ffff ffff ffff
+f5f4 f78e 7f7e 5f6e ffff ffff ffff ffff
+ffdf ffdf 5fd7 6bb5 ffff ffff ffff ffff
+b7bb bbfb bbf3 f36f ffff ffff ffff ffff
+7f40 3f7c 7f07 777b ffff ffff ffff ffff
+7d80 fdfe 0fb6 97fe ffff ffff ffff ffff
+0f70 7fbf 793e 7e7e ffff ffff ffff ffff
+df1f eef5 f5f5 f6f7 ffff ffff ffff ffff
+1dee 2fcc ebe7 0eed ffff ffff ffff ffff
+fd00 ff00 fdff 06fb ffff ffff ffff ffff
+007e 3e7e b95f 7f7f ffff ffff ffff ffff
+f6f5 d5f5 d6b7 0f67 ffff ffff ffff ffff
+2dcd eded 0eeb c7d7 ffff ffff ffff ffff
+7afb 5afb 06ff fcfd ffff ffff ffff ffff ]
+
+@block/sprite-2 [
+1f7f fffb fcbf fbbc 1f7f ffff ffff ffff
+d5d5 f7ff 3fdf c015 ffff ffff ffff ffff
+ffff b6b6 b5b3 23fb ffff ffff ffff ffff
+9d9d 2798 dbc0 dcbe ffff ffff ffff ffff
+ffb3 fc7f 1f00 0605 ffff ff7f 1f0f 0707
+ab9f bc1d bb7b ab43 ffff ffff ffff ffff
+fb00 ffff ffe0 9f7f ffff ffff ffff ffff
+fc78 96ee f6f0 7756 ffff ffff ffff ffff
+0700 3dff ffdf ef7f 070f 3fff ffff ffff
+fbfb 7be3 ddfc deef ffff ffff ffff ffff
+577e 81ff ffff 00ff ffff ffff ffff ffff
+7750 f6af ee1f faff ffff ffff ffff ffff
+007f bfff bfff 773f 7f7f ffff ffff 7f3f
+f7b3 e1fe fefe d6fc ffff ffff ffff ffff
+ffff fe01 ffff ff7c ffff ffff ffff ffff
+fa97 6eef ee9f 7e7c ffff ffff ffff ffff ]
+
+@block/sprite-3 [
+67ef ebef 6b8e 77f9 ffff ffff ffff ffff
+fdfe fefe fefe fe05 ffff ffff ffff ffff
+56ef efef efef 33cd ffff ffff ffff ffff
+faff feff fffd ebdf ffff ffff ffff ffff
+eef6 f676 e57d 837b ffff ffff ffff ffff
+fbfb c4af 776c 1b7a ffff ffff ffff ffff
+eeee 0ef6 fa7b dded ffff ffff ffff ffff
+fef0 00c0 d070 70b0 fef0 e0e0 f0f0 f0f0
+fb76 f676 9564 b534 ffff ffff ffff ffff
+bbdc 6fb7 5bac 57eb ffff ffff ffff ffff
+6eee 1efe fdf9 0ff0 ffff ffff ffff fff8
+a060 c000 0000 0000 e0e0 c000 0000 0000
+c576 fa7b fdfe fc60 ffff ffff ffff fce0
+78fc 7f1f 8380 0000 f8fc ff1f 8380 0000
+3800 0080 c0c0 4000 3800 0080 c0c0 4000
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@block/sprite-4 [
+1f7f ffff ffff dfff 1f7f ffff ffff ffff
+f8fd fdf5 fdf6 defc f8fd ffff ffff ffff
+fcff ffff fdfb fe60 fcff ffff ffff ffff
+7e7f 7f7f 7b7f eb7f 7e7f ffff ffff ffff
+00ff fdff 00ff ffff 7fff ffff 7fff ffff
+837f 7f7f 80ff ffff ffff ffff ffff ffff
+91fb ebfb 847f 7f7f fbff ffff ffff ffff
+80ff fbff 00ff fffb feff ffff feff ffff
+dfff 1d08 0000 0000 ffff 7f1d 1c00 0000
+f5ff e000 0000 0000 ffff ffe0 0000 0000
+5f7f 1800 0000 0000 ffff 7f18 0000 0000
+ffeb ff00 0000 0000 ffff fffe 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000  ]
+
+@block/sprite-5 [
+386d fe7f e773 f978 7dff ffff ffff ffff
+8fda bf7f fffe f7c9 dfff ffff ffff ffff
+f8fd fdfd fcf5 49ed fdff ffff ffff ffff
+f0f8 fc7e 9eaf b7b1 f8fc feff ffff ffff
+fa7b 1d2f 7777 007c ffff 3f7f ffff 7fff
+de3f dfef e7e0 19fe ffff ffff ffff ffff
+0ded eded ef0d df5f ffff ffff ffff ffff
+b6b7 b7b6 f0b6 f5f6 ffff ffff feff ffff
+dd7d dbfb fbfb fbfb ffff ffff ffff ffff
+ffe3 fcff c7f8 fe86 ffff ffff ffff ffff
+3f7f 7f7f 7fff ffff ffff ffff ffff ffff
+f6e8 c6bf afbf aebf fffe ffff ffff ffff
+7bf7 7707 7af8 7b11 ffff ff7f ffff ff7b
+d83e fefe fc00 6c24 ffff ffff ffff ff6c
+bfff bfff bfff ff55 ffff ffff ffff ffff
+bedf dec1 dedf d6fc ffff ffff ffff fffe ]
+
+@block/sprite-6 [
+056f 5f2f 77fc fb77 6fff ff7f ffff ffff
+7fff fbff 07fb fdce ffff ffff ffff ffff
+a0f6 f579 bddd 9d6d f6ff ffff ffff ffff
+287c f6fb fffb fff7 7cfe ffff ffff ffff
+f7fb 7b05 6edf df6f ffff ff7f ffff ffff
+6e6e 9efd 7883 dbdd ffff ffff ffff ffff
+edf4 f6f5 ed3d f9fb ffff ffff ffff ffff
+f7f6 f7f6 f7b6 cffe ffff ffff ffff ffff
+311e 0f31 7edf dbdb 7f3f 3f7f ffff ffff
+be7f ffff 0f77 7bbd ffff ffff ffff ffff
+fdfe bfdf eff7 fbfd ffff ffff ffff ffff
+ffae 7886 dfef f7fa ffff feff ffff ffff
+5bdd 6df6 bb5c 2f17 ffff ffff ffff 7f3f
+cef0 f8fd 0dfb 2be1 ffff fdff ffff fff3
+fe7f bfdf eff6 f743 ffff ffff ffff fff7
+fa7c beba 9e8e 8000 fffe ffff ffde ce80 ]
+
+@block/sprite-7 [
+003e 7f7f 5f7f 5f6b 3f7f ffff ffff ffff
+007e 5f7f ffff ffff 7eff ffff ffff ffff
+007f bfdf cadf 5fdf 7fff ffff ffff ffff
+00ce dede 3ede dade ceff ffff ffff ffff
+3e01 3f7f 7f5f 7f5f 7f7f 7fff ffff ffff
+1eef b0ff fcf3 cf2c ffff ffff ffff ffff
+c0bf 7aff 1fe3 f5fa ffff ffff ffff ffff
+1c80 dc6e f6f6 f2fa fefc ffff ffff ffff
+6e19 636d 707f 007f ff7f ffff ffff 7fff
+efed eeef 7380 0fff ffff ffff ffff ffff
+dbdb 3bf0 877c fbf7 ffff ffff ffff ffff
+7cbe 0cfe fc1c eefe feff feff fefe ffff
+6f5f 6f3f 003f 3f00 ffff ff7f 3f7f 7f3f
+fffe e11f fffe f800 ffff ffff ffff fef8
+8777 f6d7 f7db 7100 ffff ffff ffff fb71
+f63e de3e fed4 fc00 ffff ffff fffe fefc ]
+
+@lock/sprite ( locked ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+001f 3f3f 6f7f 5f7f 1f3f 7f7f ffff fff7
+00ff ffff fcf0 f0e0 ffee f4fe ffff ffff
+00ff ffff 7f1f 1f0f ffef 5fff ffff fffd
+00f0 f8e8 f4fc f4bc f0f8 fcfc fefe fefe
+5f7f 5f7f 5f7f 5f7f ffef ffff ffff fffd
+e000 7070 7cbf bfcf ffff ffff fbf8 fbff
+0f01 1d1d 7dfb fbe7 ffff ffff 9f1f 5f7f
+f4fc fcec fcfc fcfc fefe fefe fefe fefe
+5f7f 5c7b 576e 6f5f fffd ffff ffff ffff
+c03c d6fe 8676 f6f6 ffff ffff ffff ffff
+0779 beff c3dc dfdf ffff ffff ffff ffff
+fcf4 7cbc dcec ecf4 fefe fefe fefe fefe
+5d5d 6e6f 777b 7c7f ffff ffff ffcf cfff
+f6f6 f676 86fe ee3c ffff ffff ffff ffff
+dfdf dedd c3ff ee79 ffff ffff ffff ffff
+7474 ecec dcbc 7cfc fefe fefa fee6 e6de
+7f7f 7966 6f6c 1f00 d79d 869f 9f9f ffff
+c0ff ffff 7817 ef00 ffff 3f1f 97ef ddff
+07ff ffff 7fbf 0f00 fbfb e1e0 c1c0 f0ff
+fcfc fcfc fcfc e800 6652 c282 0202 16fe ]
+&sprite-unlocked [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+001f 3f3f 6f7f 5f7f 1f3f 7f7f ffff fff7
+00ff ffff fcf3 f7ec ffee f4fe ffff ffff
+00ff ffff 7f9f df6f ffef 5fff ffff fffd
+00f0 f8e8 f4fc f4bc f0f8 fcfc fefe fefe
+5f7f 5f7f 5f7f 5f7f ffef ffff ffff fffd
+ed0c 7773 7cbf bfcf ffff ffff fbf8 fbff
+6f61 dd9d 7dfb fbe7 dfff ffff 9f1f 5f7f
+f4fc fcec fcfc fcfc fefe fefe fefe fefe
+473b 686c 6c68 6c68 fffd fffe fefe fefe
+c000 0000 0000 0000 ffc0 0000 0000 0000
+0701 0000 0000 0000 ff07 0100 0000 0000
+c4b8 2c2c 6c2c 6c2c fefe fefe fefe fefe
+6c68 6468 6468 643b fefe fefe fefe ffff
+0000 0000 0000 0000 0000 0000 0000 00c0
+0000 0000 0000 0001 0000 0000 0000 0107
+4c2c 4c2c 4c2c 4cb8 fefe fefe fefe fefe
+477f 7966 6f6c 1f00 ff9d 869f 9f9f ffff
+c0ff ffff 7817 ef00 ffff 3f1f 97ef ddff
+07ff ffff 7fbf 0f00 fbfb e1e0 c1c0 f0ff
+c4fc fcfc fcfc e800 7e52 c282 0202 16fe ]
+
+@door/sprite-2 [
+0000 0000 0007 0f1e 0000 0000 070e 1f3f
+0000 0000 00fc fe07 0000 0000 fc06 bfff
+0000 0000 1f7a ff70 0000 001f 609d 6dbf
+0000 0000 e0f0 f87c 0000 00e0 70f8 dcfe
+3b37 6f6d 6f6d 6d6d 7f7f ffff ffff ffff
+fbfd 1dfd fdfd fde0 cfef e7ff efff ffff
+6fbf bcbf bfbf bf07 f1ff ffff ffff ffff
+bcde ee6e ee6e 6e6c feff ffff ffff fffe
+6f6e 6d6b 676f 5f5e ffff feff fff7 ebef
+9f7f fff0 c080 0000 e0bd ffff f0c0 8000
+f9fe ff0f 0301 0000 27fd fcfd 0d03 0100
+6e6c aece eef6 fa7a fffe 7f3f bfbf bfff
+5c5c 1c5c 5c1c 5c5c eeee 6ef6 fe7e fefe
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+3a3a 3a3a 3a3a 3a36 7f7f 7f7f 7f7f 7f7f
+5c5c 5c5c 6c5c 6c5c fefe fefe fefe fefe
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+221a 3a3a 3a3a 3a3a 7f3f 7f7f 7f5f 7f5f
+405e 5d5d 5d62 7f57 fef9 ffff ffff ffff
+0000 9fdf df20 fffd 00bf e1fe ffff ffff
+0000 f9fb fb04 ffbf 00fd 3fff ffff ffff
+027a baba ba46 feea 7fff ffff ffff ffff ]
+
+@perch/sprite [
+0000 0000 0000 0202 0000 0000 0006 0505
+0000 0000 0000 0000 0000 0001 0101 0000
+0000 78c4 d7c4 7800 0078 fcff fcff fc78
+0000 0000 e000 0000 0000 00e0 10e0 0000
+021c 0603 3900 000f 3d3f 1f3f 4779 0f10
+0003 0000 80c0 4040 1f04 0380 c1e1 e1e1
+70f0 f000 0000 0000 9818 38f0 4040 4040
+0000 0000 0000 0070 0000 0000 0000 7088
+0000 0000 0000 0203 1f00 0000 0007 0707
+6020 3011 1316 1867 f171 593f 2e29 e7f8
+0000 7fc0 0000 00f0 407f ffbf c080 f06e
+0000 0000 0060 2000 f000 8000 e090 5030
+0313 1b1b 0b7b 071e 172f 2727 7787 7f3f
+74f3 77f7 77f7 7f37 fbff ffff ffff ffff
+1e43 d150 d0d8 dcee ffff fbf9 f8fc feff
+0000 8080 0000 0000 0080 c0c0 c000 0000 ]
+
+( no bird ) [
+0000 0000 0000 0202 0000 0000 0006 0505
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+021c 0603 3900 000f 3d3f 1f3f 4779 0f10
+0000 0000 80c0 4040 0000 0080 c0e0 e0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0070 0000 0000 0000 7088
+0000 0000 0000 0203 1f00 0000 0007 0707
+6020 3011 1316 1867 f070 593f 2e29 e7f8
+0000 7fc0 0000 00f0 007f ffbf c080 f06e
+0000 0000 0060 2000 f000 8000 e090 5030
+0313 1b1b 0b7b 071e 172f 2727 7787 7f3f
+74f3 77f7 77f7 7f37 fbff ffff ffff ffff
+1e43 d150 d0d8 dcee ffff fbf9 f8fc feff
+0000 8080 0000 0000 0080 c0c0 c000 0000 ]
+
+@keybird/sprite
+( f0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0004 4446 6777 7b7d 44ca aaa9 9888 84c2
+0000 0000 0080 8080 0000 0000 8040 4040
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+7e3e 3e1f 0f0f 1f0f b141 4138 1010 781e
+8078 c4d7 c4f8 80c0 78fc fffc ff7c 7870
+0000 00e0 0000 0000 0000 e010 e000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0300 0000 0000 0000 0f03 0000 0000 0000
+c000 0000 0000 0000 e0c0 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 000c 0000 0000 0010 1c13
+0000 0000 4078 1e0f 0000 00c0 b886 61d0
+0000 0000 0000 0078 0000 0000 0000 78fc
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0100 0000 0000 0808 0601 0000 0000
+c6f8 ff7f 0f0f 0300 3907 4088 701e 0f03
+c4d7 c4f8 80c0 c000 fffc ff7c 7870 e0c0
+00e0 0000 0000 0000 e010 e000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f2 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0001
+0000 0000 0000 0000 0000 0000 0000 0001
+0000 0000 0000 78c4 0000 0000 0078 fcff
+0000 0000 0000 0000 0000 0000 0000 00e0
+0100 0000 0000 0f03 0201 0000 000f 100c
+00f0 071e 0907 fffc f10f ff7f 1ef8 0003
+d7c4 7880 c0c0 0000 fcff fc78 7060 c000
+e000 0000 0000 0000 10e0 0000 0000 0000
+0000 0000 0000 0000 0300 0000 0000 0000
+0000 0000 0000 0000 fc00 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f3 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0001
+0000 0000 0000 00f0 0000 0000 0000 f00d
+0000 0000 0000 78c4 0000 0000 0078 fcff
+0000 0000 0000 0000 0000 0000 0000 00e0
+0100 0001 0304 0000 0201 0102 040b 1c00
+1c00 1eff e303 0000 e31f e100 1cef 0300
+d7c4 7880 c0c0 0000 fcff fc78 70e0 c000
+e000 0000 0000 0000 10e0 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f4 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 2038 1c1e 0000 0060 5844 2221
+0000 0000 0000 0000 0000 0000 0000 0078
+0000 0000 0000 0000 0000 0000 0000 0000
+000f 0701 0000 0000 1f10 0806 0100 0000
+0fc6 f8fe 7f0f 0f03 d039 0741 8870 1e0f
+78c4 d7c4 7880 c0c0 fcff fcff fc78 70e0
+0000 e000 0000 0000 00e0 10e0 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0300 0000 0000 0000
+0000 0000 0000 0000 c000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@player/sprite
+( f0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+070f 0f0f 0f0d 0d0e 0f1f 1f1f 1f1f 1f1f
+0606 078f 8f8d 8d8e 8f8f 8fdf dfdf dfdf
+0000 0000 0000 8080 0000 8080 8080 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+0e0e 0f0f 1f3f 3f7e 1f1f 1f1f 3f7f 7fff
+deff ffff e09f 7fff ffff ffff ffff f8f0
+80c0 e0f0 789c eef6 c0e0 f0f8 fcfe 3f1f
+0000 387c 0606 0606 0038 64e6 7f09 090f
+7d7b 7b7b 7d3e 1f0f ffff ffff ff7f 3f1f
+fcf8 f8f8 feff 3fc0 e3e7 e7e7 e3f0 f8ff
+fafa 3a3a 76ec 9870 cfcf cfcf 8f1e 7cf8
+0606 0607 0300 0000 0d09 0f0c 0503 0000
+0300 049f bf7f 7f7f 0f07 9be0 c080 8081
+ffff a0d5 faff ffff ffff ffff ffff ffff
+c000 0000 8080 8080 f0c0 0080 c0c0 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+7e78 7060 6c40 4000 8186 889c 92ac a0c0
+ff3f 0319 1030 2000 ffff 3f3f 3979 7020
+8080 80c0 c0c0 4000 c0c0 c0e0 e0e0 e0c0 ]
+( f1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+070f 0f0f 0f0d 0d0e 0f1f 1f1f 1f1f 1f1f
+0606 078f 8f8d 8d8e 8f8f 8fdf dfdf dfdf
+0000 0000 0000 8080 0000 8080 8080 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+0e0e 0f0f 1f3f 3f7e 1f1f 1f1f 3f7f 7fff
+deff ffff e09f 7fff ffff ffff ffff f8f0
+80c0 e0f0 789c eef6 c0e0 f0f8 fcfe 3f1f
+0000 003c 7e06 0606 0000 3c66 e779 090f
+7d7b 7b7b 7d3e 1f0f ffff ffff ff7f 3f1f
+fcf8 f8f8 feff 3fc0 e3e7 e7e7 e3f0 f8ff
+fafa 3a3a 76ec 9870 cfcf cfcf 8f1e 7cf8
+0606 0607 0300 0000 0d09 0f0c 0503 0000
+0300 049f bf7f 7f7f 0f07 9be0 c080 8081
+ffff a0d5 faff ffff ffff ffff ffff ffff
+c000 0000 8080 8080 f0c0 0080 c0c0 c0c0
+0000 0000 0101 0100 0000 0101 0202 0201
+7e7c f0ca 8781 0000 8182 0e35 4846 8180
+ff3e 0d0c 0506 0200 ffff 3f1f 8f8f 0703
+0000 0000 0000 0000 c080 8080 8000 0000 ]
+( f2 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0002 0303 0000 0202 0307 0707
+0000 0000 0002 0303 0000 0202 0307 8787
+0000 0000 0000 0000 0000 0000 0000 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0707 0707 0606 0707 0f0f 0f0f 0f0f
+0383 8383 c7c7 c6c6 87c7 c7c7 efef efef
+0000 0080 8080 80c0 8080 80c0 c0c0 c0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0f1f 3f3e 0f0f 0f0f 1f3f 7f7f
+466e 7fff ffc0 3fff efff ffff ffff fff0
+c0c0 c0e0 f0f8 3cde e0e0 e0f0 f8fc fe7f
+0000 1c3e 0303 0303 001c 3273 3f04 0407
+7d7b 7777 777b 3d1e ffff ffff ffff ffbf
+fff9 f1f0 f0fc ff7f e0c7 cfcf cfc7 e0f0
+eef6 f676 76ec dc38 3f9f 9f9f 9f1e 3efc
+0303 0303 0301 0000 0604 0706 0403 0100
+0f03 0000 8fbf 7f7f 9f8f 838f f1c0 8080
+80ff ffa0 d5fa ffff ffff ffff ffff ffff
+f0c0 0000 0080 8080 f8f0 c000 80c0 c0c0
+0000 0103 0101 0000 0001 0204 0202 0100
+7f7f fcfa 0402 0000 8181 0305 fb8d 0603
+ffff 3e1d 1818 1000 ffff ff3f 3d3c 3810
+8000 8040 c040 2000 c0c0 c0e0 e0e0 7020 ]
+( f3 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0002 0303 0000 0202 0307 0707
+0000 0000 0002 0303 0000 0202 0307 8787
+0000 0000 0000 0000 0000 0000 0000 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0707 0707 0606 0707 0f0f 0f0f 0f0f
+0383 8383 c7c7 c6c6 87c7 c7c7 efef efef
+0000 0080 8080 80c0 8080 80c0 c0c0 c0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0f1f 3f3e 0f0f 0f0f 1f3f 7f7f
+466e 7fff ffc0 3fff efff ffff ffff fff0
+c0c0 c0e0 f0f8 3cde e0e0 e0f0 f8fc fe7f
+0000 1c3e 0303 0303 001c 3273 3f04 0407
+7d7b 7777 777b 3d1e ffff ffff ffff ffbf
+fff9 f1f0 f0fc ff7f e0c7 cfcf cfc7 e0f0
+eef6 f676 76ec dc38 3f9f 9f9f 9f1e 3efc
+0303 0303 0301 0000 0604 0706 0403 0100
+0f03 0000 8fbf 7f7f 9f8f 838f f1c0 8080
+80ff ffa0 d5fa ffff ffff ffff ffff ffff
+f0c0 0000 0080 8080 f8f0 c000 80c0 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+7f7f 7c3c 183c 0000 8181 8342 2442 3e10
+ffff 7c3a 3462 4000 ffff ff7f 7fff e341
+8000 0000 0000 0000 c0c0 0000 0000 0000 ]
+( f4 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+070f 0f0f 0f0d 0d0e 0f1f 1f1f 1f1f 1f1f
+0606 078f 8f8d 8d8e 8f8f 8fdf dfdf dfdf
+0000 0000 0000 8080 0000 8080 8080 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+0e0e 0f0f 1f3f 3f7e 1f1f 1f1f 3f7f 7fff
+deff ffff e09f 7fff ffff ffff ffff f8f0
+80c0 e0f0 789c eef6 c0e0 f0f8 fcfe 3f1f
+0000 387c 0606 0606 0038 64e6 7f09 090f
+7d7b 7b7b 7d3e 1f0f ffff ffff ff7f 3f1f
+fcf8 f8f8 feff 3fc0 e3e7 e7e7 e3f0 f8ff
+fafa 3a3a 74ec 9870 cfcf cfcf 8e1e 7cf8
+0606 0607 0300 0000 0d09 0f0c 0503 0000
+0300 049f bf7f 7f7f 0f07 9be0 c080 8081
+ffff a0d5 faff ffff ffff ffff ffff ffff
+c000 0000 8080 8080 f0c0 0080 c0c0 c0c0
+0000 0000 0000 0000 0000 0001 0101 0101
+7e3e 5e86 8683 0000 8141 a179 4944 8380
+ff3c 3874 1808 0000 ffff 7efe 7e9c 0c08
+0000 0000 0000 0000 c000 0000 0000 0000 ]
+( f5 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0406 0606 0004 0406 0e0f 0f0f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+070f 0f0f 0f0d 0d0e 0f1f 1f1f 1f1f 1f1f
+0606 078f 8f8d 8d8e 8f8f 8fdf dfdf dfdf
+0000 0000 0000 8080 0000 8080 8080 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+0e0e 0f0f 1f3f 3f7e 1f1f 1f1f 3f7f 7fff
+deff ffff e09f 7fff ffff ffff ffff f8f0
+80c0 e0f0 789c eef6 c0e0 f0f8 fcfe 3f1f
+0000 387c 0606 0606 0038 64e6 7f09 090f
+7d7b 7b7b 7d3e 1f0f ffff ffff ff7f 3f1f
+fcf8 f8f8 feff 3fc0 e3e7 e7e7 e3f0 f8ff
+fafa 3a3a 74ec 9870 cfcf cfcf 8e1e 7cf8
+0606 0607 0300 0000 0d09 0f0c 0503 0000
+0300 049f bf7f 7f7f 0f07 9be0 c080 8081
+ffff a0d5 faff ffff ffff ffff ffff ffff
+c000 0000 8080 8080 f0c0 0080 c0c0 c0c0
+0000 0101 0101 0000 0001 0202 0202 0100
+7ebe 5c98 1818 0800 8141 a264 a4a4 140c
+ff7c 1e03 1a10 0000 ffff 7f3f 3f3a 3030
+0000 0000 0000 0000 8000 8080 0000 0000 ]
+
+@player/sprite-grind 
+( f0 ) [
+0000 0000 0000 0203 0000 0000 0406 0707
+0000 0000 0203 0303 0000 0406 0707 0787
+0000 0000 0000 0080 0000 0000 0080 80c0
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0101 0101 0000 0707 0303 0303 0101
+8181 c1e1 e1f0 f8f8 c3c3 e3f3 f3f9 fdfd
+80c0 e0e0 e0b0 d8d8 c0e0 f0f0 f0f8 fcfc
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0101 0000 0000 0000
+d8dc 6f77 7f3f 3f7f fdff ffff ff7f 7fff
+dcff ffff ffff f088 ffff ffff ffff fff7
+0000 c0f0 f818 cc2c 00c0 f0f8 fcfc fede
+0000 0000 0000 0000 0101 0101 0101 0100
+fffc fbf7 efef e07f ffff ffff ffff ffff
+78f8 fefc e39f 7fff e7e7 e3f3 ffff ffff
+1c3c 7cf8 f8f2 e4ca fefe fefc feff ffff
+0000 0000 0000 0101 0000 0000 0001 0303
+7f3f 0700 0000 8080 ff7f 3f07 0080 c040
+fffc f30f 0f0f 0f1e ffff ffff 1f1f 1321
+860c f8f0 c0c2 04e2 fffe fcf9 f3fd fb1d
+0100 0000 0000 0000 0201 0100 0000 0000
+80c0 e078 3f0f 0000 40e0 d897 653d 0f00
+1f1f 1f1f c7c0 0000 2020 20e0 7867 c000
+f2fe f8f0 0000 0000 0d01 0608 f000 0000 ]
+( f1 ) [
+0000 0000 0000 0000 0000 0001 0101 0101
+0000 0000 0080 c0c0 0001 0101 81c1 e1e1
+0000 0080 c0c0 e0e0 0000 80c0 e0e0 f0f0
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0101 0000 0000 0000
+e0e0 7078 7c7c 7c7e f1f0 f8fc fefe feff
+f070 7878 7c6c 6c6e f8f8 fcfc fefe feff
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+7677 3b3b 3f1f 1f3f ffff 7f7f 7f3f 3f7f
+6f7f ffff ffff f8c4 ffff ffff ffff fffb
+0080 e0f8 fc8c 6616 80e0 f8fc fefe ffef
+0000 0000 0000 0000 0000 0000 0000 0000
+7f7e 7d7b 7777 703f ffff ffff ffff ff7f
+bc7c fffe f1cf 3fff f3f3 f1f9 ffff ffff
+0e1e 3e7c fcfa f4ea ffff fffe feff ffff
+0000 0000 0000 0101 0000 0000 0001 0303
+3f1f 0300 0000 8080 7f3f 1f03 0080 c040
+fffc f30f 0f0f 0f1e ffff ffff 1f1f 1321
+c60c f8f0 c0c2 04e2 fffe fcf9 f3fd fb1d
+0100 0000 0000 0000 0201 0100 0000 0000
+80c0 e078 3f0f 0000 40e0 d897 653d 0f00
+1f1f 1f1f c7c0 0000 2020 20e0 7867 c000
+f2fe f8f0 0000 0000 0d01 0608 f000 0000 ]
+( f2 ) [
+0000 0000 0000 0000 0000 0001 0101 0101
+0000 0000 0080 c0c0 0001 0101 81c1 e1e1
+0000 0080 c0c0 e0e0 0000 80c0 e0e0 f0f0
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0101 0000 0000 0000
+e0e0 7078 7c7c 7c7e f1f0 f8fc fefe feff
+f070 7878 7c6c 6c6e f8f8 fcfc fefe feff
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+7677 3b3b 3f1f 1f3f ffff 7f7f 7f3f 3f7f
+6f7f ffff ffff fef0 ffff ffff ffff ffff
+0080 e0f8 fccc 260e 80e0 f8fc fefe ffff
+0000 0000 0000 0000 0000 0000 0000 0000
+7f7f 7e7d 7b76 713f ffff ffff ffff ff7f
+ccbc 7ef9 c73f ffff f3f3 f1ff ffff ffff
+1e3e 7efc fcfa f4ea ffff fffe feff ffff
+0000 0000 0000 0101 0000 0000 0001 0303
+3f1f 0300 0000 8080 7f3f 1f03 0080 c040
+fffc f30f 0f0f 0f1e ffff ffff 1f1f 1321
+c60c f8f0 c0c2 04e2 fffe fcf9 f3fd fb1d
+0100 0000 0000 0000 0201 0100 0000 0000
+80c0 e078 3f0f 0000 40e0 d897 653d 0f00
+1f1f 1f1f c7c0 0000 2020 20e0 7867 c000
+f2fe f8f0 0000 0000 0d01 0608 f000 0000 ]
+( f3 ) [
+0000 0000 0000 0000 0000 0001 0101 0101
+0000 0000 0080 c0c0 0001 0101 81c1 e1e1
+0000 0080 c0c0 e0e0 0000 80c0 e0e0 f0f0
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0101 0000 0000 0000
+e0e0 7078 7c7c 7c7e f1f0 f8fc fefe feff
+f070 7878 7c6c 6c6e f8f8 fcfc fefe feff
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+7677 3b3b 3f1f 1f3f ffff 7f7f 7f3f 3f7f
+6f7f ffff ffff fef0 ffff ffff ffff ffff
+0080 e0f8 fccc 260e 80e0 f8fc fefe ffff
+0000 0000 0000 0000 0000 0000 0000 0000
+7f7f 7e7d 7b76 713f ffff ffff ffff ff7f
+ccbc 7ef9 c73f ffff f3f3 f1ff ffff ffff
+1e3e 7efc fcfa f4ea ffff fffe feff ffff
+0000 0000 0000 0101 0000 0000 0001 0303
+3f1f 0300 0000 8080 7f3f 1f03 0080 c040
+fffc f30f 0f0f 0f1e ffff ffff 1f1f 1321
+c60c f8f0 c0c2 04e2 fffe fcf9 f3fd fb1d
+0100 0000 0000 0000 0201 0100 0000 0000
+80c0 e078 3f0f 0000 40e0 d897 653d 0f00
+1f1f 1f1f c7c0 0000 2020 20e0 7867 c000
+f2fe f8f0 0000 0000 0d01 0608 f000 0000 ]
+
+@player/sprite-crawl
+( f0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0040
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0020 3030 3838 0040 6070 7878 7c7c
+0020 3030 3838 3c1c 6070 7878 7c7c 7e3e
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1c1e 1f1f 1f1f 1d1d 3e3f 3f3f 3f3f 3f3f
+1e1e 1f1b 1b9b 9bff 3f3f bfbf bfff ffff
+0000 0000 0080 8080 0000 8080 80c0 c0c0
+0000 0000 387c 0606 0000 0038 64e6 7f09
+0e0e 0f1f 3f7e 7977 1f1f 1f3f 7fff ffff
+ffff ffff c03f f9f1 ffff ffff ffe0 c7cf
+c0f0 f8fc 1eee f6f6 f0f8 fcfe ff3f 9f9f
+0606 0606 0607 0300 090f 0d09 0f0c 0503
+7777 7b3c 1f8f 833c ffff ff7f bfdf ffc3
+f0f0 fc00 ffff ffff cfcf c7ff ffff ffff
+7676 cc3c f8f0 c000 9f9f 3efe fcf8 f0c0
+0000 0001 0100 0000 0000 0102 0201 0000
+7f7f 7d7e 3e0c 0600 8080 8281 c132 0907
+00fa fffe 3f43 4000 ffff ffff ffff f3c0
+0080 8000 0080 8000 c0c0 c080 80c0 c0c0 ]
+( f1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 4060
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 2030 3038 381c 4060 7078 787c 7c3e
+2030 3038 383c 1c1e 7078 787c 7c7e 3e3f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1e1f 1f1f 1f1d 1d0e 3f3f 3f3f 3f3f 3f1f
+1e1f 1b1b 9b9b ffff 3fbf bfbf ffff ffff
+0000 0000 8080 80c0 0080 8080 c0c0 c0f0
+0000 0000 0038 7c06 0000 0000 3864 e67f
+0e0f 1f3f 7e79 7777 1f1f 3f7f ffff ffff
+ffff ffc0 3ff9 f1f0 ffff ffff e0c7 cfcf
+f0f8 fc1e eef6 f676 f8fc feff 3f9f 9f9f
+0606 0606 0606 0703 0909 0f0d 090f 0c05
+777b 3c1f 0f03 bc7f ffff 7f3f 1fbf c380
+f0fc 00ff ffff ff00 cfc7 ffff ffff ffff
+76cc 3cf8 f0c0 0000 9f3e fefc f8f0 c080
+0000 0000 0000 0000 0300 0000 0001 0100
+7f7f 7f7d 78b0 9800 8080 8083 8548 649c
+faff f3fd 7c0c 1400 ffff ffff ff7e 3e14
+8080 8000 0000 0000 c0c0 c080 0000 0000 ]
+( f2 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0040
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0020 3030 3838 0040 6070 7878 7c7c
+0020 3030 3838 3c1c 6070 7878 7c7c 7e3e
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1c1e 1f1f 1f1f 1d1d 3e3f 3f3f 3f3f 3f3f
+1e1e 1f1b 1b9b 9bff 3f3f bfbf bfff ffff
+0000 0000 0080 8080 0000 8080 80c0 c0c0
+0000 0000 387c 0606 0000 0038 64e6 7f09
+0e0e 0f1f 3f7e 7977 1f1f 1f3f 7fff ffff
+ffff ffff c03f f9f1 ffff ffff ffe0 c7cf
+c0f0 f8fc 1eee f6f6 f0f8 fcfe ff3f 9f9f
+0606 0606 0607 0300 090f 0d09 0f0c 0503
+7777 7b3c 1f8f 833c ffff ff7f bfdf ffc3
+f0f0 fc00 ffff ffff cfcf c7ff ffff ffff
+7676 cc3c f8f0 c000 9f9f 3efe fcf8 f0c0
+0000 0001 0103 0200 0000 0102 0204 0506
+7f7f 7fff f804 0400 8080 8001 07fa 0a04
+00fa bf7f 7c60 4000 ffff ffff ffff e040
+0080 8000 c060 2000 c0c0 c0c0 e0f0 7020 ]
+
+@player/sprite-jump
+( f1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0002 0303 0303 0202 0307 0707 0707
+0000 0002 0303 0383 0202 0307 8787 87c7
+0000 0000 0000 0000 0000 0000 8080 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0606 0707 0f0f 0f0f 0f0f 0f0f
+8383 c7c7 c6c6 466e c7c7 efef efef efff
+0080 8080 80c0 c0c0 80c0 c0c0 c0e0 e0e0
+0000 0000 0000 0020 0000 0000 0000 6070
+0707 0f1f 3f3e 7d7b 0f0f 1f3f 7f7f ffff
+7fff ffc0 3fff fff9 ffff ffff fff0 e0c7
+c0e0 f0f8 3cde eef6 e0f0 f8fc fe7f 3f9f
+3038 181c 0e06 0703 684c 3c32 130f 0805
+7777 777b 3d1e 0f83 ffff ffff 7f3f 9fcf
+f1f0 f0fc ff7f 80ff cfcf cfc7 e0f0 ffff
+f676 76ec dc38 f0c0 9f9f 9f1e 3efc f8f0
+0100 0000 0000 0103 0301 0000 0001 0204
+c0e0 4f3f 7fff ffff a33f f140 8000 0001
+ffa0 d5fa ffff fff3 ffff ffff ffff ffff
+0000 0080 8080 a030 c000 80c0 c0e0 f0f8
+070c 0000 0000 0000 0813 1c00 0000 0000
+0030 2000 0000 0000 ff48 5060 0000 0000
+1c07 0100 0000 0000 ff1f 0701 0000 0000
+0000 8000 0000 0000 3880 c0c0 0000 0000 ]
+
+@player/sprite-idle
+( f0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0002 0303 0000 0202 0307 0707
+0000 0000 0002 0303 0000 0202 0307 8787
+0000 0000 0000 0000 0000 0000 0000 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0707 0707 0606 0707 0f0f 0f0f 0f0f
+0383 8383 c7c7 c6c6 87c7 c7c7 efef efef
+0000 0080 8080 80c0 8080 80c0 c0c0 c0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0f1f 3f3e 0f0f 0f0f 1f3f 7f7f
+466e 7fff ffc0 3fff efff ffff ffff fff0
+c0c0 c0e0 f0f8 3cde e0e0 e0f0 f8fc fe7f
+0000 0038 7c06 0606 0000 3864 e67f 0909
+7d7b 7777 777b 3d1e ffff ffff ffff 7f3f
+fff9 f1f0 f0fc ff7f e0c7 cfcf cfc7 e0f0
+eef6 f676 76ec dc38 3f9f 9f9f 9f1e 3efc
+0606 0606 0703 0000 0f0d 090f 0c05 0300
+0f03 0000 8fbf 7f7f 1f0f 038f f1c0 8080
+80ff ffa0 d5fa ffff ffff ffff ffff ffff
+f0c0 0000 0080 8080 f8f0 c000 80c0 c0c0
+0000 0000 0101 0100 0000 0101 0202 0201
+7f7f f8f4 c88c 0000 8081 070b 3652 8c04
+ffff 7c62 6466 4200 ffff ffff ffff e742
+8000 0000 0000 0000 c080 0000 0000 0000 ]
+( f1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0002 0303 0000 0202 0307 0707
+0000 0000 0002 0303 0000 0202 0307 8787
+0000 0000 0000 0000 0000 0000 0000 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0707 0707 0606 0707 0f0f 0f0f 0f0f
+0383 8383 c7c7 c6c6 87c7 c7c7 efef efef
+0000 0080 8080 80c0 8080 80c0 c0c0 c0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0f1f 3f3e 0f0f 0f0f 1f3f 7f7f
+466e 7fff ffc0 3fff efff ffff ffff fff0
+c0c0 c0e0 f0f8 3cde e0e0 e0f0 f8fc fe7f
+0000 0038 7c06 0606 0000 3864 e67f 0909
+7d7b 7777 777b 3d1e ffff ffff ffff 7f3f
+fff9 f1f0 f0fc ff7f e0c7 cfcf cfc7 e0f0
+eef6 f676 76ec dc38 3f9f 9f9f 9f1e 3efc
+0606 0606 0703 0000 0f0d 090f 0c05 0300
+0f03 0000 8fbf 7f7f 1f0f 038f f1c0 8080
+80ff ffa0 d5fa ffff ffff ffff ffff ffff
+f0c0 0000 0080 8080 f8f0 c000 80c0 c0c0
+0000 0000 0101 0100 0000 0101 0202 0201
+7f7f f8f4 c88c 0000 8081 070b 3652 8c04
+ffff 7c62 6466 4200 ffff ffff ffff e742
+8000 0000 0000 0000 c080 0000 0000 0000 ]
+( f2 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0002 0303 0000 0202 0307 0707
+0000 0000 0002 0303 0000 0202 0307 8787
+0000 0000 0000 0000 0000 0000 0000 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0707 0707 0606 0707 0f0f 0f0f 0f0f
+0383 8383 c7c7 c6c6 87c7 c7c7 efef efef
+0000 0080 8080 80c0 8080 80c0 c0c0 c0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0f1f 3f3e 0f0f 0f0f 1f3f 7f7f
+466e 7fff ffc0 3fff efff ffff ffff fff0
+c0c0 c0e0 f0f8 3cde e0e0 e0f0 f8fc fe7f
+0000 0038 7c06 0606 0000 3864 e67f 0909
+7d7b 7777 777b 3d1e ffff ffff ffff 7f3f
+fff9 f1f0 f0fc ff7f e0c7 cfcf cfc7 e0f0
+eef6 f676 76ec dc38 3f9f 9f9f 9f1e 3efc
+0606 0606 0703 0000 0f0d 090f 0c05 0300
+0f03 0000 8fbf 7f7f 1f0f 038f f1c0 8080
+80ff ffa0 d5fa ffff ffff ffff ffff ffff
+f0c0 0000 0080 8080 f8f0 c000 80c0 c0c0
+0000 0000 0101 0100 0000 0101 0202 0201
+7f7f f8f4 c88c 0000 8081 070b 3652 8c04
+ffff 7c62 6466 4200 ffff ffff ffff e742
+8000 0000 0000 0000 c080 0000 0000 0000 ]
+( f3 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0203 0000 0002 0203 0707
+0000 0000 0000 0203 0000 0002 0203 0787
+0000 0000 0000 0000 0000 0000 0000 0080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0307 0707 0706 0707 070f 0f0f 0f0f
+0303 8383 83c7 c7c6 8787 c7c7 c7ef efef
+0000 0000 8080 8080 8080 8080 c0c0 c0c0
+0000 0000 0000 0000 0000 0000 0000 0000
+0607 0707 070f 1f3f 0f0f 0f0f 0f1f 3f7f
+c646 6e7f ffff c03f efef ffff ffff ffff
+c0c0 c0c0 e0f0 f83c e0e0 e0e0 f0f8 fcfe
+0000 0000 0c1c 1830 0000 000c 1e26 3458
+3e7d 7b77 7777 7b3d 7fff ffff ffff ff7f
+ffff f9f1 f0f0 fcff f0e0 c7cf cfcf c7e0
+deee f6f6 7676 ecdc 7f3f 9f9f 9f9f 1e3e
+3030 3038 1e0f 0100 4878 6846 3d18 0f01
+1e0f 0300 008f bf7f 3f1f 0f03 8ff1 c080
+7f80 ffff a0d5 faff f0ff ffff ffff ffff
+38f0 c000 0000 8080 fcf8 f0c0 0080 c0c0
+0000 0000 0101 0100 0000 0001 0202 0201
+7f7f 7ff8 f08c 0000 8080 8107 0e72 8c04
+ffff ff7c 6066 4200 ffff ffff ffff e742
+8080 0000 0000 0000 c0c0 8000 0000 0000 ]
+( f4 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0203 0303 0002 0203 0707 0707
+0000 0000 0203 0303 0002 0203 0787 8787
+0000 0000 0000 0000 0000 0000 0080 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0307 0707 0706 0607 070f 0f0f 0f0f 0f0f
+8383 83c7 c7c6 c646 c7c7 c7ef efef efef
+0000 8080 8080 c0c0 8080 c0c0 c0c0 e0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 070f 1f3f 3f7f 0f0f 0f1f 3f7f 7fff
+6e7f ffff ffff ffff ffff ffff ffff ffff
+c0c0 e0f0 f8fc fefe e0e0 f0f8 fcfe ffff
+0000 0000 0000 0020 0000 0000 0000 3070
+7f7f 707f 7f3f 1f0f ffff ffff ff7f 3f1f
+ffff 00ff ffff ffff ffff ffff ffff ffff
+fefe 06fe fcfc f8f0 ffff ffff fefe fcf8
+6043 6f79 3000 0000 f3ae 9aee 6930 0000
+0300 8080 8f3f 7f7f 0f83 c0cf f1c0 8080
+ffff 60d5 faff ffff ffff ffff ffff ffff
+c000 0000 8080 8080 f0c0 0080 c0c0 c0c0
+0000 0000 0101 0100 0000 0101 0202 0201
+7f7f f8f4 c88c 0000 8081 070b 3652 8c04
+ff7c 7062 6466 4200 ffff ffff ffff e742
+0000 0000 0000 0000 8000 0000 0000 0000 ]
+( f5 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0002 0303 0000 0202 0307 0707
+0000 0000 0002 0303 0000 0202 0307 8787
+0000 0000 0000 0000 0000 0000 0000 8080
+0000 0000 0000 0000 0000 0000 0000 0000
+0303 0707 0707 0606 0707 0f0f 0f0f 0f0f
+0383 8383 c7c7 c6c6 87c7 c7c7 efef efef
+0000 0080 8080 80c0 8080 80c0 c0c0 c0e0
+0000 0000 0000 0000 0000 0000 0000 0000
+0707 0707 0f1f 3f3e 0f0f 0f0f 1f3f 7f7f
+466e 7fff ffc0 3fff efff ffff ffff fff0
+c0c0 c0e0 f0f8 3cde e0e0 e0f0 f8fc fe7f
+0000 0000 0000 387e 0000 0000 0038 66af
+7d7b 7777 777b 3d1e ffff ffff ffff 7f3f
+fff9 f1f0 f0fc ff7f e0c7 cfcf cfc7 e0f0
+eef6 f676 76ec dc38 3f9f 9f9f 9f1e 3efc
+6643 0301 0100 0000 9de5 c702 0201 0000
+0f03 0080 8fbf 7f7f 1f8f 834f f1c0 8080
+80ff ffa0 d5fa ffff ffff ffff ffff ffff
+f0c0 0000 0080 8080 f8f0 c000 80c0 c0c0
+0000 0000 0101 0100 0000 0101 0202 0201
+7f7f f8f4 c88c 0000 8081 070b 3652 8c04
+ffff 7c62 6466 4200 ffff ffff ffff e742
+8000 0000 0000 0000 c080 0000 0000 0000 ]
+
+@player/sprite-happy
+( f0 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+080c 0c0c 0e1e 1e1f 1c1e 1e1e 1f3f 3f3f
+080c 0c0c 0c0c 0e1e 1c1e 1e1e 1e1e 1fbf
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1f1b 1b1d 1d1d 1f3f 3f3f 3f3f 3f3f 3f7f
+1e1a 1b1b bbff ffff bfbf bfbf ffff ffff
+0000 0000 0000 80c0 0000 8080 8080 c0e0
+0000 0001 0101 0101 0001 0103 0303 0303
+7fff fffe f9e7 dfff ffff ffff ffff ffff
+ffff ff03 fcff ffff ffff ffff ffff ffff
+e0f0 f8f8 f838 d8f8 f0f8 fcfc fcfc fcfc
+010e 1f03 0101 0103 0f1d 381d 0302 0307
+ffff 7fbf 8f83 9e3f ffff ffff 7f5f efcf
+ffff ffff fffc 80d0 ffff ffff ffff fcfc
+f0f0 e0c0 0000 0000 f8f8 f0e0 c000 0000
+0306 0606 0200 0000 040d 0f09 0703 0000
+7ffb fdfd fdf0 7e00 8707 0303 030f 817f
+f8f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f1 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0808
+0000 0000 0000 0000 0000 0000 0000 0808
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0008 0c0c 0c0e 1e1e 0c1c 1e1e 1e1f 3f3f
+0008 0c0c 0c0c 0c0e 0c1c 1e1e 1e1e 1e1f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1f1f 1b1b 1d1d 1d1f 3f3f 3f3f 3f3f 3f3f
+1e1e 1a1b 1bbb ffff bfbf bfbf bfff ffff
+0000 0000 0000 0080 0000 0080 8080 80c0
+0000 0000 0101 0101 0000 0101 0303 0303
+3f7f ffff fef9 e7df 7fff ffff ffff ffff
+ffff ffff 03fc ffff ffff ffff ffff ffff
+c0e0 f0f8 f8f8 38d8 e0f0 f8fc fcfc fcfc
+0105 0e01 0000 0001 070f 1f0e 0101 0103
+ffff ff7f bfcf d3be ffff ffff ff3f efcf
+ffff ffff ffff fc80 ffff ffff ffff fffc
+f8f0 f0e0 c000 0000 fcf8 f8f0 e0c0 0000
+0306 0606 0200 0000 040d 0f09 0703 0000
+7ffb fdfd fdf0 7e00 8707 0303 030f 817f
+d0f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f2 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+080c 0c0c 0e1e 1e1f 1c1e 1e1e 1f3f 3f3f
+080c 0c0c 0c0c 0e1e 1c1e 1e1e 1e1e 1fbf
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1f1b 1b1d 1d1d 1f3f 3f3f 3f3f 3f3f 3f7f
+1e1a 1b1b bbff ffff bfbf bfbf ffff ffff
+0000 0000 0000 80c0 0000 8080 8080 c0e0
+0000 0001 0101 0101 0001 0103 0303 0303
+7fff fffe f9e7 dfff ffff ffff ffff ffff
+ffff ff03 fcff ffff ffff ffff ffff ffff
+e0f0 f8f8 f838 d8f8 f0f8 fcfc fcfc fcfc
+0106 0e1c 1818 1818 070f 1733 3c2c 243c
+ffff 7f3f 0f03 1e3f ffff ff7f 3f1f 2f4f
+ffff ffff fffc 80d0 ffff ffff ffff fcfc
+f0f0 e0c0 0000 0000 f8f8 f0e0 c000 0000
+1818 0c0e 0600 0000 242d 1b13 0f07 0000
+7ffb fdfd fdf0 7e00 8707 0303 030f 817f
+f8f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f3 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+080c 0c0c 0e1e 1e1f 1c1e 1e1e 1f3f 3f3f
+080c 0c0c 0c0c 0e1e 1c1e 1e1e 1e1e 1fbf
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1f1b 1b1d 1d1d 1f3f 3f3f 3f3f 3f3f 3f7f
+1e1a 1b1b bbff ffff bfbf bfbf ffff ffff
+0000 0000 0000 80c0 0000 8080 8080 c0e0
+0000 0001 0101 0101 0001 0103 0303 0303
+7fff fffe f9e7 dfff ffff ffff ffff ffff
+ffff ff03 fcff ffff ffff ffff ffff ffff
+e0f0 f8f8 f838 d8f8 f0f8 fcfc fcfc fcfc
+0100 0000 3878 6060 0301 0038 5ccc f890
+ffff 7f3f 0f03 1e3f ffff ff7f 3f1f 2f4f
+ffff ffff fffc 80d0 ffff ffff ffff fcfc
+f0f0 e0c0 0000 0000 f8f8 f0e0 c000 0000
+6060 6070 3e0e 0000 b0f1 91bf 7337 0e00
+7ffb fdfd fdf0 7e00 8707 0303 030f 817f
+f8f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+( f4 ) [
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0008 080c
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+080c 0c0c 0e1e 1e1f 1c1e 1e1e 1f3f 3f3f
+080c 0c0c 0c0c 0e1e 1c1e 1e1e 1e1e 1fbf
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1f1b 1b1d 1d1d 1f3f 3f3f 3f3f 3f3f 3f7f
+1e1a 1b1b bbff ffff bfbf bfbf ffff ffff
+0000 0000 0000 80c0 0000 8080 8080 c0e0
+0000 0001 0101 0101 0001 0103 0303 0303
+7fff fffe f9e7 dfff ffff ffff ffff ffff
+ffff ff03 fcff ffff ffff ffff ffff ffff
+e0f0 f8f8 f838 d8f8 f0f8 fcfc fcfc fcfc
+0100 0000 3c7e 6606 0301 003c 4ae9 fb6f
+ffff 7f3f 0f03 1e3f ffff ff7f 3f1f 2f4f
+ffff ffff fffc 80d0 ffff ffff ffff fcfc
+f0f0 e0c0 0000 0000 f8f8 f0e0 c000 0000
+060e 0c0c 0e06 0000 0917 1f1b 130f 0600
+7ffb fdfd fdf0 7e00 8707 0303 030f 817f
+f8f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
+0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@drool/sprite [
+	0000 0000 0000 0000 0000 0010 0000 0000
+	0000 1038 1000 0000 0000 3838 3800 0000
+	0010 387c 3810 0000 0038 7c7c 7c38 0000
+	1038 7cfe 7c38 1000 107c 7cfe 7c7c 1000
+	387c fefe fe7c 3800 7cfe fefe fefe 7c00 ]
+
+@room/collisions $400
+@moss/mem $20
+
+@rabbit/moves-buf $10
+@occupied/buf $c8 &buf-cap $c8
+@drool/buf $1 &buf-next ( overlap asset buffers )
+ 

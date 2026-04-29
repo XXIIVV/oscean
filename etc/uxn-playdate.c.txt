@@ -39,7 +39,7 @@ static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY, rL1, rL2;
 static uint8_t pixel_lut[16];
 
 extern Uint8 uxn_rom[];
-extern Uint8 uxn_rom_size[];
+extern Uint8 uxn_rom_end[];
 
 static PlaydateAPI *pd = NULL;
 PDMenuItem *ctrl_menu_item;
@@ -285,12 +285,12 @@ screen_redraw(void)
 		for(int xi = 0; xi < 12; xi++, p += 32) {
 			uint32_t c = 0;
 			for(int k = 0; k < 32; k++)
-				c |= (uint32_t)pixel_lut[p[k] & 0xf] << (k ^ 7);
+				c |= (uint32_t)pixel_lut[p[k]] << (k ^ 7);
 			*row_dst++ = c;
 		}
 		uint32_t c = 0;
 		for(int k = 0; k < 16; k++)
-			c |= (uint32_t)pixel_lut[p[k] & 0xf] << (k ^ 7);
+			c |= (uint32_t)pixel_lut[p[k]] << (k ^ 7);
 		*row_dst = c;
 	}
 	pd->graphics->markUpdatedRows(0, SCREEN_HEIGHT - 1);
@@ -998,7 +998,7 @@ uxn_init(void)
 		return;
 	}
 	memset(ram, 0, BANKS_CAP);
-	size_t rom_len = (size_t)&uxn_rom_size;
+	size_t rom_len = (size_t)(uxn_rom_end - uxn_rom);
 	println("Copying rom.. %d bytes", (int)rom_len);
 	if(rom_len > BANKS_CAP - PAGE_PROGRAM) {
 		println("Error: Copying rom.. Too large");
@@ -1052,13 +1052,14 @@ update_inputs(PlaydateAPI *pd)
 		dev[0x82] = state;
 		if(pushed || released)
 			should_update_ctrl = true;
+		uint32_t now = time_ms();
 		if(pushed)
-			holding_timer = time_ms();
+			holding_timer = now;
 		if(current) {
 			float elapsed = time_ms() - holding_timer;
 			if(elapsed > KEY_REPEAT) {
 				should_update_ctrl = true;
-				holding_timer = time_ms();
+    			holding_timer = now;
 			}
 		}
 	} break;
