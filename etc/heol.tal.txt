@@ -1,11 +1,11 @@
 ( Uh Oh )
 
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
-|0000 @nil
-|0000 @types/clos
-|4000 @types/atom
-|8000 @types/prim
-|c000 @types/cons
+|2000 @types/atom
+|4000 @types/prim
+|6000 @types/cons
+|8000 @types/clos
+|a000 @types/nil
 
 |000
 
@@ -28,16 +28,16 @@
 @|Box )
 
 %tag ( box* -- tag* ) {
-	#c000 AND2 }
+	#e000 AND2 }
 
 %ord ( box* -- ord* ) {
-	#3fff AND2 }
+	#1fff AND2 }
 
 %not ( box* -- t ) {
-	#0000 EQU2 }
+	tag ;types/nil EQU2 }
 
 %not-nil ( box* -- t ) {
-	#0000 NEQ2 }
+	tag ;types/nil NEQ2 }
 
 %atom ( str* -- cell* ) {
 	sym/find-alloc ;types/atom ORA2 }
@@ -152,12 +152,12 @@
 	&list ( -- cell* )
 	token/scan
 	( | handlers )
-	.token/buf LDZ LIT ") NEQ ?{ ;nil JMP2r }
+	.token/buf LDZ LIT ") NEQ ?{ ;types/nil JMP2r }
 	.token/buf LDZ2 LIT2 ". 00 NEQ2 ?{ read !token/scan }
 	parse /list SWP2 !cons
 
 	&quote ( -- cell* )
-	;nil read cons ;dict/quote atom !cons
+	;types/nil read cons ;dict/quote atom !cons
 
 (
 @|Core )
@@ -205,14 +205,14 @@
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
 	DUP2 tag ;types/cons EQU2 ?&cons
-	POP2 POP2 ;nil JMP2r
+	POP2 POP2 ;types/nil JMP2r
 
 	&cons ( env* t* -- res* )
 	OVR2 OVR2 car eval STH2
 	cdr evlis STH2r !cons
 
 @bool ( t -- cell* )
-	?{ ;nil JMP2r }
+	?{ ;types/nil JMP2r }
 	.tru LDZ2 JMP2r
 
 (
@@ -224,7 +224,7 @@
 @prim/<boot> ( -- )
 	;dict/err atom .err STZ2
 	;dict/tru atom .tru STZ2
-	;nil .tru LDZ2 .tru LDZ2 pair .env STZ2
+	;types/nil .tru LDZ2 .tru LDZ2 pair .env STZ2
 	;&lutend ;&lut [ LIT2r 0000 ]
 	&>l
 		LDA2k atom .env LDZ2 STH2kr ;types/prim ORA2 ROT2 pair .env STZ2
@@ -332,7 +332,7 @@
 
 	&seg ( env* -- env* )
 	DUP2 .env LDZ2 EQU2 ?{ JMP2r }
-	POP2 ;nil JMP2r
+	POP2 ;types/nil JMP2r
 
 @f-print ( env* t* -- res* )
 	[ LIT2 18 _<emit>/port ] STR
@@ -395,7 +395,7 @@
 @<print> ( box* -- )
 	DUP2 tag
 	( | handlers )
-	DUP2 ;nil NEQ2 ?{ POP2 POP2 ;dict/nil-list !str/<print> }
+	DUP2 ;types/nil NEQ2 ?{ POP2 POP2 ;dict/nil-list !str/<print> }
 	DUP2 ;types/atom NEQ2 ?{ POP2 ord !str/<print> }
 	DUP2 ;types/prim NEQ2 ?{ POP2 !prim/<print> }
 	DUP2 ;types/cons NEQ2 ?{ POP2 !<print-list> }
@@ -490,5 +490,5 @@
 	=f-div ] &lutend
 
 @sym/mem
-|3ff0 @cons/mem
+|1ff0 @cons/mem
 
