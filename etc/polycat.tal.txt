@@ -42,7 +42,7 @@
 	( name ) "Polycat 0a
 	( details ) "A 20 "Platformer 20 "Game 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "28 20 "Apr 20 "2026 00 00
+	( date ) "29 20 "Apr 20 "2026 00 00
 
 %Screen/<set-pos> ( x* y* -- ) {
 	.Screen/y DEO2
@@ -1085,49 +1085,48 @@
 	/<leave>
 	BRK
 
-@drool/on-frame-setup ( -> )
-	;&buf #00c8 OVR ,&f LDR MUL2 ADD2 DUP2 #00c8 ADD2 SWP2
+@drool/on-frame-dawn ( -> )
+	;&buf #00c8 OVR ,&fa LDR MUL2 ADD2 DUP2 #00c8 ADD2 SWP2
 	&>loop-rabbits
 		DUP2 rabbit/<move>
 		INC2 INC2 GTH2k ?&>loop-rabbits
 	POP2 POP2
 	( | incr frame )
-	[ LIT &f $1 ] INCk ,&f STR
-	#05 EQU ?{ BRK }
-	;&on-frame-anim .Screen/vector DEO2
+	[ LIT &fa $1 ] INCk ,&fa STR
+	#05 NEQ ?{
+		#0003 /<draw-rabbits>
+		[ LIT2 00 _&fb ] STR
+		;&on-frame-sunrise .Screen/vector DEO2 }
 	BRK
 
-@drool/on-frame-anim ( -> )
-	( | incr counter )
-	[ LIT2 ff &counter $1 ] ADD DUP ,&counter STR
-	DUP #e0 LTH ?{
-		( frame ) #00 OVR #e0 SUB #20 SWP SUB #02 SFT
-		( addr* ) #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2 }
-	( | Clean )
-	INCk #0000
-	&>clear-loop
-		ROTk rabbit/<draw>
-		INC DUP #64 LTH ?&>clear-loop
-	POP2 POP
+@drool/on-frame-sunrise ( -> )
+	[ LIT &fb $1 ] INCk ,&fb STR
+	#00 OVR #02 SFT #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2
+	#ff03 /<draw-rabbits>
+	#20 NEQ ?{
+		#ff03 /<draw-rabbits>
+		[ LIT2 ff _&fc ] STR
+		;&on-frame-daytime .Screen/vector DEO2 }
+	BRK
+
+@drool/on-frame-daytime ( -> )
+	[ LIT2 ff &fc ff ] ADD DUP ,&fc STR
+	;&frolic .Screen/addr DEO2
+	( | Clear )
+	;Screen/center-50 .Screen/x DEO2
+	;Screen/middle-50 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
 	( | Draw )
-	#0f00
-	&>draw-loop
-		ROTk rabbit/<draw>
-		INC DUP #64 LTH ?&>draw-loop
-	POP2 ?{ ;&on-frame-sunset .Screen/vector DEO2 }
+	DUP #0f /<draw-rabbits>
+	?{
+		[ LIT2 20 _&fc ] STR
+		;&on-frame-sunset .Screen/vector DEO2 }
 	BRK
 
 @drool/on-frame-sunset ( -> )
-	;&counter LDA #02 SUB
-	( ) DUP ;&counter STA
-	( ) DUP #1f GTH ?{
-		( frame ) #00 OVR #02 SFT
-		( addr* ) #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2
-		#6400
-		&>loop-sunset
-			#03 OVR #00 rabbit/<draw>
-			INC GTHk ?&>loop-sunset
-		POP2 }
+	[ LIT2 ff &fd 20 ] ADD DUP ,&fd STR
+	#00 OVR #02 SFT #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2
+	#0003 /<draw-rabbits>
 	?{ /<leave> }
 	BRK
 
@@ -1146,10 +1145,19 @@
 			POP INC2r INC2r INC GTHk ?&>y
 		POP2 INC GTHk ?&>x
 	POP2 POP2r occupied/<init>
-	#00 ;&f STA
-	;&on-frame-setup .Screen/vector DEO2
+	#00 ;&fa STA
+	;&on-frame-dawn .Screen/vector DEO2
 	;&on-button .Controller/vector DEO2
 	JMP2r
+
+@drool/<draw-rabbits> ( f color -- )
+	;rabbit/color STA
+	STH
+	#6400
+	&>loop-sunset
+		DUP STHkr rabbit/<draw>
+		INC GTHk ?&>loop-sunset
+	POP2 POPr JMP2r
 
 %occupied/get-addr ( x y -- addr* ) {
 	#00 SWP #0014 MUL2 ROT #00 SWP ADD2 ;occupied/buf ADD2 }
@@ -1181,7 +1189,7 @@
 @occupied/check-move ( possible* new-x new-y -- possible'* )
 	DUP2 /get ?{
 		OVR2r [ LIT2r 00c8 ] SUB2r
-		( possible* new-x new-y / previous-frame-addr* ) &>l
+		&>l
 			;drool/buf-next STH2kr GTH2 ?&history-okay
 			DUP2 STH2kr LDA2 EQU2 ?&history-clash
 			[ LIT2r 00c8 ] SUB2r !&>l
@@ -1193,10 +1201,10 @@
 @rabbit/<move> ( addr* -- )
 	STH2k LDA2 DUP2 #00 occupied/<set>
 	;&moves-buf
-	( up ) OVR2 #01 SUB occupied/check-move
-	( down ) OVR2 INC INC occupied/check-move
-	( left ) OVR2 #0100 SUB2 occupied/check-move
-	( right ) OVR2 #0100 ADD2 occupied/check-move
+	( u ) OVR2 #01 SUB occupied/check-move
+	( d ) OVR2 INC INC occupied/check-move
+	( l ) OVR2 #0100 SUB2 occupied/check-move
+	( r ) OVR2 #0100 ADD2 occupied/check-move
 	( ) ;&moves-buf SUB2 DUP ?{
 		POP2
 		&write ( x y / addr* )
@@ -1207,7 +1215,7 @@
 	( num-possible-times-2* / addr* ) random/create SWP2 DIV2k MUL2 SUB2 #fe AND
 	( chosen-move* / addr* ) ;&moves-buf ADD2 LDA2 !&write
 
-@rabbit/<draw> ( color n counter -- )
+@rabbit/<draw> ( n counter -- )
 	OVR LTHk ?&<finish>
 	SUB
 	( color n timeline ) DUP #63 GTH ?&<start>
@@ -1222,7 +1230,7 @@
 	&>l
 		( y ) STHr /mix ;Screen/middle-50 ADD2 .Screen/y DEO2
 		( x ) STHr /mix ;Screen/center-50 ADD2 .Screen/x DEO2
-		.Screen/sprite DEO
+		[ LIT2 &color $1 -Screen/sprite ] DEO
 		JMP2r
 	
 		&<start> ( color n counter -- )
@@ -1240,7 +1248,9 @@
 	( ) [ LIT2 00 &from-weight 00 ] MUL2 ROT #00 SWP
 	( ) [ LIT2 00 &to-weight 00 ] MUL2 ADD2 JMP2r
 
-~src/assets.tal(
+~src/assets.tal
+
+(
 @|Assets )
 
 @fill-icn [ aa55 aa55 aa55 aa55 ]
@@ -2435,7 +2445,8 @@ f8f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
 	0000 0000 0000 0000 0000 0010 0000 0000
 	0000 1038 1000 0000 0000 3838 3800 0000
 	0010 387c 3810 0000 0038 7c7c 7c38 0000
-	1038 7cfe 7c38 1000 107c 7cfe 7c7c 1000
+	1038 7cfe 7c38 1000 107c 7cfe 7c7c 1000 ]
+	&frolic [
 	387c fefe fe7c 3800 7cfe fefe fefe 7c00 ]
 
 @room/collisions $400
