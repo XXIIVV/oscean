@@ -1,5 +1,7 @@
 let examples={}
-examples.hello_world=`(define double
+examples.hello_world=`; This is a comment
+
+(define double
 	(lambda (x) (+ x x)))
 
 (if 
@@ -9,31 +11,27 @@ examples.hello_world=`(define double
 
 (print 
 	'(Heol! Lisp))`
-examples.fibonacci=`(define fib
+examples.fibonacci=`; Print the fibonacci numbers
+
+(define fib
   (lambda (n)
     (if (< n 2)
       n
       (+ (fib (- n 1)) (fib (- n 2))))))
 
 (print (fib 9))`
+examples.factorial=`; Print the factorial numbers
 
-examples.factorial = 
-
-`(define fac 
+(define fac 
 	(lambda (n)
 		(if (< n 2)
 			1 
 			(* n (fac (- n 1))))))
 
 (print (fac 5))`
-examples.factorial=`(define fac 
-	(lambda (n)
-		(if (< n 2)
-			1 
-			(* n (fac (- n 1))))))
+examples.fizzbuzz=`; Print the FizzBuzz sequence
 
-(print (fac 5))`
-examples.fizzbuzz=`(define print-ln
+(define print-ln
 	(lambda (s)
 		(and (print s) (print '\\n))))
 
@@ -65,7 +63,9 @@ examples.map=`(define print-ln
 
 (print-ln (map double '(1 2 3 4 5)))
 (print-ln (map add1   '(1 2 3 4 5)))`
-examples.combinators=`(define I (lambda (a) a))
+examples.combinators=`; Church numerals from combinatory logic
+
+(define I (lambda (a) a))
 (define K (lambda (a) (lambda (b) a)))
 (define B (lambda (f) (lambda (g) (lambda (x) (f (g x))))))
 (define S (lambda (f) (lambda (g) (lambda (x) ((f x) (g x))))))
@@ -77,7 +77,7 @@ examples.combinators=`(define I (lambda (a) a))
 (define add ((B S) (B B)))
 
 (define print_church
- (lambda (n) ((n (lambda (x) (+ x 1))) 0)))
+	(lambda (n) ((n (lambda (x) (+ x 1))) 0)))
 
 (define two (succ one))
 (define three (succ two))

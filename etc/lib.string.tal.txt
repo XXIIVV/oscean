@@ -145,10 +145,10 @@
 @|Chr )
 
 @chr/lc ( c -- lowercase )
-	DUP LIT "A SUB #19 GTH #50 SFT ADD JMP2r
+	DUP LIT "A SUB #1a LTH #50 SFT ADD JMP2r
 
-@chr/uc ( c -- lowercase )
-	DUP LIT "a SUB #19 GTH #50 SFT SUB JMP2r
+@chr/uc ( c -- uppercase )
+	DUP LIT "a SUB #1a LTH #50 SFT SUB JMP2r
 
 @chr/hex ( c -- val )
 	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
@@ -232,13 +232,14 @@
 	( >> )
 
 @str/dec ( str* -- val* )
-	[ LIT2r 0000 ]
-	&>wd
-		( val ) LDAk [ LIT "0 ] SUB #09 GTH ?{
-			( acc ) [ LIT2r 000a ] MUL2r
-			( mix ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
-			ADD2r INC2 LDAk ?&>wd }
-	POP2 STH2r JMP2r
+	[ LIT2r 0000 ] !{
+
+	&>ldec
+		[ LITr 00 ] STH
+		MUL2r [ LITr 00 ] STH
+		ADD2r INC2 }
+	( str* . val* ) LDAk [ LIT "0 ] SUB #0a LTHk ?&>ldec
+	POP2 POP2 STH2r JMP2r
 
 @str/cmp ( a* b* -- f )
 	STH2
