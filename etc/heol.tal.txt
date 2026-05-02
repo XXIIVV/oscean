@@ -34,10 +34,10 @@
 	#1fff AND2 }
 
 %not ( box* -- t ) {
-	tag ;types/nil EQU2 }
+	#a000 EQU2 }
 
 %not-nil ( box* -- t ) {
-	tag ;types/nil NEQ2 }
+	#a000 NEQ2 }
 
 %atom ( str* -- cell* ) {
 	sym/find-alloc ;types/atom ORA2 }
@@ -146,8 +146,8 @@
 	.token/buf LDZ LIT "( EQU ?&list
 	.token/buf LDZ LIT "' EQU ?&quote
 	( | atomic )
-	;token/buf DUP2 str/is-dec ?{ atom JMP2r }
-	!str/to-dec
+	;token/buf DUP2 str/is-dec ?str/to-dec
+	atom JMP2r
 
 	&list ( -- cell* )
 	token/scan
@@ -255,7 +255,7 @@
 	evlis car not !bool
 
 @f-lt ( env* t* -- res* )
-	evlis DUP2 car SWP2 cdr car LTH2 !bool
+	evlis DUP2 car SWP2 cdr car s16/lth !bool
 
 @f-eval ( env* t* -- res* )
 	OVR2 SWP2 evlis car !eval
@@ -300,8 +300,7 @@
 	evlis DUP2 car STH2
 	&>w
 		cdr DUP2 not ?{
-			DUP2 car STH2
-			DIV2r !&>w }
+			DUP2 car STH2r s16/div STH2 !&>w }
 	POP2 STH2r ord JMP2r
 
 @f-leta ( env* t* -- res* )
@@ -430,17 +429,35 @@
 	POP2 POP2r #00 JMP2r
 
 @str/is-dec ( str* -- t )
+	LDAk [ LIT "- ] NEQ ?{
+		INC2 LDAk chr/is-dec ?{ POP2 #00 JMP2r } }
 	&>wid
 		LDAk DUP ?{ POP POP2 #01 JMP2r }
 		chr/is-dec ?{ POP2 #00 JMP2r }
 		INC2 !&>wid
 
 @str/to-dec ( str* -- val* )
+	( sign ) [ LITr 00 ]
+	( sign ) LDAk [ LIT "- ] NEQ ?{ INC2 INCr }
 	[ LIT2r 0000 ]
 	&>wn
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
 		ADD2r INC2 LDAk #30 SUB #0a LTH ?&>wn
-	POP2 STH2r JMP2r
+	POP2 ROTr STHr ?{ STH2r JMP2r }
+	#0000 STH2r SUB2 #1fff AND2 JMP2r
+
+@s16/lth ( a* b* -- t )
+	#1000 EOR2 SWP2 #1000 EOR2 GTH2 JMP2r
+
+@s16/div ( a* b* -- res* )
+	/normalize STH
+	SWP2 /normalize STH
+	DIV2 EORr STHr ?{ JMP2r }
+	#0000 SWP2 SUB2 JMP2r
+
+@s16/normalize ( s16* -- s16* mask )
+	OVR #10 AND ?{ #00 JMP2r }
+	#0000 SWP2 SUB2 #0fff AND2 #10 JMP2r
 
 %dec/is-pos ( short* -- short* t ) {
 	DUP2 #1000 AND2 EQU }

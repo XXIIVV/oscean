@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "29 20 "Apr 20 "2026 $2
+	( date ) "1 20 "May 20 "2026 $2
 
 (
 @|Source )
@@ -149,7 +149,7 @@
 	( | fall-through )
 	;piece-a/buf LDA [ LIT "@ ] NEQ ?{
 		;piece-b/buf is-jump #00 EQU ?{
-			;piece-a/buf INC2 ;piece-b/buf INC2 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
+			;piece-a/buf+1 ;piece-b/buf+1 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
 	( | unnamed buffer )
 	;piece-a/buf LDA [ LIT "$ ] NEQ ?{
 		;piece-b/buf is-label ?{
@@ -171,7 +171,7 @@
 
 @include ( -- )
 	;piece-a/buf str/cap #000a SUB2 ;dict/assets-tal str/cmp ?{
-		;piece-a/buf INC2 src/<set>
+		;piece-a/buf+1 src/<set>
 		;src/buf .File/name DEO2
 		#0000 .stats/lines STZ2 }
 	!reset
@@ -279,9 +279,10 @@
 	;scope/buf !str/cmp-seg
 
 @is-calling-local ( str* -- f )
-	&>w
-		LDA2k LIT2 "/+ NEQ2 ?{ POP2 #01 JMP2r }
-		INC2 LDAk ?&>w
+	LDAk LIT "@ EQU ?{
+		&>w
+			LDA2k LIT2 "/+ NEQ2 ?{ POP2 #01 JMP2r }
+			INC2 LDAk ?&>w }
 	POP2 #00 JMP2r
 
 @scmp-wild ( a* b* -- flag )
@@ -519,7 +520,7 @@
 	&end
 
 @logic "<logic> $1 &lut [
-	"GTH $1 "LTH $1 "EQU $1 "NEQ $1 ]
+	"GTH $1 "LTH $1 "EQU $1 "NEQ $1 ] $1
 
 @any-1x-lut "<any-1x> $1 &lut [ ( consume 1 byte )
 	"INC $1 "DUP $1 "POP $1 ] $1
@@ -631,6 +632,10 @@
 	@ovr "OVR $1
 	@ovrk "OVRk $1
 	@ovr2k "OVR2k $1
+	@lth "LTH $1
+	@lth2 "LTH2 $1
+	@gth "GTH $1
+	@gth2 "GTH2 $1
 	@inck "INCk $1
 	@inc2k "INC2k $1
 	@brk "BRK $1
@@ -788,7 +793,6 @@
 	"DUP2 $1 "NIP2 $1 =redundance
 	"SWP $1 "NIP $1 =pop
 	"SWP2 $1 "NIP2 $1 =pop
-
 	"OVR $1 "NIP $1 =popdup
 	"OVR2 $1 "NIP2 $1 =popdup2
 	"SWPr $1 "STH2r $1 =sthrsthr
@@ -912,6 +916,10 @@
 	"SWP2 $1 "<noswp2> $1 =redundance
 	"<any-12> $1 "NIP $1 =redundance
 	"<any-12> $1 "POP $1 =redundance
+	"SWP2 $1 "GTH2 $1 =lth2
+	"SWP $1 "GTH $1 =lth
+	"SWP2 $1 "LTH2 $1 =gth2
+	"SWP $1 "LTH $1 =gth
 	"LDZ2 $1 "NIP $1 =static
 	"LDZ2 $1 "POP $1 =static
 	"LDR2 $1 "NIP $1 =static
@@ -926,6 +934,7 @@
 	".* $1 "?* $1 =static
 	",* $1 "?* $1 =static
 	";* $1 "?* $1 =static
+	"#00* $1 "ORA2 $1 =ora
 	( unkept )
 	"DUP $1 "<any-1x> $1 =keep
 	"DUP2 $1 "<any2-1x> $1 =keep
@@ -1112,9 +1121,9 @@
 (
 @|Buffers )
 
-@piece-a/buf $30
-@piece-b/buf $30
-@piece-c/buf $30
+@piece-a/buf $1 &buf+1 $30
+@piece-b/buf $1 &buf+1 $30
+@piece-c/buf $1 &buf+1 $30
 @name/buf $100
 
 @macros/mem $2000
