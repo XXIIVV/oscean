@@ -171,7 +171,6 @@ function Repl(rom, keyword)
 	this.select_example = (value) => {
 		this.editor_el.value = value ? examples[value] : examples.hello_world
 		this.logs_el.innerHTML = `Press <b>${keyword}</b> to evaluate.`
-		this.editor_el.focus()
 	}
 
 	this.run = () => {
