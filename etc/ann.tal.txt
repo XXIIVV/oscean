@@ -1,0 +1,424 @@
+( Whatever I see I swallow immediately
+| Just as it is, unmisted by love or dislike. )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+
+(
+@|Enums )
+
+|0101 @EPS
+|0202 @GAM
+|0003 @EPS-GAM
+|0404 @DEL
+|ffff @NIL
+|0005 @EPS-DEL
+|0006 @GAM-DEL
+|0808 @DEAD
+|0008 @NODE-WIDTH
+
+|100
+
+@on-reset ( -> )
+	net/<test-tiny-destroy>
+	#010e DEO
+	BRK
+
+@other-tests ( -- )
+	net/<test-epseps>
+	net/<test-gamgam>
+	net/<test-gamgam2>
+	net/<test-deldel>
+	net/<test-deldel2>
+	net/<test-epsgam>
+	net/<test-gameps>
+	net/<test-gamdel>
+	net/<test-twothree>
+	net/<test-dup>
+	net/<test-dup>
+	net/<test-gamdel-inf>
+	JMP2r
+
+(
+@|Macros )
+
+%+/p ( n* -- ) {
+	INC2 INC2 }
+
+%+/x ( n* -- ) {
+	#0004 ADD2 }
+
+%+/y ( n* -- ) {
+	#0006 ADD2 }
+
+%is-nil ( n* -- t ) {
+	;NIL EQU2 }
+
+%is-pri ( n* -- t ) {
+	#07 AND #02 EQU NIP }
+
+%not-primary-ports ( a/p* b/p* -- a/p* b/p* t ) {
+	ROTk #0707 AND2 #0202 NEQ2 NIP }
+
+%get-aux ( x* -- x* bit ) {
+	#0004 ADD2 LDA2k ;NIL NEQ2 STH
+	INC2k INC2 LDA2 ;NIL NEQ2 #10 SFT STHr ORA }
+
+(
+@|Net )
+
+@net/<run> ( -- )
+	/<print>
+	[ LITr 01 ]
+	&>w
+		STHkr ?{
+			;dict/inf str/<print>
+			( inf loop ) POPr !<lb> }
+		queue/is-busy ?{ POPr !<lb> }
+		queue/pop-wire /<interact>
+		INCr <lb>
+		/<print> !&>w
+
+@net/<init> ( -- )
+	;dict/spacer str/<print>
+	queue/<init>
+	;&buf ,&+ptr STR2
+	;&buf-end ;&buf
+	&>l
+		;DEAD OVR2 /<spawn>
+		INC2 INC2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@net/alloc ( type* -- node* )
+	[ LIT2 &+ptr =&buf ] DUP2 ;NODE-WIDTH ADD2
+	( | overflow )
+	DUP2 ;&buf-end LTH2 ?{ ;dict/err str/<print>
+		POP2 ;&buf }
+	,&+ptr STR2
+	STH2k /<spawn>
+	STH2r JMP2r
+
+@net/<spawn> ( type* addr* -- )
+	STH2k STA2
+	;NIL STH2r
+	( P0 ) INC2 INC2 STA2k
+	( P1 ) INC2 INC2 STA2k
+	( P2 ) INC2 INC2 STA2
+	JMP2r
+
+@net/<free-nodes> ( a* b* -- )
+	/<free>
+	( >> )
+
+@net/<free> ( node* -- )
+	;DEAD SWP2 STA2
+	JMP2r
+
+%net/<wire-keep> ( a/p* b/p* -- a/p* b/p* ) {
+	STA2k SWP2 STA2k SWP2 }
+
+%net/<wire> ( a/p* b/p* -- ) {
+	STA2k SWP2 STA2 }
+
+@net/<activate> ( a* b* -- )
+	+/p SWP2 +/p SWP2
+	( wire ) /<wire-keep> !queue/<push-wire>
+
+@net/<wire-push> ( a/p* b/p* -- )
+	DUP2 is-nil ?{
+		OVR2 is-nil ?{ /<wire-keep>
+			not-primary-ports ?{ !queue/<push-wire> } } }
+	POP2 POP2 JMP2r
+
+@net/<interact> ( a* b* -- )
+	( | gather types )
+	LDAk STH
+	SWP2 LDAk STHr ORA
+	( | Find rule )
+	DUP .EPS EQU ?/<apply-ann1>
+	DUP .GAM EQU ?/<apply-ann2>
+	DUP .DEL EQU ?/<apply-ann2>
+	DUP .EPS-GAM EQU ?/<apply-com1>
+	DUP .EPS-DEL EQU ?/<apply-com1>
+	DUP .GAM-DEL EQU ?/<apply-com2>
+	#1a DEO2
+	<lb>
+	POP2 POP2 JMP2r
+
+@net/<apply-ann1> ( a* b* type -- )
+	POP ;dict/ann1 str/<print> !/<free-nodes>
+
+@net/<apply-ann2> ( a* b* type -- )
+	POP ;dict/ann2 str/<print>
+	( a.p1 b.p1 ) OVR2 +/x LDA2 OVR2 +/x LDA2 /<wire-push>
+	( a.p2 b.p2 ) OVR2 +/y LDA2 OVR2 +/y LDA2 /<wire-push> !/<free-nodes>
+
+@net/<apply-com1> ( a* b* type -- )
+	POP ;dict/com1 str/<print>
+	( | put gamma on top )
+	LDAk .EPS NEQ ?{ SWP2 }
+	( e1 ) DUP2 +/x LDA2 DUP2 is-nil ?{
+		DUP2 ;EPS /alloc +/p /<wire-push> }
+	POP2
+	( e2 ) DUP2 +/y LDA2 DUP2 is-nil ?{
+		DUP2 ;EPS /alloc +/p /<wire-push> }
+	POP2 !/<free-nodes>
+
+@net/<apply-com2> ( a* b* type -- )
+	POP ;dict/com2 str/<print>
+	( | outside )
+	( g ) OVR2 +/x LDA2 ;DEL /alloc
+	( gx ) DUP2 +/x ;&gx STA2
+	( gy ) DUP2 +/y ;&gy STA2
+	+/p /<wire-push>
+	( h ) DUP2 +/x LDA2 ;GAM /alloc
+	( hx ) DUP2 +/x ,&hx STR2
+	( hy ) DUP2 +/y ,&hy STR2
+	+/p /<wire-push>
+	( i ) OVR2 +/y LDA2 ;DEL /alloc
+	( ix ) DUP2 +/x ,&ix STR2
+	( iy ) DUP2 +/y ,&iy STR2
+	+/p /<wire-push>
+	( j ) DUP2 +/y LDA2 ;GAM /alloc
+	( jx ) DUP2 +/x ,&jx STR2
+	( jy ) DUP2 +/y ,&jy STR2
+	+/p /<wire-push>
+	( | cross )
+	[ LIT2 &ix $2 ] [ LIT2 &hy $2 ] /<wire>
+	[ LIT2 &iy $2 ] [ LIT2 &jy $2 ] /<wire>
+	[ LIT2 &hx $2 ] [ LIT2 &gx $2 ] /<wire>
+	[ LIT2 &gy $2 ] [ LIT2 &jx $2 ] /<wire> !/<free-nodes>
+
+@is-already-printed ( node* -- node* t )
+	( get pri ) INC2k INC2 LDA2k is-pri ?{ POP2 #00 JMP2r }
+	LDA2 OVR2 LTH2 JMP2r
+
+@net/<print> ( -- )
+	[ LITr 00 ] ;&+ptr LDA2 ;&buf
+	&>lp
+		LDA2k ;DEAD EQU2 ?{ is-already-printed ?{ /<print-node>
+				INCr } }
+		;NODE-WIDTH ADD2 GTH2k ?&>lp
+	POP2 POP2 STHr ?{ ;dict/empty !str/<print> }
+	JMP2r
+
+@net/<print-node> ( addr* -- addr* )
+	LDA2k /<print-type>
+	DUP2 #03 SFT NIP LIT "a ADD #18 DEO
+	DUP2 /<print-aux>
+	DUP2 /<print-pri> !<lb>
+
+@net/<print-pri> ( addr* -- )
+	INC2 INC2 LDA2k is-pri ?{ ;dict/wire str/<print>
+		LDA2 !/<print-port> }
+	( | Principal )
+	;dict/wire-pri str/<print>
+	LDA2 #33 SFT2 LDA2k /<print-type>
+	DUP2 #03 SFT NIP LIT "a ADD #18 DEO !/<print-aux>
+
+@net/<print-aux> ( addr* -- )
+	get-aux
+	( | handlers )
+	DUP ?{ POP POP2 JMP2r }
+	#01 NEQ ?{
+		LIT2 "( 18 DEO
+		LDA2 /<print-port>
+		LIT2 ") 18 DEO
+		JMP2r }
+	LIT2 "( 18 DEO
+	LDA2k /<print-port>
+	[ LIT2 ", 18 DEO ] #2018 DEO
+	INC2 INC2 LDA2 /<print-port>
+	LIT2 ") 18 DEO
+	JMP2r
+
+@net/<print-port> ( addr* -- )
+	INC2k ORA ?{ POP2 ;dict/tomb !str/<print> }
+	( | name )
+	DUP2 #33 SFT2 LDA2k /<print-type>
+	#03 SFT2 NIP LIT "a ADD #18 DEO
+	NIP #07 AND #01 SFT DUP #01 NEQ ?{ POP JMP2r }
+	( | id )
+	LIT2 ". 18 DEO
+	( | port )
+	#01 SUB LIT "w ADD #18 DEO
+	JMP2r
+
+@net/<print-type> ( value* -- )
+	DUP2 ;EPS NEQ2 ?{ POP2 ;dict/eps !str/<print> }
+	DUP2 ;GAM NEQ2 ?{ POP2 ;dict/gam !str/<print> }
+	;DEL NEQ2 ?{ ;dict/del !str/<print> }
+	;dict/dead !str/<print>
+
+(
+@|Queue )
+
+@queue/<init> ( -- )
+	;&buf ,&+ptr STR2
+	JMP2r
+
+@queue/<push-wire> ( a/p* b/p* -- )
+	SWP2 /<push>
+	( >> )
+
+@queue/<push> ( p* -- )
+	( get node addr ) #33 SFT2
+	( | store )
+	[ LIT2 &+ptr =&buf ] INC2k INC2
+	( | overflow )
+	DUP2 ;&buf-end LTH2 ?{ ;dict/err str/<print>
+		POP2 ;&buf }
+	,&+ptr STR2
+	STA2
+	JMP2r
+
+@queue/pop-wire ( -- b* a* )
+	/pop
+	( >> )
+
+@queue/pop ( -- a* )
+	,&+ptr LDR2 #0002 SUB2 DUP2 ,&+ptr STR2
+	LDA2 JMP2r
+
+@queue/is-busy ( -- t )
+	,&+ptr LDR2 ;&buf NEQ2 JMP2r
+
+(
+@|Stdlib )
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@<lb> ( -- )
+	#0a18 DEO
+	JMP2r
+
+(
+@|Tests )
+
+@net/<test-epseps> ( -- )
+	/<init>
+	;EPS /alloc ;EPS /alloc /<activate> !/<run>
+
+@net/<test-gamgam> ( -- )
+	/<init>
+	( c ) ;GAM /alloc
+	( a ) ;GAM /alloc /<activate> !/<run>
+
+@net/<test-gamgam2> ( -- )
+	/<init>
+	( g1 ) ;GAM /alloc STH2k
+	( g1 g2 ) ;GAM /alloc STH2k /<activate>
+	( | connect to dummy nodes )
+	;EPS /alloc +/p STH2r +/x /<wire>
+	;EPS /alloc +/p STH2r +/x /<wire> !/<run>
+
+@net/<test-deldel> ( -- )
+	/<init>
+	( c ) ;DEL /alloc
+	( a ) ;DEL /alloc /<activate> !/<run>
+
+@net/<test-deldel2> ( -- )
+	/<init>
+	( g1 ) ;DEL /alloc STH2k
+	( g1 g2 ) ;DEL /alloc STH2k /<activate>
+	( | connect to dummy nodes )
+	;EPS /alloc +/p STH2kr +/x /<wire>
+	;EPS /alloc +/p STH2r +/y /<wire>
+	;EPS /alloc +/p STH2kr +/x /<wire>
+	;EPS /alloc +/p STH2r +/y /<wire> !/<run>
+
+@net/<test-epsgam> ( -- )
+	/<init>
+	( e ) ;EPS /alloc
+	( e g ) ;GAM /alloc STH2k
+	( g.p1 >< x.p0 ) ;EPS /alloc +/p STH2kr +/x /<wire>
+	( g.p2 >< y.p0 ) ;EPS /alloc +/p STH2r +/y /<wire>
+	( e.p0 >< g.p0 ) /<activate> !/<run>
+
+@net/<test-gameps> ( -- )
+	/<init>
+	( e ) ;GAM /alloc STH2k
+	( e g ) ;EPS /alloc
+	( g.p1 >< x.p0 ) ;EPS /alloc +/p STH2kr +/x /<wire>
+	( g.p2 >< y.p0 ) ;EPS /alloc +/p STH2r +/y /<wire>
+	( e.p0 >< g.p0 ) /<activate> !/<run>
+
+@net/<test-gamdel> ( -- )
+	/<init>
+	( g ) ;GAM /alloc STH2k
+	( d ) ;DEL /alloc STH2k /<activate>
+	( i.p0<>d.p1 ) ;EPS /alloc +/p STH2kr +/x /<wire>
+	( j.p0<>d.p2 ) ;EPS /alloc +/p STH2r +/y /<wire>
+	( k.p0<>g.p1 ) ;EPS /alloc +/p STH2kr +/x /<wire>
+	( l.p0<>g.p2 ) ;EPS /alloc +/p STH2r +/y /<wire> !/<run>
+
+@net/<test-gamdel-inf> ( -- )
+	/<init>
+	( g ) ;GAM /alloc STH2k
+	( d ) ;DEL /alloc STH2k /<activate>
+	( e1~dy ) ;EPS /alloc +/p STH2kr +/y /<wire>
+	( e2~gx ) ;EPS /alloc +/p OVR2r STH2r +/x /<wire>
+	( dx~gy ) STH2r +/x STH2r +/y /<wire> !/<run>
+
+@net/<test-twothree> ( -- )
+	/<init>
+	( | 3 )
+	( 0 ) ;EPS /alloc +/p
+	( 0+ ) ;DEL /alloc STH2k +/x /<wire>
+	( 0++ ) STH2r +/p ;DEL /alloc STH2k +/x /<wire>
+	( 0+++ ) STH2r +/p ;DEL /alloc STH2k +/x /<wire>
+	( | 2 )
+	( 0 ) ;EPS /alloc +/p
+	( 0+ ) ;DEL /alloc STH2k +/x /<wire>
+	( 0++ ) STH2r +/p ;DEL /alloc STH2k +/x /<wire>
+	( | Add )
+	;DEL /alloc DUP2 +/x STH2r +/p /<wire>
+	STH2r /<activate> !/<run>
+
+@net/<test-tiny-destroy> ( -- )
+	/<init>
+	( dx~dy ) ;DEL /alloc STH2k +/x STH2kr +/y /<wire>
+	( d~>gx ) STH2r +/p ;GAM /alloc STH2k +/x /<wire>
+	( e1~gy ) ;EPS /alloc +/p STH2kr +/y /<wire>
+	( e2><g ) ;EPS /alloc STH2r /<activate> !/<run>
+
+@net/<test-dup> ( -- )
+	/<init>
+	( g1x~g1y ) ;GAM /alloc STH2k DUP2 +/x SWP2 +/y /<wire>
+	( g1~>g2y ) ;GAM /alloc DUP2 +/y STH2r +/p /<wire>
+	( e~>g2x ) DUP2 +/x ;EPS /alloc +/p /<wire>
+	( d><g2 ) ;DEL /alloc /<activate> !/<run>
+
+(
+@|Assets )
+
+@dict/wire 20 "~> 20 00 &wire-pri 20 ">< 20 00
+	&eps "E 00
+	&gam "G 00
+	&del "D 00
+	&inf "(Infinite-loop) 0a00
+	&dead "--- 00
+	&tomb "nil 00
+	&empty "(empty) 0a00
+	&spacer "------------------ 0a00
+	&err "Overflow 0a00 &ann1 0a "Ann1 00 &ann2 0a "Ann2 00 &com1 0a "Com1 00 &com2 0a "Com2 00
+	&test-epseps "============= 20 "EPS-EPS 0a00
+	&test-gamgam "============= 20 "GAM-GAM 0a00
+	&test-deldel "============= 20 "DEL-DEL 0a00
+	&test-epsgam "============= 20 "EPS-GAM 0a00
+	&test-gamdel "============= 20 "GAM-DEL 0a00
+	&test-twothree "============= 20 "TWO-THREE 0a00
+
+(
+@|Buffers )
+
+@queue/buf $2000
+	&buf-end
+(
+@|Aligned Memory )
+
+
+|8000 @net/buf $7ff8 &buf-end
+

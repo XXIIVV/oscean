@@ -29,7 +29,7 @@
 
 <h3 id='nodes'>Nodes</h3>
 
-<p>The drawings show 3 different types of nodes, we'll give them names, so let's say: <i>Delta</i>, <i>Gamma</i> and <i>Epsilon</i>. Each one has a single <b>primary port</b>, Delta and Gamma have two auxiliary ports:</p>
+<p>The drawings show 3 different types of nodes, we'll give them names, so let's say: <i>Delta(D)</i>, <i>Gamma(G)</i> and <i>Epsilon(E)</i>. Each one has a single <b>primary port</b>, Delta and Gamma have two auxiliary ports(x, y):</p>
 
 <center>
 	<img src='../media/generic/ann_nodes.png' width='300'/>
@@ -48,33 +48,140 @@
 <ul>
 	<li><code>Ann1(E&gt;&lt;E)</code>: Two epsilons, annihilate each other.</li>
 	<li><code>Ann2(D&gt;&lt;D/G&gt;&lt;G)</code>:Two gammas/deltas, annihilate each other and connect their wires in parallel.</li>
-	<li><code>Com1(E&gt;&lt;G)</code>: An epsilon and a gamma/delta, create two epsilons connected to the outgoing ports.</li>
+	<li><code>Com1(E&gt;&lt;D/E&gt;&lt;G)</code>: An epsilon and a gamma/delta, create two epsilons connected to the outgoing ports.</li>
 	<li><code>Com2(D&gt;&lt;G)</code>: A gamma and a delta create two new nodes connected into a square.</li>
 </ul>
 
-<img src='../media/generic/ann_reduce.png' width='280' class='right'/>
+<h3>Annihilation Annotation</h3>
+
+<p>As an extra aid to understanding the system, we'll use a notation to represent graphs textually:</p>
+
+<pre>
+Da          <i>; A Del node, with id: #a</i>
+Gb(Ec)      <i>; A Gam node #b, with an Eps connected into auxliary x.</i>
+Ec ~> Gb.x  <i>; An Eps node #c, connected to #b.x by its primary.</i>
+Ge >< Df    <i>; A Gam node #e, connected to #f by their primaries. </i>
+</pre>
 
 <h3>Programming</h3>
 
-<p>Programming is done entirely by drawing a graph of connected nodes, and reducing it using the four rules until it stabilizes. Each transformation is equal to a computing step, every operation operates locally so the order of operation does not matter, any two nodes connected by their primary port can be reduced at once.</p>
+<p>Programming is done entirely by drawing a graph of connected nodes, and reducing it using the four rules until it stabilizes.</p>
 
-<p>Here is an example of a graph that reduces itself into nothing, in 3 steps:</p>
+<table border='1'>
+<tr>
+	<th>Graph</th>
+	<th>Ann</th>
+</tr>
+<tr>
+	<td>
+		<img src='../media/generic/ann_reduce.png' width='260'/>
+	</td>
+	<td>
+<pre>
+• Gb(Da, Ec) >< Ed, 
+  Da(Da.y, Da.x) ~> Gb.x,
+  Ec ~> Gb.y
+
+
+
+
+
+• Ec >< Ef,
+  Da(Da.y, Da.x) >< Ee
+
+
+
+
+
+• Da(Da.y, Da.x) >< Ee
+
+
+
+
+
+• Eg >< Eh</pre>
+	</td>
+</tr>
+</table>
+<p>Each transformation is equal to a computing step, every operation operates locally so the order of operation does not matter, any two nodes connected by their primary port can be reduced at once.</p>
 
 <h3>Loops</h3>
 
-<p>Not all graphs stabilize, for example the following will loop for ever, creating its else again and again, resulting into an infinite loop, you can see it in action in this <a href='https://www.youtube.com/watch?v=_uIGQ1biCXY' target='_blank'>video</a>:</p>
+<p>Not all graphs stabilize, for example, the following graph will loop for ever, creating its else again and again, resulting into an infinite loop, you can see it in action in this <a href='https://www.youtube.com/watch?v=_uIGQ1biCXY' target='_blank'>video</a>.</p>
 
 <center>
-	<img src='../media/generic/ann_loop.png' width='260'/>
+	<img src='../media/generic/ann_loop.png' width='240'/>
 </center>
 
 <h3>Duplication</h3>
 
 <p>Here is a more complex graph that shows how the delta-gamma connection creates two instances of a gamma node and an epsilon node in five steps:</p>
 
-<center>
-	<img src='../media/generic/ann_reduce2.png'/>
-</center>
+<table border='1'>
+<tr>
+	<th>Graph</th>
+	<th>Ann</th>
+</tr>
+<tr>
+	<td>
+		<img src='../media/generic/ann_reduce2.png' width='320'/>
+	</td>
+	<td>
+<pre>
+• Gb(Ec, Ga) >< Dd,
+  Ga(Ga.y, Ga.x) ~> Gb.y,
+  Ec ~> Gb.x
+
+
+
+
+• Ga(Ga.y, Ga.x) >< Dg(Gf.y, Gh.y),
+  Ec >< De(Gf.x, Gh.x),
+  Gf(De.x, Dg.x) ~> nil,
+  Gh(De.y, Dg.y) ~> nil
+
+
+
+
+
+
+• Di(Gj.x, Gl.x) >< Dk(Gj.y, Gl.y),
+  Ec >< De(Gf.x, Gh.x),
+  Gf(De.x, Gj) ~> nil,
+  Gh(De.y, Gl) ~> nil,
+  Gj(Di.x, Dk.x) ~> Gf.y,
+  Gl(Di.y, Dk.y) ~> Gh.y
+
+
+
+
+
+
+
+• Ec >< De(Gf.x, Gh.x),
+  Gf(De.x, Gj) ~> nil,
+  Gh(De.y, Gl) ~> nil,
+  Gj(Gj.y, Gj.x) ~> Gf.y,
+  Gl(Gl.y, Gl.x) ~> Gh.y
+
+
+
+
+
+
+
+
+
+  Gf(Em, Gj) ~> nil,
+  Gh(En, Gl) ~> nil,
+  Gj(Gj.y, Gj.x) ~> Gf.y,
+  Gl(Gl.y, Gl.x) ~> Gh.y,
+  Em ~> Gf.x,
+  En ~> Gh.x
+</pre>
+	</td>
+</tr>
+</table>
 
 <h3>Numbers out of nothing</h3>
 
