@@ -16,14 +16,17 @@
 |0808 @DEAD
 |0008 @NODE-WIDTH
 
+|000
+
+	@queue/buf $100 &buf-end
+
 |100
 
 @on-reset ( -> )
-	net/<test-tiny-destroy>
-	#010e DEO
+	main-tests #010e DEO
 	BRK
 
-@other-tests ( -- )
+@main-tests ( -- )
 	net/<test-epseps>
 	net/<test-gamgam>
 	net/<test-gamgam2>
@@ -34,7 +37,10 @@
 	net/<test-gamdel>
 	net/<test-twothree>
 	net/<test-dup>
-	net/<test-dup>
+	net/<test-tiny-destroy>
+	JMP2r
+
+@experimental-tests ( -- )
 	net/<test-gamdel-inf>
 	JMP2r
 
@@ -67,16 +73,22 @@
 @|Net )
 
 @net/<run> ( -- )
-	/<print>
 	[ LITr 01 ]
 	&>w
-		STHkr ?{
-			;dict/inf str/<print>
-			( inf loop ) POPr !<lb> }
-		queue/is-busy ?{ POPr !<lb> }
-		queue/pop-wire /<interact>
-		INCr <lb>
-		/<print> !&>w
+		/<print>
+		/<step>
+		INCr STHkr ?{ ;dict/inf str/<print>
+			POP #00 }
+		?&>w
+	POPr !<lb>
+
+@net/<step> ( -- rewrite )
+	queue/get-boundary EQUk ?{
+		&>ws
+			queue/pop-wire SWP2 /<interact>
+			#04 ADD NEQk ?&>ws
+		POP2 #01 !<lb> }
+	POP2 #00 JMP2r
 
 @net/<init> ( -- )
 	;dict/spacer str/<print>
@@ -145,15 +157,15 @@
 	POP2 POP2 JMP2r
 
 @net/<apply-ann1> ( a* b* type -- )
-	POP ;dict/ann1 str/<print> !/<free-nodes>
+	POP !/<free-nodes>
 
 @net/<apply-ann2> ( a* b* type -- )
-	POP ;dict/ann2 str/<print>
+	POP
 	( a.p1 b.p1 ) OVR2 +/x LDA2 OVR2 +/x LDA2 /<wire-push>
 	( a.p2 b.p2 ) OVR2 +/y LDA2 OVR2 +/y LDA2 /<wire-push> !/<free-nodes>
 
 @net/<apply-com1> ( a* b* type -- )
-	POP ;dict/com1 str/<print>
+	POP
 	( | put gamma on top )
 	LDAk .EPS NEQ ?{ SWP2 }
 	( e1 ) DUP2 +/x LDA2 DUP2 is-nil ?{
@@ -164,7 +176,7 @@
 	POP2 !/<free-nodes>
 
 @net/<apply-com2> ( a* b* type -- )
-	POP ;dict/com2 str/<print>
+	POP
 	( | outside )
 	( g ) OVR2 +/x LDA2 ;DEL /alloc
 	( gx ) DUP2 +/x ;&gx STA2
@@ -253,7 +265,8 @@
 @|Queue )
 
 @queue/<init> ( -- )
-	;&buf ,&+ptr STR2
+	[ LIT2 -&buf _&+ptr ] STR
+	[ LIT2 -&buf _&+follower ] STR
 	JMP2r
 
 @queue/<push-wire> ( a/p* b/p* -- )
@@ -263,24 +276,20 @@
 @queue/<push> ( p* -- )
 	( get node addr ) #33 SFT2
 	( | store )
-	[ LIT2 &+ptr =&buf ] INC2k INC2
-	( | overflow )
-	DUP2 ;&buf-end LTH2 ?{ ;dict/err str/<print>
-		POP2 ;&buf }
-	,&+ptr STR2
-	STA2
+	[ LIT &+ptr -&buf ] INCk INC ,&+ptr STR
+	STZ2
 	JMP2r
 
 @queue/pop-wire ( -- b* a* )
-	/pop
+	/follow
 	( >> )
 
-@queue/pop ( -- a* )
-	,&+ptr LDR2 #0002 SUB2 DUP2 ,&+ptr STR2
-	LDA2 JMP2r
+@queue/follow ( -- a* )
+	[ LIT &+follower -&buf ] INCk INC ,&+follower STR
+	LDZ2 JMP2r
 
-@queue/is-busy ( -- t )
-	,&+ptr LDR2 ;&buf NEQ2 JMP2r
+@queue/get-boundary ( -- to from )
+	,&+ptr LDR ,&+follower LDR JMP2r
 
 (
 @|Stdlib )
@@ -403,7 +412,7 @@
 	&tomb "nil 00
 	&empty "(empty) 0a00
 	&spacer "------------------ 0a00
-	&err "Overflow 0a00 &ann1 0a "Ann1 00 &ann2 0a "Ann2 00 &com1 0a "Com1 00 &com2 0a "Com2 00
+	&err "Overflow 0a00
 	&test-epseps "============= 20 "EPS-EPS 0a00
 	&test-gamgam "============= 20 "GAM-GAM 0a00
 	&test-deldel "============= 20 "DEL-DEL 0a00
@@ -412,13 +421,7 @@
 	&test-twothree "============= 20 "TWO-THREE 0a00
 
 (
-@|Buffers )
-
-@queue/buf $2000
-	&buf-end
-(
 @|Aligned Memory )
-
 
 |8000 @net/buf $7ff8 &buf-end
 
