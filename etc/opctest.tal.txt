@@ -152,7 +152,7 @@ BRK
 	( name ) "Opctest 0a
 	( details ) "A 20 "Testing 20 "Program 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "13 20 "Feb 20 "2026 $2
+	( date ) "6 20 "May 20 "2026 $2
 
 @test-part ( f name* -- )
 	pstr ?{
@@ -257,11 +257,12 @@ JMP2r
 =op-sta [
 	=op-sta/a =op-sta/b =op-sta/c =op-sta/d ]
 =op-jmp [
-	=op-jmp/a =op-jmp/b ]
+	=op-jmp/a =op-jmp/b =op-jmp/c ]
 =op-jcn [
-	=op-jcn/a =op-jcn/b =op-jcn/c =op-jcn/d ]
+	=op-jcn/a =op-jcn/b =op-jcn/c =op-jcn/d
+	=op-jcn/e =op-jcn/f ]
 =op-jsr [
-	=op-jsr/a =op-jsr/b ]
+	=op-jsr/a =op-jsr/b =op-jsr/c ]
 =op-sth [
 	=op-sth/a =op-sth/b =op-sth/c =op-sth/d
 	=op-sth/e =op-sth/f ]
@@ -374,14 +375,18 @@ JMP2r
 @op-jmp ;Dict/jmp !set
 	&a #12 #34 ,&reljmp JMP SWP &reljmp POP [ #12 ] EQU JMP2r
 	&b #56 #78 ;&absjmp JMP2 SWP &absjmp POP [ #56 ] EQU JMP2r
+	&c #12 #34 ,&skip1 JMP &back1 POP [ #34 ] EQU JMP2r &skip1 SWP ,&back1 JMP
 @op-jcn ;Dict/jcn !set
 	&a #23 #01 ,&reljcn-y JCN INC &reljcn-y [ #23 ] EQU JMP2r
 	&b #23 #00 ,&reljcn-n JCN INC &reljcn-n [ #24 ] EQU JMP2r
 	&c #23 #01 ;&absjcn-y JCN2 INC &absjcn-y [ #23 ] EQU JMP2r
 	&d #23 #00 ;&absjcn-n JCN2 INC &absjcn-n [ #24 ] EQU JMP2r
+	&bwdjcn-y [ #23 ] EQU JMP2r &e #23 #01 ,&bwdjcn-y JCN POP #00 JMP2r
+	&bwdjcn-n POP #00 JMP2r     &f #23 #00 ,&bwdjcn-n JCN [ #23 ] EQU JMP2r
 @op-jsr ;Dict/jsr !set
 	&a #1234 #5678 ,&routine JSR [ #68ac ] EQU2 JMP2r
 	&b #12 #34 ;routine JSR2 [ #46 ] EQU JMP2r
+	&bwdjsr ADD JMP2r &c #12 #34 ,&bwdjsr JSR [ #46 ] EQU JMP2r
 	&routine ADD2 JMP2r
 @op-sth ;Dict/sth !set
 	&a #0a STH #0b STH ADDr STHr [ #15 ] EQU JMP2r
