@@ -23,7 +23,8 @@
 |100
 
 @on-reset ( -> )
-	main-tests #010e DEO
+	main-tests
+	#010e DEO
 	BRK
 
 @main-tests ( -- )
@@ -38,6 +39,7 @@
 	net/<test-twothree>
 	net/<test-dup>
 	net/<test-tiny-destroy>
+	net/<test-delcross>
 	JMP2r
 
 @experimental-tests ( -- )
@@ -395,10 +397,19 @@
 
 @net/<test-dup> ( -- )
 	/<init>
+	( | del-gam, where has identity-del in x, esp in y )
 	( g1x~g1y ) ;GAM /alloc STH2k DUP2 +/x SWP2 +/y /<wire>
 	( g1~>g2y ) ;GAM /alloc DUP2 +/y STH2r +/p /<wire>
 	( e~>g2x ) DUP2 +/x ;EPS /alloc +/p /<wire>
 	( d><g2 ) ;DEL /alloc /<activate> !/<run>
+
+@net/<test-delcross> ( -- )
+	/<init>
+	( | two del, each have a eps in x, and each other in y )
+	;DEL /alloc DUP2 +/x ;EPS /alloc +/p /<wire>
+	;DEL /alloc DUP2 +/x ;EPS /alloc +/p /<wire>
+	OVR2 +/y OVR2 +/y /<wire>
+	/<activate> !/<run>
 
 (
 @|Assets )
