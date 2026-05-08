@@ -56,7 +56,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "23 20 "Feb 20 "2026 $2
+	( date ) "8 20 "May 20 "2026 $2
 
 (
 @|macros )
@@ -464,7 +464,7 @@
 	( | <remaining-secs> )
 	parse-dec STH2k .secto STZ2
 	INC2 LDAk [ LIT "5 ] LTH ?{ INC2r }
-	POP2 STH2r STH2r SWP2 OVR2 ADD2 SWP2
+	POP2 SWP2r STH2r STH2r OVR2 ADD2 SWP2
 	( | print )
 	calc-width .secprog STZ2
 	<draw-title-scroll>
@@ -657,14 +657,15 @@
 	,&ptr STR
 	JMP2r
 
+@path/get-location ( -- str* )
+	#00
+	( >> )
+
 @path/nest ( -- addr )
 	[ LIT2 -&buf _&ptr ] LDR #01 SUB
 	&>rew
 		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?&>rew }
 	NIP JMP2r
-
-@path/get-location ( -- str* )
-	#00 !path/nest
 
 (
 @|ID3 )
@@ -929,7 +930,7 @@
 @|stdlib )
 
 @chr/lc ( c -- lowercase )
-	DUP LIT "A SUB #19 GTH ?{ #20 ADD }
+	DUP LIT "A SUB #1a GTH ?{ #20 ADD }
 	JMP2r
 
 @str/cmp3 ( a* b* -- f )
@@ -968,7 +969,8 @@
 @str/lth ( a* b* -- a>b )
 	STH2
 	&>ll
-		LDAk LDAkr STHr SUBk ?{
+		( lc ) LDAk chr/lc
+		( lc ) LDAkr STHr chr/lc SUBk ?{
 			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>ll } }
 	NIP2 LTH POP2r JMP2r
 
@@ -1018,17 +1020,17 @@
 (
 @|assets )
 
-@dict/home-path "./ $1
-	&mp3-ext "mp3 $1
-	&empty "(empty) $1
-	&mpg-cmd "mpg123 20 "-R $1
-	&load-cmd "load 20 $1
-	&jump-cmd "jump 20 $1
-	&pause-cmd "pause 0a $1
-	&no-artist "Unknown 20 "Artist $1
-	&no-album "Unknown 20 "Album $1
-	&ellipses "... 20 $1
-	&volume "VOLUME 20 $1
+@dict/home-path "./ 00
+	&mp3-ext "mp3 00
+	&empty "(empty) 00
+	&mpg-cmd "mpg123 20 "-R 00
+	&load-cmd "load 20 00
+	&jump-cmd "jump 20 00
+	&pause-cmd "pause 0a 00
+	&no-artist "Unknown 20 "Artist 00
+	&no-album "Unknown 20 "Album 00
+	&ellipses "... 20 00
+	&volume "VOLUME 20 00
 
 
 
@@ -1271,11 +1273,11 @@
 @prng/<init> ( -- )
 	( > ) [ LIT2 00 -DateTime/second ] DEI
 	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
 	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
 	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
 	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
-	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
 	JMP2r
 
 @prng/<new> ( -- number* )

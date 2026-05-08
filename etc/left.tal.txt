@@ -11,6 +11,7 @@
 |0160 @nav/width-inner
 |01c8 @path/x
 |0017 @glyph/sel
+|fff0 @eof
 
 |000
 
@@ -60,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "25 20 "Mar 20 "2026 $1 02
+	( date ) "8 20 "May 20 "2026 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -213,7 +214,8 @@
 		DUP #50 AND ?&on-ul-block
 		DUP #a0 AND ?&on-dr-block }
 	( | standard )
-	.sel/a LDZ2 ROT arrow-to-addr sel/<set-a>
+	DUP .sel/a LDZ2 ROT arrow-to-addr sel/<set-a>
+	textarea/<follow>
 	BRK
 
 	&on-cal ( button -> )
@@ -223,7 +225,8 @@
 	POP BRK
 
 	&on-shift ( button -> )
-	.sel/b LDZ2 ROT arrow-to-addr sel/<set-b>
+	DUP .sel/b LDZ2 ROT arrow-to-addr sel/<set-b>
+	textarea/<follow>
 	BRK
 
 	&on-au ( button -> )
@@ -265,6 +268,10 @@
 
 (
 @|selection )
+
+@sel/button-direction ( button -- addr* )
+	#f0 AND #10 EQU OVR #40 EQU ORA ?{ /get-to JMP2r }
+	/get-from JMP2r
 
 @sel/<select-symbol-at> ( addr* -- )
 	DUP2 find-prev-special/ SWP2 find-next-special/
@@ -331,7 +338,7 @@
 	.&a LDZ2 .&b LDZ2 LTH2k SWP2? .&to STZ2
 	.&from STZ2
 	autocomplete/<reset>
-	textarea/follow wrap/update !reqdraw-both
+	wrap/update !reqdraw-both
 
 @sel/<erase> ( -- )
 	/get-from-to !textarea/<erase>
@@ -536,8 +543,11 @@
 @find-first-marker ( addr* -- addr* )
 	#0002 SUB2
 	&>w
-		DUP2 ;textarea/buf LTH2 ?{ utf8/prev not-header ?&>w }
+		DUP2 ;textarea/buf LTH2 ?{
+			utf8/prev DUP2 ;&pragma str/cmp3 ?&>w
+		not-header ?&>w }
 	JMP2r
+	&pragma 0a "@|
 
 %utf8/cont ( addr* -- addr* cont ) {
 	LDAk #06 SFT #02 EQU }
@@ -574,7 +584,7 @@
 @scrollbar/<draw> ( -- )
 	( | bg )
 	#0004 #0028 Screen/<set-pos>
-	#01 ;textarea/lines LDZ #03 MUL STH2k SUB
+	#0100 .textarea/lines LDZ #03 MUL STH2k SUB
 	( ) ;halftone-icn #02 <draw-times>
 	( | fg )
 	.scroll/y LDZ2 .&ratio LDZ2 DIV2 #0028 ADD2 .Screen/y DEO2
@@ -714,11 +724,11 @@
 	[ LIT2 16 -Screen/auto ] DEO
 	[ LIT2 05 -scrollbar/height ] LDZ2 #03 SFT2 SUB ;col80-icn #02 !<draw-times>
 
-@textarea/follow ( -- )
-	sel/get-to
+@textarea/<follow> ( button -- )
+	sel/button-direction
 	( | vertical )
 	addr-to-line .scroll/y LDZ2 LTH2k ?&move
-	;&lines LDZ ADD2 #0001 SUB2 GTH2k ?&move
+	[ LIT2 00 -&lines ] LDZ ADD2 #0001 SUB2 GTH2k ?&move
 	POP2 POP2 JMP2r
 
 	&move ( target* scroll/y* -- )
@@ -747,7 +757,7 @@
 
 @textarea/<put-file> ( path* -- )
 	.File/name DEO2
-	#fff0 ;&buf SUB2 .File/length DEO2
+	;eof ;&buf SUB2 .File/length DEO2
 	;&buf .File/read DEO2
 	.File/success DEI2 INC2 !/<set-length>
 
@@ -983,7 +993,7 @@
 	( >> )
 
 @nav/<select-marker> ( id -- )
-	/id-to-addr DUP2 search/get-length ADD2 !sel/<set>
+	/id-to-addr DUP2 search/get-length ADD2 sel/<set> !textarea/<follow>
 
 (
 @|path )
@@ -1407,7 +1417,7 @@
 	DUP #09 LTH ?{
 		( convert lb ) DUP #0d EQU #03 MUL SUB
 		( ) sel/has-length ?&block
-		( ) .textarea/eof LDZ2 #fff0 NEQ2 ?&single }
+		( ) .textarea/eof LDZ2 ;eof NEQ2 ?&single }
 	POP JMP2r
 
 	&block ( c -- )
@@ -1524,6 +1534,11 @@
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#18 DEO
 	INC2 !/<print>
+
+@str/cmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
