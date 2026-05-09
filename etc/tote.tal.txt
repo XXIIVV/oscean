@@ -7,20 +7,27 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
+(
+@|Constants )
+
+|0080 @rule/length
+|1c90 @project/buflen
+|0400 @symbols/buflen
+
 |000
 
 	@drag $2
 	@craft $2
 	@valid &fwd $1 &bwd $1 &craft $1
-	@touch-origin &x $2 &y $2
+	@touch-origin/x $2 &y $2
 	@bagged-mask $1
 	@overlay $1
 	@selection $2
 	@scroll $2
 	@acc/buf $40 &bufend
 	@bag/count $1
-	@timers &step $1 &unstep $1 &organize $1 &clear $1
-	@size &w $2 &h $2
+	@timers/step $1 &unstep $1 &organize $1 &clear $1
+	@size/w $2 &h $2
 
 |100
 
@@ -50,7 +57,7 @@
 	( name ) "Tote 0a
 	( details ) "A 20 "Multiset 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "7 20 "May 20 "2025 $1 00
+	( date ) "9 20 "May 20 "2026 $1 00
 
 (
 @|helpers )
@@ -403,7 +410,7 @@
 	.Mouse/x DEI2 .size/w LDZ2 SUB2
 	( ) DUP #d0 GTH ?&menu-close
 	( ) DUP #a8 GTH ?&menu-organize
-	&menu-clear ( x* -- )
+	( | Clear )
 	[ LIT2 04 -timers/clear ] STZ
 	<draw-clear-button>
 	POP2 bag/<clear>
@@ -481,7 +488,7 @@
 	POP2 POP2 STHr JMP2r
 
 @<clear-rule> ( rule* -- )
-	DUP2 #0080 ADD2 SWP2
+	DUP2 ;rule/length ADD2 SWP2
 	&>l
 		#0000 OVR2 STA2
 		INC2 INC2 GTH2k ?&>l
@@ -495,7 +502,7 @@
 	;rules/end ;rules
 	&>l
 		DUP2 ;acc/buf compare-rules ?{
-			#0080 ADD2 GTH2k ?&>l
+			;rule/length ADD2 GTH2k ?&>l
 		[ LIT2 ff -valid/fwd ] STZ
 		POP2 POP2 JMP2r }
 	;rules SUB2 #07 SFT2 .valid/fwd STZ
@@ -504,7 +511,7 @@
 @<validate-bwd> ( -- )
 	;rules ;rules/end
 	&>l
-		#0080 SUB2 DUP2 #0040 ADD2 ;acc/buf compare-rules ?{
+		;rule/length SUB2 DUP2 #0040 ADD2 ;acc/buf compare-rules ?{
 			NEQ2k ?&>l
 		POP2 POP2 [ LIT2 ff -valid/bwd ] STZ
 		JMP2r }
@@ -523,7 +530,7 @@
 					DUP2 ;acc/buf compare-rules #00 EQU ?{
 						[ LITr -valid/craft ] STZr
 						POP2 POP2 JMP2r } } } }
-		INCr #0080 ADD2 GTH2k ?&>l
+		INCr ;rule/length ADD2 GTH2k ?&>l
 	POP2 POP2 POPr [ LIT2 ff -valid/craft ] STZ
 	JMP2r
 
@@ -534,11 +541,11 @@
 	( | types )
 	DUP2 ;rules SUB2 #07 SFT2 ;rules/meta ADD2 LDA2k SWP SWP2 STA2
 	( | registers )
-	DUP2 #0080 ADD2 SWP2
+	DUP2 ;rule/length ADD2 SWP2
 	&>l
 		DUP2 ,&a-addr STR2
 		LDAk ,&b STR
-		DUP2 #0080 ADD2 LDAk ,&a STR
+		DUP2 ;rule/length ADD2 LDAk ,&a STR
 		,&b-addr STR2
 		[ LIT &a $1 ] [ LIT2 &a-addr $2 ] STA
 		[ LIT &b $1 ] [ LIT2 &b-addr $2 ] STA
@@ -551,19 +558,19 @@
 	( ) ;rules/end ;rules
 	&>l
 		DUP2 validate-rule STH2kr STA
-		INC2r #0080 ADD2 GTH2k ?&>l
+		INC2r ;rule/length ADD2 GTH2k ?&>l
 	POP2 POP2 POP2r JMP2r
 
 @validate-rule ( rule* -- flag )
 	;rules OVR2 DUP2 ,&src STR2
 	&>l
-		#0080 SUB2 GTH2k ?&reachable
+		;rule/length SUB2 GTH2k ?&reachable
 		DUP2 [ LIT2 &src $2 ] compare-rules ?&unreachable
 		!&>l
 
 	&reachable ( to* from* -- flag )
 	POP2 POP2
-	( grows? ) DUP2 #0040 ADD2 compare-rules DUP ADD INC JMP2r
+	( grows? ) DUP2 #0040 ADD2 compare-rules DUP INC ADD JMP2r
 
 	&unreachable ( to* from* -- flag )
 	POP2 POP2 POP2 #02 JMP2r
@@ -573,7 +580,7 @@
 	DUP2 #0040 ADD2 SWP2
 	&>mask-loop
 		LDAkr STHr #00 EQU ?{ SWP2r INC2r SWP2r }
-		( valid ) LDAk LDAkr STHr SWP GTH ?{ INC2r INC2 GTH2k ?&>mask-loop }
+		( valid ) LDAk LDAkr STHr LTH ?{ INC2r INC2 GTH2k ?&>mask-loop }
 	POP2r EQU2 STHr #00 NEQ AND POPr JMP2r
 
 (
@@ -625,13 +632,13 @@
 	OVR #80 AND ?{ !<inc-things> }
 	( | prioritize dragged )
 	.drag LDZ2 #ffff EQU2 ?{
-		DUP .drag LDZ2 #0004 ADD2 LDA NEQ ?{
+		DUP .drag LDZ2 get-sym-id NEQ ?{
 			#0000 .drag LDZ2 STA2
 			SWP INC SWP } }
 	OVR ?{ POP2 JMP2r }
 	( | prioritize craft )
 	.craft LDZ2 #ffff EQU2 ?{
-		DUP .craft LDZ2 #0004 ADD2 LDA NEQ ?{
+		DUP .craft LDZ2 get-sym-id NEQ ?{
 			#0000 .craft LDZ2 STA2
 			SWP INC SWP } }
 	OVR ?{ POP2 JMP2r }
@@ -652,15 +659,16 @@
 	POP2 JMP2r
 
 @<eval-passive> ( -- )
-	[ LITr 00 ] ;rules/end ;rules
+	[ LIT2r =rules/meta ] ;rules/end ;rules
 	&>l
-		#00 STHkr ;rules/meta ADD2 LDA #03 NEQ ?{
-			DUP2 ;acc/buf compare-rules #00 EQU ?{
-				bag/<to-acc>
-				POP2 POP2 [ LITr -valid/fwd ] STZr
-				<step> !<reqdraw-edit> } }
-		INCr #0080 ADD2 GTH2k ?&>l
-	POP2 POP2 POPr JMP2r
+		LDAkr STHr #03 NEQ ?{ DUP2 ;acc/buf compare-rules ?&found }
+		INC2r ;rule/length ADD2 GTH2k ?&>l
+	POP2 POP2 POP2r JMP2r
+
+	&found ( buf* end* . meta* -- )
+	POP2 POP2 POP2r bag/<to-acc>
+	<step>
+	bag/<organize> !<reqdraw-edit>
 
 (
 @|accumulator )
@@ -676,7 +684,7 @@
 	bag/<clear>
 	[ LITr 00 ] [ LIT2 -acc/bufend -acc/buf ]
 	&>bag-loop
-		#00 OVR .acc/buf SUB bag/<set-dir>
+		#00 OVR .&buf SUB bag/<set-dir>
 		( ) LDZk #00 EQUk ?{
 			#00 STHkr <set-anchor>
 			&>bag-loop2
@@ -716,7 +724,7 @@
 @bag/pick ( -- thing* )
 	;&buf ;&bufend
 	&>pick-loop
-		#0005 SUB2 LDA2k #0000 EQU2 ?{ DUP2 bag/<try-pick>
+		#0005 SUB2 LDA2k #0000 EQU2 ?{ DUP2 /<try-pick>
 			?&found }
 		NEQ2k ?&>pick-loop
 	POP2 #ffff &found NIP2 JMP2r
@@ -739,7 +747,7 @@
 	.Mouse/x DEI2 #0008 SUB2 STH2kr INC2r INC2r STA2
 	.Mouse/y DEI2 #0008 SUB2 STH2kr INC2r INC2r STA2
 	STH2r STA
-	bag/<to-acc> !&<update>
+	/<to-acc> !&<update>
 
 @bag/<push-auto> ( id -- )
 	/find-free STH2
@@ -754,10 +762,10 @@
 
 @bag/<take-auto> ( id -- )
 	STH
-	;bag/bufend ;bag/buf
+	;&bufend ;&buf
 	&>take-loop
 		LDA2k #0000 EQU2 ?{
-			DUP2 #0004 ADD2 LDA STHkr EQU ?&take-found }
+			DUP2 get-sym-id STHkr EQU ?&take-found }
 		#0005 ADD2 GTH2k ?&>take-loop &take-found #0000 SWP2 STA2
 	POP2 POPr JMP2r
 
@@ -782,9 +790,9 @@
 	POP2 POP2 !<validate>
 
 @bag/<organize> ( -- )
-	bag/<to-acc>
+	/<to-acc>
 	acc/<to-bag>
-	bag/<update>
+	/<update>
 	project/<write> !<reqdraw-paint>
 
 @bag/<update> ( -- )
@@ -802,14 +810,14 @@
 
 @project/<read> ( -- )
 	;&filename .File/name DEO2
-	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
-	.File/read DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/read DEO2
 	JMP2r
 
 @project/<write> ( -- )
 	;&filename .File/name DEO2
-	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
-	.File/write DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/write DEO2
 	JMP2r
 
 	&filename "project.tote $1
@@ -819,14 +827,14 @@
 
 @symbols/<read> ( -- )
 	;&filename .File/name DEO2
-	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
-	.File/read DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/read DEO2
 	JMP2r
 
 @symbols/<write> ( -- )
 	;&filename .File/name DEO2
-	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
-	.File/write DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/write DEO2
 	JMP2r
 
 	&filename "symbols.icn $1
@@ -1148,7 +1156,7 @@
 				[ LIT2 1a -Screen/sprite ] DEOk DEO
 				.Screen/y DEI2k #0010 SUB2 ROT DEO2 } }
 		.Screen/y DEI2k #0018 ADD2 ROT DEO2
-		INCr #0080 ADD2 GTH2k ?&>l
+		INCr ;rule/length ADD2 GTH2k ?&>l
 	POP2 POP2 POPr
 	( | restore color )
 	#05 ;<draw-icon>/color STA
@@ -1249,14 +1257,6 @@
 
 (
 @|stdlib )
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
-	JMP2r
 
 @<set-size> ( x* y* -- )
 	.Screen/height DEO2
@@ -1540,7 +1540,7 @@
 
 @rules $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 &end
 
-@bag &buf $3e8 &bufend $18
+@bag/buf $3e8 &bufend $18
 	( x* y* id )
 
 @masks $20
