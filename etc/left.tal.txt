@@ -61,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "8 20 "May 20 "2026 $1 02
+	( date ) "10 20 "May 20 "2026 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -702,14 +702,16 @@
 	.&eof LDZ2 get-scroll-addr [ LITr -&lines ] LDZr [ LITr 01 ]
 	&>l
 		caret/scan highlight/<draw-runic>
-		( | linebreak )
-		addr-not-lb ?{
-			EQUkr STHr ?&end
-			ank/<draw-lb>
-			/get-anchor .Screen/x DEO2
-			INCr }
-		( | offscreen )
-		LDAk [ LIT "/ ] GTH ?{
+		( | during whitespace )
+		addr-not-ws ?{
+			( | linebreak )
+			addr-not-lb ?{
+				( | offscreen y )
+				EQUkr STHr ?&end
+				ank/<draw-lb>
+				/get-anchor .Screen/x DEO2
+				INCr }
+			( | offscreen x )
 			.Screen/x DEI2 .Screen/width DEI2 LTH2 ?{ find-line-end #0001 SUB2 } }
 		utf8/next GTH2k ?&>l
 	caret/scan
@@ -1250,11 +1252,13 @@
 @highlight/<draw-runic> ( addr* -- addr* )
 	[ LIT &mute $1 ] ?{
 		addr-not-ws ?{
+			( | on whitespace )
 			/<reset-always>
-			( | after closing paren )
+			( | preceeded by closing paren )
 			DUP2 #0001 SUB2 LDA [ LIT ") ] EQU ?/comment-end
 			!/<draw> }
 		DUP2 #0001 SUB2 addr-not-ws ?{
+			( | preceeded by whitespace )
 			( -1 ) POP2
 			( 0 ) LDA2k #20 GTH [ LIT2 "( 00 ] EQU2 ?/comment-start
 			.&comment LDZ ?/<draw>
@@ -1263,9 +1267,6 @@
 			DUP [ LIT "@ ] EQU ?/take-label
 			DUP [ LIT "& ] EQU ?/take-label
 			DUP [ LIT "% ] EQU ?/take-label
-			( | handle raw )
-			DUP [ LIT "" ] EQU ?/take-raw
-			DUP [ LIT "$ ] EQU ?/take-raw
 			( | handle runes )
 			DUP [ LIT ", ] NEQ ?{ #01 !/take-litrune }
 			DUP [ LIT "_ ] NEQ ?{ #02 !/take-rawrune }
@@ -1276,7 +1277,12 @@
 			( | handle immopc )
 			DUP [ LIT "! ] NEQ ?{ #07 !/take-litruneul }
 			DUP [ LIT "? ] NEQ ?{ #08 !/take-litruneul }
-			POP !/<draw> }
+			( | handle raw )
+			DUP [ LIT "" ] EQU ?/take-raw
+			DUP [ LIT "$ ] EQU ?/take-raw
+			( | handle macro )
+			[ LIT "~ ] EQU ?/take-include
+			!/<draw> }
 		POP2 }
 	( >> )
 
@@ -1304,6 +1310,9 @@
 
 @highlight/comment-end ( addr* -- addr* )
 	.&comment LDZk DUP #00 NEQ SUB SWP STZ !/<draw>
+
+@highlight/take-include ( addr* -- addr* )
+	INC2k pict/<draw> !/<draw>
 
 @highlight/take-label ( addr* c -- addr* )
 	POP [ LIT2 01 -&label ] STZ !/<draw>
@@ -1803,6 +1812,66 @@
 	JMP2r
 
 @cursor/sprite-icn [ 80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
+
+(
+@|Pict )
+
+@pict/<draw> ( str* -- )
+	/<set>
+	/get-size DUP2 #ffff NEQ2 ?{ POP2 JMP2r }
+	/<draw-icn>
+	[ LIT2 25 -Screen/auto ] DEO
+	JMP2r
+	&mem $8
+
+@pict/<draw-icn> ( w h -- )
+	#00 SWP SUB ,&height STR
+	#00 SWP SUB ,&width STR
+	[ LITr -Screen/y ] DEI2r [ LITr -Screen/x ] DEI2r
+	( file ) ;&buf .File/name DEO2
+	( depth ) #0008 .File/length DEO2
+	( addr ) ;&mem .Screen/addr DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	STH2kr #0010 ADD2 ,&anchor STR2
+	.Screen/y DEI2 #0020 ADD2 .Screen/y DEO2
+	[ LIT2r 01 -Screen/sprite ]
+	( | draw )
+	[ LIT &height $1 ]
+	&>v
+		[ LIT2 &anchor $2 ] .Screen/x DEO2
+		[ LIT &width $1 ]
+		&>h
+			;&mem .File/read DEO2
+			[ LIT2 00 -File/success-lb ] DEI EQU ?{ DEOkr
+				INC DUP ?&>h }
+		POP .Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
+		INC DUP ?&>v
+	POP
+	( sprite ) POP2r [ LITr -Screen/x ] DEO2r
+	[ LITr -Screen/y ] DEO2r
+	JMP2r
+
+@pict/get-size ( -- w h )
+	,&ptr LDR2 #0009 SUB2
+	( w ) LDA2k /read-byte STH
+	( x ) INC2 INC2 LDAk [ LIT "x ] NEQ ?{
+		( h ) INC2 LDA2 /read-byte STHr SWP JMP2r }
+	POPr POP2 #ffff JMP2r
+
+@pict/read-byte ( a b -- byte )
+	chr/hex SWP chr/hex #40 SFT ORA JMP2r
+
+@pict/<set> ( str* -- )
+	;&buf ,&ptr STR2
+	&>w
+		LDAk DUP #20 GTH ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@pict/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
 
 (
 @|theme )
@@ -2864,6 +2933,8 @@ e060 6060 6060 6060 6060 e070 0000 0000
 0018 3c18 0000 0000 7830 3018 1818 0c0c
 0607 0703 6266 3c00 0060 f060 0000 0000
 7020 2060 4040 c080 8080 0000 0000 0000
+
+@pict/buf $2f &bufend
 
 (
 @|memory ) $1
