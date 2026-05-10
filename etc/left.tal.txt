@@ -132,6 +132,18 @@
 %get-scroll-addr ( -- addr* ) {
 	;textarea/buf .scroll/addr LDZ2 ADD2 }
 
+%addr-not-lb ( addr* -- addr* t ) {
+	LDAk #0a NEQ }
+
+%addr-is-lb ( addr* -- addr* t ) {
+	LDAk #0a EQU }
+
+%addr-not-ws ( addr* -- addr* t ) {
+	LDAk #20 GTH }
+
+%addr-is-ws ( addr* -- addr* t ) {
+	LDAk #21 LTH }
+
 %SWP2? ( jmp a* b* -- b* a* ) {
 	[ JMP SWP2 ] }
 
@@ -431,11 +443,11 @@
 	sel/get-to DUP2 find-prev-spacer SUB2k DUP2 ,&len STR2
 	#0003 GTH2 ?{ POP2 POP2 JMP2r }
 	STH2
-	LDAk #20 GTH ?{
+	addr-not-ws ?{
 		STH2kr OVR2 SWP2 SUB2 #0003 LTH2 ?{
 			textarea/get-range
 			&>l
-				LDAk #21 LTH ?{
+				addr-is-ws ?{
 					DUP2 STH2kr EQU2 ?{
 						DUP2 [ LIT2 &len $2 ] STH2kr mem/cmp #00 EQU ?{
 							DUP2 ,&len LDR2 ADD2 LDA #21 LTH ?{
@@ -495,11 +507,11 @@
 	DUP2 find-line-start SUB2 ADD2k NIP2 EQU2k ?{
 		SWP2
 		&>l
-			LDAk #0a EQU ?{ utf8/next GTH2k ?&>l } }
+			addr-is-lb ?{ utf8/next GTH2k ?&>l } }
 	NIP2 JMP2r
 
 @find-line-next ( addr* -- addr* )
-	LDAk #0a NEQ ?{ INC2 JMP2r }
+	addr-not-lb ?{ INC2 JMP2r }
 	find-line-end INC2 JMP2r
 
 @find-line-prev ( addr* -- addr* )
@@ -510,22 +522,21 @@
 	;textarea/buf GTH2k ?{ POP2 JMP2r }
 	SWP2 #0001 SUB2
 	&>l
-		LDAk #0a EQU ?{ utf8/prev LDAk ?&>l }
+		addr-is-lb ?{ utf8/prev LDAk ?&>l }
 	NIP2 INC2 JMP2r
 
 @find-line-end ( addr* -- addr* )
 	.textarea/eof LDZ2 SWP2
 	&>w
-		EQU2k ?{
-			LDAk #0a EQU ?{ utf8/next !&>w } }
+		EQU2k ?{ addr-is-lb ?{ utf8/next !&>w } }
 	NIP2 JMP2r
 
 @find-prev-spacer ( addr* -- addr* )
-	utf8/prev LDAk #20 GTH ?find-prev-spacer
+	utf8/prev addr-not-ws ?find-prev-spacer
 	INC2 JMP2r
 
 @find-next-spacer ( addr* -- addr* )
-	utf8/next & LDAk #20 GTH ?find-next-spacer
+	utf8/next & addr-not-ws ?find-next-spacer
 	JMP2r
 
 @find-prev-special-top ( addr* -- addr* )
@@ -597,7 +608,7 @@
 	( | count lines )
 	get-scroll-addr [ LITr -scroll/y ] LDZ2r
 	&>w
-		LDAk #0a NEQ INC2r? INC2 LDAk ?&>w
+		addr-not-lb INC2r? INC2 LDAk ?&>w
 	POP2 STH2r DUP2 ,&lines STR2
 	.&height LDZ2 DIV2 NIP #40 SFT SFT2 .&ratio STZ2
 	JMP2r
@@ -612,7 +623,7 @@
 	STH2k [ LIT2r 0000 ] ;textarea/buf
 	&>wsy
 		EQU2kr STHr ?{
-			LDAk #0a NEQ INC2r? INC2 LDAk ?&>wsy }
+			addr-not-lb INC2r? INC2 LDAk ?&>wsy }
 	POP2r POP2r DUP2 .textarea/eof LDZ2 #0002 SUB2 GTH2 ?{
 		;textarea/buf SUB2 .scroll/addr STZ2
 		.scroll/y STZ2
@@ -692,7 +703,7 @@
 	&>l
 		caret/scan highlight/<draw-runic>
 		( | linebreak )
-		LDAk #0a NEQ ?{
+		addr-not-lb ?{
 			EQUkr STHr ?&end
 			ank/<draw-lb>
 			/get-anchor .Screen/x DEO2
@@ -752,7 +763,7 @@
 	POP2r STH2
 	&>w
 		LDAk STH2kr STA
-		INC2r INC2 LDAk #20 GTH ?&>w
+		INC2r INC2 addr-not-ws ?&>w
 	POP2 STH2r DUP2 !sel/<set>
 
 @textarea/<put-file> ( path* -- )
@@ -876,7 +887,7 @@
 @nav/<update-search> ( -- )
 	textarea/get-range
 	&>lsea
-		LDAk #0a NEQ ?{
+		addr-not-lb ?{
 			INC2k LDA2 [ LIT2 "@| ] NEQ2 ?{ INC2k /<push> } }
 		DUP2 /match-search #00 EQU ?{ DUP2 /<push> }
 		;&+ptr LDA .&bufend GTH ?{ INC2 GTH2k ?&>lsea }
@@ -936,8 +947,7 @@
 	( spacer ) LDA2k [ LIT2 "@| ] NEQ2 ?{ INC2 INC2 }
 	( | label )
 	&>w
-		.Screen/x DEI2 ;&width-inner GTH2 ?{
-			ank/draw-utf8 utf8/next LDAk #20 GTH ?&>w }
+		.Screen/x DEI2 ;&width-inner GTH2 ?{ ank/draw-utf8 utf8/next addr-not-ws ?&>w }
 	( |right spacer )
 	;marker-icns/end .Screen/addr DEO2
 	STHr #02 SFT .Screen/sprite DEO
@@ -951,8 +961,7 @@
 	( | value )
 	#02 ;ank/color-utf8 STA
 	&>wv
-		.Screen/x DEI2 ;&width-inner GTH2 ?{
-			ank/draw-utf8 utf8/next LDAk #20 GTH ?&>wv }
+		.Screen/x DEI2 ;&width-inner GTH2 ?{ ank/draw-utf8 utf8/next addr-not-ws ?&>wv }
 	POP2 !/<draw-halftone>
 
 @nav/<draw-scope> ( str* -- )
@@ -981,7 +990,7 @@
 	[ LIT2 90 -Screen/pixel ] DEO !reqdraw-both
 
 @nav/<prev-marker> ( -- )
-	sel/get-from /addr-to-id
+	sel/get-from /addr-to-id DUP ?{ POP JMP2r }
 	&>l
 		#01 SUB DUP /id-to-addr INC2 LDA [ LIT "| ] EQU ?&>l
 	!/<select-marker>
@@ -1048,7 +1057,7 @@
 
 @path/push-selection ( -- )
 	sel/get-to-from
-	( is a word ) LDAk #20 GTH ?{ POP2 POP2 JMP2r }
+	( is a word ) addr-not-ws ?{ POP2 POP2 JMP2r }
 	( has length ) NEQ2k ?{ POP2 sel/<select-word-at>
 		sel/get-to-from }
 	( | append if in folder )
@@ -1240,11 +1249,14 @@
 
 @highlight/<draw-runic> ( addr* -- addr* )
 	[ LIT &mute $1 ] ?{
-		LDAk #20 GTH ?{ /<reset-always> }
-		DUP2 #0002 SUB2 LDAk #20 GTH ?{
-			INC2k LDA2 #20 GTH [ LIT2 ") 00 ] EQU2 ?/comment-end }
-		INC2 LDAk #20 GTH ?{
-			POP2 LDA2k #20 GTH [ LIT2 "( 00 ] EQU2 ?/comment-start
+		addr-not-ws ?{
+			/<reset-always>
+			( | after closing paren )
+			DUP2 #0001 SUB2 LDA [ LIT ") ] EQU ?/comment-end
+			!/<draw> }
+		DUP2 #0001 SUB2 addr-not-ws ?{
+			( -1 ) POP2
+			( 0 ) LDA2k #20 GTH [ LIT2 "( 00 ] EQU2 ?/comment-start
 			.&comment LDZ ?/<draw>
 			LDAk
 			( | handle labels )
@@ -1269,7 +1281,7 @@
 	( >> )
 
 @highlight/<draw> ( addr* -- addr* )
-	is-selected ?/<draw-selected>
+	( selected ) DUP2 sel/get-from LTH2 ?{ DUP2 sel/get-to LTH2 ?/<draw-selected> }
 	DUP2 .wrap/left LDZ2 EQU2 ?/<draw-label>
 	DUP2 .wrap/right LDZ2 EQU2 ?/<draw-label>
 	.&comment LDZ ?/<draw-comment>
@@ -1290,8 +1302,8 @@
 @highlight/comment-start ( addr* -- addr* )
 	.&comment LDZk INC SWP STZ !/<draw>
 
-@highlight/comment-end ( addr* cc* -- addr* )
-	POP2 .&comment LDZk DUP #00 NEQ SUB SWP STZ !/<draw>
+@highlight/comment-end ( addr* -- addr* )
+	.&comment LDZk DUP #00 NEQ SUB SWP STZ !/<draw>
 
 @highlight/take-label ( addr* c -- addr* )
 	POP [ LIT2 01 -&label ] STZ !/<draw>
@@ -1360,7 +1372,7 @@
 	;/do-join !/<apply>
 
 @format/do-join ( addr* -- addr* )
-	LDAk #20 GTH ?{ STH2k #20 STH2r STA }
+	addr-not-ws ?{ STH2k #20 STH2r STA }
 	JMP2r
 
 @format/tab ( -- )
@@ -1500,20 +1512,15 @@
 	POP JMP2r
 
 @walk-ws ( str* -- word* )
-	LDAk #20 GTH ?{ utf8/next LDAk ?walk-ws }
+	addr-not-ws ?{ utf8/next LDAk ?walk-ws }
 	JMP2r
 
 @addr-to-line ( addr* -- line* )
 	[ LIT2r 0000 ] ;textarea/buf EQU2k ?{
 		&>l
-			LDAk #0a NEQ INC2r?
+			addr-not-lb INC2r?
 			( ) INC2 GTH2k ?&>l }
 	POP2 POP2 STH2r JMP2r
-
-@is-selected ( addr* -- addr* f )
-	DUP2 sel/get-from LTH2 ?{
-		INC2k sel/get-to GTH2 ?{ #01 JMP2r } }
-	#00 JMP2r
 
 (
 @|stdlib )
@@ -1572,11 +1579,11 @@
 @wlen ( str* -- len* )
 	DUP2
 	&>w
-		INC2 LDAk #20 GTH ?&>w
+		INC2 addr-not-ws ?&>w
 	SWP2 SUB2 JMP2r
 
 @wcap ( str* -- str* )
-	LDAk #20 GTH ?{ JMP2r }
+	addr-not-ws ?{ JMP2r }
 	INC2 !wcap
 
 @mem/cmp ( a* length* b* -- t )

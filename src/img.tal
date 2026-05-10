@@ -13,7 +13,7 @@
 (
 @|Framework )
 
-%MOD2 ( a* b* -- a%b* ) {
+%u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
 
 %<lb> ( -- ) {
@@ -69,9 +69,9 @@
 	( | link )
 	;tag/link <t>
 	;path/url str/<print>
-	;path/diary str/<print>
-	DUP2 #0006 ADD2 str/<print>
-	;path/ext-jpg str/<print>
+	;path/site str/<print>
+	DUP2 #000a ADD2 str/<print-url>
+	;path/ext-html str/<print>
 	;tag/link </t>
 	( | description )
 	;tag/description <t>
@@ -149,7 +149,7 @@
 	( y+y/4-y/100+y/400* ) OVR2 #0190 DIV2 ADD2 ADD2
 	( y+y/4-y/100+y/400+d* ) #00 STHr ADD2
 	( y+y/4-y/100+y/400+d+lut[m]* ) #0000 STHr ;&lut ADD2 LDA ADD2
-	( % 7 ) #0007 MOD2 NIP JMP2r
+	( % 7 ) #0007 u16/mod NIP JMP2r
 
 	&lut [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
 
@@ -162,8 +162,8 @@
 	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
 
 @year/is-leap ( year* -- bool )
-	DUP2 #0190 MOD2 #0000 EQU2 ?&leap
-	DUP2 #0064 MOD2 #0000 EQU2 ?&not-leap
+	DUP2 #0190 u16/mod #0000 EQU2 ?&leap
+	DUP2 #0064 u16/mod #0000 EQU2 ?&not-leap
 	#0003 AND2 #0000 EQU2 JMP2r
 	&not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
@@ -183,16 +183,16 @@
 	#00 SWP #20 SFT2 ;&lut ADD2 !str/<print>
 
 	&lut [
-	"Sun $1 "Mon $1 "Tue $1 "Wed $1
-	"Thu $1 "Fri $1 "Sat $1 ]
+	"Sun 00 "Mon 00 "Tue 00 "Wed 00
+	"Thu 00 "Fri 00 "Sat 00 ]
 
 @month/<print> ( month -- )
 	#00 SWP #20 SFT2 ;&lut ADD2 !str/<print>
 
 	&lut [
-	"Jan $1 "Feb $1 "Mar $1 "Apr $1
-	"May $1 "Jun $1 "Jul $1 "Aug $1
-	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
+	"Jan 00 "Feb 00 "Mar 00 "Apr 00
+	"May 00 "Jun 00 "Jul 00 "Aug 00
+	"Sep 00 "Oct 00 "Nov 00 "Dec 00 ]
 
 (
 @|Utils )
@@ -202,7 +202,7 @@
 	( 0x ) #0a DIVk MUL SUB LIT "0 ADD ,&id STR2
 	;&res JMP2r
 
-	&res "src/tables/diary/ &id $2 ".tsv $1
+	&res "src/tables/diary/ &id $2 ".tsv 00
 
 @workarea/make ( path* -- to* from* )
 	.File/name DEO2
@@ -240,6 +240,14 @@
 		#18 DEO
 		INC2 !&>wp
 
+@str/<print-url> ( str* -- )
+	&>wpu
+		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{
+			POP [ LIT "_ ] }
+		#18 DEO
+		INC2 !&>wpu
+
 @str/cmp3 ( a* b* -- f )
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
@@ -267,28 +275,30 @@
 (
 @|Assets )
 
-@dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> $1
-	&rss-version "<rss 20 "version="2.0"> $1
-	&title "XXIIVV $1
-	&desc "Journal 20 "Images $1
-	&no-picture "000 $1
-	&midnight "12:00:00 20 "-0000 $1
+@dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> 00
+	&rss-version "<rss 20 "version="2.0"> 00
+	&title "XXIIVV 00
+	&desc "Journal 20 "Images 00
+	&no-picture "000 00
+	&midnight "12:00:00 20 "-0000 00
 
-@path/url "https://wiki.xxiivv.com/ $1
-	&diary "media/diary/ $1
-	&ext-jpg ".jpg $1
+@path/url "https://wiki.xxiivv.com/ 00
+	&diary "media/diary/ 00
+	&site "site/ 00
+	&ext-jpg ".jpg 00
+	&ext-html ".html 00
 
-@tag/channel "channel $1
-	&title "title $1
-	&link "link $1
-	&description "description $1
-	&item "item $1
-	&img "img $1
-	&src "src $1
-	&rss "rss $1
-	&pubdate "pubDate $1
-	&cdata-a "<![CDATA[ $1
-	&cdata-b "]]> $1
+@tag/channel "channel 00
+	&title "title 00
+	&link "link 00
+	&description "description 00
+	&item "item 00
+	&img "img 00
+	&src "src 00
+	&rss "rss 00
+	&pubdate "pubDate 00
+	&cdata-a "<![CDATA[ 00
+	&cdata-b "]]> 00
 
 @workarea/buf
 
