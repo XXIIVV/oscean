@@ -117,6 +117,12 @@
 	.Screen/y DEO2
 	.Screen/x DEO2 }
 
+%u16/min ( a* b* -- res* ) {
+	GTH2k [ JMP SWP2 ] POP2 }
+
+%u16/max ( a* b* -- res* ) {
+	LTH2k [ JMP SWP2 ] POP2 }
+
 %sel/get-to ( -- addr* ) {
 	.sel/to LDZ2 }
 
@@ -144,14 +150,8 @@
 %addr-is-ws ( addr* -- addr* t ) {
 	LDAk #21 LTH }
 
-%SWP2? ( jmp a* b* -- b* a* ) {
-	[ JMP SWP2 ] }
-
 %INC2r? ( jmp value* -- value* ) {
 	[ JMP INC2r ] }
-
-%SWP? ( jmp value -- value ) {
-	[ JMP SWP ] }
 
 %DEOkr? ( jmp . value* -- . value* ) {
 	[ JMP DEOkr ] }
@@ -347,7 +347,7 @@
 	( >> )
 
 @sel/<commit> ( -- )
-	.&a LDZ2 .&b LDZ2 LTH2k SWP2? .&to STZ2
+	.&a LDZ2 .&b LDZ2 LTH2k [ JMP SWP2 ] .&to STZ2
 	.&from STZ2
 	autocomplete/<reset>
 	wrap/update !reqdraw-both
@@ -682,8 +682,8 @@
 	/get-range INC2 SUB2 JMP2r
 
 @textarea/clamp-addr ( addr* -- addr* )
-	( min ) ;&buf GTH2k SWP2? POP2
-	( max ) .&eof LDZ2 #0001 SUB2 LTH2k SWP2? POP2 JMP2r
+	( min ) ;&buf u16/min
+	( max ) .&eof LDZ2 #0001 SUB2 u16/max JMP2r
 
 @textarea/get-anchor ( -- x* )
 	.nav/visible LDZ ?{ #0014 JMP2r }
@@ -694,7 +694,6 @@
 	/get-anchor #0028 Screen/<set-pos>
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | paint )
-	#0028 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
 	highlight/<reset>
 	caret/<reset>
@@ -849,7 +848,7 @@
 
 @nav/id-to-addr ( id -- addr* )
 	;&+ptr LDA #01 SUB .&buf SUB #01 SFT
-	( max ) LTHk SWP? POP
+	( max ) LTHk [ JMP SWP ] POP
 	( addr* ) DUP ADD .&buf ADD LDZ2 JMP2r
 
 @nav/addr-to-id ( addr* -- id )
@@ -1178,11 +1177,10 @@
 	#05 !path/<set-state>
 
 @file/<send> ( -- )
-	sel/get-to-from SUB2k #0002 GTH2 ?{ POP2 POP2 textarea/get-range }
+	sel/has-length ?{ JMP2r }
+	sel/get-to-from
 	&>l
-		( | merge whitespaces )
-		LDAk #20 GTHk SWP? POP DUP #20 EQU OVR [ LIT &+last 20 ] EQU AND ?{ DUP #18 DEO }
-		,&+last STR
+		LDAk #18 DEO
 		INC2 GTH2k ?&>l
 	POP2 POP2
 	( cap ) #0a18 DEO
@@ -1190,7 +1188,7 @@
 
 @file/<build> ( -- )
 	;path/buf str/<print>
-	#0a18 DEO
+	( cap ) #0a18 DEO
 	JMP2r
 
 @file/<inject> ( name* -- )
@@ -1472,7 +1470,7 @@
 
 @widget/<draw> ( {fn}* color -- )
 	( | left )
-	STHk .Screen/x DEI2 textarea/get-anchor #0008 ADD2 GTH2k SWP2? POP2 .Screen/x DEO2
+	STHk .Screen/x DEI2 textarea/get-anchor #0008 ADD2 u16/min .Screen/x DEO2
 	[ LIT2 02 -Screen/auto ] DEO
 	.Screen/x DEI2k #0004 SUB2 ROT DEO2
 	.Screen/y DEI2k #0014 ADD2 ROT DEO2
@@ -1818,7 +1816,7 @@
 
 @pict/<draw> ( str* -- )
 	/<set>
-	/get-size DUP2 #ffff NEQ2 ?{ POP2 JMP2r }
+	/get-size INC2k ORA ?{ POP2 JMP2r }
 	/<draw-icn>
 	[ LIT2 25 -Screen/auto ] DEO
 	JMP2r
@@ -1827,13 +1825,16 @@
 @pict/<draw-icn> ( w h -- )
 	#00 SWP SUB ,&height STR
 	#00 SWP SUB ,&width STR
-	[ LITr -Screen/y ] DEI2r [ LITr -Screen/x ] DEI2r
+	( | setup )
 	( file ) ;&buf .File/name DEO2
 	( depth ) #0008 .File/length DEO2
 	( addr ) ;&mem .Screen/addr DEO2
+	( | screen )
+	( y ) .Screen/y DEI2 DUP2 #0020 ADD2 .Screen/y DEO2
+	STH2
+	( x ) .Screen/x DEI2 DUP2 #0010 ADD2 ,&anchor STR2
+	STH2
 	[ LIT2 01 -Screen/auto ] DEO
-	STH2kr #0010 ADD2 ,&anchor STR2
-	.Screen/y DEI2 #0020 ADD2 .Screen/y DEO2
 	[ LIT2r 01 -Screen/sprite ]
 	( | draw )
 	[ LIT &height $1 ]
@@ -1842,17 +1843,19 @@
 		[ LIT &width $1 ]
 		&>h
 			;&mem .File/read DEO2
-			[ LIT2 00 -File/success-lb ] DEI EQU ?{ DEOkr
-				INC DUP ?&>h }
+			.File/success-lb DEI ?{ POP2 !&end }
+			DEOkr
+			INC DUP ?&>h
 		POP .Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
 		INC DUP ?&>v
 	POP
-	( sprite ) POP2r [ LITr -Screen/x ] DEO2r
+	&end ( sprite )
+	POP2r [ LITr -Screen/x ] DEO2r
 	[ LITr -Screen/y ] DEO2r
 	JMP2r
 
 @pict/get-size ( -- w h )
-	,&ptr LDR2 #0009 SUB2
+	,&+ptr LDR2 #0009 SUB2
 	( w ) LDA2k /read-byte STH
 	( x ) INC2 INC2 LDAk [ LIT "x ] NEQ ?{
 		( h ) INC2 LDA2 /read-byte STHr SWP JMP2r }
@@ -1862,16 +1865,15 @@
 	chr/hex SWP chr/hex #40 SFT ORA JMP2r
 
 @pict/<set> ( str* -- )
-	;&buf ,&ptr STR2
+	;&buf ,&+ptr STR2
 	&>w
 		LDAk DUP #20 GTH ?{ POP POP2 JMP2r }
-		/<push>
+		#00 [ LIT2 &+ptr =&buf ] INC2k
+		( | clamp )
+		DUP2 ;&bufend NEQ2 ?{ POP2 ;&buf }
+		,&+ptr STR2
+		STA2
 		INC2 !&>w
-
-@pict/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
 
 (
 @|theme )
