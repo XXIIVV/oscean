@@ -23,7 +23,7 @@
 |100
 
 @on-reset ( -> )
-	main-tests
+	net/<test-church>
 	#010e DEO
 	BRK
 
@@ -40,6 +40,9 @@
 	net/<test-dup>
 	net/<test-tiny-destroy>
 	net/<test-delcross>
+	net/<test-big-u>
+	net/<test-true>
+	net/<test-false>
 	JMP2r
 
 @experimental-tests ( -- )
@@ -168,39 +171,28 @@
 
 @net/<apply-com1> ( a* b* type -- )
 	POP
-	( | put gamma on top )
-	LDAk .EPS NEQ ?{ SWP2 }
-	( e1 ) DUP2 +/x LDA2 DUP2 is-nil ?{
-		DUP2 ;EPS /alloc +/p /<wire-push> }
-	POP2
-	( e2 ) DUP2 +/y LDA2 DUP2 is-nil ?{
-		DUP2 ;EPS /alloc +/p /<wire-push> }
-	POP2 !/<free-nodes>
+	( raise del/gam ) LDAk .EPS NEQ ?{ SWP2 }
+	( e1 ) DUP2 +/x LDA2 ;EPS /alloc +/p /<wire-push>
+	( e2 ) DUP2 +/y LDA2 ;EPS /alloc +/p /<wire-push> !/<free-nodes>
 
 @net/<apply-com2> ( a* b* type -- )
 	POP
 	( | outside )
-	( g ) OVR2 +/x LDA2 ;DEL /alloc
-	( gx ) DUP2 +/x ;&gx STA2
-	( gy ) DUP2 +/y ;&gy STA2
+	( d1 ) OVR2 +/x LDA2 ;DEL /alloc STH2k +/p /<wire-push>
+	( g1 ) DUP2 +/x LDA2 ;GAM /alloc
+	( g1x ) DUP2 +/x ,&g1x STR2
+	( g1y ) DUP2 +/y ,&g1y STR2
 	+/p /<wire-push>
-	( h ) DUP2 +/x LDA2 ;GAM /alloc
-	( hx ) DUP2 +/x ,&hx STR2
-	( hy ) DUP2 +/y ,&hy STR2
+	( d2 ) OVR2 +/y LDA2 ;DEL /alloc STH2k +/p /<wire-push>
+	( g2 ) DUP2 +/y LDA2 ;GAM /alloc
+	( g2x ) DUP2 +/x ,&g2x STR2
+	( g2y ) DUP2 +/y ,&g2y STR2
 	+/p /<wire-push>
-	( i ) OVR2 +/y LDA2 ;DEL /alloc
-	( ix ) DUP2 +/x ,&ix STR2
-	( iy ) DUP2 +/y ,&iy STR2
-	+/p /<wire-push>
-	( j ) DUP2 +/y LDA2 ;GAM /alloc
-	( jx ) DUP2 +/x ,&jx STR2
-	( jy ) DUP2 +/y ,&jy STR2
-	+/p /<wire-push>
-	( | cross )
-	[ LIT2 &ix $2 ] [ LIT2 &hy $2 ] /<wire>
-	[ LIT2 &iy $2 ] [ LIT2 &jy $2 ] /<wire>
-	[ LIT2 &hx $2 ] [ LIT2 &gx $2 ] /<wire>
-	[ LIT2 &gy $2 ] [ LIT2 &jx $2 ] /<wire> !/<free-nodes>
+	( | cross . d1 d2 )
+	STH2kr +/x [ LIT2 &g1y $2 ] /<wire>
+	STH2r +/y [ LIT2 &g2y $2 ] /<wire>
+	STH2kr +/x [ LIT2 &g1x $2 ] /<wire>
+	STH2r +/y [ LIT2 &g2x $2 ] /<wire> !/<free-nodes>
 
 @is-already-printed ( node* -- node* t )
 	( get pri ) INC2k INC2 LDA2k is-pri ?{ POP2 #00 JMP2r }
@@ -304,6 +296,58 @@
 @<lb> ( -- )
 	#0a18 DEO
 	JMP2r
+
+(
+@|Prefabs )
+
+@net/make-app ( x/p* y/p* -- gam* )
+	( y ) ;GAM /alloc STH2k +/y /<wire>
+	( x ) STH2kr +/x /<wire>
+	STH2r JMP2r
+
+@net/make-identity ( -- port* )
+	;GAM /alloc
+	( x ) DUP2 +/x
+	( y ) OVR2 +/y /<wire>
+	JMP2r
+
+@net/make-false ( -- port* )
+	( y ) ;EPS /alloc +/p
+	( x ) /make-identity +/p !/make-app
+
+@net/make-true ( -- port* )
+	;GAM /alloc
+	( y ) ;EPS /alloc +/p OVR2 +/x /<wire>
+	( x ) DUP2 +/y SWP2 +/p !/make-app
+
+@net/make-cat ( a* -- port* )
+	+/p ;GAM /alloc STH2k +/x /<wire>
+	STH2r JMP2r
+
+@net/make-concat ( a* b* -- port* )
+	( x ) /make-cat +/p
+	( y ) SWP2 /make-cat STH2k +/y /<wire>
+	STH2r JMP2r
+
+@net/make-and ( -- port* )
+	( id~>app1.x ) /make-identity +/p ;GAM /alloc STH2k +/x /<wire>
+	( stash: app1 ) ( false~>app2.y ) /make-false +/p ;GAM /alloc STH2k +/y /<wire>
+	( stash: app1 app2 ) ( app1~>app2.x ) OVR2r STH2r +/p STH2kr +/x /<wire>
+	( stash: app1 app2 ) ( app2~>la.y ) STH2r +/p ;GAM /alloc STH2k +/y /<wire>
+	( stash: app1 la ) STH2r DUP2 +/x STH2r +/y /<wire>
+	JMP2r
+
+@net/make-zero ( -- port* )
+	( x ) ;EPS /alloc +/p
+	( y ) /make-identity +/p !/make-app
+
+@net/make-one ( -- port* )
+	;GAM /alloc ;GAM /alloc OVR2 +/x OVR2 +/x /<wire>
+	OVR2 +/y OVR2 +/y /<wire>
+	+/p SWP2 +/p !/make-app
+
+@net/make-succ ( -- port* )
+	#0000 JMP2r
 
 (
 @|Tests )
@@ -410,6 +454,28 @@
 	;DEL /alloc DUP2 +/x ;EPS /alloc +/p /<wire>
 	OVR2 +/y OVR2 +/y /<wire>
 	/<activate> !/<run>
+
+@net/<test-big-u> ( -- )
+	/<init>
+	( | deg-gam, but gam is wired on itself )
+	;GAM /alloc ;DEL /alloc DUP2 +/x OVR2 +/y /<wire>
+	/<activate> !/<run>
+
+@net/<test-true> ( -- )
+	/<init>
+	( #t ) ;EPS /alloc
+	( #f ) ;EPS /alloc /make-concat
+	( .. ) /make-true /<activate> !/<run>
+
+@net/<test-false> ( -- )
+	/<init>
+	( #t ) ;EPS /alloc
+	( #f ) ;EPS /alloc /make-concat
+	( .. ) /make-false /<activate> !/<run>
+
+@net/<test-church> ( -- )
+	/<init>
+	/make-succ POP2 !/<run>
 
 (
 @|Assets )
