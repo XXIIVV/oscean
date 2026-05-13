@@ -1,4 +1,4 @@
-( uxncli vm.rom file.rom )
+( uxncli uxnmin.rom file.rom )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -20,61 +20,62 @@
 	BRK
 
 @src/on-console ( -> )
-	[ LIT2 0a -Console/read ] DEI NEQk ?{
-		POP2 /<load>
-		#010e DEO
+	[ LIT2 03 -Console/type ] DEI GTH ?{
+		;&buf .File/name DEO2
+		#8000 .File/length DEO2
+		;rom/reset .File/read DEO2
+		vm/<run>
 		BRK }
-	/<push>
-	POP BRK
-
-@src/<push> ( c -- )
-	[ LIT &ptr -&buf ] INCk ,&ptr STR
+	.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
 	STZ
-	JMP2r
-
-@src/<load> ( -> )
-	;&buf .File/name DEO2
-	#8000 .File/length DEO2
-	;rom/reset .File/read DEO2
-	vm/<run>
-	#800f DEO
-	JMP2r
+	BRK
 
 (
 @|emu )
 
 @vm/<run> ( -- )
+	;&on-console .Console/vector DEO2
 	/<reset>
+	( >> )
+
+@vm/<eval> ( -- )
 	&>w
 		[ LIT2 &steps $2 ] INC2 ,&steps STR2
 		/step ?&>w
-	;&steps LDA2 dec/<print>
-	;dict/cycles !str/<print>
+	JMP2r
+
+@vm/on-console ( -> )
+	[ LIT2 &console-hb $1 &console-lb $1 ] ORAk ?{ POP2 BRK }
+	.Console/read DEI ,&console-read STR
+	.Console/type DEI ,&console-type STR
+	pc/<set-abs>
+	/<eval>
+	BRK
+
+@vm/dei ( p -- v )
+	( Console/read ) DUP #12 NEQ ?{
+		POP [ LIT &console-read $1 ] JMP2r }
+	( Console/type ) DUP #17 NEQ ?{
+		POP [ LIT &console-type $1 ] JMP2r }
+	POP #00 JMP2r
 
 @vm/deo ( v p -- )
-	( | handlers )
-	DUP #0e NEQ ?{ POP2 JMP2r }
-	DUP #0f NEQ ?{ POP2 JMP2r }
-	DUP #18 NEQ ?{ DEO
+	( System/debug ) DUP #0e NEQ ?{ DEO
 		JMP2r }
-	DUP #19 NEQ ?{ DEO
+	( System/halt ) DUP #0f NEQ ?{ DEO
 		JMP2r }
-	( | error )
-	;dict/err-device str/<print>
-	hex/<b>
-	#0a18 DEO
+	( Console/vector-hb ) DUP #10 NEQ ?{ POP ,&console-hb STR
+		JMP2r }
+	( Console/vector-lb ) DUP #11 NEQ ?{ POP ,&console-lb STR
+		JMP2r }
+	( Console/stdout ) DUP #18 NEQ ?{ DEO
+		JMP2r }
+	( Console/stderr ) DUP #19 NEQ ?{ DEO
+		JMP2r }
 	POP JMP2r
 
 (
 @|stdlib )
-
-@hex/<print> ( short* -- )
-	SWP /<b>
-	&<b> ( -- )
-	DUP #04 SFT /<c>
-	&<c> ( -- )
-	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
-	JMP2r
 
 @str/<print> ( str* -- )
 	&>w
@@ -82,61 +83,48 @@
 		#19 DEO
 		INC2 !&>w
 
-@dec/<print> ( short* -- )
-	#2710 [ LIT2r 00fb ]
-	&>w
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
-			DUP LIT "0 ADD #19 DEO
-			INCr }
-		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
-	POP2r POP2 POP2 JMP2r
-
-@dict
-	&usage "usage: 20 "uxnvm.rom 20 "game.rom 0a $1
-	&err-device "Unsupported 20 "device: 20 $1 &cycles 20 "cycles. 0a $1
+@dict/usage "usage: 20 "uxnmin.rom 20 "game.rom 0a 00
 
 
 
 ( Uxn Core )
 
 @vm/<reset> ( -- )
-	pc/<reset>
+	#0100 pc/<set-abs>
 	#0000 .uxn/ptr STZ2
-	#0000 DUP2 ;wst/ptr STA2
-	DUP2 ;rst/ptr STA2
-	;&steps STA2
+	#0000 ;wst/ptr STA2
+	#0000 ;rst/ptr STA2
 	JMP2r
 
 @vm/step ( -- ok )
 	( ptr+1 ) .pc/addr LDZ2 INC2k .pc/addr STZ2
-	( opcode ) ;rom/buf ADD2 LDA
+	( opcode ) ;rom/mem ADD2 LDA
 	( mode 2 ) DUP #20 AND #00 NEQ .uxn/m2 STZ
 	( mode r ) DUP #40 AND #00 NEQ .uxn/mr STZ
 	( mode r ) DUP #40 AND #00 NEQ STH
-	;rst ;wst STHr [ JMP SWP2 ] .uxn/dst STZ2
+	;rst/buf ;wst/buf STHr [ JMP SWP2 ] .uxn/dst STZ2
 	.uxn/src STZ2
 	( mode k ) DUP #80 AND #00 NEQ ;pop/keep STA
 	( copy pop pointer ) .uxn/src LDZ2 #0100 ADD2 LDAk DUP SWP2 STA2
 	( apply ) #00 OVR #1f AND DUP2 ADD2 ;lib/lut ADD2 LDA2 JMP2
 
 (
-@|primitives )
+@|PC )
 
-%pc/rel ( a* -- ) {
-	DUP #7f GTH #ff MUL SWP .pc/addr LDZ2 ADD2 }
-
-@pc/<reset> ( -- )
-	#0100 .&addr STZ2
-	JMP2r
+@pc/rel ( a* -- )
+	DUP #7f GTH #ff MUL SWP .pc/addr LDZ2 ADD2 JMP2r
 
 @pc/<set> ( a* -- )
 	.uxn/m2 LDZ ?&<set-abs>
 	&<set-rel> ( a* -- )
-	NIP pc/rel
+	NIP /rel
 	( >> )
 	&<set-abs> ( a* -- )
 	.&addr STZ2
 	JMP2r
+
+(
+@|Stacks )
 
 @push ( v* -- )
 	.uxn/m2 LDZ ?&16
@@ -149,7 +137,7 @@
 	JMP2r
 
 	&16 ( v* -- )
-	SWP push/byte !push/byte
+	SWP /byte !/byte
 
 @pop ( -- v* )
 	.uxn/m2 LDZ ?&16
@@ -162,40 +150,44 @@
 	( load ) #00 LDAr STHr ADD2 LDA JMP2r
 
 	&16 ( -- v* )
-	pop/byte pop/byte SWP JMP2r
+	/byte /byte SWP JMP2r
 
 @poke ( v* a* -- )
 	.uxn/m2 LDZ ?&16
-	;rom/buf ADD2 STA
+	;rom/mem ADD2 STA
 	POP JMP2r
 
 	&16 ( v* a* -- )
-	;rom/buf ADD2 STA2
+	;rom/mem ADD2 STA2
 	JMP2r
 
 @peek ( a* -- v* )
 	.uxn/m2 LDZ ?&16
-	;rom/buf ADD2 LDA #00 SWP JMP2r
+	;rom/mem ADD2 LDA #00 SWP JMP2r
 
 	&16 ( a* -- v* )
-	;rom/buf ADD2 LDA2 JMP2r
+	;rom/mem ADD2 LDA2 JMP2r
 
 @devw ( v* p* -- )
 	.uxn/m2 LDZ ?&16
 	NIP ROT POP !vm/deo
 
 	&16 ( v* p* -- )
-	NIP STHk vm/deo STHr INC !vm/deo
+	NIP
+	( hb ) STHk INC vm/deo
+	( lb ) STHr !vm/deo
 
 @devr ( p* -- )
-	.uxn/m2 LDZ ?devr/16
-	NIP DEI #00 SWP !push
+	.uxn/m2 LDZ ?/16
+	NIP vm/dei #00 SWP !push
 
 	&16 ( p* -- )
-	NIP DEI2 !push
+	NIP
+	( hb ) INCk vm/dei #00 SWP push
+	( lb ) vm/dei #00 SWP !push
 
 (
-@|library )
+@|Library )
 
 @lib/imm ( opc -- )
 	DUP #00 EQU ?&op-brk
@@ -206,17 +198,17 @@
 	.pc/addr LDZ2 peek push #0001 .uxn/m2 LDZ ADD !pc/<set-rel>
 
 	&op-jci ( -- )
-	;wst .uxn/src STZ2
+	;wst/buf .uxn/src STZ2
 	pop/8 NIP ?&op-jmi
 	( else ) .pc/addr LDZ2k INC2 INC2 ROT STZ2
 	JMP2r
 
 	&op-jsi ( -- )
-	;rst .uxn/src STZ2
+	;rst/buf .uxn/src STZ2
 	.pc/addr LDZ2 INC2 INC2 push/16
 	( >> )
 	&op-jmi ( -- )
-	.pc/addr LDZ2 DUP2 peek/16 ADD2 INC2 INC2 !pc/<set-abs>
+	.pc/addr LDZ2 DUP2 peek/16 INC2 INC2 ADD2 !pc/<set-abs>
 
 	&op-brk ( -- )
 	JMP2r
@@ -230,8 +222,8 @@
 	&ovr pop pop SWP2 OVR2 push push !push
 	&equ pop pop EQU2 !push/byte
 	&neq pop pop NEQ2 !push/byte
-	&gth pop pop SWP2 GTH2 !push/byte
-	&lth pop pop SWP2 LTH2 !push/byte
+	&gth pop pop LTH2 !push/byte
+	&lth pop pop GTH2 !push/byte
 	&jmp pop !pc/<set>
 	&jcn pop pop/8 NIP [ ?pc/<set> POP2 ] JMP2r
 	&jsr pop .pc/addr LDZ2 .uxn/dst LDZ2 [ .uxn/src STZ2 push/16 ] !pc/<set>
@@ -264,11 +256,11 @@
 	=&and =&ora =&eor =&sft ]
 
 (
-@|uxn )
+@|Buffers )
 
-@wst $100 &ptr $2
+@wst/buf $100 &ptr $2
 
-@rst $100 &ptr $2
+@rst/buf $100 &ptr $2
 
-@rom/buf $100 &reset
+@rom/mem $100 &reset
 
