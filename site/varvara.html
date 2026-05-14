@@ -285,7 +285,7 @@ times; once for each character.</p>
 
 <pre>|20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1</pre>
 
-<p>The <b>Screen/vector*</b> is evaluated 60 times per second. The screen device is capable of displaying graphics in <a href='theme.html'>any four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two selfstanding layers, the foreground layer treats color0 as transparent.</p>
+<p>The <b>Screen/vector*</b> is evaluated 60 times per second. The screen device is capable of displaying graphics in <a href='theme.html'>any four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
 <pre>
 @on-reset <i>( -> )</i>
@@ -293,10 +293,9 @@ times; once for each character.</p>
 	BRK
 
 @on-screen <i>( -> )</i>
-	[ LIT &frame $1 ] INCk ,&frame STR
-	#01 AND ?&>skip
-		( 30 times per second )
-		&>skip
+	[ LIT2 01 &frame $1 ] INCk ,&frame STR
+	AND ?{
+		<i>( 30 times per second )</i> }
 	BRK
 </pre>
 
@@ -311,8 +310,8 @@ position responsive graphics on the screen.</p>
 	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
 	.Screen/height DEI2 #01 SFT2 .Screen/y DEO2
 	#01 .Screen/pixel DEO <i>( paint a black pixel, on background )</i>
-	#43 .Screen/pixel DEO <i>( paint a red pixel, on foreground )</i>
-	#93 .Screen/pixel DEO <i>( fill a red rectangle bottom-left, on background )</i>
+	#43 .Screen/pixel DEO <i>( paint a orange pixel, on foreground )</i>
+	#93 .Screen/pixel DEO <i>( fill a orange rectangle bottom-left, on background )</i>
 	#e2 .Screen/pixel DEO <i>( fill a cyan rectangle top-right, on foreground )</i>
 	BRK
 </pre>
@@ -344,7 +343,14 @@ Flip Y --------+ | | +-------- Color bit 2
 Flip X ----------+ +---------- Color bit 3
 </pre>
 
-<p>The 8x8 sprite data to draw is specified by writing its location in memory to the
+<p>The color nibble defines which color is drawn for each pixel of a sprite, colors divisible by 5, are see-through. The
+following image presents the 16 possible 1-bit combinations in the row above, and 2-bit for the row below:</p>
+
+<center>
+	<img src='../media/generic/varvara_blend.png' class='nodark'/>
+</center>
+
+<p>The Sprite data to draw with the sprite port is specified by writing its location in memory to the
 <b>Screen/addr*</b> port.</p>
 
 <pre>
@@ -352,14 +358,14 @@ Flip X ----------+ +---------- Color bit 3
 	<a href='#set-theme'>set-theme</a>
 	#0020 .Screen/x DEO2
 	#0040 .Screen/y DEO2
-	;sprite-icn .Screen/addr DEO2
+	;heart-icn .Screen/addr DEO2
 	#01 .Screen/sprite DEO
 	BRK
 
-@sprite-icn
+@heart-icn
 	00 66 ff ff ff 7e 3c 18
 
-(
+<i>(
 . . . . . . . . 00
 . # # . . # # . 66
 # # # # # # # # ff
@@ -368,42 +374,9 @@ Flip X ----------+ +---------- Color bit 3
 . # # # # # # . 7e
 . . # # # # . . 3c
 . . . # # . . . 18
-)
-</pre>
+)</i></pre>
 
-<table border='1' class="right">
-	<tr>
-		<th>0</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-		<th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-		<th>c</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg0'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-	</tr>
-	<tr>
-		<th>1</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0'><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
-		<th>5</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
-		<th>9</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2'><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
-		<th>d</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3'><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
-	</tr>
-	<tr>
-		<th>2</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0'><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
-		<th>6</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
-		<th>a</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
-		<th>e</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3'><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
-	</tr>
-	<tr>
-		<th>3</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0'><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-		<th>7</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-		<th>b</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2'><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-		<th>f</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
-	</tr>
-</table>
-
-<p>The color nibble defines which color is drawn for each pixel of a sprite. The
-following table presents all possible combinations, assuming a sprite has a
-background of value 0 and three concentric circles of values 1, 2, and 3
-(counting from the outside). For 1-bit sprites, only values 0 and 1 are
-applicable.</p>
-
+<!--
 <pre>
 c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1;
 
@@ -413,7 +386,7 @@ blending[4][16] = {
 	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
 	{2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2}};
 </pre>
-
+-->
 <!-- <img src='../media/generic/varvara.blending.png' /> -->
 
 <p>The <b>Screen/auto</b> port automates the incrementation of the position and
@@ -433,6 +406,21 @@ drawn in addition to the first, each time the sprite port is written to.
 When set to 0, only a single sprite will be drawn. As many as 16 sprites
 can be drawn at once with a value of 15.</p>
 
+
+<pre>
+@smile/draw <i>( -- )</i>
+	;&icn .Screen/addr DEO2      <i>( Set address )</i>
+	#16 .Screen/auto DEO         <i>( Will draw two-tiles wide downward )</i>
+	#01 .Screen/sprite DEOk DEO  <i>( Paint two rows )</i>
+	JMP2r
+
+@smile/icn [
+	0007 1820 2040 4044 00e0 1804 0402 0222
+	4040 4423 2018 0700 0202 22c4 0418 e000 ]
+</pre>
+
+	<img src='../media/generic/pixel.smile.png' class="right" width='150'/>
+
 <p>The auto-x and auto-y bits control the increment of the x and y ports
 respectively, as well as the layout of the extra sprites drawn when the length
 nibble is not null. The extra sprites are drawn as columns moving rightward for
@@ -441,21 +429,6 @@ byte are set, the directions are reversed. If the auto-addr bit is set, the
 address port will be incremented for each sprite drawn by increments of 8 for
 1-bit, and by increments of 16 for 2-bit.</p>
 
-<pre>
-@paint-sprite ( x* y* -- )
-	.Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
-	.Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
-	#16 .Screen/auto DEO <span style='float:right; color:#888'>( set length 2 with auto y and addr )</span>
-	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
-	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows of 1-bit sprites )</span>
-	JMP2r
-
-@23x-icns
-	<span style='color:#888'>( 0 ) ( 1 )</span>
-	<span style='color:#888'>( 0 )</span> 0010 2847 2810 0001 0000 00e0 2040 8000
-	<span style='color:#888'>( 1 )</span> 0204 080f 0000 0001 0000 00e0 2040 8000
-	<span style='color:#888'>( 2 )</span> 0204 080f 0000 0000 0010 28c4 2810 0000
-</pre>
 
 <ul>
 	<li><a href='../etc/varvara.screen.tal.txt' target='_blank'>Screen Example</a></li>
