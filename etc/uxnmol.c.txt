@@ -1,0 +1,519 @@
+#include <stdio.h>
+
+typedef signed char Sint8;
+typedef unsigned char Uint8;
+typedef unsigned short Uint16;
+
+typedef struct {
+	Uint16 pc;
+	Uint8 ptr[2];
+	Uint8 stk[2][0x100];
+	Uint8 d, r, k, sp;
+} Uxn;
+
+static Uxn u;
+static Uint16 console_vector;
+static Uint8 ram[0x10000];
+static Uint8 dev[0x100];
+
+/*
+@|IO */
+
+static Uint8
+dei(Uint8 port)
+{
+	return dev[port];
+}
+
+static void
+deo(Uint8 port, Uint8 val)
+{
+	dev[port] = val;
+	switch(port) {
+	case 0x11:
+		console_vector = (Uint16)(dev[0x10] << 8 | val);
+		return;
+	case 0x18:
+		fputc(val, stdout);
+		return;
+	case 0x19:
+		fputc(val, stderr);
+		return;
+	}
+}
+
+/*
+@|Primitives */
+
+static Uint8
+pop8(void)
+{
+	return u.stk[u.r][--u.ptr[u.r]];
+}
+
+static void
+push8(Uint8 v)
+{
+	u.stk[u.r][u.ptr[u.r]++] = v;
+}
+
+static Uint16
+pop(void)
+{
+	Uint16 v = pop8();
+	if(u.d)
+		v |= (Uint16)pop8() << 8;
+	return v;
+}
+
+static Uint16
+pop16r(void)
+{
+	Uint16 lo = pop8();
+	return lo | ((Uint16)pop8() << 8);
+}
+
+static void
+push(Uint16 v)
+{
+	if(u.d)
+		push8((Uint8)(v >> 8));
+	push8((Uint8)v);
+}
+
+static void
+rec(void)
+{
+	if(u.k)
+		u.ptr[u.r] = u.sp;
+}
+
+/*
+@|Immediates */
+
+static void
+op_jci(void)
+{
+	Uint16 a = (Uint16)(ram[u.pc] << 8) | ram[u.pc + 1];
+	u.r = 0;
+	u.pc += 2;
+	if(pop8())
+		u.pc += a;
+}
+
+static void
+op_jmi(void)
+{
+	Uint16 a = (Uint16)(ram[u.pc] << 8) | ram[u.pc + 1];
+	u.pc += 2 + a;
+}
+
+static void
+op_jsi(void)
+{
+	Uint16 a = (Uint16)(ram[u.pc] << 8) | ram[u.pc + 1];
+	u.pc += 2;
+	u.r = 1;
+	push8((Uint8)(u.pc >> 8));
+	push8((Uint8)u.pc);
+	u.pc += a;
+}
+
+static void
+op_lit(void)
+{
+	u.r = 0;
+	push8(ram[u.pc++]);
+}
+
+static void
+op_li2(void)
+{
+	u.r = 0;
+	push8(ram[u.pc++]);
+	push8(ram[u.pc++]);
+}
+
+static void
+op_lir(void)
+{
+	u.r = 1;
+	push8(ram[u.pc++]);
+}
+
+static void
+op_l2r(void)
+{
+	u.r = 1;
+	push8(ram[u.pc++]);
+	push8(ram[u.pc++]);
+}
+
+/*
+@|Opcodes */
+
+static void
+op_inc(void)
+{
+	Uint16 a = pop();
+	rec();
+	push(a + 1);
+}
+
+static void
+op_pop(void)
+{
+	u.ptr[u.r] -= 1 + u.d;
+	rec();
+}
+
+static void
+op_nip(void)
+{
+	Uint16 x = pop();
+	u.ptr[u.r] -= 1 + u.d;
+	rec();
+	push(x);
+}
+
+static void
+op_swp(void)
+{
+	Uint16 x = pop(), y = pop();
+	rec();
+	push(x);
+	push(y);
+}
+
+static void
+op_rot(void)
+{
+	Uint16 x = pop(), y = pop(), z = pop();
+	rec();
+	push(y);
+	push(x);
+	push(z);
+}
+
+static void
+op_dup(void)
+{
+	Uint16 x = pop();
+	rec();
+	push(x);
+	push(x);
+}
+
+static void
+op_ovr(void)
+{
+	Uint16 x = pop(), y = pop();
+	rec();
+	push(y);
+	push(x);
+	push(y);
+}
+
+static void
+op_equ(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push8(b == a);
+}
+
+static void
+op_neq(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push8(b != a);
+}
+
+static void
+op_gth(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push8(b > a);
+}
+
+static void
+op_lth(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push8(b < a);
+}
+
+static void
+op_jmp(void)
+{
+	Uint16 a = pop();
+	rec();
+	u.pc = u.d ? a : (Uint16)(u.pc + (Sint8)a);
+}
+
+static void
+op_jcn(void)
+{
+	Uint16 a = pop();
+	Uint8 b = pop8();
+	rec();
+	if(b)
+		u.pc = u.d ? a : (Uint16)(u.pc + (Sint8)a);
+}
+
+static void
+op_jsr(void)
+{
+	Uint16 a = pop();
+	rec();
+	u.r = !u.r;
+	push8((Uint8)(u.pc >> 8));
+	push8((Uint8)u.pc);
+	u.pc = u.d ? a : (Uint16)(u.pc + (Sint8)a);
+}
+
+static void
+op_sth(void)
+{
+	Uint16 x = pop();
+	rec();
+	u.r = !u.r;
+	push(x);
+}
+
+static void
+op_ldz(void)
+{
+	Uint8 a = pop8();
+	rec();
+	push8(ram[a]);
+	if(u.d)
+		push8(ram[(Uint8)(a + 1)]);
+}
+
+static void
+op_stz(void)
+{
+	Uint8 a = pop8();
+	Uint16 y = pop();
+	rec();
+	ram[a] = u.d ? (Uint8)(y >> 8) : (Uint8)y;
+	if(u.d)
+		ram[(Uint8)(a + 1)] = (Uint8)y;
+}
+
+static void
+op_ldr(void)
+{
+	Uint8 a = pop8();
+	Uint16 addr = (Uint16)(u.pc + (Sint8)a);
+	rec();
+	push8(ram[addr]);
+	if(u.d)
+		push8(ram[(addr + 1) & 0xffff]);
+}
+
+static void
+op_str(void)
+{
+	Uint8 a = pop8();
+	Uint16 y = pop();
+	Uint16 addr = (Uint16)(u.pc + (Sint8)a);
+	rec();
+	ram[addr] = u.d ? (Uint8)(y >> 8) : (Uint8)y;
+	if(u.d)
+		ram[(addr + 1) & 0xffff] = (Uint8)y;
+}
+
+static void
+op_lda(void)
+{
+	Uint16 a = pop16r();
+	rec();
+	push8(ram[a]);
+	if(u.d)
+		push8(ram[(a + 1) & 0xffff]);
+}
+
+static void
+op_sta(void)
+{
+	Uint16 a = pop16r();
+	Uint16 y = pop();
+	rec();
+	ram[a] = u.d ? (Uint8)(y >> 8) : (Uint8)y;
+	if(u.d)
+		ram[(a + 1) & 0xffff] = (Uint8)y;
+}
+
+static void
+op_dei(void)
+{
+	Uint8 a = pop8();
+	rec();
+	push8(dei(a));
+	if(u.d)
+		push8(dei(a + 1));
+}
+
+static void
+op_deo(void)
+{
+	Uint8 a = pop8();
+	Uint16 y = pop();
+	rec();
+	if(u.d)
+		deo(a, (Uint8)(y >> 8));
+	deo(u.d ? a + 1 : a, (Uint8)y);
+}
+
+static void
+op_add(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(b + a);
+}
+
+static void
+op_sub(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(b - a);
+}
+
+static void
+op_mul(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(b * a);
+}
+
+static void
+op_div(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(a ? b / a : 0);
+}
+
+static void
+op_and(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(b & a);
+}
+
+static void
+op_ora(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(b | a);
+}
+
+static void
+op_eor(void)
+{
+	Uint16 a = pop(), b = pop();
+	rec();
+	push(b ^ a);
+}
+
+static void
+op_sft(void)
+{
+	Uint8 a = pop8();
+	Uint16 b = pop();
+	rec();
+	push((b >> (a & 0x0f)) << (a >> 4));
+}
+
+typedef void (*Opc)(void);
+
+/* clang-format off */
+
+static const Opc imm[8] = {
+	NULL,   op_jci, op_jmi, op_jsi,
+	op_lit, op_li2, op_lir, op_l2r};
+
+static const Opc ops[32] = {
+	NULL,   op_inc, op_pop, op_nip,
+	op_swp, op_rot, op_dup, op_ovr,
+	op_equ, op_neq, op_gth, op_lth,
+	op_jmp, op_jcn, op_jsr, op_sth,
+	op_ldz, op_stz, op_ldr, op_str,
+	op_lda, op_sta, op_dei, op_deo,
+	op_add, op_sub, op_mul, op_div,
+	op_and, op_ora, op_eor, op_sft};
+
+/* clang-format on */
+
+/*
+@|Core */
+
+static unsigned int
+uxn_eval(Uint16 start_pc)
+{
+	u.pc = start_pc;
+	for(;;) {
+		Uint8 instr = ram[u.pc++];
+		Uint8 op = instr & 0x1f;
+		if(!op) {
+			Uint8 idx = instr >> 5;
+			if(!idx)
+				return 1;
+			imm[idx]();
+		} else {
+			u.d = (instr >> 5) & 1;
+			u.r = (instr >> 6) & 1;
+			u.k = instr >> 7;
+			u.sp = u.ptr[u.r];
+			ops[op]();
+		}
+	}
+	return 0;
+}
+
+static void
+console_input(int c, unsigned int type)
+{
+	dev[0x12] = (Uint8)c;
+	dev[0x17] = (Uint8)type;
+	if(console_vector)
+		uxn_eval(console_vector);
+}
+
+int
+main(int argc, char **argv)
+{
+	FILE *f;
+	if(argc < 2)
+		return 1;
+	else if(!(f = fopen(argv[1], "rb")))
+		return 1;
+	fread(&ram[0x100], 0xff00, 1, f), fclose(f);
+	dev[0x17] = argc > 2;
+	if(uxn_eval(0x100) && console_vector) {
+		int i = 2;
+		for(; i < argc; i++) {
+			char c, *p = argv[i];
+			while(!dev[0x0f] && (c = *p++))
+				console_input(c, 2);
+			console_input('\n', 3 + (i == argc - 1));
+		}
+		while(!dev[0x0f]) {
+			char c = fgetc(stdin);
+			if(feof(stdin)) break;
+			console_input(c, 1);
+		}
+		console_input('\n', 4);
+	}
+	return dev[0x0f] & 0x7f;
+}
