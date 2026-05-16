@@ -136,6 +136,7 @@ function Repl(rom, keyword)
 		this.run_el.addEventListener("click", this.run)
 		this.run_el.value = keyword
 		document.body.className = "active"
+		return this
 	}
 
 	this.load_examples = () => {
