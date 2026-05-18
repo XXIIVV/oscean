@@ -3,7 +3,9 @@
 |100
 
 @on-reset ( -> )
-	( | PART 1
+	( |
+	| PART 1:
+	|
 	| LIT2: Puts a short on the stack
 	| LIT: Puts a byte on the stack
 	| #06 DEO: Write to metadata ports
@@ -12,7 +14,9 @@
 	[ LIT2 "kO ] #18 DEO
 	#18 DEO
 	#2018 DEO
-	( | PART 2
+	( |
+	| PART 2:
+	|
 	| LITr: Put a byte on return stack
 	| STH: Move a byte from working stack to return stack
 	| STH2r: Move a short from return stack to working stack )
@@ -20,7 +24,9 @@
 	STH2r #18 DEO
 	#18 DEO
 	#2018 DEO
-	( | PART 3
+	( |
+	| PART 3:
+	|
 	| LIT2r: Put a short on return stack
 	| DUP: Duplicate byte
 	| ADDr: Add bytes on return stack )
@@ -29,12 +35,16 @@
 	ADDr STH2r #18 DEO
 	#18 DEO
 	#2018 DEO
-	( | PART 4
+	( |
+	| PART 4:
+	|
 	| JSI: Subroutine to relative short address
 	| JMP2r: Jumps to absolute address on return stack )
 	tests/<print-ok>
 	#2018 DEO
-	( | PART 5
+	( |
+	| PART 5:
+	|
 	| POP2: Removes a short from the stack
 	| INC2: Increments short on stack
 	| DUP2: Duplicate short
@@ -42,41 +52,55 @@
 	| JCI: Conditional subroutine to relative short address )
 	;dict/ok str/<print>
 	#2018 DEO
-	( | PART 6
+	( |
+	| PART 6:
+	|
 	| JSR2: Jump to subroutine from short pointer
 	| LDAk: Non-destructive load byte from absolute address )
 	{ "Ok $1 }
 	STH2r ;str/<print> JSR2 #2018 DEO
-	( | PART 7
+	( |
+	| PART 7:
+	|
 	| Relative distance bytes )
 	tests/<rel>
 	SWP #18 DEO
 	#18 DEO
-	( | PART 8
+	( |
+	| PART 8:
+	|
 	| Test every opcode )
 	#1234 #00 STZ2
 	tests/<run>
-	( | Part xx
+	( |
+	| PART 9:
+	|
 	| Testing that stacks are circular and wrapping
 	| Storing 12 at -1 and 34 at 0 )
 	POP #12 #34 ADD #46 EQU STH
 	POP #1234 ADD #46 EQU STH
 	POP2 #1111 #2222 ADD2 #3333 EQU2 STHr AND STHr AND ;dict/stack-wrap tests/<print>
 	( restore stack ) #0000 #0000
-	( | Part xx
+	( |
+	| PART 10:
+	|
 	| Testing RAM wrapping
 	| Storing 12 in 0xffff, and 34 in 0x0000 )
 	#1234 #ffff STA2
 	( LDA ) #0000 LDA #ffff LDA ADD #46 EQU
 	( LDA2 ) #ffff LDA2 ADD #46 EQU AND ;dict/ram-wrap tests/<print>
-	( | Part xx
+	( |
+	| PART 11:
+	|
 	| Testing PC wrapping: split instruction
 	| Storing 80[LIT] in 0xffff, and 55[val8] in 0x0000
 	| Storing 6c[JMP2r] in 0x0001 )
 	#8055 #ffff STA2
 	#6c #01 STZ
 	#ffff JSR2 #55 EQU ;dict/pc-wrap tests/<print>
-	( | Part xx
+	( |
+	| PART 12:
+	|
 	| Testing PC wrapping: split value after instruction
 	| Storing a0[LIT2] in 0xfffe,
 	| and 0x55[hi-byte] in 0xffff, and 0xaa[lo-byte] in 0x0000
@@ -84,18 +108,23 @@
 	#a055 #fffe STA2
 	#aa6c #0000 STA2
 	#fffe JSR2 #55aa EQU2 ;dict/pc2-wrap tests/<print>
-	( | Part xx
+	( |
+	| PART 13:
+	|
 	| Testing that zero-page is wrapping )
 	#5678 #ff STZ2
 	( LDZ ) #00 LDZ #ff LDZ ADD #ce EQU
 	( LDZ2 ) #ff LDZ2 ADD #ce EQU AND ;dict/zp-wrap tests/<print>
-	( | Part xx
+	( |
+	| PART 14:
+	|
 	| Testing that device page is wrapping )
 	#1234 #ff DEO2
 	( DEI ) #00 DEI #ff DEI ADD #46 EQU
 	( DEI2 ) #ff DEI2 ADD #46 EQU AND ;dict/dev-wrap tests/<print>
 	#0000 DEO
 	#00ff DEO
+	( | You have a working uxn! )
 	#800f DEO
 	BRK
 
@@ -1041,7 +1070,12 @@
 	ANDr ANDr STHr JMP2r
 
 @op-sft2k ( -- pass )
-	( - ) #1234 #32 SFT2k #2468 EQU2 SWP2 #1234 EQU2 AND #3201 EQU2 JMP2r
+	( - ) #1234 #32 SFT2k
+	( | test )
+	#2468 EQU2 STH
+	#32 EQU STH
+	#1234 EQU2 STH
+	ANDr ANDr STHr JMP2r
 
 (
 @|mkr )
@@ -1249,7 +1283,7 @@
 	&t POP2r INCr JMP2
 
 @op-sth2kr ( -- pass )
-	LIT2r 0a0b STH2kr STH2r ADD2 #1416 EQU2 JMP2r
+	( - ) LIT2r 0a0b STH2kr #0a0b EQU2 #0a0b STH2r EQU2 AND JMP2r
 
 @op-ldz2kr ( -- pass )
 	( - ) LITr 00 LDZ2kr STH2r #1234 EQU2 STHr #00 EQU AND JMP2r
