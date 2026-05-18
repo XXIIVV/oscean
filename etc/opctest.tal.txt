@@ -1,570 +1,1383 @@
 ( Opcode Tester )
 
-|0013
-
-	@zeropage/hb $1 &lb $1
-	@id $1
-
 |100
 
 @on-reset ( -> )
-
-	( part 1
-		> LIT2: Puts a short on the stack
-		> LIT: Puts a byte on the stack
-		> #06 DEO: Write to metadata ports
-		> #18 DEO: Write a letter in terminal )
-
+	( | PART 1
+	| LIT2: Puts a short on the stack
+	| LIT: Puts a byte on the stack
+	| #06 DEO: Write to metadata ports
+	| #18 DEO: Write a letter in terminal )
 	;meta #06 DEO2
-	[ LIT2 "kO ] #18 DEO #18 DEO
-	[ LIT2 "1 18 ] DEO #0a18 DEO
-
-	( part 2
-		> LITr: Put a byte on return stack
-		> STH: Move a byte from working stack to return stack
-		> STH2r: Move a short from return stack to working stack )
-
-	[ LITr "k ] [ LIT "O ] STH STH2r #18 DEO #18 DEO
-	[ LIT2 "2 18 ] DEO #0a18 DEO
-
-	( part 3
-		> LIT2r: Put a short on return stack
-		> DUP: Duplicate byte
-		> ADDr: Add bytes on return stack )
-
-	[ LIT2r "k 4d ] #01 DUP STH ADDr STH ADDr STH2r #18 DEO #18 DEO
-	[ LIT2 "3 18 ] DEO #0a18 DEO
-
-	( part 4
-		> JSI: Subroutine to relative short address
-		> JMP2r: Jumps to absolute address on return stack )
-
-	subroutine
-	[ LIT2 "4 18 ] DEO #0a18 DEO
-
-	( part 5
-		> POP2: Removes a short from the stack
-		> INC2: Increments short on stack
-		> DUP2: Duplicate short
-		> LDA: load byte from absolute address
-		> JCI: Conditional subroutine to relative short address )
-
-	;Dict/ok pstr
-	[ LIT2 "5 18 ] DEO #0a18 DEO
-
-	( part 6
-		> JSR2: Jump to subroutine from short pointer
-		> LDAk: Non-destructive load byte from absolute address )
-
-	{ "Ok $1 } STH2r ;pstr-jcn JSR2
-	[ LIT2 "6 18 ] DEO #0a18 DEO
-
-	( part 7
-		> Relative distance bytes )
-
-	rel-distance/entry SWP #18 DEO #18 DEO
-	[ LIT2 "7 18 ] DEO #0a18 DEO
-
-	( part xx
-		> GTH2k: Non-destructive greater-than short
-		> LDA2k: Non-destructive load short from absolute address
-		> STA2: Store short at absolute address )
-
-	[ LIT2r 0000 ]
-	;tests/end ;tests
-	&l
-		run-test [ LITr 00 ] STH ADD2r
-		INC2 INC2 GTH2k ?&l
-	POP2 POP2
-	STH2r ;tests/end ;tests SUB2 #01 SFT2
-	EQU2 ;Dict/opctests test-part
-
-	( Part xx
-		> Testing that stacks are circular and wrapping
-		> Storing 12 at -1 and 34 at 0 )
-
+	[ LIT2 "kO ] #18 DEO
+	#18 DEO
+	#2018 DEO
+	( | PART 2
+	| LITr: Put a byte on return stack
+	| STH: Move a byte from working stack to return stack
+	| STH2r: Move a short from return stack to working stack )
+	[ LITr "k ] [ LIT "O ] STH
+	STH2r #18 DEO
+	#18 DEO
+	#2018 DEO
+	( | PART 3
+	| LIT2r: Put a short on return stack
+	| DUP: Duplicate byte
+	| ADDr: Add bytes on return stack )
+	[ LIT2r "k 4d ] #01 DUP STH
+	ADDr STH
+	ADDr STH2r #18 DEO
+	#18 DEO
+	#2018 DEO
+	( | PART 4
+	| JSI: Subroutine to relative short address
+	| JMP2r: Jumps to absolute address on return stack )
+	tests/<print-ok>
+	#2018 DEO
+	( | PART 5
+	| POP2: Removes a short from the stack
+	| INC2: Increments short on stack
+	| DUP2: Duplicate short
+	| LDA: load byte from absolute address
+	| JCI: Conditional subroutine to relative short address )
+	;dict/ok str/<print>
+	#2018 DEO
+	( | PART 6
+	| JSR2: Jump to subroutine from short pointer
+	| LDAk: Non-destructive load byte from absolute address )
+	{ "Ok $1 }
+	STH2r ;str/<print> JSR2 #2018 DEO
+	( | PART 7
+	| Relative distance bytes )
+	tests/<rel>
+	SWP #18 DEO
+	#18 DEO
+	( | PART 8
+	| Test every opcode )
+	#1234 #00 STZ2
+	tests/<run>
+	( | Part xx
+	| Testing that stacks are circular and wrapping
+	| Storing 12 at -1 and 34 at 0 )
 	POP #12 #34 ADD #46 EQU STH
 	POP #1234 ADD #46 EQU STH
-	POP2 #1111 #2222 ADD2 #3333 EQU2
-	STHr AND STHr AND
-	;Dict/stack-wrap test-part
-
+	POP2 #1111 #2222 ADD2 #3333 EQU2 STHr AND STHr AND ;dict/stack-wrap tests/<print>
 	( restore stack ) #0000 #0000
-
-	( Part xx
-		> Testing RAM wrapping
-		> Storing 12 in 0xffff, and 34 in 0x0000 )
-
+	( | Part xx
+	| Testing RAM wrapping
+	| Storing 12 in 0xffff, and 34 in 0x0000 )
 	#1234 #ffff STA2
 	( LDA ) #0000 LDA #ffff LDA ADD #46 EQU
-	( LDA2 ) #ffff LDA2 ADD #46 EQU
-	AND ;Dict/ram-wrap test-part
-
-	( Part xx
-		> Testing PC wrapping: split instruction
-		> Storing 80[LIT] in 0xffff, and 55[val8] in 0x0000
-		> Storing 6c[JMP2r] in 0x0001 )
-
-	#8055 #ffff STA2 #6c #01 STZ #ffff JSR2 #55 EQU
-	;Dict/pc-wrap test-part
-
-	( Part xx
-		> Testing PC wrapping: split value after instruction
-		> Storing a0[LIT2] in 0xfffe, 
-		> and 0x55[hi-byte] in 0xffff, and 0xaa[lo-byte] in 0x0000
-		> Storing 6c[JMP2r] in 0x0001 )
-
-	#a055 #fffe STA2 #aa6c #0000 STA2 #fffe JSR2 #55aa EQU2
-	;Dict/pc2-wrap test-part
-
-	( Part xx
-		> Testing that zero-page is wrapping )
-
+	( LDA2 ) #ffff LDA2 ADD #46 EQU AND ;dict/ram-wrap tests/<print>
+	( | Part xx
+	| Testing PC wrapping: split instruction
+	| Storing 80[LIT] in 0xffff, and 55[val8] in 0x0000
+	| Storing 6c[JMP2r] in 0x0001 )
+	#8055 #ffff STA2
+	#6c #01 STZ
+	#ffff JSR2 #55 EQU ;dict/pc-wrap tests/<print>
+	( | Part xx
+	| Testing PC wrapping: split value after instruction
+	| Storing a0[LIT2] in 0xfffe,
+	| and 0x55[hi-byte] in 0xffff, and 0xaa[lo-byte] in 0x0000
+	| Storing 6c[JMP2r] in 0x0001 )
+	#a055 #fffe STA2
+	#aa6c #0000 STA2
+	#fffe JSR2 #55aa EQU2 ;dict/pc2-wrap tests/<print>
+	( | Part xx
+	| Testing that zero-page is wrapping )
 	#5678 #ff STZ2
 	( LDZ ) #00 LDZ #ff LDZ ADD #ce EQU
-	( LDZ2 ) #ff LDZ2 ADD #ce EQU
-	AND ;Dict/zp-wrap test-part
-
-	( Part xx
-		> Testing that device page is wrapping )
-
+	( LDZ2 ) #ff LDZ2 ADD #ce EQU AND ;dict/zp-wrap tests/<print>
+	( | Part xx
+	| Testing that device page is wrapping )
 	#1234 #ff DEO2
 	( DEI ) #00 DEI #ff DEI ADD #46 EQU
-	( DEI2 ) #ff DEI2 ADD #46 EQU
-	AND ;Dict/dev-wrap test-part
-	#0000 DEO #00ff DEO
+	( DEI2 ) #ff DEI2 ADD #46 EQU AND ;dict/dev-wrap tests/<print>
+	#0000 DEO
+	#00ff DEO
+	#800f DEO
+	BRK
 
-	( end )
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
-	[ LIT &fail 80 ]
-		DUP #80 EQU ;Dict/result test-part
-		#0f DEO
-
-	#0a18 DEO
-	#010e DEO
-
-BRK
+@dict/ok "Ok 00
+	&fail "fail 0a 00
+	&pass "pass 0a 00
+	&stack-wrap "Stk-wrap: 20 $1
+	&ram-wrap "Ram-wrap: 20 $1
+	&pc-wrap "Pc1-wrap: 20 $1
+	&pc2-wrap "Pc2-wrap: 20 $1
+	&zp-wrap "Zer-wrap: 20 $1
+	&dev-wrap "Dev-wrap: 20 $1
+	&opc-test "Opc-test: 20 $1
 
 (
-@|metadata )
+@|Relative Distance Bytes )
 
 @meta 00
 	( name ) "Opctest 0a
 	( details ) "A 20 "Testing 20 "Program 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "May 20 "2026 $2
+	( date ) "18 20 "May 20 "2026 $2
 
-@test-part ( f name* -- )
-	pstr ?{
-		#01 ;on-reset/fail STA
-		;Dict/failed !pstr }
-	;Dict/passed !pstr
+(
+@|Tests )
 
-@run-test ( addr* -- addr* f )
+@tests/<run> ( -- )
+	[ LITr 00 ] ;&lut-end ;&lut
+	&>l
+		STHkr #0f AND ?{ #0a18 DEO }
+		STHkr u8/<print>
+		#2018 DEO
+		LDA2k JSR2 #01 EQU ?{ #010f DEO
+			BRK }
+		INC2 INC2 INCr GTH2k ?&>l
+	POP2 POP2 POPr #0a18 DEO
+	#01 ;dict/opc-test !tests/<print>
 
-	LDA2k JSR2 DUP ?&pass
-		;Dict/missed pstr
-		[ LIT2 &name $2 ] pstr
-		[ LIT2 "# 18 ] DEO
-		[ LIT2 "a -id ] LDZ ADD #18 DEO
-		#0a18 DEO
-		#01 ;on-reset/fail STA
-		&pass
-	.id LDZ INC .id STZ
+@tests/<print> ( f name* -- )
+	str/<print>
+	?{ #010f DEO
+		;dict/fail !str/<print> }
+	;dict/pass !str/<print>
 
-JMP2r
+@tests/back "O $7c &<rel> ,&back LDR ,&forw LDR JMP2r
+	$7e
+	&forw "k
 
-@set ( name* -- f )
-
-	;run-test/name STA2 #01
-	[ LIT2 ff -id ] STZ
-
-JMP2r
-
-@pstr ( str* -- )
-	DUP2 LDA
-		DUP ?{ POP POP2 JMP2r }
-		#18 DEO
-	INC2 !pstr
-
-@pstr-jcn ( str* -- )
-	LDAk #18 DEO
-	INC2 LDAk ,pstr-jcn JCN
-	POP2
+@tests/<print-ok> ( -- )
+	[ LIT2 "kO ] #18 DEO
+	#18 DEO
 	JMP2r
 
-@tests
-=op-equ [
-	=op-equ/a =op-equ/b =op-equ/c =op-equ/d
-	=op-equ/e =op-equ/f =op-equ/g =op-equ/h ]
-=op-neq [
-	=op-neq/a =op-neq/b =op-neq/c =op-neq/d
-	=op-neq/e =op-neq/f =op-neq/g =op-neq/h ]
-=op-gth [
-	=op-gth/a =op-gth/b =op-gth/c =op-gth/d
-	=op-gth/e =op-gth/f =op-gth/g =op-gth/h ]
-=op-lth [
-	=op-lth/a =op-lth/b =op-lth/c =op-lth/d
-	=op-lth/e =op-lth/f =op-lth/g =op-lth/h ]
-=op-add [
-	=op-add/a =op-add/b =op-add/c =op-add/d
-	=op-add/e =op-add/f =op-add/g =op-add/h ]
-=op-sub [
-	=op-sub/a =op-sub/b =op-sub/c =op-sub/d
-	=op-sub/e =op-sub/f =op-sub/g =op-sub/h ]
-=op-mul [
-	=op-mul/a =op-mul/b =op-mul/c =op-mul/d
-	=op-mul/e =op-mul/f =op-mul/g =op-mul/h ]
-=op-div [
-	=op-div/a =op-div/b =op-div/c =op-div/d
-	=op-div/e =op-div/f =op-div/g =op-div/h
-	=op-div/i =op-div/j ]
-=op-inc [
-	=op-inc/a =op-inc/b =op-inc/c =op-inc/d
-	=op-inc/e =op-inc/f =op-inc/g =op-inc/h
-	=op-inc/i =op-inc/j ]
-=op-pop [
-	=op-pop/a =op-pop/b =op-pop/c =op-pop/d
-	=op-pop/e =op-pop/f =op-pop/g =op-pop/h
-	=op-pop/i =op-pop/j ]
-=op-dup [
-	=op-dup/a =op-dup/b =op-dup/c =op-dup/d ]
-=op-nip [
-	=op-nip/a =op-nip/b =op-nip/c =op-nip/d ]
-=op-swp [
-	=op-swp/a =op-swp/b =op-swp/c =op-swp/d ]
-=op-ovr [
-	=op-ovr/a =op-ovr/b =op-ovr/c =op-ovr/d ]
-=op-rot [
-	=op-rot/a =op-rot/b =op-rot/c =op-rot/d ]
-=op-and [
-	=op-and/a =op-and/b =op-and/c =op-and/d
-	=op-and/e =op-and/f =op-and/g =op-and/h ]
-=op-ora [
-	=op-ora/a =op-ora/b =op-ora/c =op-ora/d
-	=op-ora/e =op-ora/f =op-ora/g =op-ora/h ]
-=op-eor [
-	=op-eor/a =op-eor/b =op-eor/c =op-eor/d
-	=op-eor/e =op-eor/f =op-eor/g =op-eor/h ]
-=op-sft [
-	=op-sft/a =op-sft/b =op-sft/c =op-sft/d
-	=op-sft/e =op-sft/f =op-sft/g =op-sft/h ]
-=op-stz [
-	=op-stz/a =op-stz/b =op-stz/c =op-stz/d ]
-=op-str [
-	=op-str/a =op-str/b =op-str/c =op-str/d
-	=op-str/e =op-str/f =op-str/g =op-str/h ]
-=op-sta [
-	=op-sta/a =op-sta/b =op-sta/c =op-sta/d ]
-=op-jmp [
-	=op-jmp/a =op-jmp/b =op-jmp/c ]
-=op-jcn [
-	=op-jcn/a =op-jcn/b =op-jcn/c =op-jcn/d
-	=op-jcn/e =op-jcn/f ]
-=op-jsr [
-	=op-jsr/a =op-jsr/b =op-jsr/c ]
-=op-sth [
-	=op-sth/a =op-sth/b =op-sth/c =op-sth/d
-	=op-sth/e =op-sth/f ]
-=op-jci [
-	=op-jci/a =op-jci/b =op-jci/c ]
-=op-jmi [
-	=op-jmi/a ]
-=op-jsi [
-	=op-jsi/a =op-jsi/b =op-jsi/c =op-jsi/d ]
-	&end
-
-(
-@|StackI )
-
-@op-inc ;Dict/inc !set
-	&a #01 INC [ #02 ] EQU JMP2r
-	&b #ff INC [ #00 ] EQU JMP2r
-	&c #fe INC [ #ff ] EQU JMP2r
-	&d #00 INC [ #01 ] EQU JMP2r
-	&e #00ff INC2 [ #0100 ] EQU2 JMP2r
-	&f #ffff INC2 [ #0000 ] EQU2 JMP2r
-	&g #fffe INC2 [ #ffff ] EQU2 JMP2r
-	&h #0000 INC2 [ #0001 ] EQU2 JMP2r
-	&i #00ff INCk NIP EQU JMP2r
-	&j #00ff INC2k POP ADD EQU JMP2r
-@op-pop ;Dict/pop !set
-	&a #0a #0b POP [ #0a ] EQU JMP2r
-	&b #0a #0b #0c POP POP [ #0a ] EQU JMP2r
-	&c #0a #0b #0c ADD POP [ #0a ] EQU JMP2r
-	&d #0a #0b #0c POP ADD [ #15 ] EQU JMP2r
-	&e #0a0b #0c0d POP2 [ #0a0b ] EQU2 JMP2r
-	&f #0a0b #0c0d #0e0f POP2 POP2 [ #0a0b ] EQU2 JMP2r
-	&g #0a0b #0c0d #0e0f ADD2 POP2 [ #0a0b ] EQU2 JMP2r
-	&h #0a0b #0c0d #0e0f POP2 ADD2 [ #1618 ] EQU2 JMP2r
-	&i #0a POPk [ #0a ] EQU JMP2r
-	&j #0a0b POP2k [ #0a0b ] EQU2 JMP2r
-@op-nip ;Dict/nip !set
-	&a #12 #34 #56 NIP ADD [ #68 ] EQU JMP2r
-	&b #12 #34 #56 NIPk ADD2 ADD [ #f2 ] EQU JMP2r
-	&c #1234 #5678 #9abc NIP2 ADD2 [ #acf0 ] EQU2 JMP2r
-	&d #1234 #5678 #9abc NIP2k ADD2 ADD2 ADD2 [ #9e24 ] EQU2 JMP2r
-
-(
-@|StackII )
-
-@op-swp ;Dict/swp !set
-	&a #02 #10 SWP DIV [ #08 ] EQU JMP2r
-	&b #0a0b #0c0d SWP2 NIP2 [ #0a0b ] EQU2 JMP2r
-	&c #abcd SWPk SWP EQU2 JMP2r
-	&d #abcd #1234 SWP2k ADD2 ADD2 ADD2 #7c02 EQU2 JMP2r
-@op-rot ;Dict/rot !set
-	&a #02 #04 #10 ROT DIV ADD [ #0c ] EQU JMP2r
-	&b #0a0b #0c0d #0c0f ROT2 ADD2 NIP2 [ #161a ] EQU2 JMP2r
-	&c #0a0b #0c ROTk ADD2 ADD2 [ #2220 ] EQU2 JMP2r
-	&d #1234 #5678 #9abc ROT2k ADD2 ADD2 ADD2 ADD2 ADD2 #06d0 EQU2 JMP2r
-@op-dup ;Dict/dup !set
-	&a #0a #0b DUP ADD ADD [ #20 ] EQU JMP2r
-	&b #0a0b DUP2 ADD2 [ #1416 ] EQU2 JMP2r
-	&c #12 DUPk ADD ADD [ #36 ] EQU JMP2r
-	&d #1234 DUP2k ADD2 ADD2 [ #369c ] EQU2 JMP2r
-@op-ovr ;Dict/ovr !set
-	&a #02 #10 OVR DIV ADD [ #0a ] EQU JMP2r
-	&b #0a0b #0c0d OVR2 NIP2 ADD2 [ #1416 ] EQU2 JMP2r
-	&c #abcd OVRk EQU2 #ab01 EQU2 JMP2r
-	&d #abcd #1234 OVR2k ROT2 ADD2 ADD2 ADD2 SUB2 #2fcb EQU2 JMP2r
-
-(
-@|Log )
-
-@op-equ ;Dict/equ !set
-	&a #f8 #f8 EQU [ #01 ] EQU JMP2r
-	&b #01 #01 EQU [ #01 ] EQU JMP2r
-	&c #f8 #01 EQU [ #00 ] EQU JMP2r
-	&d #00 #ff EQU [ #00 ] EQU JMP2r
-	&e #f801 #f801 EQU2 [ #01 ] EQU JMP2r
-	&f #01f8 #01f8 EQU2 [ #01 ] EQU JMP2r
-	&g #f801 #01f8 EQU2 [ #00 ] EQU JMP2r
-	&h #01f8 #f801 EQU2 [ #00 ] EQU JMP2r
-@op-neq ;Dict/neq !set
-	&a #f8 #f8 NEQ [ #00 ] EQU JMP2r
-	&b #01 #01 NEQ [ #00 ] EQU JMP2r
-	&c #f8 #01 NEQ [ #01 ] EQU JMP2r
-	&d #01 #f8 NEQ [ #01 ] EQU JMP2r
-	&e #f801 #f801 NEQ2 [ #00 ] EQU JMP2r
-	&f #01f8 #01f8 NEQ2 [ #00 ] EQU JMP2r
-	&g #f801 #01f8 NEQ2 [ #01 ] EQU JMP2r
-	&h #01f8 #f801 NEQ2 [ #01 ] EQU JMP2r
-@op-gth ;Dict/gth !set
-	&a #f8 #f8 GTH [ #00 ] EQU JMP2r
-	&b #01 #01 GTH [ #00 ] EQU JMP2r
-	&c #f8 #01 GTH [ #01 ] EQU JMP2r
-	&d #01 #f8 GTH [ #00 ] EQU JMP2r
-	&e #f801 #f801 GTH2 [ #00 ] EQU JMP2r
-	&f #01f8 #01f8 GTH2 [ #00 ] EQU JMP2r
-	&g #f801 #01f8 GTH2 [ #01 ] EQU JMP2r
-	&h #01f8 #f801 GTH2 [ #00 ] EQU JMP2r
-@op-lth ;Dict/lth !set
-	&a #f8 #f8 LTH [ #00 ] EQU JMP2r
-	&b #01 #01 LTH [ #00 ] EQU JMP2r
-	&c #f8 #01 LTH [ #00 ] EQU JMP2r
-	&d #01 #ff LTH [ #01 ] EQU JMP2r
-	&e #f801 #f801 LTH2 [ #00 ] EQU JMP2r
-	&f #01f8 #01f8 LTH2 [ #00 ] EQU JMP2r
-	&g #f801 #01f8 LTH2 [ #00 ] EQU JMP2r
-	&h #01f8 #f801 LTH2 [ #01 ] EQU JMP2r
-
-(
-@|Sth )
-
-@op-jmp ;Dict/jmp !set
-	&a #12 #34 ,&reljmp JMP SWP &reljmp POP [ #12 ] EQU JMP2r
-	&b #56 #78 ;&absjmp JMP2 SWP &absjmp POP [ #56 ] EQU JMP2r
-	&c #12 #34 ,&skip1 JMP &back1 POP [ #34 ] EQU JMP2r &skip1 SWP ,&back1 JMP
-@op-jcn ;Dict/jcn !set
-	&a #23 #01 ,&reljcn-y JCN INC &reljcn-y [ #23 ] EQU JMP2r
-	&b #23 #00 ,&reljcn-n JCN INC &reljcn-n [ #24 ] EQU JMP2r
-	&c #23 #01 ;&absjcn-y JCN2 INC &absjcn-y [ #23 ] EQU JMP2r
-	&d #23 #00 ;&absjcn-n JCN2 INC &absjcn-n [ #24 ] EQU JMP2r
-	&bwdjcn-y [ #23 ] EQU JMP2r &e #23 #01 ,&bwdjcn-y JCN POP #00 JMP2r
-	&bwdjcn-n POP #00 JMP2r     &f #23 #00 ,&bwdjcn-n JCN [ #23 ] EQU JMP2r
-@op-jsr ;Dict/jsr !set
-	&a #1234 #5678 ,&routine JSR [ #68ac ] EQU2 JMP2r
-	&b #12 #34 ;routine JSR2 [ #46 ] EQU JMP2r
-	&bwdjsr ADD JMP2r &c #12 #34 ,&bwdjsr JSR [ #46 ] EQU JMP2r
-	&routine ADD2 JMP2r
-@op-sth ;Dict/sth !set
-	&a #0a STH #0b STH ADDr STHr [ #15 ] EQU JMP2r
-	&b #000a STH2 #000b STH2 ADD2r STH2r [ #0015 ] EQU2 JMP2r
-	&c #abcd STH STH STH2r [ #cdab ] EQU2 JMP2r
-	&d #abcd STH2k STH2r EQU2 JMP2r
-	&e #abcd STH2k STHr STHr SWP EQU2 JMP2r
-	&f [ LIT2r abcd ] STHr STHr [ #cdab ] EQU2 JMP2r
-
-(
-@|Mem )
-
-@op-stz ;Dict/stz !set
-	&a #ab .zeropage/hb STZ .zeropage/hb LDZ [ #ab ] EQU JMP2r
-	&b #cd .zeropage/lb STZ .zeropage/lb LDZ [ #cd ] EQU JMP2r
-	&c .zeropage/hb LDZ2 [ #abcd ] EQU2 JMP2r
-	&d #1234 .zeropage/hb STZ2 .zeropage/hb LDZ2 [ #1234 ] EQU2 JMP2r
-@op-str ;Dict/str !set
-	[ LIT2 &before-hb $1 &before-lb $1 ] 
-	&a #ab ,&before-hb STR ,&before-hb LDR [ #ab ] EQU JMP2r
-	&b #cd ,&before-lb STR ,&before-lb LDR [ #cd ] EQU JMP2r
-	&c ,&before-hb LDR2 [ #abcd ] EQU2 JMP2r
-	&d #1234 ,&before-hb STR2 ,&before-hb LDR2 [ #1234 ] EQU2 JMP2r
-	&e #ab ,&after-hb STR ,&after-hb LDR [ #ab ] EQU JMP2r
-	&f #cd ,&after-lb STR ,&after-lb LDR [ #cd ] EQU JMP2r
-	&g ,&after-hb LDR2 [ #abcd ] EQU2 JMP2r
-	&h #1234 ,&after-hb STR2 ,&after-hb LDR2 [ #1234 ] EQU2 JMP2r
-	[ LIT2 &after-hb $1 &after-lb $1 ]
-@op-sta ;Dict/sta !set
-	&a #ab ;absolute/hb STA ;absolute/hb LDA [ #ab ] EQU JMP2r
-	&b #cd ;absolute/lb STA ;absolute/lb LDA [ #cd ] EQU JMP2r
-	&c ;absolute/hb LDA2 [ #abcd ] EQU2 JMP2r
-	&d #1234 ;absolute/hb STA2 ;absolute/hb LDA2 [ #1234 ] EQU2 JMP2r
-
-(
-@|Ari )
-
-@op-add ;Dict/add !set
-	&a #ff #00 ADD [ #ff ] EQU JMP2r
-	&b #01 #ff ADD [ #00 ] EQU JMP2r
-	&c #ff #ff ADD [ #fe ] EQU JMP2r
-	&d #12 #34 ADDk ADD ADD [ #8c ] EQU JMP2r
-	&e #ffff #0000 ADD2 [ #ffff ] EQU2 JMP2r
-	&f #0001 #ffff ADD2 [ #0000 ] EQU2 JMP2r
-	&g #ffff #ffff ADD2 [ #fffe ] EQU2 JMP2r
-	&h #fffe #ffff ADD2 [ #fffd ] EQU2 JMP2r
-@op-sub ;Dict/sub !set
-	&a #ff #00 SUB [ #ff ] EQU JMP2r
-	&b #01 #ff SUB [ #02 ] EQU JMP2r
-	&c #ff #ff SUB [ #00 ] EQU JMP2r
-	&d #fe #ff SUB [ #ff ] EQU JMP2r
-	&e #ffff #0000 SUB2 [ #ffff ] EQU2 JMP2r
-	&f #0001 #ffff SUB2 [ #0002 ] EQU2 JMP2r
-	&g #ffff #ffff SUB2 [ #0000 ] EQU2 JMP2r
-	&h #fffe #ffff SUB2 [ #ffff ] EQU2 JMP2r
-@op-mul ;Dict/mul !set
-	&a #00 #01 MUL [ #00 ] EQU JMP2r
-	&b #3f #e7 MUL [ #d9 ] EQU JMP2r
-	&c #37 #3f MUL [ #89 ] EQU JMP2r
-	&d #10 #02 MUL [ #20 ] EQU JMP2r
-	&e #1000 #0003 MUL2 [ #3000 ] EQU2 JMP2r
-	&f #abcd #1234 MUL2 [ #4fa4 ] EQU2 JMP2r
-	&g #8000 #0200 MUL2 [ #0000 ] EQU2 JMP2r
-	&h #2222 #0003 MUL2 [ #6666 ] EQU2 JMP2r
-@op-div ;Dict/div !set
-	&a #10 #06 DIV [ #02 ] EQU JMP2r
-	&b #20 #20 DIV [ #01 ] EQU JMP2r
-	&c #34 #01 DIV [ #34 ] EQU JMP2r
-	&d #02 #ef DIV [ #00 ] EQU JMP2r
-	&e #02 #00 DIV [ #00 ] EQU JMP2r
-	&f #03e8 #0006 DIV2 [ #00a6 ] EQU2 JMP2r
-	&g #abcd #1234 DIV2 [ #0009 ] EQU2 JMP2r
-	&h #8000 #0200 DIV2 [ #0040 ] EQU2 JMP2r
-	&i #2222 #0003 DIV2 [ #0b60 ] EQU2 JMP2r
-	&j #0202 #0000 DIV2 [ #0000 ] EQU2 JMP2r
-
-(
-@|Bit )
-
-@op-and ;Dict/and !set
-	&a #fc #3f AND [ #3c ] EQU JMP2r
-	&b #f0 #0f AND [ #00 ] EQU JMP2r
-	&c #ff #3c AND [ #3c ] EQU JMP2r
-	&d #02 #03 AND [ #02 ] EQU JMP2r
-	&e #f0f0 #00f0 AND2 [ #00f0 ] EQU2 JMP2r
-	&f #aaaa #5555 AND2 [ #0000 ] EQU2 JMP2r
-	&g #ffff #1234 AND2 [ #1234 ] EQU2 JMP2r
-	&h #abcd #0a0c AND2 [ #0a0c ] EQU2 JMP2r
-@op-ora ;Dict/ora !set
-	&a #0f #f0 ORA [ #ff ] EQU JMP2r
-	&b #ab #cd ORA [ #ef ] EQU JMP2r
-	&c #12 #34 ORA [ #36 ] EQU JMP2r
-	&d #88 #10 ORA [ #98 ] EQU JMP2r
-	&e #0f0f #f0f0 ORA2 [ #ffff ] EQU2 JMP2r
-	&f #abab #cdcd ORA2 [ #efef ] EQU2 JMP2r
-	&g #1122 #1234 ORA2 [ #1336 ] EQU2 JMP2r
-	&h #8888 #1000 ORA2 [ #9888 ] EQU2 JMP2r
-@op-eor ;Dict/eor !set
-	&a #00 #00 EOR [ #00 ] EQU JMP2r
-	&b #ff #00 EOR [ #ff ] EQU JMP2r
-	&c #aa #55 EOR [ #ff ] EQU JMP2r
-	&d #ff #ff EOR [ #00 ] EQU JMP2r
-	&e #ffff #ff00 EOR2 [ #00ff ] EQU2 JMP2r
-	&f #aaaa #5555 EOR2 [ #ffff ] EQU2 JMP2r
-	&g #1122 #1234 EOR2 [ #0316 ] EQU2 JMP2r
-	&h #8888 #1000 EOR2 [ #9888 ] EQU2 JMP2r
-@op-sft ;Dict/sft !set
-	&a #ff #08 SFT [ #00 ] EQU JMP2r
-	&b #ff #e0 SFT [ #00 ] EQU JMP2r
-	&c #ff #11 SFT [ #fe ] EQU JMP2r
-	&d #ff #12 SFT [ #7e ] EQU JMP2r
-	&e #ffff #01 SFT2 [ #7fff ] EQU2 JMP2r
-	&f #ffff #70 SFT2 [ #ff80 ] EQU2 JMP2r
-	&g #ffff #7e SFT2 [ #0180 ] EQU2 JMP2r
-	&h #ffff #e3 SFT2 [ #c000 ] EQU2 JMP2r
-
-(
-@|Imm )
-
-@op-jci ;Dict/jci !set
-	&before #01 JMP2r
-	&a #01 ?&skip-a #00 JMP2r &skip-a #01 JMP2r
-	&b #00 ?&skip-b #01 JMP2r &skip-b #00 JMP2r
-	&c #01 ?&before #00 JMP2r
-@op-jmi ;Dict/jmi !set
-	&a !&skip-a #00 JMP2r &skip-a #01 JMP2r
-@op-jsi ;Dict/jsi !set
-	&a #02 #04 routine #06 EQU JMP2r
-	&b ;&return special &return JMP2r
-	&c ,&skip-c JMP &routine-c ADD JMP2r &skip-c #02 #04 op-jsi/routine-c #06 EQU JMP2r
-	&d ,&skip-d JMP &routine-d ADD JMP2r &skip-d #02 #04 op-jsi-far-routine-d #06 EQU JMP2r
-
-@special ( routine* -- f )
-
-	( test that the stack order is LIFO )
-	DUP2 STH2kr EQU2
-	ROT ROT DUP2r STHr STHr SWP EQU2 AND
-
-JMP2r
-
-@routine ( a b -- c ) ADD JMP2r
-@subroutine ( -- ) [ LIT2 "kO ] #18 DEO #18 DEO JMP2r
-@absolute/hb $1 &lb $2
-
-@Dict [
-	&ok "Ok $1
-	&done "Tests 20 "Complete. 0a $1
-	&opctests "Opcodes $1
-	&stack-wrap "Stack-wrap $1
-	&ram-wrap "RAM-wrap $1
-	&pc-wrap "PC-wrap $1
-	&pc2-wrap "PC2-wrap $1
-	&zp-wrap "Zeropage-wrap $1
-	&dev-wrap "Devices-wrap $1
-	&result "Result: $1
-	&passed 20 "passed! 0a $1
-	&missed "Opcode 20 "Failed 20 "-- 20 $1
-	&failed 20 "failed. 0a $1
-	&equ "EQU $1 &neq "NEQ $1 &gth "GTH $1 &lth "LTH $1
-	&add "ADD $1 &sub "SUB $1 &mul "MUL $1 &div "DIV $1
-	&inc "INC $1 &pop "POP $1 &dup "DUP $1 &nip "NIP $1
-	&swp "SWP $1 &ovr "OVR $1 &rot "ROT $1
-	&and "AND $1 &ora "ORA $1 &eor "EOR $1 &sft "SFT $1
-	&stz "STZ $1 &str "STR $1 &sta "STA $1
-	&jmp "JMP $1 &jcn "JCN $1 &jsr "JSR $1 &sth "STH $1
-	&jmi "JMI $1 &jci "JCI $1 &jsi "JSI $1 ]
-
-(
-@|Relative Distance Bytes )
-
-@rel-distance/back "O $7c
-&entry
-	,&back LDR
-	,&forw LDR
+@u8/<print> ( byte -- )
+	DUP #04 SFT /<print-nibble>
+	( >> )
+	&<print-nibble> ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
-$7e
-&forw "k
 
-@op-jsi-far-routine-d
-	op-jsi/routine-d JMP2r
+(
+@|imm )
+
+@op-brk ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-jci ( -- pass )
+	( - ) #12 #01 ?{ INC }
+	#12 EQU
+	( - ) #34 #00 ?{ INC }
+	#35 EQU AND JMP2r
+
+@op-jmi ( -- pass )
+	( - ) #12 !{
+	INC }
+	#12 EQU JMP2r
+
+@op-jsi ( -- pass )
+	#12 /t #24 EQU JMP2r
+	&t DUP ADD JMP2r
+
+@op-lit ( -- pass )
+	LIT 12 #12 EQU JMP2r
+
+@op-lit2 ( -- pass )
+	LIT2 1234 #12 #34 EQU2 JMP2r
+
+@op-litr ( -- pass )
+	LITr 12 STHr #12 EQU JMP2r
+
+@op-lit2r ( -- pass )
+	LIT2r 1234 STH2r #1234 EQU2 JMP2r
+
+(
+@|m )
+
+@op-inc ( -- pass )
+	( - ) #01 INC [ #02 ] EQU
+	( - ) #ff INC #00 EQU AND
+	( - ) #fe INC #ff EQU AND
+	( - ) #00 INC #01 EQU AND JMP2r
+
+@op-pop ( -- pass )
+	( - ) #0a #0b POP [ #0a ] EQU
+	( - ) #0a #0b #0c POP POP [ #0a ] EQU AND
+	( - ) #0a #0b #0c ADD POP [ #0a ] EQU AND
+	( - ) #0a #0b #0c POP ADD [ #15 ] EQU AND JMP2r
+
+@op-nip ( -- pass )
+	( - ) #12 #34 #56 NIP ADD [ #68 ] EQU JMP2r
+
+@op-swp ( -- pass )
+	( - ) #02 #10 SWP DIV [ #08 ] EQU JMP2r
+
+@op-rot ( -- pass )
+	( - ) #02 #04 #10 ROT DIV ADD [ #0c ] EQU JMP2r
+
+@op-dup ( -- pass )
+	( - ) #0a #0b DUP ADD ADD [ #20 ] EQU JMP2r
+
+@op-ovr ( -- pass )
+	( - ) #02 #10 OVR DIV ADD [ #0a ] EQU JMP2r
+
+@op-equ ( -- pass )
+	( - ) #f8 #f8 EQU #01 EQU
+	( - ) #01 #01 EQU #01 EQU AND
+	( - ) #f8 #01 EQU #00 EQU AND
+	( - ) #00 #ff EQU #00 EQU AND JMP2r
+
+@op-neq ( -- pass )
+	( - ) #f8 #f8 NEQ #00 EQU
+	( - ) #01 #01 NEQ #00 EQU AND
+	( - ) #f8 #01 NEQ #01 EQU AND
+	( - ) #01 #f8 NEQ #01 EQU AND JMP2r
+
+@op-gth ( -- pass )
+	( - ) #f8 #f8 GTH #00 EQU
+	( - ) #01 #01 GTH #00 EQU AND
+	( - ) #f8 #01 GTH #01 EQU AND
+	( - ) #01 #f8 GTH #00 EQU AND JMP2r
+
+@op-lth ( -- pass )
+	( - ) #f8 #f8 LTH #00 EQU
+	( - ) #01 #01 LTH #00 EQU AND
+	( - ) #f8 #01 LTH #00 EQU AND
+	( - ) #01 #ff LTH #01 EQU AND JMP2r
+
+@op-jmp ( -- pass )
+	( - ) #12 #34 ,&x [ JMP SWP &x ] POP [ #12 ] EQU
+	( - ) #12 #34 ,&t [ JMP &back ] POP [ #34 ] EQU AND JMP2r
+	&t SWP ,&back JMP
+
+@op-jcn ( -- pass )
+	( - ) #23 #01 ,&x [ JCN INC &x ] [ #23 ] EQU
+	( - ) #23 #00 ,&y [ JCN INC &y ] [ #24 ] EQU AND
+	( - ) #12 #34 #01 ,&t [ JCN &back ] POP [ #34 ] EQU AND
+	( - ) #12 #34 #00 ,&t [ JCN ] POP [ #12 ] EQU AND JMP2r
+	&t SWP ,&back JMP
+
+@op-jsr ( -- pass )
+	( - ) #12 #34 ,&routine JSR [ #46 ] EQU JMP2r
+	&routine ADD JMP2r
+
+@op-sth ( -- pass )
+	( - ) #0a [ STH ] #0b [ STH ] ADDr STHr [ #15 ] EQU JMP2r
+
+@op-ldz ( -- pass )
+	( - ) #00 LDZ #12 EQU JMP2r
+
+@op-stz ( -- pass )
+	( - ) #5602 [ STZ ] #02 LDZ #56 EQU JMP2r
+
+@op-ldr ( -- pass )
+	( - ) ,&t LDR #12 EQU JMP2r
+	&t 12
+
+@op-str ( -- pass )
+	( - ) #34 ,&t [ STR ] ,&t LDR #34 EQU JMP2r
+	&t $1
+
+@op-lda ( -- pass )
+	( - ) ;&value LDA #ef EQU JMP2r
+	&value ef
+
+@op-sta ( -- pass )
+	( - ) #12 ;&value [ STA ] ;&value LDA #12 EQU JMP2r
+	&value 00
+
+@op-dei ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deo ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-add ( -- pass )
+	( - ) #ff #00 ADD #ff EQU
+	( - ) #01 #ff ADD #00 EQU AND
+	( - ) #ff #ff ADD [ #fe ] EQU AND JMP2r
+
+@op-sub ( -- pass )
+	( - ) #ff #00 SUB #ff EQU
+	( - ) #01 #ff SUB [ #02 ] EQU AND
+	( - ) #ff #ff SUB #00 EQU AND
+	( - ) #fe #ff SUB #ff EQU AND JMP2r
+
+@op-mul ( -- pass )
+	( - ) #00 #01 MUL #00 EQU
+	( - ) #3f #e7 MUL [ #d9 ] EQU AND
+	( - ) #37 #3f MUL [ #89 ] EQU AND
+	( - ) #10 #02 MUL [ #20 ] EQU AND JMP2r
+
+@op-div ( -- pass )
+	( - ) #10 #06 DIV [ #02 ] EQU
+	( - ) #20 #20 DIV #01 EQU AND
+	( - ) #34 #01 DIV [ #34 ] EQU AND
+	( - ) #02 #ef DIV #00 EQU AND
+	( - ) #02 #00 DIV #00 EQU AND JMP2r
+
+@op-and ( -- pass )
+	( - ) #fc #3f AND [ #3c ] EQU
+	( - ) #f0 #0f AND #00 EQU AND
+	( - ) #ff #3c AND [ #3c ] EQU AND
+	( - ) #02 #03 AND [ #02 ] EQU AND JMP2r
+
+@op-ora ( -- pass )
+	( - ) #0f #f0 ORA #ff EQU
+	( - ) #ab #cd ORA [ #ef ] EQU AND
+	( - ) #12 #34 ORA [ #36 ] EQU AND
+	( - ) #88 #10 ORA [ #98 ] EQU AND JMP2r
+
+@op-eor ( -- pass )
+	( - ) #00 #00 EOR #00 EQU
+	( - ) #ff #00 EOR #ff EQU AND
+	( - ) #aa #55 EOR #ff EQU AND
+	( - ) #ff #ff EOR #00 EQU AND JMP2r
+
+@op-sft ( -- pass )
+	( - ) #ff #08 SFT #00 EQU
+	( - ) #ff #e0 SFT #00 EQU AND
+	( - ) #ff #11 SFT [ #fe ] EQU AND
+	( - ) #ff #12 SFT [ #7e ] EQU AND
+	( - ) #ff #00 SFT [ #ff ] EQU AND
+	( - ) #ff #77 SFT [ #80 ] EQU AND
+	( - ) #ff #88 SFT [ #00 ] EQU AND
+	( - ) #ff #ff SFT [ #00 ] EQU AND JMP2r
+
+(
+@|m2 )
+
+@op-inc2 ( -- pass )
+	( - ) #00ff INC2 [ #0100 ] EQU2
+	( - ) #ffff INC2 [ #0000 ] EQU2 AND
+	( - ) #fffe INC2 [ #ffff ] EQU2 AND
+	( - ) #0000 INC2 [ #0001 ] EQU2 AND JMP2r
+
+@op-pop2 ( -- pass )
+	( - ) #0a0b #0c0d POP2 [ #0a0b ] EQU2
+	( - ) #0a0b #0c0d #0e0f POP2 POP2 #0a0b EQU2 AND
+	( - ) #0a0b #0c0d #0e0f ADD2 POP2 #0a0b EQU2 AND
+	( - ) #0a0b #0c0d #0e0f POP2 ADD2 #1618 EQU2 AND JMP2r
+
+@op-nip2 ( -- pass )
+	( - ) #1234 #5678 #9abc NIP2 ADD2 #acf0 EQU2 JMP2r
+
+@op-swp2 ( -- pass )
+	( - ) #0a0b #0c0d SWP2 NIP2 #0a0b EQU2 JMP2r
+
+@op-rot2 ( -- pass )
+	( - ) #0a0b #0c0d #0c0f ROT2 ADD2 NIP2 #161a EQU2 JMP2r
+
+@op-dup2 ( -- pass )
+	( - ) #0a0b DUP2 ADD2 #1416 EQU2 JMP2r
+
+@op-ovr2 ( -- pass )
+	( - ) #0a0b #0c0d OVR2 NIP2 ADD2 #1416 EQU2 JMP2r
+
+@op-equ2 ( -- pass )
+	( - ) #f801 #f801 EQU2 #01 EQU
+	( - ) #01f8 #01f8 EQU2 #01 EQU AND
+	( - ) #f801 #01f8 EQU2 #00 EQU AND
+	( - ) #01f8 #f801 EQU2 #00 EQU AND JMP2r
+
+@op-neq2 ( -- pass )
+	( - ) #f801 #f801 NEQ2 #00 EQU
+	( - ) #01f8 #01f8 NEQ2 #00 EQU AND
+	( - ) #f801 #01f8 NEQ2 #01 EQU AND
+	( - ) #01f8 #f801 NEQ2 #01 EQU AND JMP2r
+
+@op-gth2 ( -- pass )
+	( - ) #f801 #f801 GTH2 #00 EQU
+	( - ) #01f8 #01f8 GTH2 #00 EQU AND
+	( - ) #f801 #01f8 GTH2 #01 EQU AND
+	( - ) #01f8 #f801 GTH2 #00 EQU AND JMP2r
+
+@op-lth2 ( -- pass )
+	( - ) #f801 #f801 LTH2 #00 EQU
+	( - ) #01f8 #01f8 LTH2 #00 EQU AND
+	( - ) #f801 #01f8 LTH2 #00 EQU AND
+	( - ) #01f8 #f801 LTH2 #01 EQU AND JMP2r
+
+@op-jmp2 ( -- pass )
+	( - ) #56 #78 ;&t [ JMP2 SWP &t ] POP #56 EQU JMP2r
+
+@op-jcn2 ( -- pass )
+	( - ) #23 #01 ;&abs-x [ JCN2 INC &abs-x ] #23 EQU
+	( - ) #23 #00 ;&abs-y [ JCN2 INC &abs-y ] #24 EQU AND JMP2r
+
+@op-jsr2 ( -- pass )
+	( - ) #12 ;&t JSR2 #24 EQU JMP2r
+	&t DUP ADD JMP2r
+
+@op-sth2 ( -- pass )
+	( - ) #1234 [ STH2 ] ADDr STHr #46 EQU JMP2r
+
+@op-ldz2 ( -- pass )
+	( - ) #00 LDZ2 #1234 EQU2 JMP2r
+
+@op-stz2 ( -- pass )
+	( - ) #5678 #04 [ STZ2 ] #04 LDZ2 #5678 EQU2 JMP2r
+
+@op-ldr2 ( -- pass )
+	( - ) ,&t LDR2 #1234 EQU2 JMP2r
+	&t 1234
+
+@op-str2 ( -- pass )
+	( - ) #1234 ,&t [ STR2 ] ,&t LDR2 #1234 EQU2 JMP2r
+	&t $2
+
+@op-lda2 ( -- pass )
+	( - ) ;&t LDA2 #1234 EQU2 JMP2r
+	&t 1234
+
+@op-sta2 ( -- pass )
+	( - ) #1234 ;&t [ STA2 ] ;&t LDA2 #1234 EQU2 JMP2r
+	&t $2
+
+@op-dei2 ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deo2 ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-add2 ( -- pass )
+	( - ) #ffff #0000 ADD2 [ #ffff ] EQU2
+	( - ) #0001 #ffff ADD2 [ #0000 ] EQU2 AND
+	( - ) #ffff #ffff ADD2 [ #fffe ] EQU2 AND
+	( - ) #fffe #ffff ADD2 [ #fffd ] EQU2 AND JMP2r
+
+@op-sub2 ( -- pass )
+	( - ) #ffff #0000 SUB2 [ #ffff ] EQU2
+	( - ) #0001 #ffff SUB2 [ #0002 ] EQU2 AND
+	( - ) #ffff #ffff SUB2 [ #0000 ] EQU2 AND
+	( - ) #fffe #ffff SUB2 [ #ffff ] EQU2 AND JMP2r
+
+@op-mul2 ( -- pass )
+	( - ) #1000 #0003 MUL2 [ #3000 ] EQU2
+	( - ) #abcd #1234 MUL2 [ #4fa4 ] EQU2 AND
+	( - ) #8000 #0200 MUL2 [ #0000 ] EQU2 AND
+	( - ) #2222 #0003 MUL2 [ #6666 ] EQU2 AND JMP2r
+
+@op-div2 ( -- pass )
+	( - ) #03e8 #0006 DIV2 [ #00a6 ] EQU2
+	( - ) #abcd #1234 DIV2 [ #0009 ] EQU2 AND
+	( - ) #8000 #0200 DIV2 [ #0040 ] EQU2 AND
+	( - ) #2222 #0003 DIV2 [ #0b60 ] EQU2 AND
+	( - ) #0202 #0000 DIV2 [ #0000 ] EQU2 AND JMP2r
+
+@op-and2 ( -- pass )
+	( - ) #f0f0 #00f0 AND2 [ #00f0 ] EQU2
+	( - ) #aaaa #5555 AND2 [ #0000 ] EQU2 AND
+	( - ) #ffff #1234 AND2 [ #1234 ] EQU2 AND
+	( - ) #abcd #0a0c AND2 [ #0a0c ] EQU2 AND JMP2r
+
+@op-ora2 ( -- pass )
+	( - ) #0f0f #f0f0 ORA2 [ #ffff ] EQU2
+	( - ) #abab #cdcd ORA2 [ #efef ] EQU2 AND
+	( - ) #1122 #1234 ORA2 [ #1336 ] EQU2 AND
+	( - ) #8888 #1000 ORA2 [ #9888 ] EQU2 AND JMP2r
+
+@op-eor2 ( -- pass )
+	( - ) #ffff #ff00 EOR2 [ #00ff ] EQU2
+	( - ) #aaaa #5555 EOR2 [ #ffff ] EQU2 AND
+	( - ) #1122 #1234 EOR2 [ #0316 ] EQU2 AND
+	( - ) #8888 #1000 EOR2 [ #9888 ] EQU2 AND JMP2r
+
+@op-sft2 ( -- pass )
+	( - ) #ffff #01 SFT2 [ #7fff ] EQU2
+	( - ) #ffff #70 SFT2 [ #ff80 ] EQU2 AND
+	( - ) #ffff #7e SFT2 [ #0180 ] EQU2 AND
+	( - ) #ffff #e3 SFT2 [ #c000 ] EQU2 AND JMP2r
+
+(
+@|mr )
+
+@op-incr ( -- pass )
+	( - ) LITr 01 INCr STHr #02 EQU JMP2r
+
+@op-popr ( -- pass )
+	( - ) LITr 0a LITr 0b POPr STHr #0a EQU JMP2r
+
+@op-nipr ( -- pass )
+	( - ) LITr 12 LITr 34 LITr 56 NIPr ADDr STHr #68 EQU JMP2r
+
+@op-swpr ( -- pass )
+	( - ) LITr 02 LITr 03 SWPr POPr STHr #03 EQU JMP2r
+
+@op-rotr ( -- pass )
+	( - ) LITr 0a LITr 0b LITr 0c ROTr POPr POPr STHr #0b EQU JMP2r
+
+@op-dupr ( -- pass )
+	( - ) LITr 0a DUPr STHr STHr #0a0a EQU2 JMP2r
+
+@op-ovrr ( -- pass )
+	( - ) LITr 0a LITr 0b OVRr STHr POPr POPr #0a EQU JMP2r
+
+@op-equr ( -- pass )
+	( - ) LITr f8 LITr f8 EQUr STHr #01 EQU JMP2r
+
+@op-neqr ( -- pass )
+	( - ) LITr f8 LITr f8 NEQr STHr #00 EQU JMP2r
+
+@op-gthr ( -- pass )
+	( - ) LITr f8 LITr f8 GTHr STHr #00 EQU JMP2r
+
+@op-lthr ( -- pass )
+	( - ) LITr f8 LITr f8 LTHr STHr #00 EQU JMP2r
+
+@op-jmpr ( -- pass )
+	( - ) LITr _&t [ JMPr ] #01 EQU JMP2r
+	&t #01 JMP2r
+
+@op-jcnr ( -- pass )
+	( - ) #23 LIT2r 01 _&x [ JCNr INC &x ] [ #23 ] EQU
+	( - ) #23 LIT2r 00 _&y [ JCNr INC &y ] [ #24 ] EQU AND
+	( - ) #1234 LIT2r 01 _&t [ JCNr &back ] POP [ #34 ] EQU AND
+	( - ) #1234 LIT2r 00 _&t [ JCNr ] POP [ #12 ] EQU AND JMP2r
+	&t SWP ,&back JMP
+
+@op-jsrr ( -- pass )
+	LITr 0a LITr _&t JSRr STHr #14 EQU JMP2r
+	&t DUPr ADDr JMP2
+
+@op-sthr ( -- pass )
+	( - ) LITr 55 [ STHr ] #55 EQU JMP2r
+
+@op-ldzr ( -- pass )
+	( - ) LITr 00 LDZr STHr #12 EQU JMP2r
+
+@op-stzr ( -- pass )
+	( - ) LIT2r 5606 [ STZr ] #06 LDZ #56 EQU JMP2r
+
+@op-ldrr ( -- pass )
+	( - ) LITr _&t LDRr STHr #12 EQU JMP2r
+	&t 12
+
+@op-strr ( -- pass )
+	( - ) LITr 34 LITr _&t [ STRr ] ,&t LDR #34 EQU JMP2r
+	&t $1
+
+@op-ldar ( -- pass )
+	( - ) LIT2r =&value LDAr STHr #ef EQU JMP2r
+	&value ef
+
+@op-star ( -- pass )
+	( - ) LITr 12 LIT2r =&value [ STAr ] ;&value LDA #12 EQU JMP2r
+	&value 00
+
+@op-deir ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deor ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-addr ( -- pass )
+	( - ) LITr ff LITr 00 ADDr STHr #ff EQU JMP2r
+
+@op-subr ( -- pass )
+	( - ) LITr ff LITr 00 SUBr STHr #ff EQU JMP2r
+
+@op-mulr ( -- pass )
+	( - ) LITr 00 LITr 01 MULr STHr #00 EQU JMP2r
+
+@op-divr ( -- pass )
+	( - ) LITr 10 LITr 06 DIVr STHr [ #02 ] EQU JMP2r
+
+@op-andr ( -- pass )
+	( - ) LITr fc LITr 3f ANDr STHr [ #3c ] EQU JMP2r
+
+@op-orar ( -- pass )
+	( - ) LITr 0f LITr f0 ORAr STHr #ff EQU JMP2r
+
+@op-eorr ( -- pass )
+	( - ) LITr 00 LITr 00 EORr STHr #00 EQU JMP2r
+
+@op-sftr ( -- pass )
+	( - ) LITr ff LITr 08 SFTr STHr #00 EQU JMP2r
+
+(
+@|m2r )
+
+@op-inc2r ( -- pass )
+	( - ) LIT2r 00ff INC2r
+	( . ) STH2r [ #0100 ] EQU2 JMP2r
+
+@op-pop2r ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0c0d POP2r
+	( . ) STH2r [ #0a0b ] EQU2 JMP2r
+
+@op-nip2r ( -- pass )
+	( - ) LIT2r 1234 LIT2r 5678 NIP2r
+	( . ) STH2r #5678 EQU2 JMP2r
+
+@op-swp2r ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0c0d SWP2r
+	( . ) STH2r POP2r #0a0b EQU2 JMP2r
+
+@op-rot2r ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0c0d LIT2r 0c0f ROT2r POP2r POP2r
+	( . ) STH2r #0c0d EQU2 JMP2r
+
+@op-dup2r ( -- pass )
+	( - ) LIT2r 0a0b DUP2r
+	( . ) STH2r STH2r ADD2 #1416 EQU2 JMP2r
+
+@op-ovr2r ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0c0d OVR2r
+	( . ) STH2r STH2r
+	( . ) STH2r ADD2 ADD2 #2023 EQU2 JMP2r
+
+@op-equ2r ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0a0b EQU2r STHr #01 EQU
+	( - ) LIT2r 0a0b LIT2r 0c0d EQU2r STHr #00 EQU AND JMP2r
+
+@op-neq2r ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0a0b NEQ2r STHr #00 EQU
+	( - ) LIT2r 0a0b LIT2r 0c0d NEQ2r STHr #01 EQU AND JMP2r
+
+@op-gth2r ( -- pass )
+	( - ) LIT2r f801 LIT2r f801 GTH2r STHr #00 EQU
+	( - ) LIT2r f801 LIT2r 01f8 GTH2r STHr #01 EQU AND JMP2r
+
+@op-lth2r ( -- pass )
+	( - ) LIT2r f801 LIT2r f801 LTH2r STHr #00 EQU
+	( - ) LIT2r 01f8 LIT2r f801 LTH2r STHr #01 EQU AND JMP2r
+
+@op-jmp2r ( -- pass )
+	( - ) #5678 LIT2r =&t [ JMP2r ] SWP &t POP #56 EQU JMP2r
+
+@op-jcn2r ( -- pass )
+	( - ) #23 LITr 01 LIT2r =&x [ JCN2r INC &x ] #23 EQU
+	( - ) #23 LITr 00 LIT2r =&y [ JCN2r INC &y ] #24 EQU AND JMP2r
+
+@op-jsr2r ( -- pass )
+	( - ) LITr 12 LIT2r =&t JSR2r STHr #24 EQU JMP2r
+	&t DUPr ADDr JMP2
+
+@op-sth2r ( -- pass )
+	( - ) LIT2r 0a0b
+	( . ) STH2r #0a0b EQU2 JMP2r
+
+@op-ldz2r ( -- pass )
+	( - ) LITr 00 [ LDZ2r ]
+	( . ) STH2r #1234 EQU2 JMP2r
+
+@op-stz2r ( -- pass )
+	( - ) LIT2r 5678 LITr 08 [ STZ2r ] #08 LDZ2 #5678 EQU2 JMP2r
+
+@op-ldr2r ( -- pass )
+	( - ) LITr _&t [ LDR2r ]
+	( . ) STH2r #1234 EQU2 JMP2r
+	&t 1234
+
+@op-str2r ( -- pass )
+	( - ) LIT2r 1234 LITr _&t [ STR2r ] ,&t LDR2 #1234 EQU2 JMP2r
+	&t $2
+
+@op-lda2r ( -- pass )
+	( - ) LIT2r =&t [ LDA2r ]
+	( . ) STH2r #1234 EQU2 JMP2r
+	&t 1234
+
+@op-sta2r ( -- pass )
+	( - ) LIT2r 1234 LIT2r =&t [ STA2r ] ;&t LDA2 #1234 EQU2 JMP2r
+	&t $2
+
+@op-dei2r ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deo2r ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-add2r ( -- pass )
+	( - ) LIT2r ffff LIT2r 0000 ADD2r STH2r [ #ffff ] EQU2
+	( - ) LIT2r 0001 LIT2r ffff ADD2r STH2r [ #0000 ] EQU2 AND
+	( - ) LIT2r ffff LIT2r ffff ADD2r STH2r [ #fffe ] EQU2 AND
+	( - ) LIT2r fffe LIT2r ffff ADD2r STH2r [ #fffd ] EQU2 AND JMP2r
+
+@op-sub2r ( -- pass )
+	( - ) LIT2r ffff LIT2r 0000 SUB2r STH2r [ #ffff ] EQU2
+	( - ) LIT2r 0001 LIT2r ffff SUB2r STH2r [ #0002 ] EQU2 AND
+	( - ) LIT2r ffff LIT2r ffff SUB2r STH2r [ #0000 ] EQU2 AND
+	( - ) LIT2r fffe LIT2r ffff SUB2r STH2r [ #ffff ] EQU2 AND JMP2r
+
+@op-mul2r ( -- pass )
+	( - ) LIT2r 1000 LIT2r 0003 MUL2r STH2r [ #3000 ] EQU2
+	( - ) LIT2r abcd LIT2r 1234 MUL2r STH2r [ #4fa4 ] EQU2 AND
+	( - ) LIT2r 8000 LIT2r 0200 MUL2r STH2r [ #0000 ] EQU2 AND
+	( - ) LIT2r 2222 LIT2r 0003 MUL2r STH2r [ #6666 ] EQU2 AND JMP2r
+
+@op-div2r ( -- pass )
+	( - ) LIT2r 03e8 LIT2r 0006 DIV2r STH2r [ #00a6 ] EQU2
+	( - ) LIT2r abcd LIT2r 1234 DIV2r STH2r [ #0009 ] EQU2 AND
+	( - ) LIT2r 8000 LIT2r 0200 DIV2r STH2r [ #0040 ] EQU2 AND
+	( - ) LIT2r 2222 LIT2r 0003 DIV2r STH2r [ #0b60 ] EQU2 AND
+	( - ) LIT2r 0202 LIT2r 0000 DIV2r STH2r [ #0000 ] EQU2 AND JMP2r
+
+@op-and2r ( -- pass )
+	( - ) LIT2r f0f0 LIT2r 00f0 AND2r STH2r [ #00f0 ] EQU2
+	( - ) LIT2r aaaa LIT2r 5555 AND2r STH2r [ #0000 ] EQU2 AND
+	( - ) LIT2r ffff LIT2r 1234 AND2r STH2r [ #1234 ] EQU2 AND
+	( - ) LIT2r abcd LIT2r 0a0c AND2r STH2r [ #0a0c ] EQU2 AND JMP2r
+
+@op-ora2r ( -- pass )
+	( - ) LIT2r 0f0f LIT2r f0f0 ORA2r STH2r [ #ffff ] EQU2
+	( - ) LIT2r abab LIT2r cdcd ORA2r STH2r [ #efef ] EQU2 AND
+	( - ) LIT2r 1122 LIT2r 1234 ORA2r STH2r [ #1336 ] EQU2 AND
+	( - ) LIT2r 8888 LIT2r 1000 ORA2r STH2r [ #9888 ] EQU2 AND JMP2r
+
+@op-eor2r ( -- pass )
+	( - ) LIT2r ffff LIT2r ff00 EOR2r STH2r [ #00ff ] EQU2
+	( - ) LIT2r aaaa LIT2r 5555 EOR2r STH2r [ #ffff ] EQU2 AND
+	( - ) LIT2r 1122 LIT2r 1234 EOR2r STH2r [ #0316 ] EQU2 AND
+	( - ) LIT2r 8888 LIT2r 1000 EOR2r STH2r [ #9888 ] EQU2 AND JMP2r
+
+@op-sft2r ( -- pass )
+	( - ) LIT2r ffff LITr 01 SFT2r STH2r [ #7fff ] EQU2
+	( - ) LIT2r ffff LITr 70 SFT2r STH2r [ #ff80 ] EQU2 AND
+	( - ) LIT2r ffff LITr 7e SFT2r STH2r [ #0180 ] EQU2 AND
+	( - ) LIT2r ffff LITr e3 SFT2r STH2r [ #c000 ] EQU2 AND JMP2r
+
+(
+@|mk )
+
+@op-inck ( -- pass )
+	( - ) #01 INCk #0102 EQU2
+	( - ) #ff INCk #ff00 EQU2 AND JMP2r
+
+@op-popk ( -- pass )
+	( - ) #0a #0b POPk #0a0b EQU2 JMP2r
+
+@op-nipk ( -- pass )
+	( - ) #12 #34 NIPk NIP NIP #34 EQU
+	( - ) #12 #34 NIPk NIP #1234 EQU2 AND JMP2r
+
+@op-swpk ( -- pass )
+	( - ) #12 #34 SWPk NIP2 #3412 EQU2
+	( - ) #12 #34 SWPk POP2 #1234 EQU2 AND JMP2r
+
+@op-rotk ( -- pass )
+	( - ) #02 #04 #10 ROTk POP POP POP ROT DIV ADD #0c EQU
+	( - ) #02 #04 #10 ROTk [ STH STH STH ] POP POP POP STHr STHr STHr DIV ADD [ #0c ] EQU AND JMP2r
+
+@op-dupk ( -- pass )
+	( - ) #0a DUPk EQU SWP [ #0a ] EQU AND
+	( - ) #ff DUPk EQU SWP #ff EQU AND AND JMP2r
+
+@op-ovrk ( -- pass )
+	( - ) #02 #10 OVRk POP POP POP #0210 EQU2
+	( check result ) #02 #10 OVRk NIP NIP DIV ADD [ #0a ] EQU AND JMP2r
+
+@op-equk ( -- pass )
+	( - ) #0a #0a EQUk ROT [ #0a ] EQU ROT [ #0a ] EQU AND SWP #01 EQU AND
+	( - ) #0a #0b EQUk ROT [ #0a ] EQU ROT [ #0b ] EQU AND SWP #00 EQU AND AND JMP2r
+
+@op-neqk ( -- pass )
+	( - ) #0a #0b NEQk ROT [ #0a ] EQU ROT [ #0b ] EQU AND SWP #01 EQU AND
+	( - ) #0a #0a NEQk ROT [ #0a ] EQU ROT [ #0a ] EQU AND SWP #00 EQU AND AND JMP2r
+
+@op-gthk ( -- pass )
+	( - ) #f8 #01 GTHk ROT [ #f8 ] EQU ROT #01 EQU AND SWP #01 EQU AND
+	( - ) #01 #f8 GTHk ROT #01 EQU ROT [ #f8 ] EQU AND SWP #00 EQU AND AND JMP2r
+
+@op-lthk ( -- pass )
+	( - ) #01 #ff LTHk ROT #01 EQU ROT #ff EQU AND SWP #01 EQU AND
+	( - ) #f8 #01 LTHk ROT [ #f8 ] EQU ROT #01 EQU AND SWP #00 EQU AND AND JMP2r
+
+@op-jmpk ( -- pass )
+	( - ) #1234 ,&x [ JMPk SWP &x ] POP2 [ #12 ] EQU
+	( - ) #1234 ,&t [ JMPk &back ] POP2 [ #34 ] EQU AND JMP2r
+	&t POP SWP ,&back JMPk
+
+@op-jcnk ( -- pass )
+	( - ) LITr 0a #00 ,&x JCNk INCr &x POP2 STHr #0b EQU
+	( - ) LITr 0a #01 ,&y JCNk INCr &y POP2 STHr #0a EQU AND JMP2r
+
+@op-jsrk ( -- pass )
+	( - ) #0a ,&t JSRk #0b EQU JMP2r
+	&t POP INC JMP2r
+
+@op-sthk ( -- pass )
+	( - ) #08 STHk STHr ADD #10 EQU JMP2r
+
+@op-ldzk ( -- pass )
+	( - ) #00 LDZk [ #12 ] EQU SWP #00 EQU AND JMP2r
+
+@op-stzk ( -- pass )
+	( - ) #56 #0a STZk POP2 #0a LDZ [ #56 ] EQU
+	( - ) #ab #0b STZk #ab0b EQU2 AND JMP2r
+
+@op-ldrk ( -- pass )
+	( - ) ,&t LDRk [ #12 ] EQU NIP JMP2r
+	&t 12
+
+@op-strk ( -- pass )
+	( - ) #34 ,&t STRk POP2 ,&t LDR [ #34 ] EQU
+	( - ) #34 ,&t STRk SWP [ #34 ] EQU NIP AND JMP2r
+	&t $1
+
+@op-ldak ( -- pass )
+	( - ) ;&t LDAk [ STH ] ;&t EQU2 STHr [ #ef ] EQU AND JMP2r
+	&t ef
+
+@op-stak ( -- pass )
+	( - ) #12 ;&t STAk POP2 POP ;&t LDA [ #12 ] EQU
+	( - ) #34 ;&t STAk [ STH2 ] [ #34 ] EQU STH2r ;&t EQU2 AND AND JMP2r
+	&t 00
+
+@op-deik ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deok ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-addk ( -- pass )
+	( - ) #03 #05 ADDk ROT [ #03 ] EQU ROT [ #05 ] EQU AND SWP [ #08 ] EQU AND
+	( - ) #ff #01 ADDk ROT #ff EQU ROT #01 EQU AND SWP #00 EQU AND AND JMP2r
+
+@op-subk ( -- pass )
+	( - ) #ff #00 SUBk ROT #ff EQU ROT #00 EQU AND SWP #ff EQU AND
+	( - ) #01 #ff SUBk ROT #01 EQU ROT #ff EQU AND SWP [ #02 ] EQU AND AND JMP2r
+
+@op-mulk ( -- pass )
+	( - ) #03 #04 MULk ROT [ #03 ] EQU ROT [ #04 ] EQU AND SWP [ #0c ] EQU AND
+	( - ) #10 #02 MULk ROT [ #10 ] EQU ROT [ #02 ] EQU AND SWP [ #20 ] EQU AND AND JMP2r
+
+@op-divk ( -- pass )
+	( - ) #10 #02 DIVk ROT [ #10 ] EQU ROT [ #02 ] EQU AND SWP [ #08 ] EQU AND
+	( - ) #34 #01 DIVk ROT [ #34 ] EQU ROT #01 EQU AND SWP [ #34 ] EQU AND AND JMP2r
+
+@op-andk ( -- pass )
+	( - ) #fc #3f ANDk ROT [ #fc ] EQU ROT [ #3f ] EQU AND SWP [ #3c ] EQU AND
+	( - ) #ff #aa ANDk ROT #ff EQU ROT [ #aa ] EQU AND SWP [ #aa ] EQU AND AND JMP2r
+
+@op-orak ( -- pass )
+	( - ) #0f #f0 ORAk ROT [ #0f ] EQU ROT [ #f0 ] EQU AND SWP #ff EQU AND
+	( - ) #12 #34 ORAk ROT [ #12 ] EQU ROT [ #34 ] EQU AND SWP [ #36 ] EQU AND AND JMP2r
+
+@op-eork ( -- pass )
+	( - ) #aa #55 EORk ROT [ #aa ] EQU ROT [ #55 ] EQU AND SWP #ff EQU AND
+	( - ) #ff #ff EORk ROT #ff EQU ROT #ff EQU AND SWP #00 EQU AND AND JMP2r
+
+@op-sftk ( -- pass )
+	( - ) #ff #11 SFTk ROT #ff EQU ROT [ #11 ] EQU AND SWP [ #fe ] EQU AND
+	( - ) #ff #12 SFTk ROT #ff EQU ROT [ #12 ] EQU AND SWP [ #7e ] EQU AND AND JMP2r
+
+(
+@|m2k )
+
+@op-inc2k ( -- pass )
+	( - ) #00ff INC2k ADD2 #01ff EQU2 JMP2r
+
+@op-pop2k ( -- pass )
+	( - ) #0a0b POP2k #0a0b EQU2 JMP2r
+
+@op-nip2k ( -- pass )
+	( - ) #1234 #5678 NIP2k #5678 EQU2 STH
+	( - ) #5678 EQU2 STH
+	ANDr
+	( - ) #1234 EQU2 STHr AND JMP2r
+
+@op-swp2k ( -- pass )
+	( - ) #1234 #5678 SWP2k
+	( | tests )
+	#1234 EQU2 STH
+	#5678 EQU2 STH
+	#5678 EQU2 STH
+	#1234 EQU2 STH
+	ANDr ANDr ANDr STHr JMP2r
+
+@op-rot2k ( -- pass )
+	( - ) #000a #000b #000c ROT2k
+	( | tests )
+	#000a EQU2 STH
+	#000c EQU2 STH
+	#000b EQU2 STH
+	#000c EQU2 STH
+	#000b EQU2 STH
+	#000a EQU2 STH
+	ANDr ANDr ANDr ANDr ANDr STHr JMP2r
+
+@op-dup2k ( -- pass )
+	( - ) #0a0b DUP2k
+	( | tests )
+	#0a0b EQU2 STH
+	#0a0b EQU2 STH
+	#0a0b EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-ovr2k ( -- pass )
+	( - ) #0a0b #0c0d OVR2k
+	( | tests )
+	#0a0b EQU2 STH
+	#0c0d EQU2 STH
+	#0a0b EQU2 STH
+	#0c0d EQU2 STH
+	#0a0b EQU2 STH
+	ANDr ANDr ANDr ANDr STHr JMP2r
+
+@op-equ2k ( -- pass )
+	( - ) #0a0b #0a0b EQU2k STH
+	EQU2 STHr AND
+	( - ) #0a0b #0e0f EQU2k #00 EQU STH
+	EQU2 #00 EQU STHr AND AND JMP2r
+
+@op-neq2k ( -- pass )
+	( - ) #0a0b #0a0b NEQ2k #00 EQU STH
+	NEQ2 #00 EQU STHr AND
+	( - ) #0a0b #0e0f NEQ2k STH
+	NEQ2 STHr AND AND JMP2r
+
+@op-gth2k ( -- pass )
+	( - ) #000a #000b GTH2k #00 EQU STH
+	GTH2 #00 EQU STHr AND
+	( - ) #000b #000a GTH2k STH
+	GTH2 STHr AND AND JMP2r
+
+@op-lth2k ( -- pass )
+	( - ) #000b #000a LTH2k #00 EQU STH
+	LTH2 #00 EQU STHr AND
+	( - ) #000a #000b LTH2k STH
+	LTH2 STHr AND AND JMP2r
+
+@op-jmp2k ( -- pass )
+	( - ) LIT2r 1234 ;&x [ JMP2k SWPr &x ] POP2 STHr POPr #34 EQU
+	( - ) LIT2r 1234 ;&t [ JMP2k &back ] POP2 POPr STHr #34 EQU AND JMP2r
+	&t POP2 SWPr ;&back JMP2k
+
+@op-jcn2k ( -- pass )
+	( - ) LITr 0a #00 ;&x JCN2k INCr &x POP2 POP STHr #0b EQU
+	( - ) LITr 0a #01 ;&y JCN2k INCr &y POP2 POP STHr #0a EQU AND JMP2r
+
+@op-jsr2k ( -- pass )
+	( - ) #0a ;&t JSR2k #0b EQU JMP2r
+	&t POP2 INC JMP2r
+
+@op-sth2k ( -- pass )
+	( - ) #0a0b STH2k STH2r EQU2 JMP2r
+
+@op-ldz2k ( -- pass )
+	( - ) #00 LDZ2k #1234 EQU2 SWP #00 EQU AND JMP2r
+
+@op-stz2k ( -- pass )
+	( - ) #5678 #05 [ STZ2k ] #05 EQU STH
+	#5678 EQU2 STHr AND #05 LDZ2 #5678 EQU2 AND JMP2r
+
+@op-ldr2k ( -- pass )
+	( - ) ,&t LDR2k [ LIT2 &t 1234 ] EQU2 NIP JMP2r
+
+@op-str2k ( -- pass )
+	( - ) #1234 ,&t STR2k POP [ LIT2 &t $2 ] EQU2 JMP2r
+
+@op-lda2k ( -- pass )
+	( - ) ;&t LDA2k [ LIT2 &t 1234 ] EQU2 NIP NIP JMP2r
+
+@op-sta2k ( -- pass )
+	( - ) #1234 ;&t STA2k POP2 [ LIT2 &t $2 ] EQU2 JMP2r
+
+@op-dei2k ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deo2k ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-add2k ( -- pass )
+	#0a0b #0c0d ADD2k
+	( | tests )
+	#1618 EQU2 STH
+	#0c0d EQU2 STH
+	#0a0b EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-sub2k ( -- pass )
+	#0a0b #0c0d SUB2k
+	( | tests )
+	#fdfe EQU2 STH
+	#0c0d EQU2 STH
+	#0a0b EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-mul2k ( -- pass )
+	#0a0b #0c0d MUL2k
+	( | tests )
+	#068f EQU2 STH
+	#0c0d EQU2 STH
+	#0a0b EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-div2k ( -- pass )
+	#0c0d #0003 DIV2k
+	( | tests )
+	#0404 EQU2 STH
+	#0003 EQU2 STH
+	#0c0d EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-and2k ( -- pass )
+	#0c0d #a5a5 AND2k
+	( | tests )
+	#0405 EQU2 STH
+	#a5a5 EQU2 STH
+	#0c0d EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-ora2k ( -- pass )
+	#0c0d #a5a5 ORA2k
+	( | tests )
+	#adad EQU2 STH
+	#a5a5 EQU2 STH
+	#0c0d EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-eor2k ( -- pass )
+	#0c0d #a5a5 EOR2k
+	( | tests )
+	#a9a8 EQU2 STH
+	#a5a5 EQU2 STH
+	#0c0d EQU2 STH
+	ANDr ANDr STHr JMP2r
+
+@op-sft2k ( -- pass )
+	( - ) #1234 #32 SFT2k #2468 EQU2 SWP2 #1234 EQU2 AND #3201 EQU2 JMP2r
+
+(
+@|mkr )
+
+@op-inckr ( -- pass )
+	( - ) LITr 01 INCkr LIT2r 0102 EQU2r
+	( - ) LITr ff INCkr LIT2r ff00 EQU2r ANDr STHr JMP2r
+
+@op-popkr ( -- pass )
+	( - ) LIT2r 0a0b POPkr LIT2r 0a0b EQU2r STHr JMP2r
+
+@op-nipkr ( -- pass )
+	( - ) LIT2r 1234 NIPkr NIPr NIPr LITr 34 EQUr
+	( - ) LIT2r 1234 NIPkr NIPr LIT2r 1234 EQU2r ANDr STHr JMP2r
+
+@op-swpkr ( -- pass )
+	( - ) LIT2r 1234 SWPkr NIP2r LIT2r 3412 EQU2r
+	( - ) LIT2r 1234 SWPkr POP2r LIT2r 1234 EQU2r ANDr STHr JMP2r
+
+@op-rotkr ( -- pass )
+	LITr 0a LITr 0b LITr 0c ROTkr STH2r #0c0a EQU2 STH2r #0c0b EQU2 STH2r #0a0b EQU2 AND AND JMP2r
+
+@op-dupkr ( -- pass )
+	( - ) LITr 0a DUPkr
+	( . ) STH2r #0a0a EQU2
+	( . ) STHr #0a EQU AND JMP2r
+
+@op-ovrkr ( -- pass )
+	( - ) LIT2r 0a0b OVRkr
+	( . ) STH2r #0b0a EQU2
+	( . ) STH2r #0b0a EQU2 AND
+	( . ) STHr #0a EQU AND JMP2r
+
+@op-equkr ( -- pass )
+	( - ) LIT2r 0a0a EQUkr ROTr LITr 0a EQUr ROTr LITr 0a EQUr ANDr SWPr LITr 01 EQUr ANDr
+	( - ) LIT2r 0a0b EQUkr ROTr LITr 0a EQUr ROTr LITr 0b EQUr ANDr SWPr LITr 00 EQUr ANDr ANDr STHr JMP2r
+
+@op-neqkr ( -- pass )
+	( - ) LIT2r 0a0b NEQkr ROTr LITr 0a EQUr ROTr LITr 0b EQUr ANDr SWPr LITr 01 EQUr ANDr
+	( - ) LIT2r 0a0a NEQkr ROTr LITr 0a EQUr ROTr LITr 0a EQUr ANDr SWPr LITr 00 EQUr ANDr ANDr STHr JMP2r
+
+@op-gthkr ( -- pass )
+	( - ) LIT2r f801 GTHkr ROTr LITr f8 EQUr ROTr LITr 01 EQUr ANDr SWPr LITr 01 EQUr ANDr
+	( - ) LIT2r 01f8 GTHkr ROTr LITr 01 EQUr ROTr LITr f8 EQUr ANDr SWPr LITr 00 EQUr ANDr ANDr STHr JMP2r
+
+@op-lthkr ( -- pass )
+	( - ) LIT2r 01ff LTHkr ROTr LITr 01 EQUr ROTr LITr ff EQUr ANDr SWPr LITr 01 EQUr ANDr
+	( - ) LIT2r f801 LTHkr ROTr LITr f8 EQUr ROTr LITr 01 EQUr ANDr SWPr LITr 00 EQUr ANDr ANDr STHr JMP2r
+
+@op-jmpkr ( -- pass )
+	( - ) #1234 LITr _&x [ JMPkr SWP &x ] POP POPr [ #12 ] EQU
+	( - ) #1234 LITr _&t [ JMPkr &back ] POP POPr [ #34 ] EQU AND JMP2r
+	&t POPr SWP LITr _&back JMPkr
+
+@op-jcnkr ( -- pass )
+	( - ) #0a LIT2r 00 _&x JCNkr
+	INC &x POP2r #0b EQU
+	( - ) #0a LIT2r 01 _&y JCNkr
+	INC &y POP2r #0a EQU AND JMP2r
+
+@op-jsrkr ( -- pass )
+	( - ) LITr 0a LITr _&t JSRkr STHr #0b EQU JMP2r
+	&t POPr INCr JMP2
+
+@op-sthkr ( -- pass )
+	( - ) LIT2r 0a0b STH2kr STH2r EQU2 JMP2r
+
+@op-ldzkr ( -- pass )
+	( - ) LITr 00 LDZkr STH2r #0012 EQU2 JMP2r
+
+@op-stzkr ( -- pass )
+	( - ) LITr 56 LITr 0a STZkr
+	POP2r LITr 0a LDZr LITr 56 EQUr
+	( - ) LITr ab LITr 0b STZkr
+	LIT2r ab0b EQU2r ANDr STHr JMP2r
+
+@op-ldrkr ( -- pass )
+	( - ) LITr _&t LDRkr [ LITr 12 ] EQUr NIPr STHr JMP2r
+	&t 12
+
+@op-strkr ( -- pass )
+	( - ) LITr 34 LITr _&t STRkr
+	POP2r LITr _&t LDRr [ LITr 34 ] EQUr
+	( - ) LITr 34 LITr _&t STRkr
+	SWPr [ LITr 34 ] EQUr NIPr ANDr STHr JMP2r
+	&t $1
+
+@op-ldakr ( -- pass )
+	( - ) LIT2r =&t LDAkr [ STHr ] LIT2r =&t EQU2r STH
+	[ LITr ef ] EQUr ANDr STHr JMP2r
+	&t ef
+
+@op-stakr ( -- pass )
+	( - ) LITr 12 LIT2r =&t STAkr
+	POP2r POPr LIT2r =&t LDAr [ LITr 12 ] EQUr
+	( - ) LITr 34 LIT2r =&t STAkr
+	[ STH2r ] [ LITr 34 ] EQUr STH2
+	LIT2r =&t EQU2r ANDr ANDr STHr JMP2r
+	&t 00
+
+@op-deikr ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deokr ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-addkr ( -- pass )
+	( - ) LITr 03 LITr 05 ADDkr ROTr LITr 03 EQUr ROTr LITr 05 EQUr ANDr SWPr LITr 08 EQUr ANDr
+	( - ) LITr ff LITr 01 ADDkr ROTr LITr ff EQUr ROTr LITr 01 EQUr ANDr SWPr LITr 00 EQUr ANDr ANDr STHr JMP2r
+
+@op-subkr ( -- pass )
+	( - ) LITr ff LITr 00 SUBkr ROTr LITr ff EQUr ROTr LITr 00 EQUr ANDr SWPr LITr ff EQUr ANDr
+	( - ) LITr 01 LITr ff SUBkr ROTr LITr 01 EQUr ROTr LITr ff EQUr ANDr SWPr LITr 02 EQUr ANDr ANDr STHr JMP2r
+
+@op-mulkr ( -- pass )
+	( - ) LITr 03 LITr 04 MULkr ROTr LITr 03 EQUr ROTr LITr 04 EQUr ANDr SWPr LITr 0c EQUr ANDr
+	( - ) LITr 10 LITr 02 MULkr ROTr LITr 10 EQUr ROTr LITr 02 EQUr ANDr SWPr LITr 20 EQUr ANDr ANDr STHr JMP2r
+
+@op-divkr ( -- pass )
+	( - ) LITr 10 LITr 02 DIVkr ROTr LITr 10 EQUr ROTr LITr 02 EQUr ANDr SWPr LITr 08 EQUr ANDr
+	( - ) LITr 34 LITr 01 DIVkr ROTr LITr 34 EQUr ROTr LITr 01 EQUr ANDr SWPr LITr 34 EQUr ANDr ANDr STHr JMP2r
+
+@op-andkr ( -- pass )
+	( - ) LITr fc LITr 3f ANDkr ROTr LITr fc EQUr ROTr LITr 3f EQUr ANDr SWPr LITr 3c EQUr ANDr
+	( - ) LITr ff LITr aa ANDkr ROTr LITr ff EQUr ROTr LITr aa EQUr ANDr SWPr LITr aa EQUr ANDr ANDr STHr JMP2r
+
+@op-orakr ( -- pass )
+	( - ) LITr 0f LITr f0 ORAkr ROTr LITr 0f EQUr ROTr LITr f0 EQUr ANDr SWPr LITr ff EQUr ANDr
+	( - ) LITr 12 LITr 34 ORAkr ROTr LITr 12 EQUr ROTr LITr 34 EQUr ANDr SWPr LITr 36 EQUr ANDr ANDr STHr JMP2r
+
+@op-eorkr ( -- pass )
+	( - ) LITr aa LITr 55 EORkr ROTr LITr aa EQUr ROTr LITr 55 EQUr ANDr SWPr LITr ff EQUr ANDr
+	( - ) LITr ff LITr ff EORkr ROTr LITr ff EQUr ROTr LITr ff EQUr ANDr SWPr LITr 00 EQUr ANDr ANDr STHr JMP2r
+
+@op-sftkr ( -- pass )
+	( - ) LITr ff LITr 11 SFTkr ROTr LITr ff EQUr ROTr LITr 11 EQUr ANDr SWPr LITr fe EQUr ANDr
+	( - ) LITr ff LITr 12 SFTkr ROTr LITr ff EQUr ROTr LITr 12 EQUr ANDr SWPr LITr 7e EQUr ANDr ANDr STHr JMP2r
+
+(
+@|m2kr )
+
+@op-inc2kr ( -- pass )
+	( - ) LIT2r 00ff INC2kr ADD2r LIT2r 01ff EQU2r STHr JMP2r
+
+@op-pop2kr ( -- pass )
+	( - ) LIT2r 0a0b POP2kr LIT2r 0a0b EQU2r STHr JMP2r
+
+@op-nip2kr ( -- pass )
+	( - ) LIT2r 1234 LIT2r 5678 NIP2kr LIT2r 5678 EQU2r STHr
+	( - ) LIT2r 5678 EQU2r STHr AND
+	( - ) LIT2r 1234 EQU2r STH
+	ANDr STHr JMP2r
+
+@op-swp2kr ( -- pass )
+	( - ) LIT2r 1234 LIT2r 5678 SWP2kr
+	( | tests )
+	LIT2r 1234 EQU2r STHr LIT2r 5678 EQU2r STHr LIT2r 5678 EQU2r STHr LIT2r 1234 EQU2r STHr AND AND AND JMP2r
+
+@op-rot2kr ( -- pass )
+	( - ) LIT2r 1234 LIT2r 5678 LIT2r 9abc ROT2kr STH2r #1234 EQU2 STH2r #9abc EQU2 STH2r #5678 EQU2 STH2r #9abc EQU2 STH2r #5678 EQU2 STH2r #1234 EQU2 AND AND AND AND AND JMP2r
+
+@op-dup2kr ( -- pass )
+	( - ) LIT2r 1234 DUP2kr ADD2r ADD2r STH2r #369c EQU2 JMP2r
+
+@op-ovr2kr ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0c0d OVR2kr STH2r #0a0b EQU2 STH2r #0c0d EQU2 STH2r #0a0b EQU2 STH2r #0c0d EQU2 STH2r #0a0b EQU2 AND AND AND AND JMP2r
+
+@op-equ2kr ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0a0b EQU2kr STHr EQU2r STH
+	ANDr
+	( - ) LIT2r 0a0b LIT2r 0e0f EQU2kr LITr 00 EQUr STHr EQU2r LITr 00 EQUr STH
+	ANDr ANDr STHr JMP2r
+
+@op-neq2kr ( -- pass )
+	( - ) LIT2r 0a0b LIT2r 0a0b NEQ2kr LITr 00 EQUr STHr NEQ2r LITr 00 EQUr STH
+	ANDr
+	( - ) LIT2r 0a0b LIT2r 0e0f NEQ2kr STHr NEQ2r STH
+	ANDr ANDr STHr JMP2r
+
+@op-gth2kr ( -- pass )
+	( - ) LIT2r 000a LIT2r 000b GTH2kr LITr 00 EQUr STHr GTH2r LITr 00 EQUr STH
+	ANDr
+	( - ) LIT2r 000b LIT2r 000a GTH2kr STHr GTH2r STH
+	ANDr ANDr STHr JMP2r
+
+@op-lth2kr ( -- pass )
+	( - ) LIT2r 000b LIT2r 000a LTH2kr LITr 00 EQUr STHr LTH2r LITr 00 EQUr STH
+	ANDr
+	( - ) LIT2r 000a LIT2r 000b LTH2kr STHr LTH2r STH
+	ANDr ANDr STHr JMP2r
+
+@op-jmp2kr ( -- pass )
+	( - ) #1234 LIT2r =&x [ JMP2kr SWP &x ] POP2r POP #12 EQU
+	( - ) #1234 LIT2r =&t [ JMP2kr &back ] POP2r POP #34 EQU AND JMP2r
+	&t POP2r SWP LIT2r =&back JMP2kr
+
+@op-jcn2kr ( -- pass )
+	( - ) #0a LITr 00 LIT2r =&x JCN2kr
+	INC &x POP2r POPr #0b EQU
+	( - ) #0a LITr 01 LIT2r =&y JCN2kr
+	INC &y POP2r POPr #0a EQU AND JMP2r
+
+@op-jsr2kr ( -- pass )
+	( - ) LITr 0a LIT2r =&t JSR2kr STHr #0b EQU JMP2r
+	&t POP2r INCr JMP2
+
+@op-sth2kr ( -- pass )
+	LIT2r 0a0b STH2kr STH2r ADD2 #1416 EQU2 JMP2r
+
+@op-ldz2kr ( -- pass )
+	( - ) LITr 00 LDZ2kr STH2r #1234 EQU2 STHr #00 EQU AND JMP2r
+
+@op-stz2kr ( -- pass )
+	( - ) LIT2r 5678 LITr 09 [ STZ2kr ] STHr #09 EQU STH2r #5678 EQU2 AND #09 LDZ2 #5678 EQU2 AND JMP2r
+
+@op-ldr2kr ( -- pass )
+	( - ) LITr _&t LDR2kr [ LIT2r &t 1234 ] EQU2r NIPr STHr JMP2r
+
+@op-str2kr ( -- pass )
+	( - ) LIT2r 1234 LITr _&t STR2kr
+	POPr [ LIT2r &t $2 ] EQU2r STHr JMP2r
+
+@op-lda2kr ( -- pass )
+	( - ) LIT2r =&t LDA2kr [ LIT2r &t 1234 ] EQU2r NIPr NIPr STHr JMP2r
+
+@op-sta2kr ( -- pass )
+	( - ) LIT2r 1234 LIT2r =&t STA2kr
+	POP2r [ LIT2r &t $2 ] EQU2r STHr JMP2r
+
+@op-dei2kr ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-deo2kr ( -- pass )
+	( skip ) #01 JMP2r
+
+@op-add2kr ( -- pass )
+	LIT2r 0a0b LIT2r 0c0d ADD2kr
+	( | tests )
+	LIT2r 1618 EQU2r STHr LIT2r 0c0d EQU2r STHr LIT2r 0a0b EQU2r STHr AND AND JMP2r
+
+@op-sub2kr ( -- pass )
+	LIT2r 0a0b LIT2r 0c0d SUB2kr
+	( | tests )
+	LIT2r fdfe EQU2r STHr LIT2r 0c0d EQU2r STHr LIT2r 0a0b EQU2r STHr AND AND JMP2r
+
+@op-mul2kr ( -- pass )
+	LIT2r 0a0b LIT2r 0c0d MUL2kr
+	( | tests )
+	LIT2r 068f EQU2r STHr LIT2r 0c0d EQU2r STHr LIT2r 0a0b EQU2r STHr AND AND JMP2r
+
+@op-div2kr ( -- pass )
+	LIT2r 0c0d LIT2r 0003 DIV2kr
+	( | tests )
+	LIT2r 0404 EQU2r STHr LIT2r 0003 EQU2r STHr LIT2r 0c0d EQU2r STHr AND AND JMP2r
+
+@op-and2kr ( -- pass )
+	LIT2r 0c0d LIT2r a5a5 AND2kr
+	( | tests )
+	LIT2r 0405 EQU2r STHr LIT2r a5a5 EQU2r STHr LIT2r 0c0d EQU2r STHr AND AND JMP2r
+
+@op-ora2kr ( -- pass )
+	LIT2r 0c0d LIT2r a5a5 ORA2kr
+	( | tests )
+	LIT2r adad EQU2r STHr LIT2r a5a5 EQU2r STHr LIT2r 0c0d EQU2r STHr AND AND JMP2r
+
+@op-eor2kr ( -- pass )
+	LIT2r 0c0d LIT2r a5a5 EOR2kr
+	( | tests )
+	LIT2r a9a8 EQU2r STHr LIT2r a5a5 EQU2r STHr LIT2r 0c0d EQU2r STHr AND AND JMP2r
+
+@op-sft2kr ( -- pass )
+	( - ) LIT2r 1234 LITr 32 SFT2kr LIT2r 2468 EQU2r SWP2r LIT2r 1234 EQU2r ANDr LIT2r 3201 EQU2r STHr JMP2r
+
+@tests/lut [
+	=op-brk =op-inc =op-pop =op-nip
+	=op-swp =op-rot =op-dup =op-ovr
+	=op-equ =op-neq =op-gth =op-lth
+	=op-jmp =op-jcn =op-jsr =op-sth
+	=op-ldz =op-stz =op-ldr =op-str
+	=op-lda =op-sta =op-dei =op-deo
+	=op-add =op-sub =op-mul =op-div
+	=op-and =op-ora =op-eor =op-sft
+	=op-jci =op-inc2 =op-pop2 =op-nip2
+	=op-swp2 =op-rot2 =op-dup2 =op-ovr2
+	=op-equ2 =op-neq2 =op-gth2 =op-lth2
+	=op-jmp2 =op-jcn2 =op-jsr2 =op-sth2
+	=op-ldz2 =op-stz2 =op-ldr2 =op-str2
+	=op-lda2 =op-sta2 =op-dei2 =op-deo2
+	=op-add2 =op-sub2 =op-mul2 =op-div2
+	=op-and2 =op-ora2 =op-eor2 =op-sft2
+	=op-jmi =op-incr =op-popr =op-nipr
+	=op-swpr =op-rotr =op-dupr =op-ovrr
+	=op-equr =op-neqr =op-gthr =op-lthr
+	=op-jmpr =op-jcnr =op-jsrr =op-sthr
+	=op-ldzr =op-stzr =op-ldrr =op-strr
+	=op-ldar =op-star =op-deir =op-deor
+	=op-addr =op-subr =op-mulr =op-divr
+	=op-andr =op-orar =op-eorr =op-sftr
+	=op-jsi =op-inc2r =op-pop2r =op-nip2r
+	=op-swp2r =op-rot2r =op-dup2r =op-ovr2r
+	=op-equ2r =op-neq2r =op-gth2r =op-lth2r
+	=op-jmp2r =op-jcn2r =op-jsr2r =op-sth2r
+	=op-ldz2r =op-stz2r =op-ldr2r =op-str2r
+	=op-lda2r =op-sta2r =op-dei2r =op-deo2r
+	=op-add2r =op-sub2r =op-mul2r =op-div2r
+	=op-and2r =op-ora2r =op-eor2r =op-sft2r
+	=op-lit =op-inck =op-popk =op-nipk
+	=op-swpk =op-rotk =op-dupk =op-ovrk
+	=op-equk =op-neqk =op-gthk =op-lthk
+	=op-jmpk =op-jcnk =op-jsrk =op-sthk
+	=op-ldzk =op-stzk =op-ldrk =op-strk
+	=op-ldak =op-stak =op-deik =op-deok
+	=op-addk =op-subk =op-mulk =op-divk
+	=op-andk =op-orak =op-eork =op-sftk
+	=op-lit2 =op-inc2k =op-pop2k =op-nip2k
+	=op-swp2k =op-rot2k =op-dup2k =op-ovr2k
+	=op-equ2k =op-neq2k =op-gth2k =op-lth2k
+	=op-jmp2k =op-jcn2k =op-jsr2k =op-sth2k
+	=op-ldz2k =op-stz2k =op-ldr2k =op-str2k
+	=op-lda2k =op-sta2k =op-dei2k =op-deo2k
+	=op-add2k =op-sub2k =op-mul2k =op-div2k
+	=op-and2k =op-ora2k =op-eor2k =op-sft2k
+	=op-litr =op-inckr =op-popkr =op-nipkr
+	=op-swpkr =op-rotkr =op-dupkr =op-ovrkr
+	=op-equkr =op-neqkr =op-gthkr =op-lthkr
+	=op-jmpkr =op-jcnkr =op-jsrkr =op-sthkr
+	=op-ldzkr =op-stzkr =op-ldrkr =op-strkr
+	=op-ldakr =op-stakr =op-deikr =op-deokr
+	=op-addkr =op-subkr =op-mulkr =op-divkr
+	=op-andkr =op-orakr =op-eorkr =op-sftkr
+	=op-lit2r =op-inc2kr =op-pop2kr =op-nip2kr
+	=op-swp2kr =op-rot2kr =op-dup2kr =op-ovr2kr
+	=op-equ2kr =op-neq2kr =op-gth2kr =op-lth2kr
+	=op-jmp2kr =op-jcn2kr =op-jsr2kr =op-sth2kr
+	=op-ldz2kr =op-stz2kr =op-ldr2kr =op-str2kr
+	=op-lda2kr =op-sta2kr =op-dei2kr =op-deo2kr
+	=op-add2kr =op-sub2kr =op-mul2kr =op-div2kr
+	=op-and2kr =op-ora2kr =op-eor2kr =op-sft2kr ] &lut-end
 
