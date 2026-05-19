@@ -8,15 +8,13 @@ typedef struct {
 	Uint16 pc;
 	Uint8 ptr[2];
 	Uint8 stk[2][0x100];
-	Uint8 d, r, k;
+	Uint8 r;
 } Uxn;
 
 static Uxn u;
 static Uint16 console_vector;
 static Uint8 ram[0x10000];
 static Uint8 dev[0x100];
-
-static Uint16 rx, ry, rz;
 
 /*
 @|IO */
@@ -46,11 +44,13 @@ deo(Uint8 port, Uint8 val)
 
 /* clang-format off */
 
-#define REC(m1, m2) if(!u.k) u.ptr[u.r] -= u.d ? m2 : m1; 
-#define FIX(m) if(!u.k) u.ptr[u.r] -= m;
-#define GET(r,v8,v16) r = u.d ? get16(v16) : get8(v8);
-#define GET16(r,v16) r = get16(v16);
-#define GET8(r,v8) r = get8(v8);
+#define Rec(m1, m2) if(!k) u.ptr[u.r] -= d ? m2 : m1;
+#define Fix(m) if(!k) u.ptr[u.r] -= m
+#define Getx(v8,v16) d ? get16(v16) : Get1(v8)
+#define Get2(v16) get16(v16)
+#define Get1(v8) get8(v8)
+#define Push8(v) u.stk[u.r][u.ptr[u.r]++] = v
+#define Pushx(v) if(d) Push8((v) >> 8); Push8(v);
 
 /* clang-format on */
 
@@ -60,8 +60,7 @@ deo(Uint8 port, Uint8 val)
 static inline Uint8
 get8(int o)
 {
-	Uint8 offset = u.ptr[u.r] - o;
-	return u.stk[u.r][offset];
+	return u.stk[u.r][(Uint8)(u.ptr[u.r] - o)];
 }
 
 static inline Uint16
@@ -71,432 +70,6 @@ get16(int o)
 	return (u.stk[u.r][offset] << 8 | u.stk[u.r][offset + 1]);
 }
 
-static void
-push8(Uint8 v)
-{
-	u.stk[u.r][u.ptr[u.r]++] = v;
-}
-
-static void
-push(Uint16 v)
-{
-	if(u.d)
-		push8((v >> 8));
-	push8(v);
-}
-
-/*
-@|Immediates */
-
-static void
-op_jci(void)
-{
-	rx = ram[u.pc] << 8 | ram[u.pc + 1];
-	ry = u.stk[0][--u.ptr[0]];
-	u.pc += 2;
-	if(ry)
-		u.pc += rx;
-}
-
-static void
-op_jmi(void)
-{
-	rx = ram[u.pc] << 8 | ram[u.pc + 1];
-	u.pc += 2 + rx;
-}
-
-static void
-op_jsi(void)
-{
-	rx = ram[u.pc] << 8 | ram[u.pc + 1];
-	u.pc += 2;
-	u.r = 1;
-	push8((u.pc >> 8));
-	push8(u.pc);
-	u.pc += rx;
-}
-
-static void
-op_lit(void)
-{
-	u.r = 0;
-	push8(ram[u.pc++]);
-}
-
-static void
-op_li2(void)
-{
-	u.r = 0;
-	push8(ram[u.pc++]);
-	push8(ram[u.pc++]);
-}
-
-static void
-op_lir(void)
-{
-	u.r = 1;
-	push8(ram[u.pc++]);
-}
-
-static void
-op_l2r(void)
-{
-	u.r = 1;
-	push8(ram[u.pc++]);
-	push8(ram[u.pc++]);
-}
-
-/*
-@|Opcodes */
-
-static void
-op_inc(void)
-{
-	GET(rx, 1, 2)
-	REC(1, 2)
-
-	push(rx + 1);
-}
-
-static void
-op_pop(void)
-{
-	REC(1, 2)
-}
-
-static void
-op_nip(void)
-{
-	GET(rx, 1, 2)
-	REC(2, 4)
-
-	push(rx);
-}
-
-static void
-op_swp(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(rx);
-	push(ry);
-}
-
-static void
-op_rot(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	GET(rz, 3, 6)
-	REC(3, 6)
-
-	push(ry);
-	push(rx);
-	push(rz);
-}
-
-static void
-op_dup(void)
-{
-	GET(rx, 1, 2)
-	REC(1, 2)
-
-	push(rx);
-	push(rx);
-}
-
-static void
-op_ovr(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry);
-	push(rx);
-	push(ry);
-}
-
-static void
-op_equ(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push8(rx == ry);
-}
-
-static void
-op_neq(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push8(ry != rx);
-}
-
-static void
-op_gth(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push8(ry > rx);
-}
-
-static void
-op_lth(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push8(ry < rx);
-}
-
-static void
-op_jmp(void)
-{
-	GET(rx, 1, 2)
-	REC(1, 2)
-
-	u.pc = u.d ? rx : u.pc + (Sint8)rx;
-}
-
-static void
-op_jcn(void)
-{
-	GET(rx, 1, 2)
-	GET8(ry, u.d ? 3 : 2)
-	REC(2, 3)
-
-	if(ry)
-		u.pc = u.d ? rx : u.pc + (Sint8)rx;
-}
-
-static void
-op_jsr(void)
-{
-	GET(rx, 1, 2)
-	REC(1, 2)
-
-	u.r = !u.r;
-	push8((u.pc >> 8));
-	push8(u.pc);
-	u.pc = u.d ? rx : u.pc + (Sint8)rx;
-}
-
-static void
-op_sth(void)
-{
-	GET(rx, 1, 2)
-	REC(1, 2)
-
-	u.r = !u.r;
-	push(rx);
-}
-
-static void
-op_ldz(void)
-{
-	GET8(rx, 1);
-	FIX(1)
-
-	push8(ram[rx]);
-	if(u.d)
-		push8(ram[(Uint8)(rx + 1)]);
-}
-
-static void
-op_stz(void)
-{
-	GET8(rx, 1);
-	GET(ry, 2, 3)
-	REC(2, 3)
-
-	if(u.d)
-		ram[rx] = ry >> 8, ram[(Uint8)(rx + 1)] = ry;
-	else
-		ram[rx] = ry;
-}
-
-static void
-op_ldr(void)
-{
-	GET8(rx, 1);
-	FIX(1)
-
-	ry = u.pc + (Sint8)rx;
-	push8(ram[ry]);
-	if(u.d)
-		push8(ram[(Uint16)(ry + 1)]);
-}
-
-static void
-op_str(void)
-{
-	GET8(rx, 1);
-	GET(ry, 2, 3)
-	REC(2, 3)
-
-	rz = u.pc + (Sint8)rx;
-	if(u.d)
-		ram[rz] = ry >> 8, ram[(Uint16)(rz + 1)] = ry;
-	else
-		ram[rz] = ry;
-}
-
-static void
-op_lda(void)
-{
-	GET16(rx, 2);
-	FIX(2)
-
-	push8(ram[rx]);
-	if(u.d)
-		push8(ram[(Uint16)(rx + 1)]);
-}
-
-static void
-op_sta(void)
-{
-	GET16(rx, 2);
-	GET(ry, 3, 4)
-	REC(3, 4)
-
-	ram[rx] = u.d ? ry >> 8 : ry;
-	if(u.d)
-		ram[(Uint16)(rx + 1)] = ry;
-}
-
-static void
-op_dei(void)
-{
-	GET8(rx, 1);
-	FIX(1)
-
-	push8(dei(rx));
-	if(u.d)
-		push8(dei(rx + 1));
-}
-
-static void
-op_deo(void)
-{
-	GET8(rx, 1);
-	GET(ry, 2, 3)
-	REC(2, 3)
-
-	if(u.d)
-		deo(rx, ry >> 8);
-	deo(u.d ? rx + 1 : rx, ry);
-}
-
-static void
-op_add(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry + rx);
-}
-
-static void
-op_sub(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry - rx);
-}
-
-static void
-op_mul(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry * rx);
-}
-
-static void
-op_div(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(rx ? ry / rx : 0);
-}
-
-static void
-op_and(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry & rx);
-}
-
-static void
-op_ora(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry | rx);
-}
-
-static void
-op_eor(void)
-{
-	GET(rx, 1, 2)
-	GET(ry, 2, 4)
-	REC(2, 4)
-
-	push(ry ^ rx);
-}
-
-static void
-op_sft(void)
-{
-	GET8(rx, 1);
-	GET(ry, 2, 3)
-	REC(2, 3)
-
-	push((ry >> (rx & 0x0f)) << (rx >> 4));
-}
-
-typedef void (*Opc)(void);
-
-/* clang-format off */
-
-static const Opc imm[8] = {
-	NULL,   op_jci, op_jmi, op_jsi,
-	op_lit, op_li2, op_lir, op_l2r};
-
-static const Opc ops[32] = {
-	NULL,   op_inc, op_pop, op_nip,
-	op_swp, op_rot, op_dup, op_ovr,
-	op_equ, op_neq, op_gth, op_lth,
-	op_jmp, op_jcn, op_jsr, op_sth,
-	op_ldz, op_stz, op_ldr, op_str,
-	op_lda, op_sta, op_dei, op_deo,
-	op_add, op_sub, op_mul, op_div,
-	op_and, op_ora, op_eor, op_sft};
-
-/* clang-format on */
-
 /*
 @|Core */
 
@@ -505,19 +78,250 @@ uxn_eval(Uint16 start_pc)
 {
 	u.pc = start_pc;
 	for(;;) {
-		Uint8 instr = ram[u.pc++];
-		Uint8 op = instr & 0x1f;
-		if(!op) {
-			Uint8 idx = instr >> 5;
-			if(!idx)
-				return 1;
-			imm[idx]();
-		} else {
-			u.d = (instr >> 5) & 1;
+		const int instr = ram[u.pc++];
+		const int opc = instr & 0x1f;
+		if(opc) {
+			const int k = instr >> 7;
+			const int d = (instr >> 5) & 1;
 			u.r = (instr >> 6) & 1;
-			u.k = instr >> 7;
-			ops[op]();
-		}
+			switch(opc) {
+			case 0x01: {
+				const int x = Getx(1, 2);
+				Rec(1, 2);
+				Pushx(x + 1);
+			} break;
+			case 0x02: {
+				Rec(1, 2)
+			} break;
+			case 0x03: {
+				const int x = Getx(1, 2);
+				Rec(2, 4);
+				Pushx(x);
+			} break;
+			case 0x04: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(x);
+				Pushx(y);
+			} break;
+			case 0x05: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				const int z = Getx(3, 6);
+				Rec(3, 6);
+				Pushx(y);
+				Pushx(x);
+				Pushx(z);
+			} break;
+			case 0x06: {
+				const int x = Getx(1, 2);
+				Rec(1, 2);
+				Pushx(x);
+				Pushx(x);
+			} break;
+			case 0x07: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y);
+				Pushx(x);
+				Pushx(y);
+			} break;
+			case 0x08: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Push8(x == y);
+			} break;
+			case 0x09: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Push8(y != x);
+			} break;
+			case 0x0a: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Push8(y > x);
+			} break;
+			case 0x0b: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Push8(y < x);
+			} break;
+			case 0x0c: {
+				const int x = Getx(1, 2);
+				Rec(1, 2);
+				u.pc = d ? x : u.pc + (Sint8)x;
+			} break;
+			case 0x0d: {
+				const int x = Getx(1, 2);
+				const int y = Get1(d + 2);
+				Rec(2, 3) if(y) u.pc = d ? x : u.pc + (Sint8)x;
+			} break;
+			case 0x0e: {
+				const int x = Getx(1, 2);
+				Rec(1, 2);
+				u.r = !u.r;
+				Push8(u.pc >> 8);
+				Push8(u.pc);
+				u.pc = d ? x : u.pc + (Sint8)x;
+			} break;
+			case 0x0f: {
+				const int x = Getx(1, 2);
+				Rec(1, 2);
+				u.r = !u.r;
+				Pushx(x);
+			} break;
+			case 0x10: {
+				const int x = Get1(1);
+				Fix(1);
+				Push8(ram[x]);
+				if(d) Push8(ram[(Uint8)(x + 1)]);
+			} break;
+			case 0x11: {
+				const int x = Get1(1);
+				const int y = Getx(2, 3);
+				Rec(2, 3);
+				if(d)
+					ram[x] = y >> 8, ram[(Uint8)(x + 1)] = y;
+				else
+					ram[x] = y;
+			} break;
+			case 0x12: {
+				const int x = Get1(1);
+				const int y = u.pc + (Sint8)x;
+				Fix(1);
+				Push8(ram[y]);
+				if(d) Push8(ram[(Uint16)(y + 1)]);
+			} break;
+			case 0x13: {
+				const int x = Get1(1);
+				const int y = Getx(2, 3);
+				const int z = u.pc + (Sint8)x;
+				Rec(2, 3) if(d)
+					ram[z] = y >> 8,
+					ram[(Uint16)(z + 1)] = y;
+				else ram[z] = y;
+			} break;
+			case 0x14: {
+				const int x = Get2(2);
+				Fix(2);
+				Push8(ram[x]);
+				if(d) Push8(ram[(Uint16)(x + 1)]);
+			} break;
+			case 0x15: {
+				const int x = Get2(2);
+				const int y = Getx(3, 4);
+				Rec(3, 4);
+				ram[x] = d ? y >> 8 : y;
+				if(d) ram[(Uint16)(x + 1)] = y;
+			} break;
+			case 0x16: {
+				const int x = Get1(1);
+				Fix(1);
+				Push8(dei(x));
+				if(d) Push8(dei(x + 1));
+			} break;
+			case 0x17: {
+				const int x = Get1(1);
+				const int y = Getx(2, 3);
+				Rec(2, 3);
+				if(d) deo(x, y >> 8);
+				deo(d ? x + 1 : x, y);
+			} break;
+			case 0x18: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y + x);
+			} break;
+			case 0x19: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y - x);
+			} break;
+			case 0x1a: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y * x);
+			} break;
+			case 0x1b: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(x ? y / x : 0);
+			} break;
+			case 0x1c: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y & x);
+			} break;
+			case 0x1d: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y | x);
+			} break;
+			case 0x1e: {
+				const int x = Getx(1, 2);
+				const int y = Getx(2, 4);
+				Rec(2, 4);
+				Pushx(y ^ x);
+			} break;
+			case 0x1f: {
+				const int x = Get1(1);
+				const int y = Getx(2, 3);
+				Rec(2, 3);
+				Pushx((y >> (x & 0x0f)) << (x >> 4));
+			} break;
+			}
+		} else
+			switch(instr) {
+			case 0x00: return 1;
+			case 0x20: {
+				Uint16 a = ram[u.pc] << 8 | ram[u.pc + 1];
+				Uint8 b = u.stk[0][--u.ptr[0]];
+				u.pc += 2;
+				if(b) u.pc += a;
+			} break;
+			case 0x40: {
+				Uint16 a = ram[u.pc] << 8 | ram[u.pc + 1];
+				u.pc += 2 + a;
+			} break;
+			case 0x60: {
+				Uint16 a = ram[u.pc] << 8 | ram[u.pc + 1];
+				u.pc += 2;
+				u.r = 1;
+				Push8((u.pc >> 8));
+				Push8(u.pc);
+				u.pc += a;
+			} break;
+			case 0x80: {
+				u.r = 0;
+				Push8(ram[u.pc++]);
+			} break;
+			case 0xa0: {
+				u.r = 0;
+				Push8(ram[u.pc++]);
+				Push8(ram[u.pc++]);
+			} break;
+			case 0xc0: {
+				u.r = 1;
+				Push8(ram[u.pc++]);
+			} break;
+			case 0xe0: {
+				u.r = 1;
+				Push8(ram[u.pc++]);
+				Push8(ram[u.pc++]);
+			} break;
+			}
 	}
 	return 0;
 }
