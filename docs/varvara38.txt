@@ -1,0 +1,343 @@
+This document describes the devices of Uxn/Varvara virtual machine.
+
+The high nybble of the port number selects one of the following devices:
+  0 = System
+  1 = Standard I/O
+  2 = Screen
+  3 = Audio
+  4 = Audio
+  5 = Audio
+  6 = Audio
+  7 = MIDI
+  8 = Keyboard/joypad
+  9 = Mouse
+  A = File
+  B = File
+  C = Date/time
+  D = Implementation dependent
+  E = Implementation dependent
+  F = Implementation dependent
+
+Note that there are four audio channels, and two files can be opened at
+the same time.
+
+In the below lists, asterisks indicate 16-bit ports.
+
+
+=== System ===
+
+00 = Vector *
+02 = Expansion *
+04 = Primary stack count
+05 = Secondary stack count
+06 = Metadata *
+08 = Colours (red) *
+0A = Colours (green) *
+0C = Colours (blue) *
+0E = Debug
+0F = Quit
+
+The vector is unused. (In previous versions of this specification, the
+vector was used to signal errors, but no error conditions are possible in
+the current version of this specification.)
+
+Writing an address to the expansion port will execute an expansion
+operation, which is a record stored at that address; the first byte of
+that data is the operation code, and the rest are the arguments. See the
+below list of expansion operations.
+
+The stack counts are the number of bytes in the specified stack. They can
+be read and written; writing zero will clear the stack.
+
+The colours control the colours of the display, where the high nybble of
+each controls the value for colour index 0, and the low nybble of each
+controls the value for colour index 3.
+
+Writing nonzero to the debug port will display some debug info or break
+into the debugger; the exact meaning is implementation-dependent, but it
+is used for debugging functions.
+
+Writing nonzero to the quit port terminates the program; the low seven bits
+of the number written is the exit code (if exit code is meaningful for the
+operating system that it is running on) (writing 0x80 exits with code 0
+which means successful).
+
+
+=== Standard I/O ===
+
+10 = Vector *
+12 = Input
+17 = Type
+18 = Output
+19 = Error
+
+Each byte of input is received from stdin will result in setting the input
+port to the byte read and calls the vector. Immediately after the first
+BRK (and before any other events), any command-line arguments are also
+sent in this way as though each one is a line of input from stdin
+terminated by a line feed.
+
+On input, the type port is set to the type of input, where:
+  1 = stdin
+  2 = command-line argument text
+  3 = line break after command-line argument, other than the final one
+  4 = line break after the final command-line argument
+
+During the startup (call to 0x0100), the type port will be 1 if there are
+any command-line arguments and 0 if there are no arguments.
+
+Writing to the output and error ports write a byte to stdout or stderr.
+
+
+=== Screen ===
+
+20 = Vector *
+22 = Width *
+24 = Height *
+26 = Auto
+28 = X *
+2A = Y *
+2C = Sprite address *
+2E = Pixel command
+2F = Sprite command
+
+The screen has two layers (background and foreground), and can display four
+colours. If the foreground colour is zero then the background is displayed.
+
+The vector is called during each video frame (60 frames per second).
+
+Writing the width and height will change the window size if possible (some
+implementations might not be able to do so), and should clear the screen.
+(If you read back then you can find the actual width/height.)
+
+The auto port works as follows:
+  bit7-bit4 = One less than number of sprites to draw
+  bit3 = Unused (should be clear)
+  bit2 = Address
+  bit1 = Y
+  bit0 = X
+
+Writing to the pixel command port will change the pixel at the specified
+coordinates, and will automatically increment X and/or Y if the
+corresponding bits of the auto port are set. The bits of pixel port are:
+  bit7 = Set for fill mode
+  bit6 = Set for foreground layer, clear for background layer
+  bit5-bit4 = Specify corner for fill mode (unused if not fill mode)
+  bit3-bit2 = Unused (should be clear)
+  bit1-bit0 = Colour
+
+If fill mode is set, then it will fill a part of the screen, in a rectangle
+from the specified X and Y coordinates to one of the corners of the screen.
+In this case, the X and Y are not automatically incremented. The corners of
+the screen are numbered as follows:
+  3 2
+  1 0
+
+Writing to the sprite command port will draw one or more sprites. The bits
+are as follows:
+  bit7 = Set for 2bpp sprites, clear for 1bpp
+  bit6 = Set for foreground layer, clear for background layer
+  bit5 = Vertical flip
+  bit4 = Horizontal flip
+  bit3-bit0 = Colour
+
+The sprite address port must be set before writing to the sprite command
+port; it is the address of the graphics data. The 2bpp graphics data is
+stored in the NES/Famicom pattern tables format; the 1bpp graphics data
+is similar but there is only one plane.
+
+The colours of sprites are mapped according to the table (the top row is
+the data in the sprite, and the rest has the specified colour in the first
+column and the result colour in the other columns (where - means it is
+transparent); the last two columns are not used in 1bpp mode):
+  DATA  0 1 2 3
+     0  - 0 1 2
+     1  0 1 2 3
+     2  0 2 3 1
+     3  0 3 1 2
+     4  1 0 1 2
+     5  - 1 2 3
+     6  1 2 3 1
+     7  1 3 1 2
+     8  2 0 1 2
+     9  2 1 2 3
+     A  - 2 3 1
+     B  2 3 1 2
+     C  3 0 1 2
+     D  3 1 2 3
+     E  3 2 3 1
+     F  - 3 1 2
+
+The working of auto port and sprites is working as follows: If the
+auto X bit is set then it draws several sprites vertically, and if the
+auto Y bit is set then it draws several sprites horizontally; either way,
+the X (if the auto X bit is set) or the Y (if the auto Y bit is set) is
+advanced by eight after all of the sprites are drawn (not after each one
+individually). If the auto address bit is set, then the address is
+advanced after each individual sprite (and remains advanced after it is
+finished), by 8 for 1bpp sprites or 16 for 2bpp sprites.
+
+
+=== Audio ===
+
+30 = Vector *
+32 = Position *
+34 = Output
+38 = Envelope *
+3A = Length *
+3C = Address *
+3E = Volume
+3F = Pitch
+
+Each such device is one audio channel.
+
+The envelope can be zero for no envelope, or can be nonzero for a ADSR
+envelope where the four nybbles (high to low) are the time of each part
+of the envelope, in fifteenths of a second. The envelope is as follows:
+  0% -A- 100% -D- 50% -S- 50% -R- 0%
+
+The length is the length of the sample data (in bytes), and the address
+is the address of the sample data. The sample format is unsigned 8-bits.
+
+Volume has the high nybble for the left speaker and low nybble for the
+right speaker, where fifteen is the maximum volume and zero is silence.
+
+Writing to the pitch port will read all parameters and will start a new
+note playing. The high bit is set to disable looping, or clear to enable
+looping (until the envelope ends, if there is any). The low 7-bits are a
+MIDI note number (0x3C for middle C).
+
+If the length is greater than 256 bytes, then it is assumed to have a
+sample rate of 44100 Hz for middle C (if a different note number is
+specified, then it will be played at a different speed). If the length
+is less than 256 then it is assumed to be one cycle of a middle C note.
+
+Vector is called when a note ends, and the position and output ports are
+used to read back the status.
+
+
+=== MIDI ===
+
+This does not seem to be fully defined at this time (and the existing
+design is not very good in my opinion).
+
+
+=== Keyboard/joypad ===
+
+80 = Vector *
+82 = Joypad
+83 = Key
+85 = Player 2
+86 = Player 3
+87 = Player 4
+
+The vector is called if a key is pushed, or if any button on the joypad is
+pushed or released.
+
+The joypad byte has bits as follows:
+  bit7 = Right
+  bit6 = Left
+  bit5 = Down
+  bit4 = Up
+  bit3 = Start (or home)
+  bit2 = Select (or left shift)
+  bit1 = B (or left alt)
+  bit0 = A (or left control)
+
+The key is the ASCII code of the key pushed. It can be any printable ASCII
+character, as well as: backspace (0x08), tab (0x09), return (0x0D), escape
+(0x1B), delete (0x7F).
+
+
+=== Mouse ===
+
+90 = Vector *
+92 = X *
+94 = Y *
+96 = Buttons
+9A = Scroll X *
+9C = Scroll Y *
+
+The vector is called when the mouse is moved or if any mouse buttons are
+pushed or released.
+
+The buttons are: bit0 for the left button, bit1 for the middle button, and
+bit2 for the right button.
+
+The scroll amounts are signed 16-bit numbers.
+
+
+=== Files ===
+
+A2 = Number of bytes transferred *
+A4 = Stat (address to store data) *
+A6 = Delete
+A7 = Append
+A8 = Address of file name *
+AA = Maximum number of bytes to transfer *
+AC = Read (address to store data) *
+AE = Write (address to take data from) *
+
+If the address of a null-terminated file name is written to that port,
+then the device is reset and it remembers the file name (so the memory
+used to store it can be reused afterward).
+
+All other operations need the maximum length in that port, and then
+write the address of the data to the stat/read/write port. The 0xA2 port
+(or 0xB2 for the second file) will then have the number of bytes which
+have been successfully transferred, or zero if it is not successful.
+
+If there are multiple reads without other operations (including setting
+the file name) in between, or multiple writes without other operations
+(including setting the file name) in between, then it will continue from
+where it left off in the file; otherwise it starts from the beginning.
+
+For the first write, it will truncate the file if the append byte is
+zero, or will start writing at the end of the file if the append byte
+is nonzero.
+
+Reading from either of the read ports will read a single byte from the
+file (in this case, the address and max number of bytes is ignored). In
+this case, you should write to both 0xAB and 0xAC if you want to do a
+long read since if you write to only 0xAC then the address is undefined.
+
+Stat will result in a directory entry for the current file being written
+to the specified address (or nothing if it does not fit). The format of
+a directory entry is four characters being its size in lowercase
+hexadecimal with leading zeros, or ???? if it is bigger than 64K, or ----
+if it is a subdirectory; after that is a space, and then the file name,
+and then a line feed.
+
+If the current file is a directory, then reading from it will read the
+directory entries in the same format as above. Only full entries can be
+read; you cannot read partial entries. Only as many full entries as will
+fit in the allowed space will be retrieved.
+
+
+=== Date/time ===
+
+C0 = Year *
+C2 = Month (zero-based)
+C3 = Day of month (one-based)
+C4 = Hours
+C5 = Minutes
+C6 = Seconds
+C7 = Day of the week (0=Sunday)
+C8 = Day of the year *
+CA = Daylight saving time
+
+Some programs use this device to seed a random number generator, and
+will not work correctly if these values are all zero.
+
+
+=== Expansion ===
+
+00 length* page* addr* value
+  Fills the specified memory with a single-byte value.
+
+01 length* src_page* src_addr* dst_page* dst_addr*
+  Copy memory forward.
+
+02 length* src_page* src_addr* dst_page* dst_addr*
+  Copy memory backward.
+

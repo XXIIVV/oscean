@@ -1,0 +1,152 @@
+This document describes the Uxn virtual machine.
+
+
+=== Memory ===
+
+There is 64K of RAM, which stores both the program and data. (Devices use
+a separate memory; they are not stored in this RAM.)
+
+All numbers are big-endian unsigned, except where otherwise specified. All
+arithmetic will keep only the low 8-bits or low 16-bits of the result;
+there are no arithmetic overflow errors.
+
+
+=== Stacks ===
+
+There are two stacks, which are the data stack and return stack. Each
+stack stores 256 bytes of data, and is circular (so stack underflows and
+stack overflows are impossible).
+
+If a 16-bit value is in the stack, then the top will be the low 8-bits
+of that value and beneath that will be the high 8-bits of that value.
+
+
+=== Instruction encoding ===
+
+The low 5-bits are the opcode bits. The other bits are the mode bits:
+
+* bit5 = If set, then use 16-bit operands, if clear then 8-bit operands.
+
+* bit6 = If set, then operate on the return stack, but if clear then
+operate on the data stack. Some instructions use both stacks; in this
+case, this bit specifies which is the main stack to use, and the result
+is then stored in the other stack.
+
+* bit7 = If set, then the input operands are not removed from the stack.
+
+
+=== Instructions ===
+
+In the list below, entries with "8" means they are always 8-bits regardless
+of the instruction flags, and "16" means always 16-bits regardless of the
+instruction flags. If they are <> then it operates on the other stack. If
+marked ! then it is a branch address; if it is 16-bits then it is absolute
+but if 8-bits then it is a signed relative address.
+
+00 BRK ( -- )
+  Stops execution; all mode bits must be clear. Execution will continue
+  when a vector is called.
+01 INC ( old -- new )
+  Increment.
+02 POP ( x -- )
+  Stack operation.
+03 NIP ( x y -- y )
+  Stack operation.
+04 SWP ( x y -- y x )
+  Stack operation.
+05 ROT ( a b c -- b c a )
+  Stack operation.
+06 DUP ( a -- a a )
+  Stack operation.
+07 OVR ( a b -- a b a )
+  Stack operation.
+08 EQU ( a b -- bool8 )
+  Result is one if the inputs are equal or zero if unequal.
+09 NEQ ( a b -- bool8 )
+  Result is one if the inputs are unequal or zero if equal.
+0A GTH ( a b -- bool8 )
+  Result is one if (a) is greater than (b) or zero otherwise.
+0B LTH ( a b -- bool8 )
+  Result is one if (a) is less than (b) or zero otherwise.
+0C JMP ( addr! -- )
+  Unconditional jump.
+0D JCN ( cond8 addr! -- )
+  Jump if the condition is nonzero.
+0E JSR ( addr! -- <old_addr> )
+  Unconditional jump, but the address of the next instruction if it
+  would not jump is saved in the other stack.
+0F STH ( a -- <a> )
+  Moves a value between stacks.
+10 LDZ ( addr8 -- value )
+  Read from memory.
+11 STZ ( value addr8 -- )
+  Write to memory.
+12 LDR ( rel_addr8 -- value )
+  Read from memory given a signed relative address.
+13 STR ( value rel_addr8 -- )
+  Write to memory given a signed relative address.
+14 LDA ( addr16 -- value )
+  Read from memory. (Same as LDZ but using a 16-bit address.)
+15 STA ( value addr16 -- )
+  Write to memory. (Same as LDZ but using a 16-bit address.)
+16 DEI ( port8 -- value )
+  Read a value from a device. If it is a 16-bit read, then it reads the
+  specified port and also the next port. (See varvara.doc for an
+  explanation of what each port number means.)
+17 DEO ( value port8 -- )
+  Write a value to a device. If it is a 16-bit write, then it writes the
+  high octet to the specified port and then writes the low octet of the
+  value to the next port.
+18 ADD ( a b -- c )
+  Addition (a+b).
+19 SUB ( a b -- c )
+  Subtraction (a-b).
+1A MUL ( a b -- c )
+  Multiplication.
+1B DIV ( a b -- c )
+  Division (a by b). If you try to divide by zero, then the result will be
+  zero (in previous versions of this specification it was an error).
+1C AND ( a b -- c )
+  Bitwise AND.
+1D ORA ( a b -- c )
+  Bitwise OR.
+1E EOR ( a b -- c )
+  Bitwise XOR.
+1F SFT ( a shift8 -- c )
+  Bitwise shift. First shifts right by the number of bits indicated by the
+  low nybble of the shift amount byte, and the shifts left by the number of
+  bits indicated by the high nybble of the shift amount byte.
+80 LIT ( -- x )
+  This instruction must have the high (keep) bit set. It will push a
+  following one-byte or two-byte number to the stack, which are skipped.
+
+A few instructions must have the exact opcode number and do not use the mode
+bits in the usual way. With the exception of BRK, a 16-bit relative address
+is read and skipped past. This relative address is relative to the PC
+address immediately after, the two bytes giving the address, modulo 65536.
+
+00 BRK ( -- )
+  Stops execution. Execution will continue when a vector is called.
+20 JCI ( cond8 -- )
+  If the value received from the stack is nonzero, jump to that relative
+  address, otherwise continue from here.
+40 JMI ( -- )
+  Unconditionally jump to a relative address.
+60 JSI ( -- <old_addr> )
+  Unconditionally jump to a relative address, but also push the return
+  address to the return stack.
+
+
+=== Execution ===
+
+The contents of the program file are loaded starting at address 0x0100, and
+then it starts executing from address 0x0100.
+
+After a BRK instruction is executed, then it will wait for the next event,
+and start executing at the vector for that event, if it is nonzero. (If the
+vector is zero, then that event is ignored.) Events will never interrupt
+the program; if it is already running then it will wait until BRK before
+the next event is processed.
+
+Stacks and memory are retained between events.
+
