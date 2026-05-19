@@ -48,6 +48,9 @@ deo(Uint8 port, Uint8 val)
 
 #define REC(m1, m2) if(!u.k) u.ptr[u.r] -= u.d ? m2 : m1; 
 #define FIX(m) if(!u.k) u.ptr[u.r] -= m;
+#define GET(r,v8,v16) r = u.d ? get16(v16) : get8(v8);
+#define GET16(r,v16) r = get16(v16);
+#define GET8(r,v8) r = get8(v8);
 
 /* clang-format on */
 
@@ -66,15 +69,6 @@ get16(int o)
 {
 	Uint8 offset = u.ptr[u.r] - o;
 	return (u.stk[u.r][offset] << 8 | u.stk[u.r][offset + 1]);
-}
-
-static inline Uint16
-getx(int o8, int o16)
-{
-	if(u.d)
-		return get16(o16);
-	else
-		return get8(o8);
 }
 
 static void
@@ -98,8 +92,9 @@ static void
 op_jci(void)
 {
 	rx = ram[u.pc] << 8 | ram[u.pc + 1];
+	ry = u.stk[0][--u.ptr[0]];
 	u.pc += 2;
-	if(u.stk[0][--u.ptr[0]])
+	if(ry)
 		u.pc += rx;
 }
 
@@ -157,8 +152,9 @@ op_l2r(void)
 static void
 op_inc(void)
 {
-	rx = getx(1, 2);
+	GET(rx, 1, 2)
 	REC(1, 2)
+
 	push(rx + 1);
 }
 
@@ -171,17 +167,19 @@ op_pop(void)
 static void
 op_nip(void)
 {
-	rx = getx(1, 2);
+	GET(rx, 1, 2)
 	REC(2, 4)
+
 	push(rx);
 }
 
 static void
 op_swp(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(rx);
 	push(ry);
 }
@@ -189,10 +187,11 @@ op_swp(void)
 static void
 op_rot(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
-	rz = getx(3, 6);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
+	GET(rz, 3, 6)
 	REC(3, 6)
+
 	push(ry);
 	push(rx);
 	push(rz);
@@ -201,8 +200,9 @@ op_rot(void)
 static void
 op_dup(void)
 {
-	rx = getx(1, 2);
+	GET(rx, 1, 2)
 	REC(1, 2)
+
 	push(rx);
 	push(rx);
 }
@@ -210,9 +210,10 @@ op_dup(void)
 static void
 op_ovr(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry);
 	push(rx);
 	push(ry);
@@ -221,53 +222,59 @@ op_ovr(void)
 static void
 op_equ(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push8(rx == ry);
 }
 
 static void
 op_neq(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push8(ry != rx);
 }
 
 static void
 op_gth(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push8(ry > rx);
 }
 
 static void
 op_lth(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push8(ry < rx);
 }
 
 static void
 op_jmp(void)
 {
-	rx = getx(1, 2);
+	GET(rx, 1, 2)
 	REC(1, 2)
+
 	u.pc = u.d ? rx : u.pc + (Sint8)rx;
 }
 
 static void
 op_jcn(void)
 {
-	rx = getx(1, 2);
-	ry = get8(u.d ? 3 : 2);
+	GET(rx, 1, 2)
+	GET8(ry, u.d ? 3 : 2)
 	REC(2, 3)
+
 	if(ry)
 		u.pc = u.d ? rx : u.pc + (Sint8)rx;
 }
@@ -275,8 +282,9 @@ op_jcn(void)
 static void
 op_jsr(void)
 {
-	rx = getx(1, 2);
+	GET(rx, 1, 2)
 	REC(1, 2)
+
 	u.r = !u.r;
 	push8((u.pc >> 8));
 	push8(u.pc);
@@ -286,8 +294,9 @@ op_jsr(void)
 static void
 op_sth(void)
 {
-	rx = getx(1, 2);
+	GET(rx, 1, 2)
 	REC(1, 2)
+
 	u.r = !u.r;
 	push(rx);
 }
@@ -295,8 +304,9 @@ op_sth(void)
 static void
 op_ldz(void)
 {
-	rx = get8(1);
+	GET8(rx, 1);
 	FIX(1)
+
 	push8(ram[rx]);
 	if(u.d)
 		push8(ram[(Uint8)(rx + 1)]);
@@ -305,9 +315,10 @@ op_ldz(void)
 static void
 op_stz(void)
 {
-	rx = get8(1);
-	ry = getx(2, 3);
+	GET8(rx, 1);
+	GET(ry, 2, 3)
 	REC(2, 3)
+
 	if(u.d)
 		ram[rx] = ry >> 8, ram[(Uint8)(rx + 1)] = ry;
 	else
@@ -317,9 +328,10 @@ op_stz(void)
 static void
 op_ldr(void)
 {
-	rx = get8(1);
-	ry = u.pc + (Sint8)rx;
+	GET8(rx, 1);
 	FIX(1)
+
+	ry = u.pc + (Sint8)rx;
 	push8(ram[ry]);
 	if(u.d)
 		push8(ram[(Uint16)(ry + 1)]);
@@ -328,10 +340,11 @@ op_ldr(void)
 static void
 op_str(void)
 {
-	rx = get8(1);
-	ry = getx(2, 3);
-	rz = u.pc + (Sint8)rx;
+	GET8(rx, 1);
+	GET(ry, 2, 3)
 	REC(2, 3)
+
+	rz = u.pc + (Sint8)rx;
 	if(u.d)
 		ram[rz] = ry >> 8, ram[(Uint16)(rz + 1)] = ry;
 	else
@@ -341,8 +354,9 @@ op_str(void)
 static void
 op_lda(void)
 {
-	rx = get16(2);
+	GET16(rx, 2);
 	FIX(2)
+
 	push8(ram[rx]);
 	if(u.d)
 		push8(ram[(Uint16)(rx + 1)]);
@@ -351,9 +365,10 @@ op_lda(void)
 static void
 op_sta(void)
 {
-	rx = get16(2);
-	ry = getx(3, 4);
+	GET16(rx, 2);
+	GET(ry, 3, 4)
 	REC(3, 4)
+
 	ram[rx] = u.d ? ry >> 8 : ry;
 	if(u.d)
 		ram[(Uint16)(rx + 1)] = ry;
@@ -362,8 +377,9 @@ op_sta(void)
 static void
 op_dei(void)
 {
-	rx = get8(1);
+	GET8(rx, 1);
 	FIX(1)
+
 	push8(dei(rx));
 	if(u.d)
 		push8(dei(rx + 1));
@@ -372,9 +388,10 @@ op_dei(void)
 static void
 op_deo(void)
 {
-	rx = get8(1);
-	Uint16 ry = getx(2, 3);
+	GET8(rx, 1);
+	GET(ry, 2, 3)
 	REC(2, 3)
+
 	if(u.d)
 		deo(rx, ry >> 8);
 	deo(u.d ? rx + 1 : rx, ry);
@@ -383,72 +400,80 @@ op_deo(void)
 static void
 op_add(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry + rx);
 }
 
 static void
 op_sub(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry - rx);
 }
 
 static void
 op_mul(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry * rx);
 }
 
 static void
 op_div(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(rx ? ry / rx : 0);
 }
 
 static void
 op_and(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry & rx);
 }
 
 static void
 op_ora(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry | rx);
 }
 
 static void
 op_eor(void)
 {
-	rx = getx(1, 2);
-	ry = getx(2, 4);
+	GET(rx, 1, 2)
+	GET(ry, 2, 4)
 	REC(2, 4)
+
 	push(ry ^ rx);
 }
 
 static void
 op_sft(void)
 {
-	rx = get8(1);
-	ry = getx(2, 3);
+	GET8(rx, 1);
+	GET(ry, 2, 3)
 	REC(2, 3)
+
 	push((ry >> (rx & 0x0f)) << (rx >> 4));
 }
 
