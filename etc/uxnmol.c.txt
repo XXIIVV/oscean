@@ -8,13 +8,15 @@ typedef struct {
 	Uint16 pc;
 	Uint8 ptr[2];
 	Uint8 stk[2][0x100];
-	Uint8 d, r, k, sp;
+	Uint8 d, r, k;
 } Uxn;
 
 static Uxn u;
 static Uint16 console_vector;
 static Uint8 ram[0x10000];
 static Uint8 dev[0x100];
+
+static Uint16 rx, ry, rz;
 
 /*
 @|IO */
@@ -31,7 +33,7 @@ deo(Uint8 port, Uint8 val)
 	dev[port] = val;
 	switch(port) {
 	case 0x11:
-		console_vector = (Uint16)(dev[0x10] << 8 | val);
+		console_vector = dev[0x10] << 8 | val;
 		return;
 	case 0x18:
 		fputc(val, stdout);
@@ -42,13 +44,37 @@ deo(Uint8 port, Uint8 val)
 	}
 }
 
+/* clang-format off */
+
+#define REC(m1, m2) if(!u.k) u.ptr[u.r] -= u.d ? m2 : m1; 
+#define FIX(m) if(!u.k) u.ptr[u.r] -= m;
+
+/* clang-format on */
+
 /*
 @|Primitives */
 
-static Uint8
-pop8(void)
+static inline Uint8
+get8(int o)
 {
-	return u.stk[u.r][--u.ptr[u.r]];
+	Uint8 offset = u.ptr[u.r] - o;
+	return u.stk[u.r][offset];
+}
+
+static inline Uint16
+get16(int o)
+{
+	Uint8 offset = u.ptr[u.r] - o;
+	return (u.stk[u.r][offset] << 8 | u.stk[u.r][offset + 1]);
+}
+
+static inline Uint16
+getx(int o8, int o16)
+{
+	if(u.d)
+		return get16(o16);
+	else
+		return get8(o8);
 }
 
 static void
@@ -57,35 +83,12 @@ push8(Uint8 v)
 	u.stk[u.r][u.ptr[u.r]++] = v;
 }
 
-static Uint16
-pop(void)
-{
-	Uint16 v = pop8();
-	if(u.d)
-		v |= (Uint16)pop8() << 8;
-	return v;
-}
-
-static Uint16
-pop16(void)
-{
-	Uint16 lo = pop8();
-	return lo | ((Uint16)pop8() << 8);
-}
-
 static void
 push(Uint16 v)
 {
 	if(u.d)
-		push8((Uint8)(v >> 8));
-	push8((Uint8)v);
-}
-
-static void
-rec(void)
-{
-	if(u.k)
-		u.ptr[u.r] = u.sp;
+		push8((v >> 8));
+	push8(v);
 }
 
 /*
@@ -94,29 +97,28 @@ rec(void)
 static void
 op_jci(void)
 {
-	Uint16 a = (Uint16)(ram[u.pc] << 8) | ram[u.pc + 1];
-	u.r = 0;
+	rx = ram[u.pc] << 8 | ram[u.pc + 1];
 	u.pc += 2;
-	if(pop8())
-		u.pc += a;
+	if(u.stk[0][--u.ptr[0]])
+		u.pc += rx;
 }
 
 static void
 op_jmi(void)
 {
-	Uint16 a = (Uint16)(ram[u.pc] << 8) | ram[u.pc + 1];
-	u.pc += 2 + a;
+	rx = ram[u.pc] << 8 | ram[u.pc + 1];
+	u.pc += 2 + rx;
 }
 
 static void
 op_jsi(void)
 {
-	Uint16 a = (Uint16)(ram[u.pc] << 8) | ram[u.pc + 1];
+	rx = ram[u.pc] << 8 | ram[u.pc + 1];
 	u.pc += 2;
 	u.r = 1;
-	push8((Uint8)(u.pc >> 8));
-	push8((Uint8)u.pc);
-	u.pc += a;
+	push8((u.pc >> 8));
+	push8(u.pc);
+	u.pc += rx;
 }
 
 static void
@@ -155,284 +157,299 @@ op_l2r(void)
 static void
 op_inc(void)
 {
-	Uint16 a = pop();
-	rec();
-	push(a + 1);
+	rx = getx(1, 2);
+	REC(1, 2)
+	push(rx + 1);
 }
 
 static void
 op_pop(void)
 {
-	u.ptr[u.r] -= 1 + u.d;
-	rec();
+	REC(1, 2)
 }
 
 static void
 op_nip(void)
 {
-	Uint16 x = pop();
-	u.ptr[u.r] -= 1 + u.d;
-	rec();
-	push(x);
+	rx = getx(1, 2);
+	REC(2, 4)
+	push(rx);
 }
 
 static void
 op_swp(void)
 {
-	Uint16 x = pop(), y = pop();
-	rec();
-	push(x);
-	push(y);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(rx);
+	push(ry);
 }
 
 static void
 op_rot(void)
 {
-	Uint16 x = pop(), y = pop(), z = pop();
-	rec();
-	push(y);
-	push(x);
-	push(z);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	rz = getx(3, 6);
+	REC(3, 6)
+	push(ry);
+	push(rx);
+	push(rz);
 }
 
 static void
 op_dup(void)
 {
-	Uint16 x = pop();
-	rec();
-	push(x);
-	push(x);
+	rx = getx(1, 2);
+	REC(1, 2)
+	push(rx);
+	push(rx);
 }
 
 static void
 op_ovr(void)
 {
-	Uint16 x = pop(), y = pop();
-	rec();
-	push(y);
-	push(x);
-	push(y);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry);
+	push(rx);
+	push(ry);
 }
 
 static void
 op_equ(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push8(b == a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push8(rx == ry);
 }
 
 static void
 op_neq(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push8(b != a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push8(ry != rx);
 }
 
 static void
 op_gth(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push8(b > a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push8(ry > rx);
 }
 
 static void
 op_lth(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push8(b < a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push8(ry < rx);
 }
 
 static void
 op_jmp(void)
 {
-	Uint16 a = pop();
-	rec();
-	u.pc = u.d ? a : (Uint16)(u.pc + (Sint8)a);
+	rx = getx(1, 2);
+	REC(1, 2)
+	u.pc = u.d ? rx : u.pc + (Sint8)rx;
 }
 
 static void
 op_jcn(void)
 {
-	Uint16 a = pop();
-	Uint8 b = pop8();
-	rec();
-	if(b)
-		u.pc = u.d ? a : (Uint16)(u.pc + (Sint8)a);
+	rx = getx(1, 2);
+	ry = get8(u.d ? 3 : 2);
+	REC(2, 3)
+	if(ry)
+		u.pc = u.d ? rx : u.pc + (Sint8)rx;
 }
 
 static void
 op_jsr(void)
 {
-	Uint16 a = pop();
-	rec();
+	rx = getx(1, 2);
+	REC(1, 2)
 	u.r = !u.r;
-	push8((Uint8)(u.pc >> 8));
-	push8((Uint8)u.pc);
-	u.pc = u.d ? a : (Uint16)(u.pc + (Sint8)a);
+	push8((u.pc >> 8));
+	push8(u.pc);
+	u.pc = u.d ? rx : u.pc + (Sint8)rx;
 }
 
 static void
 op_sth(void)
 {
-	Uint16 x = pop();
-	rec();
+	rx = getx(1, 2);
+	REC(1, 2)
 	u.r = !u.r;
-	push(x);
+	push(rx);
 }
 
 static void
 op_ldz(void)
 {
-	Uint8 a = pop8();
-	rec();
-	push8(ram[a]);
+	rx = get8(1);
+	FIX(1)
+	push8(ram[rx]);
 	if(u.d)
-		push8(ram[(Uint8)(a + 1)]);
+		push8(ram[(Uint8)(rx + 1)]);
 }
 
 static void
 op_stz(void)
 {
-	Uint8 a = pop8();
-	Uint16 y = pop();
-	rec();
-	ram[a] = u.d ? (Uint8)(y >> 8) : (Uint8)y;
+	rx = get8(1);
+	ry = getx(2, 3);
+	REC(2, 3)
 	if(u.d)
-		ram[(Uint8)(a + 1)] = (Uint8)y;
+		ram[rx] = ry >> 8, ram[(Uint8)(rx + 1)] = ry;
+	else
+		ram[rx] = ry;
 }
 
 static void
 op_ldr(void)
 {
-	Uint8 a = pop8();
-	Uint16 addr = (Uint16)(u.pc + (Sint8)a);
-	rec();
-	push8(ram[addr]);
+	rx = get8(1);
+	ry = u.pc + (Sint8)rx;
+	FIX(1)
+	push8(ram[ry]);
 	if(u.d)
-		push8(ram[(addr + 1) & 0xffff]);
+		push8(ram[(Uint16)(ry + 1)]);
 }
 
 static void
 op_str(void)
 {
-	Uint8 a = pop8();
-	Uint16 y = pop();
-	Uint16 addr = (Uint16)(u.pc + (Sint8)a);
-	rec();
-	ram[addr] = u.d ? (Uint8)(y >> 8) : (Uint8)y;
+	rx = get8(1);
+	ry = getx(2, 3);
+	rz = u.pc + (Sint8)rx;
+	REC(2, 3)
 	if(u.d)
-		ram[(addr + 1) & 0xffff] = (Uint8)y;
+		ram[rz] = ry >> 8, ram[(Uint16)(rz + 1)] = ry;
+	else
+		ram[rz] = ry;
 }
 
 static void
 op_lda(void)
 {
-	Uint16 a = pop16();
-	rec();
-	push8(ram[a]);
+	rx = get16(2);
+	FIX(2)
+	push8(ram[rx]);
 	if(u.d)
-		push8(ram[(a + 1) & 0xffff]);
+		push8(ram[(Uint16)(rx + 1)]);
 }
 
 static void
 op_sta(void)
 {
-	Uint16 a = pop16();
-	Uint16 y = pop();
-	rec();
-	ram[a] = u.d ? (Uint8)(y >> 8) : (Uint8)y;
+	rx = get16(2);
+	ry = getx(3, 4);
+	REC(3, 4)
+	ram[rx] = u.d ? ry >> 8 : ry;
 	if(u.d)
-		ram[(a + 1) & 0xffff] = (Uint8)y;
+		ram[(Uint16)(rx + 1)] = ry;
 }
 
 static void
 op_dei(void)
 {
-	Uint8 a = pop8();
-	rec();
-	push8(dei(a));
+	rx = get8(1);
+	FIX(1)
+	push8(dei(rx));
 	if(u.d)
-		push8(dei(a + 1));
+		push8(dei(rx + 1));
 }
 
 static void
 op_deo(void)
 {
-	Uint8 a = pop8();
-	Uint16 y = pop();
-	rec();
+	rx = get8(1);
+	Uint16 ry = getx(2, 3);
+	REC(2, 3)
 	if(u.d)
-		deo(a, (Uint8)(y >> 8));
-	deo(u.d ? a + 1 : a, (Uint8)y);
+		deo(rx, ry >> 8);
+	deo(u.d ? rx + 1 : rx, ry);
 }
 
 static void
 op_add(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(b + a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry + rx);
 }
 
 static void
 op_sub(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(b - a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry - rx);
 }
 
 static void
 op_mul(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(b * a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry * rx);
 }
 
 static void
 op_div(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(a ? b / a : 0);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(rx ? ry / rx : 0);
 }
 
 static void
 op_and(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(b & a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry & rx);
 }
 
 static void
 op_ora(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(b | a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry | rx);
 }
 
 static void
 op_eor(void)
 {
-	Uint16 a = pop(), b = pop();
-	rec();
-	push(b ^ a);
+	rx = getx(1, 2);
+	ry = getx(2, 4);
+	REC(2, 4)
+	push(ry ^ rx);
 }
 
 static void
 op_sft(void)
 {
-	Uint8 a = pop8();
-	Uint16 b = pop();
-	rec();
-	push((b >> (a & 0x0f)) << (a >> 4));
+	rx = get8(1);
+	ry = getx(2, 3);
+	REC(2, 3)
+	push((ry >> (rx & 0x0f)) << (rx >> 4));
 }
 
 typedef void (*Opc)(void);
@@ -474,7 +491,6 @@ uxn_eval(Uint16 start_pc)
 			u.d = (instr >> 5) & 1;
 			u.r = (instr >> 6) & 1;
 			u.k = instr >> 7;
-			u.sp = u.ptr[u.r];
 			ops[op]();
 		}
 	}
