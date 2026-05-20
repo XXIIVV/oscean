@@ -174,20 +174,22 @@ convenience opcodes such as multiplication and division, I reached an
 expressive and extendable virtual machine that can be implemented in a weekend
 exposing a programmable assembly dialect running at a reasonable speed.</p>
 
-<pre>
-<b>Stack I</b>             <b>Logic</b>              <b>Memory I</b>            <b>Arithmetic</b>
-<a href="uxntal_reference.html#brk">BRK</a> --              <a href="uxntal_reference.html#equ">EQU</a> a b -- a=b     <a href="uxntal_reference.html#ldz">LDZ</a> abs8 -- [abs8]  <a href="uxntal_reference.html#add">ADD</a> a b -- a+b  
-<a href="uxntal_reference.html#inc">INC</a> a -- a+1        <a href="uxntal_reference.html#neq">NEQ</a> a b -- a≠b     <a href="uxntal_reference.html#stz">STZ</a> val abs8 --     <a href="uxntal_reference.html#sub">SUB</a> a b -- a-b  
-<a href="uxntal_reference.html#pop">POP</a> a --            <a href="uxntal_reference.html#gth">GTH</a> a b -- a&gt;b     <a href="uxntal_reference.html#ldr">LDR</a> rel8 -- [rel8]  <a href="uxntal_reference.html#mul">MUL</a> a b -- a×b  
-<a href="uxntal_reference.html#nip">NIP</a> a b -- b        <a href="uxntal_reference.html#lth">LTH</a> a b -- a&lt;b     <a href="uxntal_reference.html#str">STR</a> val rel8 --     <a href="uxntal_reference.html#div">DIV</a> a b -- a÷b
+<pre style='width:770px'>
+   Stack I                Logic                  Memory I               Arithmetic
+00 BRK --              08 EQU a b -- a=b      10 LDZ abs8 -- [abs]   18 ADD a b -- a+b
+01 INC a -- a+1        09 NEQ a b -- a≠b      11 STZ val abs8 --     19 SUB a b -- a-b
+02 POP a --            0a GTH a b -- a&gt;b      12 LDR rel8 -- [rel]   1a MUL a b -- a×b
+03 NIP a b -- b        0b LTH a b -- a&lt;b      13 STR val rel8 --     1b DIV a b -- a÷b
 
-<b>Stack II</b>            <b>Stash</b>              <b>Memory II</b>           <b>Bitwise</b>
-<a href='uxntal_reference.html#swp'>SWP</a> a b -- b a      <a href='uxntal_reference.html#jmp'>JMP</a> addr --        <a href='uxntal_reference.html#lda'>LDA</a> abs* -- [abs*]  <a href='uxntal_reference.html#and'>AND</a> a b -- a&b
-<a href='uxntal_reference.html#rot'>ROT</a> a b c -- b c a  <a href='uxntal_reference.html#jcn'>JCN</a> cond8 addr --  <a href='uxntal_reference.html#sta'>STA</a> val abs* --     <a href='uxntal_reference.html#ora'>ORA</a> a b -- a|b
-<a href='uxntal_reference.html#dup'>DUP</a> a -- a a        <a href='uxntal_reference.html#jsr'>JSR</a> addr -- . pc*  <a href='uxntal_reference.html#dei'>DEI</a> dev -- [dev]    <a href='uxntal_reference.html#eor'>EOR</a> a b -- a^b
-<a href='uxntal_reference.html#ovr'>OVR</a> a b -- a b a    <a href='uxntal_reference.html#sth'>STH</a> a -- . a       <a href='uxntal_reference.html#deo'>DEO</a> val dev --      <a href='uxntal_reference.html#sft'>SFT</a> a sft8 -- res
+   Stack II               Stash                  Memory II              Bitwise
+04 SWP a b -- b a      0c JMP addr --         14 LDA abs16 -- [abs]  1c AND a b -- a&b
+05 ROT a b c -- b c a  0d JCN cond8 addr --   15 STA val abs16 --    1d ORA a b -- a|b
+06 DUP a -- a a        0e JSR addr -- . pc16  16 DEI dev -- [dev]    1e EOR a b -- a^b
+07 OVR a b -- a b a    0f STH a -- . a        17 DEO val dev --      1f SFT a hl8 -- res&gt;&gt;l&lt;&lt;h
 
-<a href='uxntal_reference.html#lit'>LIT</a> -- [pc*]        <a href='uxntal_reference.html#jci'>JCI</a> cond8 --       <a href='uxntal_reference.html#jmi'>JMI</a> --              <a href='uxntal_reference.html#jsi'>JSI</a> -- . pc*
+   Immediate
+00 BRK --              20 JCI cond8 --        40 JMI --              60 JSI -- . pc16
+80 LIT -- [pc]8        a0 LIT2 -- [pc]16      c0 LITr -- . [pc]8     e0 LIT2r -- . [pc]16
 </pre>
 
 <p>An implementation of the runtime, capable of running the self-hosted assembler
