@@ -1003,7 +1003,7 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define Pux(s,v)    if(d) Pu1(s,(v)>>8) Pu1(s,v)
 #define Lda(s,o)    Pu1(r,ram[o]) if(d) Pu1(r,ram[(s)(o+1)])
 #define Sta(s,o,u)  if(d) ram[o]=u>>8, ram[(s)(o+1)]=u; else ram[o]=u;
-#define Dei         Uint16 tt; Uint16 t=emu_dei(x); Pu1(r,t) if(d) tt=emu_dei(x+1), Pu1(r,tt)
+#define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,emu_dei(x+1))
 #define Deo         if(d) emu_deo(x,y>>8), emu_deo(x+1,y); else emu_deo(x,y);
 
 #define MUTE (void)x;(void)y;(void)z;(void)r;(void)d;
@@ -1027,7 +1027,7 @@ uxn_eval(Uint16 start_pc)
 	/* BRK */ case 0x00: return 1;
 	/* JCI */ case 0x20: { Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2; if(stk[0][--ptr[0]]) pc+=a; } break;
 	/* JMI */ case 0x40: { Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2+a; } break;
-	/* JSI */ case 0x60: { const Uint8 d=1; Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2; Pux(1,pc); pc+=a; } break;
+	/* JSI */ case 0x60: { Uint16 a=ram[pc]<<8|ram[pc+1]; const Uint8 d=1; pc+=2; Pux(1,pc); pc+=a; } break;
 	/* LIT */ case 0x80: { const Uint8 r=0,d=0; Lda(Uint16,pc); pc+=1; } break;
 	/* LI2 */ case 0xa0: { const Uint8 r=0,d=1; Lda(Uint16,pc); pc+=2; } break;
 	/* LIr */ case 0xc0: { const Uint8 r=1,d=0; Lda(Uint16,pc); pc+=1; } break;
@@ -1284,7 +1284,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 19 May 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 20 May 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
