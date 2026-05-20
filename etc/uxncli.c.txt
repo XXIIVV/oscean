@@ -125,8 +125,8 @@ console_input(int c, unsigned int type)
 /* clang-format off */
 
 static void console_deo_vector(void) { console_vector = peek2(&dev[0x10]); }
-static void console_deo_stdout(void) { fputc(dev[0x18], stdout), fflush(stdout); }
-static void console_deo_stderr(void) { fputc(dev[0x19], stderr), fflush(stderr); }
+static void console_deo_stdout(void) { fputc(dev[0x18], stdout); }
+static void console_deo_stderr(void) { fputc(dev[0x19], stderr); }
 static void console_deo_hb(void) { fprintf(stderr, "%02x", dev[0x1a]); }
 static void console_deo_lb(void) { fprintf(stderr, "%02x", dev[0x1b]); }
 
@@ -321,17 +321,16 @@ file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
 		return 0;
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
-	file_write_dir(ufs[id].filepath);
 	if(ufs[id].state != FILE_WRITE && ufs[id].state != DIR_WRITE) {
 		file_reset(id);
+		file_write_dir(ufs[id].filepath);
 		if(is_dir_path(ufs[id].filepath))
 			ufs[id].state = DIR_WRITE;
 		else if((ufs[id].f = fopen(ufs[id].filepath, (flags & 0x01) ? "ab" : "wb")) != NULL)
 			ufs[id].state = FILE_WRITE;
 	}
 	if(ufs[id].state == FILE_WRITE)
-		if((ret = fwrite(&ram[addr], 1, len, ufs[id].f)) > 0 && fflush(ufs[id].f) != 0)
-			ret = 0;
+		ret = fwrite(&ram[addr], 1, len, ufs[id].f);
 	if(ufs[id].state == DIR_WRITE)
 		ret = is_dir_real(ufs[id].filepath);
 	return ret;
