@@ -4,9 +4,10 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom repl
+run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom bin/log.rom repl
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
+	@ ${EMU} bin/log.rom
 	@ ${EMU} bin/oscean.rom
 	@ ${EMU} bin/directory.rom docs/
 	@ ${EMU} bin/directory.rom etc/
@@ -40,6 +41,8 @@ bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
 bin/img.rom: src/img.tal
 	@ ${ASM} src/img.tal bin/img.rom
+bin/log.rom: src/log.tal
+	@ ${ASM} src/log.tal bin/log.rom
 
 # Repls
 
