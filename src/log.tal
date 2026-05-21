@@ -55,7 +55,7 @@
 @now/<generate> ( -- )
 	#150f
 	&>l
-		DUP now/<parse-year>
+		DUP /<parse-year>
 		INC GTHk ?&>l
 	POP2 JMP2r
 
@@ -83,18 +83,19 @@
 @now/<parse-month> ( year month path* -- )
 	workarea/<load>
 	ORA ?{ POP2 JMP2r }
-	( | h3 month h3 )
+	( | h3 )
 	;tag/h3 html/<open>
-	( arvelie ) arvelie/make STH2k #0003 html/<length>
+	arvelie/make DUP2 #0003 html/<length>
 	;tag/h3 html/<close>
 	html/<lb>
+	( | article )
 	;tag/article html/<open>
 	html/<lb>
-	( | h2 gregorian title h2 )
+	( | YYYY-MM-DD Title )
 	;tag/h2 html/<open>
-	( gregorian ) STH2r arvelie/year-month-day year-month-day/make html/<str>
+	( use arvelie/make ) arvelie/year-month-day year-month-day/make html/<str>
 	html/<ws>
-	( title ) ;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
+	( title ) ;workarea/buf DUP2k str/next STH2k SWP2 INC2 SUB2 html/<length>
 	;tag/h2 html/<close>
 	( | body )
 	STH2r html/<str>
@@ -122,7 +123,7 @@
 	( | body )
 	#150f
 	&>l
-		DUP rss/<parse-year>
+		DUP /<parse-year>
 		INC GTHk ?&>l
 	POP2 ;tag/channel html/<close>
 	;tag/rss html/<close>
@@ -143,9 +144,7 @@
 	;tag/item html/<open>
 	html/<lb>
 	( | link )
-	;tag/link html/<open>
-	OVR site-htm-path/make html/<str>
-	;tag/link html/<close>
+	OVR site-htm-path/make ;tag/link html/<auto>
 	html/<lb>
 	( | date )
 	;tag/pubdate html/<open>
@@ -156,7 +155,7 @@
 	html/<lb>
 	( | title )
 	;tag/title html/<open>
-	;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
+	;workarea/buf DUP2k str/next STH2k SWP2 INC2 SUB2 html/<length>
 	;tag/title html/<close>
 	html/<lb>
 	;tag/description html/<open>
@@ -169,29 +168,6 @@
 	html/<lb>
 	html/<lb>
 	JMP2r
-
-(
-@|Stdlib )
-
-@str/<print> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	#18 DEO
-	INC2 !/<print>
-
-@str/<print-line> ( str* -- )
-	LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
-	#18 DEO
-	INC2 !/<print-line>
-
-@str/next ( str* -- next* )
-	&>wn
-		LDAk #20 LTH ?{ INC2 !&>wn }
-	INC2 JMP2r
-
-@str/tail ( str* -- end* )
-	&>w2
-		LDAk ?{ JMP2r }
-		INC2 !&>w2
 
 (
 @|Buffers )
@@ -363,6 +339,29 @@
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 	&b $1
+
+(
+@|Stdlib )
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@str/<print-line> ( str* -- )
+	LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print-line>
+
+@str/next ( str* -- next* )
+	&>wn
+		LDAk #20 LTH ?{ INC2 !&>wn }
+	INC2 JMP2r
+
+@str/tail ( str* -- end* )
+	&>w2
+		LDAk ?{ JMP2r }
+		INC2 !&>w2
 
 (
 @|Assets )
