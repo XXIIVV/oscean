@@ -18,6 +18,9 @@
 %u8/mod ( a b -- res ) {
 	DIVk MUL SUB }
 
+%u16/mod ( a* b* -- a%b* ) {
+	DIV2k MUL2 SUB2 }
+
 (
 @|Html )
 
@@ -103,18 +106,20 @@
 	ORA ?{ POP2 JMP2r }
 	( | h3 month h3 )
 	;tag/h3 html/<open>
-	DUP2 arvelie/make html/<str>
+	( arvelie ) DUP2 arvelie/make html/<str>
 	;tag/h3 html/<close>
 	html/<lb>
-	( article ) ;tag/article html/<open>
+	;tag/article html/<open>
 	( | h2 gregorian title h2 )
 	;tag/h2 html/<open>
-	;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
-	( title ) ;tag/h2 html/<close>
+	( gregorian ) arvelie/year-month-day year-month-day/make html/<str>
+	html/<ws>
+	( title ) ;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
+	;tag/h2 html/<close>
 	( | body )
 	STH2r html/<str>
-	POP2
-	( article ) ;tag/article html/<close>
+	;tag/article html/<close>
+	html/<lb>
 	html/<lb>
 	JMP2r
 
@@ -216,6 +221,66 @@
 	#0a u8/mod [ LIT "0 ] ADD ,&y2 STR
 	;&buf JMP2r
 	&buf &y1 $1 &y2 $1 &m $1 00
+
+@arvelie/get-year ( date* -- year* )
+	dec/parse #07d6 ADD2 JMP2r
+
+@arvelie/get-month ( char -- res )
+	DUP LIT "+ NEQ ?{ POP #1a JMP2r }
+	[ LIT "A ] SUB JMP2r
+
+@arvelie/get-doty ( date* -- doty* )
+	INC2 INC2 LDAk /get-month STH
+	INC2 dec/parse #00 STHr #000e MUL2 ADD2 JMP2r
+
+@arvelie/year-month-day ( date* -- )
+	DUP2 /get-doty SWP2 /get-year !doty-year/year-month-day
+
+@year-month-day/make ( y* m d -- str* )
+	POP2 POP2 ;&buf JMP2r
+
+	&buf "2222-22-22 00
+
+@dec/<print> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
+
+@dec/parse ( str* -- dec* )
+	LDA2
+	( a ) [ LIT "0 ] SUB SWP
+	( b ) [ LIT "0 ] SUB #0a MUL ADD #00 SWP JMP2r
+
+@doty-year/year-month-day ( doty* year* -- year* month day )
+	,&year STR2
+	STH2
+	#0c00
+	&>l2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
+		STH2k SUB2r !&continue2
+		&skip2 POP2 !{
+		&continue2 POP2 INC GTHk ?&>l2 }
+	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
+
+@year-month/days ( year* month -- days )
+	#00 OVR ;&lut ADD2 LDA SWP #01 NEQ ?{
+		STH
+		DUP2 year/is-leap STHr ADD }
+	NIP NIP JMP2r
+
+	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
+
+@year/is-leap ( year* -- bool )
+	DUP2 #0190 u16/mod #0000 EQU2 ?&leap
+	DUP2 #0064 u16/mod #0000 EQU2 ?&not-leap
+	#0003 AND2 #0000 EQU2 JMP2r
+	&not-leap POP2 #00 JMP2r
+	&leap POP2 #01 JMP2r
 
 (
 @|Assets )
