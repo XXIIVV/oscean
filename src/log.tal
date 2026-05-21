@@ -1,11 +1,66 @@
 ( write )
 
+|a0 @File1/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |100
 
 @on-reset ( -> )
-	
-
-
-
+	#0f now/<parse-year>
+	#010e DEO
 	BRK
+
+%u8/mod ( a b -- res ) {
+	DIVk MUL SUB }
+
+@now/<parse-year> ( arv-year -- )
+	DUP #0a DIV [ LIT "0 ] ADD ,&y1 STR
+	#0a u8/mod [ LIT "0 ] ADD ,&y2 STR
+	( | head )
+	LIT2 "_ _&m STR
+	;&path /<parse-head>
+	( | search for logs )
+	[ LIT2 "az ] INC
+	&>l
+		#01 SUB DUP ,&m STR
+		;&path /<parse-month>
+		NEQk ?&>l
+	POP2 JMP2r
+
+	&path "src/log/ &y1 $1 &y2 $1 &m $1 ".htm 00
+
+@now/<parse-head> ( path* -- )
+	workarea/<load>
+	ORA ?{ JMP2r }
+	;workarea/buf str/<print>
+	#0a19 DEO
+	JMP2r
+
+@now/<parse-month> ( path* -- )
+	workarea/<load>
+	ORA ?{ JMP2r }
+	;workarea/buf str/<print>
+	#0a19 DEO
+	JMP2r
+
+@workarea/<load> ( path* -- succ* )
+	DUP2 str/<print> #0a19 DEO
+	.File1/name DEO2
+	#8000 .File1/length DEO2
+	;&buf .File1/read DEO2
+	.File1/success DEI2 DUP2 ;&buf ADD2 #0000 SWP2 STA2
+	JMP2r
+
+(
+@|Stdlib )
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+(
+@|Buffers )
+
+@workarea/buf
 
