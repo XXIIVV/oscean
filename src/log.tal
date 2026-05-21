@@ -7,11 +7,8 @@
 |100
 
 @on-reset ( -> )
-	#150f
-	&>l
-		DUP now/<parse-year>
-		INC GTHk ?&>l
-	POP2 BRK
+	now/<generate>
+	BRK
 
 %u8/mod ( a b -- res ) {
 	DIVk MUL SUB }
@@ -48,6 +45,13 @@
 (
 @|Now )
 
+@now/<generate> ( -- )
+	#150f
+	&>l
+		DUP now/<parse-year>
+		INC GTHk ?&>l
+	POP2 JMP2r
+
 @now/<parse-year> ( arv-year -- )
 	DUP src-htm-path/make .File2/name DEO2
 	#0001 .File2/length DEO2
@@ -57,12 +61,10 @@
 	;src-log-path/buf /<parse-head>
 	( | search for logs )
 	#1a
-	&>l
-		#01 SUB
-		( | handle month )
-		DUP src-log-path/<set-month>
+	&>lp
+		#01 SUB DUP src-log-path/<set-month>
 		STHkr OVR ;src-log-path/buf /<parse-month>
-		DUP ?&>l
+		DUP ?&>lp
 	POP POPr JMP2r
 
 @now/<parse-head> ( year path* -- )
@@ -92,13 +94,6 @@
 	;tag/article html/<close>
 	html/<lb>
 	html/<lb>
-	JMP2r
-
-@workarea/<load> ( path* -- succ* )
-	.File1/name DEO2
-	#8000 .File1/length DEO2
-	;&buf .File1/read DEO2
-	.File1/success DEI2 DUP2 ;&buf ADD2 #0000 SWP2 STA2
 	JMP2r
 
 (
@@ -151,6 +146,13 @@
 	&yxyy "0
 	&yyxy "0
 	&yyyx "0 ".htm 00
+
+@workarea/<load> ( path* -- succ* )
+	.File1/name DEO2
+	#8000 .File1/length DEO2
+	;&buf .File1/read DEO2
+	.File1/success DEI2 DUP2 ;&buf ADD2 #0000 SWP2 STA2
+	JMP2r
 
 (
 @|Date )

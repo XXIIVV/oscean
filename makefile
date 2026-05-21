@@ -7,12 +7,17 @@ LIN=${EMU} ${DIR}/uxnlin.rom
 run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom bin/log.rom repl
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
+	@ echo "RSS(log)"
 	@ ${EMU} bin/log.rom
+	@ echo "RSS(img)"
+	@ ${EMU} bin/img.rom > links/img.xml
+	@ echo "HTML(site)"
 	@ ${EMU} bin/oscean.rom
+	@ echo "HTML(docs)"
 	@ ${EMU} bin/directory.rom docs/
+	@ echo "HTML(etc)"
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
-	@ ${EMU} bin/img.rom > links/img.xml
 clean:
 	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
 bal:
