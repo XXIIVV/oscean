@@ -13,6 +13,10 @@
 %u8/mod ( a b -- res ) {
 	DIVk MUL SUB }
 
+%u8/dec2 ( v -- xd dx ) {
+	( xy ) DUP #0a DIV LIT "0 ADD
+	( yx ) SWP #0a u8/mod LIT "0 ADD }
+
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
 
@@ -173,15 +177,14 @@
 @|Buffers )
 
 @src-log-path/<set-year> ( year -- )
-	DUP #0a DIV [ LIT "0 ] ADD ,&y1 STR
-	#0a u8/mod [ LIT "0 ] ADD ,&y2 STR
+	u8/dec2 ,&y STR2
 	JMP2r
 
 @src-log-path/<set-month> ( month -- )
 	LIT "a ADD ,&m STR
 	JMP2r
 
-	&buf "src/log/ &y1 $1 &y2 $1 &m $1 ".htm 00
+	&buf "src/log/ &y $2 &m $1 ".htm 00
 
 @src-htm-path/make ( arv-year -- )
 	#00 SWP #07d6 ADD2
@@ -223,10 +226,9 @@
 
 @arvelie/make ( year month -- str* )
 	LIT "A ADD ,&m STR
-	DUP #0a DIV [ LIT "0 ] ADD ,&y1 STR
-	#0a u8/mod [ LIT "0 ] ADD ,&y2 STR
+	u8/dec2 ,&y STR2
 	;&buf JMP2r
-	&buf &y1 $1 &y2 $1 &m $1 "00 00
+	&buf &y $2 &m $1 "00 00
 
 @arvelie/get-year ( date* -- year* )
 	dec/parse #07d6 ADD2 JMP2r
@@ -292,8 +294,8 @@
 	DUP2 #0190 u16/mod #0000 EQU2 ?{
 		DUP2 #0064 u16/mod #0000 EQU2 ?{
 			#0003 AND2 #0000 EQU2 JMP2r }
-		POP2 #00 JMP2r
-		{ POP2 #01 JMP2r
+		POP2 #00 JMP2r }
+	POP2 #01 JMP2r
 
 @doty-year/year-month-day ( doty* year* -- year* month day )
 	,&year STR2
