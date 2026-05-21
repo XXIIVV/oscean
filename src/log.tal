@@ -118,8 +118,44 @@
 	;dict/desc ;tag/description html/<auto>
 	html/<lb>
 	( | body )
-	;tag/channel html/<close>
+	#150f
+	&>l
+		DUP rss/<parse-year>
+		INC GTHk ?&>l
+	POP2 ;tag/channel html/<close>
 	;tag/rss html/<close>
+	JMP2r
+
+@rss/<parse-year> ( arv-year -- )
+	STHk src-log-path/<set-year>
+	#1a
+	&>lp
+		#01 SUB DUP src-log-path/<set-month>
+		STHkr OVR ;src-log-path/buf /<parse-month>
+		DUP ?&>lp
+	POP POPr JMP2r
+
+@rss/<parse-month> ( year month path* -- )
+	workarea/<load>
+	ORA ?{ POP2 JMP2r }
+	( | h3 month h3 )
+	;tag/h3 html/<open>
+	( arvelie ) arvelie/make STH2k #0003 html/<length>
+	;tag/h3 html/<close>
+	html/<lb>
+	;tag/article html/<open>
+	html/<lb>
+	( | h2 gregorian title h2 )
+	;tag/h2 html/<open>
+	( gregorian ) STH2r arvelie/year-month-day year-month-day/make html/<str>
+	html/<ws>
+	( title ) ;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
+	;tag/h2 html/<close>
+	( | body )
+	STH2r html/<str>
+	;tag/article html/<close>
+	html/<lb>
+	html/<lb>
 	JMP2r
 
 (
