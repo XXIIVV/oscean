@@ -1,6 +1,5 @@
 ( write )
 
-|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |a0 @File1/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
@@ -8,6 +7,7 @@
 
 @on-reset ( -> )
 	now/<generate>
+	rss/<generate>
 	BRK
 
 %u8/mod ( a b -- res ) {
@@ -41,6 +41,11 @@
 	;ascii/slash .File2/write DEO2
 	html/<str>
 	;ascii/gt .File2/write DEO2 }
+
+%html/<auto> ( str* tag* -- ) {
+	DUP2 html/<open>
+	SWP2 html/<str>
+	html/<close> }
 
 (
 @|Now )
@@ -94,6 +99,27 @@
 	;tag/article html/<close>
 	html/<lb>
 	html/<lb>
+	JMP2r
+
+(
+@|RSS )
+
+@rss/<generate> ( -- )
+	;dict/rss-path .File2/name DEO2
+	#0001 .File2/length DEO2
+	;dict/xml-head html/<str>
+	html/<lb>
+	;dict/rss-version html/<str>
+	html/<lb>
+	;tag/channel html/<open>
+	html/<lb>
+	;dict/title ;tag/title html/<auto>
+	;path/url ;tag/link html/<auto>
+	;dict/desc ;tag/description html/<auto>
+	html/<lb>
+	( | body )
+	;tag/channel html/<close>
+	;tag/rss html/<close>
 	JMP2r
 
 (
@@ -228,6 +254,20 @@
 (
 @|Assets )
 
+@dict/xml-head "<?xml 20 "version="1.0" 20 "encoding="UTF-8"?> 00
+	&rss-version "<rss 20 "version="2.0"> 00
+	&title "XXIIVV 00
+	&desc "Journal 20 "Logs 00
+	&no-picture "000 00
+	&midnight "12:00:00 20 "-0000 00
+	&rss-path "links/log.xml 00
+
+@path/url "https://wiki.xxiivv.com/ 00
+	&diary "media/diary/ 00
+	&site "site/ 00
+	&ext-jpg ".jpg 00
+	&ext-html ".html 00
+
 @ascii/space 20 &line 0a
 	&lt "<
 	&gt ">
@@ -255,6 +295,16 @@
 	&code "code 00
 	&figure "figure 00
 	&figcaption "figcaption 00
+	&channel "channel 00
+	&link "link 00
+	&description "description 00
+	&item "item 00
+	&img "img 00
+	&src "src 00
+	&rss "rss 00
+	&pubdate "pubDate 00
+	&cdata-a "<![CDATA[ 00
+	&cdata-b "]]> 00
 
 @workarea/buf
 
