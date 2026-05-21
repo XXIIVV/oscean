@@ -106,13 +106,13 @@
 	ORA ?{ POP2 JMP2r }
 	( | h3 month h3 )
 	;tag/h3 html/<open>
-	( arvelie ) DUP2 arvelie/make html/<str>
+	( arvelie ) arvelie/make STH2k html/<str>
 	;tag/h3 html/<close>
 	html/<lb>
 	;tag/article html/<open>
 	( | h2 gregorian title h2 )
 	;tag/h2 html/<open>
-	( gregorian ) arvelie/year-month-day year-month-day/make html/<str>
+	( gregorian ) STH2r arvelie/year-month-day year-month-day/make html/<str>
 	html/<ws>
 	( title ) ;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
 	;tag/h2 html/<close>
@@ -233,13 +233,24 @@
 	INC2 INC2 LDAk /get-month STH
 	INC2 dec/parse #00 STHr #000e MUL2 ADD2 JMP2r
 
-@arvelie/year-month-day ( date* -- )
+@arvelie/year-month-day ( date* -- year* month day )
 	DUP2 /get-doty SWP2 /get-year !doty-year/year-month-day
 
 @year-month-day/make ( y* m d -- str* )
-	POP2 POP2 ;&buf JMP2r
-
-	&buf "2222-22-22 00
+	( xd ) DUP #0a DIV LIT "0 ADD ,&xd STR
+	( dx ) #0a u8/mod LIT "0 ADD ,&dx STR
+	( xm ) DUP #0a DIV LIT "0 ADD ,&xm STR
+	( mx ) #0a u8/mod LIT "0 ADD ,&mx STR
+	( yyyx ) DUP2 #03e8 DIV2 NIP LIT "0 ADD ,&xyyy STR
+	( yyyx ) DUP2 #0064 DIV2 NIP #0a u8/mod LIT "0 ADD ,&yxyy STR
+	( yyyx ) DUP2 #000a DIV2 NIP #0a u8/mod LIT "0 ADD ,&yyxy STR
+	( yyyx ) #000a u16/mod NIP LIT "0 ADD ,&yyyx STR
+	;&buf JMP2r
+	&buf
+	&xyyy "0
+	&yxyy "0
+	&yyxy "0
+	&yyyx "0 "- &xm $1 &mx $1 "- &xd $1 &dx $1 00
 
 @dec/<print> ( short* -- )
 	[ LIT2r ff00 ]
