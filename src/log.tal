@@ -139,34 +139,33 @@
 @rss/<parse-month> ( year month path* -- )
 	workarea/<load>
 	ORA ?{ POP2 JMP2r }
-
-	POP2
-
 	;tag/item html/<open>
-
+	html/<lb>
+	( | link )
 	;tag/link html/<open>
-	( link ) { "url.. 00 } STH2r html/<str>
+	OVR site-htm-path/make html/<str>
 	;tag/link html/<close>
-
+	html/<lb>
+	( | date )
 	;tag/pubdate html/<open>
-	( date ) { "date.. 00 } STH2r html/<str>
+	{ "date.. 00 }
+	STH2r html/<str>
 	;tag/pubdate html/<close>
-
+	html/<lb>
+	( | title )
 	;tag/title html/<open>
-	( title ) ;workarea/buf DUP2 DUP2 str/next SWP2 INC2 SUB2 html/<length>
+	;workarea/buf DUP2 DUP2 str/next SWP2 INC2 SUB2 html/<length>
 	;tag/title html/<close>
-
+	html/<lb>
 	;tag/description html/<open>
-	( title ) { "desc.. 00 } STH2r html/<str>
+	( title ) { "desc.. 00 }
+	STH2r html/<str>
 	;tag/description html/<close>
-
-	
-
+	html/<lb>
 	;tag/item html/<close>
 	html/<lb>
 	html/<lb>
-	
-	JMP2r
+	POP2 JMP2r
 
 (
 @|Stdlib )
@@ -218,6 +217,20 @@
 	&yxyy "0
 	&yyxy "0
 	&yyyx "0 ".htm 00
+
+@site-htm-path/make ( arv-year -- )
+	#00 SWP #07d6 ADD2
+	( yyyx ) DUP2 #03e8 DIV2 NIP LIT "0 ADD ,&xyyy STR
+	( yyyx ) DUP2 #0064 DIV2 NIP #0a u8/mod LIT "0 ADD ,&yxyy STR
+	( yyyx ) DUP2 #000a DIV2 NIP #0a u8/mod LIT "0 ADD ,&yyxy STR
+	( yyyx ) #000a u16/mod NIP LIT "0 ADD ,&yyyx STR
+	;&buf JMP2r
+
+	&buf "https://wiki.xxiivv.com/site/
+	&xyyy "0
+	&yxyy "0
+	&yyxy "0
+	&yyyx "0 ".html 00
 
 @workarea/<load> ( path* -- succ* )
 	.File1/name DEO2
