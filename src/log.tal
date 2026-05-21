@@ -7,10 +7,14 @@
 |100
 
 @on-reset ( -> )
-	;test-file .File2/name DEO2
+	
+	#150f
+	&>l
+		;test-file .File2/name DEO2
 	#0001 .File2/length DEO2
-	#0f now/<parse-year>
-	#010e DEO
+		DUP now/<parse-year>
+		INC GTHk ?&>l
+	POP2 #010e DEO
 	BRK
 
 @test-file "bin/hey.html 00
@@ -83,6 +87,8 @@
 @|Now )
 
 @now/<parse-year> ( arv-year -- )
+	DUP src-htm-path/make str/<print>
+	#0a19 DEO
 	STHk src-log-path/<set-year>
 	( | search for logs )
 	#1a
@@ -110,6 +116,7 @@
 	;tag/h3 html/<close>
 	html/<lb>
 	;tag/article html/<open>
+	html/<lb>
 	( | h2 gregorian title h2 )
 	;tag/h2 html/<open>
 	( gregorian ) STH2r arvelie/year-month-day year-month-day/make html/<str>
@@ -124,8 +131,6 @@
 	JMP2r
 
 @workarea/<load> ( path* -- succ* )
-	DUP2 str/<print>
-	#0a19 DEO
 	.File1/name DEO2
 	#8000 .File1/length DEO2
 	;&buf .File1/read DEO2
@@ -214,6 +219,23 @@
 	JMP2r
 
 	&buf "src/log/ &y1 $1 &y2 $1 &m $1 ".htm 00
+
+@src-htm-path/make ( arv-year -- )
+	#00 SWP #07d6 ADD2
+	( yyyx ) DUP2 #03e8 DIV2 NIP LIT "0 ADD ,&xyyy STR
+	( yyyx ) DUP2 #0064 DIV2 NIP #0a u8/mod LIT "0 ADD ,&yxyy STR
+	( yyyx ) DUP2 #000a DIV2 NIP #0a u8/mod LIT "0 ADD ,&yyxy STR
+	( yyyx ) #000a u16/mod NIP LIT "0 ADD ,&yyyx STR
+	;&buf JMP2r
+
+	&buf "src/htm/
+	&xyyy "0
+	&yxyy "0
+	&yyxy "0
+	&yyyx "0 ".htm 00
+
+(
+@|Date )
 
 @arvelie/make ( year month -- str* )
 	LIT "A ADD ,&m STR
