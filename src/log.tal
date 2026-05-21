@@ -8,6 +8,7 @@
 @on-reset ( -> )
 	now/<generate>
 	rss/<generate>
+	#010e DEO
 	BRK
 
 %u8/mod ( a b -- res ) {
@@ -138,24 +139,33 @@
 @rss/<parse-month> ( year month path* -- )
 	workarea/<load>
 	ORA ?{ POP2 JMP2r }
-	( | h3 month h3 )
-	;tag/h3 html/<open>
-	( arvelie ) arvelie/make STH2k #0003 html/<length>
-	;tag/h3 html/<close>
-	html/<lb>
-	;tag/article html/<open>
-	html/<lb>
-	( | h2 gregorian title h2 )
-	;tag/h2 html/<open>
-	( gregorian ) STH2r arvelie/year-month-day year-month-day/make html/<str>
-	html/<ws>
+
+	POP2
+
+	;tag/item html/<open>
+
+	;tag/link html/<open>
+	( link ) { "url.. 00 } STH2r html/<str>
+	;tag/link html/<close>
+
+	;tag/pubdate html/<open>
+	( date ) { "date.. 00 } STH2r html/<str>
+	;tag/pubdate html/<close>
+
+	;tag/title html/<open>
 	( title ) ;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
-	;tag/h2 html/<close>
-	( | body )
-	STH2r html/<str>
-	;tag/article html/<close>
+	;tag/title html/<close>
+
+	;tag/description html/<open>
+	( title ) { "desc.. 00 } STH2r html/<str>
+	;tag/description html/<close>
+
+	
+
+	;tag/item html/<close>
 	html/<lb>
 	html/<lb>
+	
 	JMP2r
 
 (
