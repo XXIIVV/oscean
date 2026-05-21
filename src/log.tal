@@ -190,32 +190,18 @@
 	&buf "src/log/ &y $2 &m $1 ".htm 00
 
 @src-htm-path/make ( arv-year -- )
-	#00 SWP #07d6 ADD2
-	( yyyx ) DUP2 #03e8 DIV2 NIP u8/dec ,&xyyy STR
-	( yyyx ) DUP2 #0064 DIV2 NIP #0a u8/mod u8/dec ,&yxyy STR
-	( yyyx ) DUP2 #000a DIV2 NIP #0a u8/mod u8/dec ,&yyxy STR
-	( yyyx ) #000a u16/mod NIP u8/dec ,&yyyx STR
+	#00 SWP #07d6 ADD2 u16/chr4 ,&ab STR2
+	,&cd STR2
 	;&buf JMP2r
 
-	&buf "src/htm/
-	&xyyy "0
-	&yxyy "0
-	&yyxy "0
-	&yyyx "0 ".htm 00
+	&buf "src/htm/ &ab $2 &cd $2 ".htm 00
 
 @site-htm-path/make ( arv-year -- )
-	#00 SWP #07d6 ADD2
-	( yyyx ) DUP2 #03e8 DIV2 NIP u8/dec ,&xyyy STR
-	( yyyx ) DUP2 #0064 DIV2 NIP #0a u8/mod u8/dec ,&yxyy STR
-	( yyyx ) DUP2 #000a DIV2 NIP #0a u8/mod u8/dec ,&yyxy STR
-	( yyyx ) #000a u16/mod NIP u8/dec ,&yyyx STR
+	#00 SWP #07d6 ADD2 u16/chr4 ,&ab STR2
+	,&cd STR2
 	;&buf JMP2r
 
-	&buf "https://wiki.xxiivv.com/site/
-	&xyyy "0
-	&yxyy "0
-	&yyxy "0
-	&yyyx "0 ".html 00
+	&buf "https://wiki.xxiivv.com/site/ &ab $2 &cd $2 ".html 00
 
 @workarea/<load> ( path* -- succ* )
 	.File1/name DEO2
@@ -250,16 +236,10 @@
 @year-month-day/make ( y* m d -- str* )
 	( xd ) u8/dec2 ,&d STR2
 	( xm ) u8/dec2 ,&m STR2
-	( yyyx ) DUP2 #03e8 DIV2 NIP u8/dec ,&xyyy STR
-	( yyyx ) DUP2 #0064 DIV2 NIP #0a u8/mod u8/dec ,&yxyy STR
-	( yyyx ) DUP2 #000a DIV2 NIP #0a u8/mod u8/dec ,&yyxy STR
-	( yyyx ) #000a u16/mod NIP u8/dec ,&yyyx STR
+	u16/chr4 ,&ab STR2
+	,&cd STR2
 	;&buf JMP2r
-	&buf
-	&xyyy "0
-	&yxyy "0
-	&yyxy "0
-	&yyyx "0 "- &m $2 "- &d $2 00
+	&buf &ab $2 &cd $2 "- &m $2 "- &d $2 00
 
 @year-month-day/dotw ( year* m d -- dotw )
 	OVR #01 GTH ?{
@@ -363,6 +343,12 @@
 	&>w2
 		LDAk ?{ JMP2r }
 		INC2 !&>w2
+
+@u16/chr4 ( short* -- a b c d )
+	( a ) DUP2 #03e8 DIV2 #0a u8/mod u8/dec [ STH POP ]
+	( b ) DUP2 #0064 DIV2 #0a u8/mod u8/dec [ STH POP ]
+	( c ) DUP2 #000a DIV2 #0a u8/mod u8/dec [ STH POP ]
+	( d ) #000a /mod u8/dec [ STH POP ] STH2r STH2r JMP2r
 
 (
 @|Assets )
