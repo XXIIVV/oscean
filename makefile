@@ -22,6 +22,7 @@ lint:
 	@ ${LIN} src/arvelie.tal
 	@ ${LIN} src/directory.tal
 	@ ${LIN} src/img.tal
+	@ ${LIN} src/log.tal
 push:
 	@ git commit -am '*'
 	@ git push

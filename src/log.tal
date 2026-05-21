@@ -11,10 +11,7 @@
 	&>l
 		DUP now/<parse-year>
 		INC GTHk ?&>l
-	POP2 #010e DEO
-	BRK
-
-@test-file "bin/hey.html 00
+	POP2 BRK
 
 %u8/mod ( a b -- res ) {
 	DIVk MUL SUB }
@@ -37,32 +34,9 @@
 	.File2/write DEO2
 	#0001 .File2/length DEO2 }
 
-%html/<attribute> ( body* attr* -- ) {
-	;ascii/space .File2/write DEO2
-	html/<str>
-	;ascii/equal .File2/write DEO2
-	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
-	html/<str>
-	DEO2r }
-
-%html/<attribute-prefix> ( body* attr* -- ) {
-	;ascii/space .File2/write DEO2
-	html/<str>
-	;ascii/equal .File2/write DEO2
-	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
-	html/<str>
-	html/<str>
-	DEO2r }
-
 %html/<open> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
 	html/<str>
-	;ascii/gt .File2/write DEO2 }
-
-%html/<open-class> ( class* tag* -- ) {
-	;ascii/lt .File2/write DEO2
-	html/<str>
-	;attr/class html/<attribute>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<close> ( tag* -- ) {
@@ -71,15 +45,6 @@
 	html/<str>
 	;ascii/gt .File2/write DEO2 }
 
-%html/<close-lb> ( tag* -- ) {
-	html/<close>
-	html/<lb> }
-
-%html/<auto> ( str* tag* -- ) {
-	DUP2 html/<open>
-	SWP2 html/<str>
-	html/<close> }
-
 (
 @|Now )
 
@@ -87,6 +52,9 @@
 	DUP src-htm-path/make .File2/name DEO2
 	#0001 .File2/length DEO2
 	STHk src-log-path/<set-year>
+	( | parse head )
+	#fe src-log-path/<set-month>
+	;src-log-path/buf /<parse-head>
 	( | search for logs )
 	#1a
 	&>l
@@ -97,12 +65,10 @@
 		DUP ?&>l
 	POP POPr JMP2r
 
-@now/<parse-head> ( path* -- )
+@now/<parse-head> ( year path* -- )
 	workarea/<load>
 	ORA ?{ JMP2r }
-	( | TODO )
-	;workarea/buf str/<print>
-	#0a19 DEO
+	;workarea/buf html/<str>
 	JMP2r
 
 @now/<parse-month> ( year month path* -- )
@@ -148,61 +114,15 @@
 	#18 DEO
 	INC2 !/<print-line>
 
-@str/to-dec ( str* -- val* )
-	[ LIT2r 0000 ]
-	&>w
-		LIT2r 000a MUL2r [ LITr 00 ] LDAk #30 SUB STH
-		ADD2r INC2 LDAk ?&>w
-	POP2 STH2r JMP2r
-
-@str/head ( addr* -- addr* )
-	&>wh
-		LDAk ?{ JMP2r }
-		#0001 SUB2 !&>wh
-
 @str/next ( str* -- next* )
 	&>wn
 		LDAk #20 LTH ?{ INC2 !&>wn }
 	INC2 JMP2r
 
-@str/walk ( str* -- next* )
-	&>ww
-		INC2 LDAk #1f GTH ?&>ww
-	INC2 JMP2r
-
-@str/cap ( str* -- end* )
-	&>wc
-		LDAk ?{ INC2 JMP2r }
-		INC2 !&>wc
-
 @str/tail ( str* -- end* )
 	&>w2
 		LDAk ?{ JMP2r }
 		INC2 !&>w2
-
-@str/cmp ( a* b* -- bool )
-	DUP2k /cap SWP2 SUB2 SWP2 !mem/cmp
-
-@str/cmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@mem/cmp ( a* length* b* -- t )
-	STH2
-	OVR2 ADD2 SWP2
-	&>l
-		EQU2k ?{
-			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
-	POP2r EQU2 JMP2r
-
-@mem/<clr> ( dst* len* -- )
-	,&length STR2
-	,&dst STR2
-	;&mmu .System/expansion DEO2
-	JMP2r
-
-	&mmu [ 00 &length $2 0000 &dst $2 00 ]
 
 (
 @|Buffers )
@@ -271,16 +191,6 @@
 	&yxyy "0
 	&yyxy "0
 	&yyyx "0 "- &xm $1 &mx $1 "- &xd $1 &dx $1 00
-
-@dec/<print> ( short* -- )
-	[ LIT2r ff00 ]
-	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
-	POP2
-	&>write
-		NIP #30 ADD #18 DEO
-		OVRr ADDr STHkr ?&>write
-	POP2r JMP2r
 
 @dec/parse ( str* -- dec* )
 	LDA2
