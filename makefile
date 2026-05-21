@@ -4,19 +4,19 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/img.rom bin/log.rom repl
+run: bin/oscean.rom bin/arvelie.rom bin/dir.rom bin/img.rom bin/log.rom repl
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ echo "RSS(log)"
 	@ ${EMU} bin/log.rom
 	@ echo "RSS(img)"
 	@ ${EMU} bin/img.rom > links/img.xml
+	@ echo "HTML(docs)"
+	@ ${EMU} bin/dir.rom docs/
+	@ echo "HTML(etc)"
+	@ ${EMU} bin/dir.rom etc/
 	@ echo "HTML(site)"
 	@ ${EMU} bin/oscean.rom
-	@ echo "HTML(docs)"
-	@ ${EMU} bin/directory.rom docs/
-	@ echo "HTML(etc)"
-	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
 clean:
 	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
@@ -25,7 +25,7 @@ bal:
 lint:
 	@ ${LIN} src/oscean.tal
 	@ ${LIN} src/arvelie.tal
-	@ ${LIN} src/directory.tal
+	@ ${LIN} src/dir.tal
 	@ ${LIN} src/img.tal
 	@ ${LIN} src/log.tal
 push:
@@ -43,8 +43,8 @@ bin/oscean.rom: src/oscean.tal
 	@ ${ASM} src/oscean.tal bin/oscean.rom
 bin/arvelie.rom: src/arvelie.tal
 	@ ${ASM} src/arvelie.tal bin/arvelie.rom
-bin/directory.rom: src/directory.tal
-	@ ${ASM} src/directory.tal bin/directory.rom
+bin/dir.rom: src/dir.tal
+	@ ${ASM} src/dir.tal bin/dir.rom
 bin/img.rom: src/img.tal
 	@ ${ASM} src/img.tal bin/img.rom
 bin/log.rom: src/log.tal
