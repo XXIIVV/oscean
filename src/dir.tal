@@ -11,7 +11,7 @@
 
 @on-reset ( -> )
 	.Console/type DEI ?{
-		;Dict/usage err/<print>
+		;dict/usage err/<print>
 		#010f DEO
 		BRK }
 	;path/on-console .Console/vector DEO2
@@ -20,7 +20,7 @@
 @path/on-console ( -> )
 	.Console/read DEI DUP #20 GTH ?{
 		;&buf DUP2 dir/<load>
-		;Dict/index OVR2 str/cap str/<scpy>
+		;dict/index OVR2 str/cap str/<scpy>
 		dir/<render>
 		#800f DEO
 		POP BRK }
@@ -34,29 +34,39 @@
 @dir/<load> ( path* -- )
 	.File/name DEO2
 	#8000 .File/length DEO2
-	;dir .File/read DEO2
+	;&buf .File/read DEO2
 	JMP2r
 
 @dir/<render> ( path* -- )
 	.File/name DEO2
 	( | head )
-	;El/<head> str/write ;El/<title> str/write ;path/buf str/write ;El/</title> str/write ;El/</head> str/write
+	;tag/doctype str/<write>
+	;tag/<head> str/<write>
+	;tag/<title> str/<write>
+	;path/buf str/<write>
+	;tag/</title> str/<write>
+	;tag/</head> str/<write>
 	( | body )
-	;El/<body> str/write ;El/<pre> str/write ;dir
+	;tag/<body> str/<write>
+	;tag/<pre> str/<write>
+	;&buf
 	&>w
 		write-line LDAk ?&>w
-	POP2 ;El/</pre> str/write ;El/</body> !str/write
+	POP2 ;tag/</pre> str/<write>
+	;tag/</body> !str/<write>
 
 @write-line ( line* -- next* )
 	LDA2k [ LIT2 "-- ] EQU2 ?{
 		( length ) #0005 write-length
-		( link ) write-link INC2 ;El/<br/> !str/write }
+		( link ) write-link INC2 ;tag/<br/> !str/<write> }
 	str/next INC2 str/next INC2 JMP2r
 
 @write-link ( word* -- next* )
-	;El/a1 str/write DUP2
+	;tag/a1 str/<write>
+	DUP2
 	( ) write-word POP2
-	( ) ;El/a2 str/write write-word ;El/a3 !str/write
+	( ) ;tag/a2 str/<write>
+	write-word ;tag/a3 !str/<write>
 
 @write-word ( str* -- next* )
 	DUP2k str/next SWP2 SUB2
@@ -70,7 +80,7 @@
 (
 @|stdlib )
 
-@str/write ( str* -- next* )
+@str/<write> ( str* -- )
 	DUP2k /cap SWP2 SUB2 .File/length DEO2
 	.File/write DEO2
 	JMP2r
@@ -98,22 +108,21 @@
 (
 @|assets )
 
-@Dict
-	&usage "usage: 20 "directory.rom 20 "folder/ 0a 00
+@dict/usage "usage: 20 "directory.rom 20 "folder/ 0a 00
 	&index "index.html 00
 
-@El
-	&<head> "<head> 00
-	&</head> "</head> 00
+@tag/<head> "<head> 00
+	&</head> "</head> 0a 00
 	&<title> "<title> 00
 	&</title> "</title> 00
-	&<body> "<body> 00
+	&<body> "<body> 0a 00
 	&</body> "</body> 00 &<br/> 0a 00
 	&<pre> "<pre> 00
-	&</pre> "</pre> 00
+	&</pre> "</pre> 0a 00
 	&a1 "<a 20 "href=' 00
 	&a2 "'> 00
 	&a3 "</a> 00
+	&doctype "<!DOCTYPE 20 "html> 0a 00
 
-@dir
+@dir/buf $8000
 
