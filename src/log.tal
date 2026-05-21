@@ -103,15 +103,19 @@
 	ORA ?{ POP2 JMP2r }
 	( | h3 month h3 )
 	;tag/h3 html/<open>
+	DUP2 arvelie/make html/<str>
 	;tag/h3 html/<close>
 	html/<lb>
-	( | article )
+	( article ) ;tag/article html/<open>
 	( | h2 gregorian title h2 )
+	;tag/h2 html/<open>
+	;workarea/buf DUP2 DUP2 str/next STH2k SWP2 INC2 SUB2 html/<length>
+	( title ) ;tag/h2 html/<close>
 	( | body )
-	;workarea/buf str/<print-line>
-	#0a19 DEO
+	STH2r html/<str>
 	POP2
-	( | article )
+	( article ) ;tag/article html/<close>
+	html/<lb>
 	JMP2r
 
 @workarea/<load> ( path* -- succ* )
@@ -206,6 +210,13 @@
 
 	&buf "src/log/ &y1 $1 &y2 $1 &m $1 ".htm 00
 
+@arvelie/make ( year month -- str* )
+	LIT "A ADD ,&m STR
+	DUP #0a DIV [ LIT "0 ] ADD ,&y1 STR
+	#0a u8/mod [ LIT "0 ] ADD ,&y2 STR
+	;&buf JMP2r
+	&buf &y1 $1 &y2 $1 &m $1 00
+
 (
 @|Assets )
 
@@ -229,7 +240,9 @@
 	&ul "ul 00
 	&li "li 00
 	&a "a 00
+	&h2 "h2 00
 	&h3 "h3 00
+	&article "article 00
 	&span "span 00
 	&code "code 00
 	&figure "figure 00
