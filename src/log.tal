@@ -258,22 +258,6 @@
 	&yyxy "0
 	&yyyx "0 "- &xm $1 &mx $1 "- &xd $1 &dx $1 00
 
-@dec/parse ( str* -- dec* )
-	LDA2
-	( a ) [ LIT "0 ] SUB SWP
-	( b ) [ LIT "0 ] SUB #0a MUL ADD #00 SWP JMP2r
-
-@doty-year/year-month-day ( doty* year* -- year* month day )
-	,&year STR2
-	STH2
-	#0c00
-	&>l2
-		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
-		STH2k SUB2r !&continue2
-		&skip2 POP2 !{
-		&continue2 POP2 INC GTHk ?&>l2 }
-	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
-
 @year-month-day/dotw ( year* m d -- dotw )
 	OVR #01 GTH ?{
 		( m < 3 ) SWP2 #0001 SUB2 SWP2 }
@@ -288,12 +272,12 @@
 	&lut [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
 
 @year-month-day/<emit> ( year* month day -- )
-	OVR2 OVR2 /dotw dotw/<emit>
+	OVR2 OVR2 /dotw dotw/make html/<str>
 	html/<comma>
 	html/<ws>
 	#00 SWP dec/<emit>
 	html/<ws>
-	month/<emit>
+	month/make html/<str>
 	html/<ws> !dec/<emit>
 
 @year-month/days ( year* month -- days )
@@ -305,28 +289,42 @@
 	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
 
 @year/is-leap ( year* -- bool )
-	DUP2 #0190 u16/mod #0000 EQU2 ?&leap
-	DUP2 #0064 u16/mod #0000 EQU2 ?&not-leap
-	#0003 AND2 #0000 EQU2 JMP2r
-	&not-leap POP2 #00 JMP2r
-	&leap POP2 #01 JMP2r
+	DUP2 #0190 u16/mod #0000 EQU2 ?{
+		DUP2 #0064 u16/mod #0000 EQU2 ?{
+			#0003 AND2 #0000 EQU2 JMP2r }
+		POP2 #00 JMP2r
+		{ POP2 #01 JMP2r
 
-@dotw/<emit> ( dotw -- )
-	#00 SWP #20 SFT2 ;&lut ADD2 html/<str>
-	JMP2r
+@doty-year/year-month-day ( doty* year* -- year* month day )
+	,&year STR2
+	STH2
+	#0c00
+	&>l2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
+		STH2k SUB2r !&continue2
+		&skip2 POP2 !{
+		&continue2 POP2 INC GTHk ?&>l2 }
+	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
+
+@dotw/make ( dotw -- )
+	#00 SWP #20 SFT2 ;&lut ADD2 JMP2r
 
 	&lut [
 	"Sun 00 "Mon 00 "Tue 00 "Wed 00
 	"Thu 00 "Fri 00 "Sat 00 ]
 
-@month/<emit> ( month -- )
-	#00 SWP #20 SFT2 ;&lut ADD2 html/<str>
-	JMP2r
+@month/make ( month -- )
+	#00 SWP #20 SFT2 ;&lut ADD2 JMP2r
 
 	&lut [
 	"Jan 00 "Feb 00 "Mar 00 "Apr 00
 	"May 00 "Jun 00 "Jul 00 "Aug 00
 	"Sep 00 "Oct 00 "Nov 00 "Dec 00 ]
+
+@dec/parse ( str* -- dec* )
+	LDA2
+	( a ) [ LIT "0 ] SUB SWP
+	( b ) [ LIT "0 ] SUB #0a MUL ADD #00 SWP JMP2r
 
 @dec/<emit> ( short* -- )
 	[ LIT2r ff00 ]
