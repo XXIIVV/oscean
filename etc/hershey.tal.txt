@@ -1,0 +1,173 @@
+( build: uxnasm src/hershey.tal hershey.ram
+| start: uxnemu hershey.rom )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf $40
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	#f0f3 .System/r DEO2
+	#f00a .System/g DEO2
+	#f00f .System/b DEO2
+	#0480 .Screen/width DEO2
+	#0240 .Screen/height DEO2
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@meta $1
+	( name ) "Hershey 0a
+	( details ) "Hershey 20 "Vector 20 "Renderer 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "20 20 "May 20 "2026 $1
+	( elements ) 00
+
+(
+@|Src )
+
+@src/on-console ( -> )
+	.Console/read DEI DUP #20 GTH ?{ POP ;&buf sheet/<load>
+		BRK }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+%pen/norm ( c* -- c* ) {
+	#80 ADD #0080 SUB2 #10 SFT2 }
+
+%u16/abs ( a* -- res* ) {
+	DUP2k #1f SFT2 MUL2 SUB2 }
+
+%u16/lts ( a* b* -- f ) {
+	SUB2 POP #07 SFT }
+
+%u16/gts ( a* b* -- f ) {
+	SWP2 u16/lts }
+
+(
+@|Sheet )
+
+@sheet/<load> ( path* -- )
+	.File/name DEO2
+	#8000 .File/length DEO2
+	;&buf .File/read DEO2
+	( | scan )
+	#0000 ;line/oy STA2
+	[ LITr 00 ] ;&buf .File/success DEI2 ADD2 ;&buf
+	&>l
+		STHkr #0f AND ?{
+			POPr ;line/oy LDA2 #0050 ADD2 ;line/oy STA2
+			#0030 ;line/ox STA2
+			LITr 00 }
+		DUP2 glyph/<draw>
+		str/next INC2 INCr GTH2k ?&>l
+	POP2 POP2 POPr JMP2r
+
+(
+@|Core )
+
+@glyph/get-id ( addr* -- addr* id* )
+	DUP2 str/walk-ws SWP2 #0005 ADD2 SWP2 !/parse-decimal
+
+@glyph/get-vertices ( addr* -- addr* count* )
+	DUP2 str/walk-ws SWP2 #0003 ADD2 SWP2
+	( >> )
+
+@glyph/parse-decimal ( to* from* -- to* res* )
+	[ LIT2r 0000 ]
+	&>wi
+		LIT2r 000a MUL2r LDAk LIT "0 SUB LITr 00 STH
+		ADD2r INC2 GTH2k ?&>wi
+	POP2 STH2r JMP2r
+
+@glyph/get-bound ( addr* -- addr* res )
+	INC2k SWP2 LDA LIT "R SUB JMP2r
+
+@glyph/<draw> ( addr* -- )
+	( ) /get-id POP2
+	( ) /get-vertices STH2
+	( ) /get-bound #00 SWP SUB #00 SWP pen/norm ;line/ox LDA2 ADD2 ;line/ox STA2
+	( ) /get-bound ,&x STR
+	ORAr STHr ?{ POP2 JMP2r }
+	[ LIT2 00 _pen/is-down ] STR
+	&>w
+		LDA2k pen/<apply>
+		INC2 INC2 LDAk #0a NEQ ?&>w
+	POP2
+	( | pad )
+	[ LIT2 00 &x $1 ] pen/norm ;line/ox LDA2 ADD2 ;line/ox STA2
+	JMP2r
+
+@pen/<apply> ( x y -- )
+	DUP2 LIT2 20 "R NEQ2 ?{
+		( raise ) POP2 [ LIT2 00 _&is-down ] STR
+		JMP2r }
+	[ LIT &is-down 01 ] ?{
+		DUP2 LIT "R SUB ,&y1 STR
+		LIT "R SUB ,&x1 STR
+		POP2 [ LIT2 01 _&is-down ] STR
+		JMP2r }
+	LIT "R SUB ,&y2 STR
+	LIT "R SUB ,&x2 STR
+	( x1 ) [ LIT2 00 &x1 $1 ] /norm
+	( y1 ) [ LIT2 00 &y1 $1 ] /norm
+	( x2 ) [ LIT2 00 &x2 $1 ] DUP ,&x1 STR
+	/norm
+	( y2 ) [ LIT2 00 &y2 $1 ] DUP ,&y1 STR
+	/norm
+	( >> )
+
+@line/<draw> ( x1* y1* x2* y2* -- )
+	[ LIT2 &oy 0000 ] ADD2 ,&y2 STR2
+	[ LIT2 &ox 0000 ] ADD2 ,&x2 STR2
+	,&oy LDR2 ADD2 STH2
+	,&ox LDR2 ADD2 STH2
+	( | x )
+	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k u16/abs ,&dx STR2
+	u16/gts [ JMP SWP POP ] ,&sx STR
+	SWP2r
+	( | y )
+	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k u16/abs #0000 SWP2 SUB2 ,&dy STR2
+	u16/gts [ JMP SWP POP ] ,&sy STR
+	,&dx LDR2 ,&dy LDR2 ADD2
+	&>w
+		DUP2r [ LITr -Screen/y ] DEO2r
+		OVR2r [ LITr -Screen/x ] DEO2r
+		[ LIT2 &color 01 -Screen/pixel ] DEO
+		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
+			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
+				( stop ) POP2 POP2r POP2r JMP2r } }
+		( e -> e2 ) DUP2k ADD2 DUP2
+		( y ) [ LIT2 &dy $2 ] u16/lts ?{
+			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
+			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
+		( x ) [ LIT2 &dx $2 ] u16/gts ?{
+			( e+dx ) ,&dx LDR2 ADD2
+			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
+		!&>w
+
+(
+@|Stdlib )
+
+@str/walk-ws ( str* -- str* )
+	&>w
+		LDAk #20 EQU ?{ JMP2r }
+		INC2 !&>w
+
+@str/next ( str* -- str* )
+	&>wn
+		LDAk #1f GTH ?{ JMP2r }
+		INC2 !&>wn
+
+(
+@|Buffers )
+
+@sheet/buf
+
