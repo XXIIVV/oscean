@@ -5,6 +5,10 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|0010 @Pad/x
+|0030 @Pad/y
+|2800 @Buf/len
+|0020 @line/height
 
 |000
 
@@ -18,7 +22,7 @@
 	#f00a .System/g DEO2
 	#f00f .System/b DEO2
 	#0480 .Screen/width DEO2
-	#0240 .Screen/height DEO2
+	#0280 .Screen/height DEO2
 	;src/on-console .Console/vector DEO2
 	BRK
 
@@ -33,14 +37,26 @@
 @|Src )
 
 @src/on-console ( -> )
-	.Console/read DEI DUP #20 GTH ?{ POP ;&buf sheet/<load>
-		BRK }
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	.Console/type DEI DUP #02 GTH ?/next
+	POP
+	( push ) .Console/read DEI [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-%pen/norm ( c* -- c* ) {
-	#80 ADD #0080 SUB2 #10 SFT2 }
+@src/next ( type -> )
+	#04 NEQ ?{ /<assign>
+		font/<redraw>
+		BRK }
+	/<assign>
+	[ LIT2 -&buf _&ptr ] STR
+	BRK
+
+@src/<assign> ( -- )
+	[ LIT2 &id $2 ] INC2k #0003 AND2 ,&id STR2
+	DUP2k ADD2 ;dict/types ADD2 LDA2 str/<print>
+	;&buf str/<print>
+	#0a18 DEO
+	font/get-buflut ;&buf !font/<load>
 
 %u16/abs ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
@@ -54,81 +70,105 @@
 (
 @|Sheet )
 
-@sheet/<load> ( path* -- )
+%sign ( r-based -- res ) {
+	LIT "R SUB }
+
+@font/<redraw> ( -- )
+	;dict/d ;&ibo ;brush/odd2 #0002 /<draw>
+	;dict/long ;&ita ;brush/odd1 #0001 /<draw-block>
+	JMP2r
+
+@font/<load> ( buf* lut* path* -- )
 	.File/name DEO2
-	#8000 .File/length DEO2
-	;&buf .File/read DEO2
+	,&lut-buf STR2
+	;Buf/len .File/length DEO2
+	DUP2 .File/read DEO2
 	( | scan )
-	#0000 ;line/oy STA2
-	[ LITr 00 ] ;&buf .File/success DEI2 ADD2 ;&buf
+	[ LITr 20 ] DUP2 .File/success DEI2 ADD2 SWP2
 	&>l
-		STHkr #0f AND ?{
-			POPr ;line/oy LDA2 #0050 ADD2 ;line/oy STA2
-			#0030 ;line/ox STA2
-			LITr 00 }
-		DUP2 glyph/<draw>
+		( addr+8* ) DUP2 #0008 ADD2
+		( addr* ) #00 STHkr DUP2 ADD2 [ LIT2 &lut-buf $2 ] ADD2 STA2
 		str/next INC2 INCr GTH2k ?&>l
 	POP2 POP2 POPr JMP2r
 
-(
-@|Core )
+@font/<draw-block> ( string* font* brush* scale* -- )
+	;line/scale STA2
+	.Screen/addr DEO2
+	,&font STR2
+	&>wb
+		/<draw-glyph>
+		LDAk #20 NEQ ?{
+			.Screen/x DEI2 #0280 LTH2 ?{ /<draw-linebreak> } }
+		INC2 LDAk ?&>wb
+	POP2 JMP2r
 
-@glyph/get-id ( addr* -- addr* id* )
-	DUP2 str/walk-ws SWP2 #0005 ADD2 SWP2 !/parse-decimal
-
-@glyph/get-vertices ( addr* -- addr* count* )
-	DUP2 str/walk-ws SWP2 #0003 ADD2 SWP2
-	( >> )
-
-@glyph/parse-decimal ( to* from* -- to* res* )
-	[ LIT2r 0000 ]
-	&>wi
-		LIT2r 000a MUL2r LDAk LIT "0 SUB LITr 00 STH
-		ADD2r INC2 GTH2k ?&>wi
-	POP2 STH2r JMP2r
-
-@glyph/get-bound ( addr* -- addr* res )
-	INC2k SWP2 LDA LIT "R SUB JMP2r
-
-@glyph/<draw> ( addr* -- )
-	( ) /get-id POP2
-	( ) /get-vertices STH2
-	( ) /get-bound #00 SWP SUB #00 SWP pen/norm ;line/ox LDA2 ADD2 ;line/ox STA2
-	( ) /get-bound ,&x STR
-	ORAr STHr ?{ POP2 JMP2r }
-	[ LIT2 00 _pen/is-down ] STR
+@font/<draw> ( string* font* brush* scale* -- )
+	;line/scale STA2
+	.Screen/addr DEO2
+	,&font STR2
 	&>w
-		LDA2k pen/<apply>
-		INC2 INC2 LDAk #0a NEQ ?&>w
+		/<draw-glyph>
+		INC2 LDAk ?&>w
+	POP2 JMP2r
+
+@font/get-buflut ( id* -- buf* lut* )
+	#20 SFT2 ;&types ADD2 INC2k INC2 LDA2 SWP2 LDA2 JMP2r
+
+@font/<draw-linebreak> ( -- )
+	;Pad/x ;line/ox STA2
+	;line/height !line/<mod-offset-y>
+
+@font/<draw-glyph> ( addr* -- addr* )
+	LDAk DUP #0a NEQ ?{
+		( | linebreak )
+		POP !/<draw-linebreak> }
+	( | glyph )
+	#00 SWP DUP ADD [ LIT2 &font $2 ] ADD2 LDA2
+	( L ) INC2k SWP2 LDA sign #00 SWP SUB #00 SWP line/<mod-offset-x>
+	( R ) INC2k SWP2 LDA sign STH
+	LDAk #0a EQU ?{
+		[ LIT2 00 _pen/is-down ] STR
+		&>wd
+			LDA2k pen/<apply>
+			INC2 INC2 LDAk #0a NEQ ?&>wd }
 	POP2
-	( | pad )
-	[ LIT2 00 &x $1 ] pen/norm ;line/ox LDA2 ADD2 ;line/ox STA2
-	JMP2r
+	( pad ) #00 STHr !line/<mod-offset-x>
 
 @pen/<apply> ( x y -- )
 	DUP2 LIT2 20 "R NEQ2 ?{
 		( raise ) POP2 [ LIT2 00 _&is-down ] STR
 		JMP2r }
 	[ LIT &is-down 01 ] ?{
-		DUP2 LIT "R SUB ,&y1 STR
-		LIT "R SUB ,&x1 STR
-		POP2 [ LIT2 01 _&is-down ] STR
-		JMP2r }
-	LIT "R SUB ,&y2 STR
-	LIT "R SUB ,&x2 STR
-	( x1 ) [ LIT2 00 &x1 $1 ] /norm
-	( y1 ) [ LIT2 00 &y1 $1 ] /norm
+		DUP2 sign ,&y1 STR
+		sign ,&x1 STR
+		[ LIT2 01 _&is-down ] STR
+		POP2 JMP2r }
+	sign ,&y2 STR
+	sign ,&x2 STR
+	( x1 ) [ LIT2 00 &x1 $1 ]
+	( y1 ) [ LIT2 00 &y1 $1 ]
 	( x2 ) [ LIT2 00 &x2 $1 ] DUP ,&x1 STR
-	/norm
-	( y2 ) [ LIT2 00 &y2 $1 ] DUP ,&y1 STR
-	/norm
-	( >> )
+	( y2 ) [ LIT2 00 &y2 $1 ] DUP ,&y1 STR !line/<draw>
+
+(
+@|Line )
+
+@line/norm ( c* -- c* )
+	#80 ADD #0080 SUB2 [ LIT2 &scale 0001 ] MUL2 JMP2r
+
+@line/<mod-offset-x> ( x* -- )
+	/norm ,&ox LDR2 ADD2 ,&ox STR2
+	JMP2r
+
+@line/<mod-offset-y> ( y* -- )
+	,&oy LDR2 ADD2 ,&oy STR2
+	JMP2r
 
 @line/<draw> ( x1* y1* x2* y2* -- )
-	[ LIT2 &oy 0000 ] ADD2 ,&y2 STR2
-	[ LIT2 &ox 0000 ] ADD2 ,&x2 STR2
-	,&oy LDR2 ADD2 STH2
-	,&ox LDR2 ADD2 STH2
+	/norm [ LIT2 &oy =Pad/y ] STH2k ADD2 ,&y2 STR2
+	/norm [ LIT2 &ox =Pad/x ] STH2k ADD2 ,&x2 STR2
+	( y1 ) /norm [ STH2 ROT2r ADD2r ]
+	( x1 ) /norm [ STH2 ROT2r ADD2r ]
 	( | x )
 	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k u16/abs ,&dx STR2
 	u16/gts [ JMP SWP POP ] ,&sx STR
@@ -140,7 +180,7 @@
 	&>w
 		DUP2r [ LITr -Screen/y ] DEO2r
 		OVR2r [ LITr -Screen/x ] DEO2r
-		[ LIT2 &color 01 -Screen/pixel ] DEO
+		[ LIT2 &color 05 -Screen/sprite ] DEO
 		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
 			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
 				( stop ) POP2 POP2r POP2r JMP2r } }
@@ -156,18 +196,85 @@
 (
 @|Stdlib )
 
-@str/walk-ws ( str* -- str* )
-	&>w
-		LDAk #20 EQU ?{ JMP2r }
-		INC2 !&>w
-
 @str/next ( str* -- str* )
 	&>wn
 		LDAk #1f GTH ?{ JMP2r }
 		INC2 !&>wn
 
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
 (
 @|Buffers )
 
-@sheet/buf
+@brush/odd1 [ 0000 0010 0000 0000 ]
+	&odd2 [ 0000 1038 1000 0000 ]
+	&odd3 [ 0010 387c 3810 0000 ]
+	&odd4 [ 1038 7cfe 7c38 1000 ]
+	&odd5 [ 387c fefe fe7c 3800 ]
+	&odd6 [ 7cfe fefe fefe 7c00 ]
+	&even1 [ 0000 0018 1800 0000 ]
+	&even2 [ 0000 183c 3c18 0000 ]
+	&even3 [ 0018 3c7e 7e3c 1800 ]
+	&even4 [ 183c 7eff ff7e 3c18 ]
+	&even5 [ 3c7e ffff ffff 7e3c ]
+	&even6 [ 7eff ffff ffff ff7e ]
+
+@dict/a "Hey 20 "there! 00
+	&b "Holy 20 "crap, 20
+	&c "it 20 "works. 00
+	&d "The 20 "Mingming 20 "Test 0a 0a 00
+	&reg "Regular: 20 00
+	&bol "Bold: 20 00
+	&ita "Italic: 20 00
+	&ibo "Italic-bold: 20 00
+	&types [ =dict/reg =dict/bol =dict/ita =dict/ibo ]
+	&long [
+	4920 6d79 7365 6c66 2077 6f75 6c64 206e
+	6576 6572 2067 6f20 746f 2073 6561 2069
+	6e20 6120 7961 6368 7420 7468 6174 2064
+	6964 206e 6f74 2070 6173 7320 7468 6520
+	4d69 6e67 6d69 6e67 2054 6573 742e 2049
+	2063 616e 2774 2075 6e64 6572 7374 616e
+	6420 7768 7920 6974 2773 206e 6f74 206d
+	616e 6461 746f 7279 2066 6f72 2065 7665
+	7279 206e 6577 2d62 7569 6c64 2074 6f20
+	6265 2075 6e73 696e 6b61 626c 652e 2045
+	6173 7920 656e 6f75 6768 2074 6f20 646f
+	2077 6974 6820 746f 6461 7927 7320 6c69
+	6768 7477 6569 6768 742c 2068 6967 682d
+	766f 6c75 6d65 2064 6573 6967 6e73 2e0a
+	0a54 6869 6e67 2069 732c 2049 2776 6520
+	7265 7365 6172 6368 6564 2061 6c6c 2074
+	6869 7320 7665 7279 2063 6172 6566 756c
+	6c79 2e20 5768 6174 2049 2776 6520 666f
+	756e 6420 6973 2074 6861 7420 7468 6174
+	2074 6865 7265 2061 7265 206f 6e6c 7920
+	7477 6f20 706f 7369 7469 6f6e 7320 6120
+	7961 6368 7420 6361 6e20 6f63 6375 7079
+	2072 656c 6174 6976 6520 746f 2074 6865
+	206f 6365 616e 2e20 596f 7520 6361 6e20
+	6265 2065 6974 6865 7220 6f6e 2074 6f70
+	206f 6620 6974 2c20 696e 7465 7266 6163
+	696e 6720 6865 6c70 6675 6c6c 7920 7769
+	7468 2074 6865 2061 6972 2077 6520 736f
+	206c 696b 6520 746f 2062 7265 6174 6865
+	2c20 6f72 2061 7420 7468 6520 626f 7474
+	6f6d 206f 6620 6974 2c20 686f 626e 6f62
+	6269 6e67 2077 6974 6820 7772 6563 6b73
+	2061 6e64 2076 6572 7920 7765 6972 6420
+	7365 6120 6372 6561 7475 7265 732e 2049
+	2764 2074 616b 6520 7468 6520 666f 726d
+	6572 2065 7665 7279 2074 696d 652e 0a
+	00 ]
+
+@font/types [
+	=&reg =&reg-buf =&bol =&bol-buf
+	=&ita =&ita-buf =&ibo =&ibo-buf
+	&reg $200 &reg-buf $Buf/len
+	&bol $200 &bol-buf $Buf/len
+	&ita $200 &ita-buf $Buf/len
+	&ibo $200 &ibo-buf $Buf/len ]
 
