@@ -5,10 +5,8 @@ typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 
 typedef struct {
-	Uint16 pc;
 	Uint8 ptr[2];
 	Uint8 stk[2][0x100];
-	Uint8 r;
 } Uxn;
 
 static Uxn u;
@@ -42,33 +40,18 @@ deo(Uint8 port, Uint8 val)
 	}
 }
 
-/* clang-format off */
-
-#define Rec(m1, m2) if(!k) u.ptr[u.r] -= d ? m2 : m1;
-#define Fix(m) if(!k) u.ptr[u.r] -= m
-#define Getx(v8,v16) d ? get16(v16) : Get1(v8)
-#define Get2(v16) get16(v16)
-#define Get1(v8) get8(v8)
-#define Push8(v) u.stk[u.r][u.ptr[u.r]++] = v
-#define Pushx(v) if(d) Push8((v) >> 8); Push8(v);
-
-/* clang-format on */
-
 /*
 @|Primitives */
 
-static inline Uint8
-get8(int o)
-{
-	return u.stk[u.r][(Uint8)(u.ptr[u.r] - o)];
-}
+/* clang-format off */
 
-static inline Uint16
-get16(int o)
-{
-	Uint8 offset = u.ptr[u.r] - o;
-	return (u.stk[u.r][offset] << 8 | u.stk[u.r][offset + 1]);
-}
+#define Get1(o) u.stk[r][(Uint8)(u.ptr[r] - (o))]
+#define Get2(o) (Get1(o) << 8 | u.stk[r][(Uint8)(u.ptr[r] - (o) + 1)])
+#define Getx(off8,off16) d ? Get2(off16) : Get1(off8)
+#define Put1(s,v) u.stk[s][u.ptr[s]++] = v
+#define Putx(s,v) { const int t = v; if(d) Put1(s, t >> 8); Put1(s, t); }
+
+/* clang-format on */
 
 /*
 @|Core */
@@ -76,254 +59,212 @@ get16(int o)
 static unsigned int
 uxn_eval(Uint16 start_pc)
 {
-	u.pc = start_pc;
+	Uint16 pc = start_pc;
 	for(;;) {
-		const int instr = ram[u.pc++];
+		const int instr = ram[pc++];
 		const int opc = instr & 0x1f;
 		if(opc) {
 			const int k = instr >> 7;
 			const int d = (instr >> 5) & 1;
-			u.r = (instr >> 6) & 1;
+			const int r = (instr >> 6) & 1;
 			switch(opc) {
 			case 0x01: {
 				const int x = Getx(1, 2);
-				Rec(1, 2);
-				Pushx(x + 1);
+				if(!k) u.ptr[r] -= d + 1;
+				Putx(r, x + 1);
 			} break;
 			case 0x02: {
-				Rec(1, 2)
+				if(!k) u.ptr[r] -= d + 1;
 			} break;
 			case 0x03: {
 				const int x = Getx(1, 2);
-				Rec(2, 4);
-				Pushx(x);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, x);
 			} break;
 			case 0x04: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(x);
-				Pushx(y);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, x);
+				Putx(r, y);
 			} break;
 			case 0x05: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				const int z = Getx(3, 6);
-				Rec(3, 6);
-				Pushx(y);
-				Pushx(x);
-				Pushx(z);
+				const int x = Getx(1, 2), y = Getx(2, 4), z = Getx(3, 6);
+				if(!k) u.ptr[r] -= 3 << d;
+				Putx(r, y);
+				Putx(r, x);
+				Putx(r, z);
 			} break;
 			case 0x06: {
 				const int x = Getx(1, 2);
-				Rec(1, 2);
-				Pushx(x);
-				Pushx(x);
+				if(!k) u.ptr[r] -= d + 1;
+				Putx(r, x);
+				Putx(r, x);
 			} break;
 			case 0x07: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y);
-				Pushx(x);
-				Pushx(y);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y);
+				Putx(r, x);
+				Putx(r, y);
 			} break;
 			case 0x08: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Push8(x == y);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Put1(r, x == y);
 			} break;
 			case 0x09: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Push8(y != x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Put1(r, y != x);
 			} break;
 			case 0x0a: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Push8(y > x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Put1(r, y > x);
 			} break;
 			case 0x0b: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Push8(y < x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Put1(r, y < x);
 			} break;
 			case 0x0c: {
 				const int x = Getx(1, 2);
-				Rec(1, 2);
-				u.pc = d ? x : u.pc + (Sint8)x;
+				if(!k) u.ptr[r] -= d + 1;
+				pc = d ? x : pc + (Sint8)x;
 			} break;
 			case 0x0d: {
-				const int x = Getx(1, 2);
-				const int y = Get1(d + 2);
-				Rec(2, 3) if(y) u.pc = d ? x : u.pc + (Sint8)x;
+				const int x = Getx(1, 2), y = Get1(d + 2);
+				if(!k) u.ptr[r] -= d + 2;
+				if(y) pc = d ? x : pc + (Sint8)x;
 			} break;
 			case 0x0e: {
 				const int x = Getx(1, 2);
-				Rec(1, 2);
-				u.r = !u.r;
-				Push8(u.pc >> 8);
-				Push8(u.pc);
-				u.pc = d ? x : u.pc + (Sint8)x;
+				if(!k) u.ptr[r] -= d + 1;
+				Put1(!r, pc >> 8), Put1(!r, pc);
+				pc = d ? x : pc + (Sint8)x;
 			} break;
 			case 0x0f: {
 				const int x = Getx(1, 2);
-				Rec(1, 2);
-				u.r = !u.r;
-				Pushx(x);
+				if(!k) u.ptr[r] -= d + 1;
+				Putx(!r, x);
 			} break;
 			case 0x10: {
 				const int x = Get1(1);
-				Fix(1);
-				Push8(ram[x]);
-				if(d) Push8(ram[(Uint8)(x + 1)]);
+				if(!k) u.ptr[r] -= 1;
+				Put1(r, ram[x]);
+				if(d) Put1(r, ram[(Uint8)(x + 1)]);
 			} break;
 			case 0x11: {
-				const int x = Get1(1);
-				const int y = Getx(2, 3);
-				Rec(2, 3);
+				const int x = Get1(1), y = Getx(2, 3);
+				if(!k) u.ptr[r] -= d + 2;
 				if(d)
 					ram[x] = y >> 8, ram[(Uint8)(x + 1)] = y;
 				else
 					ram[x] = y;
 			} break;
 			case 0x12: {
-				const int x = Get1(1);
-				const int y = u.pc + (Sint8)x;
-				Fix(1);
-				Push8(ram[y]);
-				if(d) Push8(ram[(Uint16)(y + 1)]);
+				const int x = Get1(1), y = pc + (Sint8)x;
+				if(!k) u.ptr[r] -= 1;
+				Put1(r, ram[y]);
+				if(d) Put1(r, ram[(Uint16)(y + 1)]);
 			} break;
 			case 0x13: {
-				const int x = Get1(1);
-				const int y = Getx(2, 3);
-				const int z = u.pc + (Sint8)x;
-				Rec(2, 3) if(d)
-					ram[z] = y >> 8,
-					ram[(Uint16)(z + 1)] = y;
-				else ram[z] = y;
+				const int x = Get1(1), y = Getx(2, 3), z = pc + (Sint8)x;
+				if(!k) u.ptr[r] -= d + 2;
+				if(d)
+					ram[z] = y >> 8, ram[(Uint16)(z + 1)] = y;
+				else
+					ram[z] = y;
 			} break;
 			case 0x14: {
 				const int x = Get2(2);
-				Fix(2);
-				Push8(ram[x]);
-				if(d) Push8(ram[(Uint16)(x + 1)]);
+				if(!k) u.ptr[r] -= 2;
+				Put1(r, ram[x]);
+				if(d) Put1(r, ram[(Uint16)(x + 1)]);
 			} break;
 			case 0x15: {
-				const int x = Get2(2);
-				const int y = Getx(3, 4);
-				Rec(3, 4);
+				const int x = Get2(2), y = Getx(3, 4);
+				if(!k) u.ptr[r] -= d + 3;
 				ram[x] = d ? y >> 8 : y;
 				if(d) ram[(Uint16)(x + 1)] = y;
 			} break;
 			case 0x16: {
 				const int x = Get1(1);
-				Fix(1);
-				Push8(dei(x));
-				if(d) Push8(dei(x + 1));
+				if(!k) u.ptr[r] -= 1;
+				Put1(r, dei(x));
+				if(d) Put1(r, dei(x + 1));
 			} break;
 			case 0x17: {
-				const int x = Get1(1);
-				const int y = Getx(2, 3);
-				Rec(2, 3);
+				const int x = Get1(1), y = Getx(2, 3);
+				if(!k) u.ptr[r] -= d + 2;
 				if(d) deo(x, y >> 8);
 				deo(d ? x + 1 : x, y);
 			} break;
 			case 0x18: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y + x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y + x);
 			} break;
 			case 0x19: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y - x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y - x);
 			} break;
 			case 0x1a: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y * x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y * x);
 			} break;
 			case 0x1b: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(x ? y / x : 0);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, x ? y / x : 0);
 			} break;
 			case 0x1c: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y & x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y & x);
 			} break;
 			case 0x1d: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y | x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y | x);
 			} break;
 			case 0x1e: {
-				const int x = Getx(1, 2);
-				const int y = Getx(2, 4);
-				Rec(2, 4);
-				Pushx(y ^ x);
+				const int x = Getx(1, 2), y = Getx(2, 4);
+				if(!k) u.ptr[r] -= 2 << d;
+				Putx(r, y ^ x);
 			} break;
 			case 0x1f: {
-				const int x = Get1(1);
-				const int y = Getx(2, 3);
-				Rec(2, 3);
-				Pushx((y >> (x & 0x0f)) << (x >> 4));
+				const int x = Get1(1), y = Getx(2, 3);
+				if(!k) u.ptr[r] -= d + 2;
+				Putx(r, (y >> (x & 0x0f)) << (x >> 4));
 			} break;
 			}
 		} else
 			switch(instr) {
 			case 0x00: return 1;
 			case 0x20: {
-				Uint16 a = ram[u.pc] << 8 | ram[u.pc + 1];
-				Uint8 b = u.stk[0][--u.ptr[0]];
-				u.pc += 2;
-				if(b) u.pc += a;
+				const int a = ram[pc] << 8 | ram[pc + 1], b = u.stk[0][--u.ptr[0]];
+				pc += 2;
+				if(b) pc += a;
 			} break;
 			case 0x40: {
-				Uint16 a = ram[u.pc] << 8 | ram[u.pc + 1];
-				u.pc += 2 + a;
+				const int a = ram[pc] << 8 | ram[pc + 1];
+				pc += 2 + a;
 			} break;
 			case 0x60: {
-				Uint16 a = ram[u.pc] << 8 | ram[u.pc + 1];
-				u.pc += 2;
-				u.r = 1;
-				Push8((u.pc >> 8));
-				Push8(u.pc);
-				u.pc += a;
+				const int a = ram[pc] << 8 | ram[pc + 1];
+				pc += 2;
+				Put1(1, (pc >> 8)), Put1(1, pc);
+				pc += a;
 			} break;
-			case 0x80: {
-				u.r = 0;
-				Push8(ram[u.pc++]);
-			} break;
-			case 0xa0: {
-				u.r = 0;
-				Push8(ram[u.pc++]);
-				Push8(ram[u.pc++]);
-			} break;
-			case 0xc0: {
-				u.r = 1;
-				Push8(ram[u.pc++]);
-			} break;
-			case 0xe0: {
-				u.r = 1;
-				Push8(ram[u.pc++]);
-				Push8(ram[u.pc++]);
-			} break;
+			case 0x80: Put1(0, ram[pc++]); break;
+			case 0xa0: Put1(0, ram[pc++]), Put1(0, ram[pc++]); break;
+			case 0xc0: Put1(1, ram[pc++]); break;
+			case 0xe0: Put1(1, ram[pc++]), Put1(1, ram[pc++]); break;
 			}
 	}
-	return 0;
 }
 
 static void
@@ -343,7 +284,10 @@ main(int argc, char **argv)
 		return 1;
 	else if(!(f = fopen(argv[1], "rb")))
 		return 1;
-	fread(&ram[0x100], 0xff00, 1, f), fclose(f);
+	if(!fread(&ram[0x100], 1, 0xff00, f)) {
+		fclose(f);
+		return 1;
+	}
 	dev[0x17] = argc > 2;
 	if(uxn_eval(0x100) && console_vector) {
 		int i = 2;
