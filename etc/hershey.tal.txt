@@ -8,7 +8,7 @@
 |0010 @Pad/x
 |0030 @Pad/y
 |2800 @Buf/len
-|0020 @line/height
+|0030 @line/height
 
 |000
 
@@ -21,8 +21,8 @@
 	#f0f3 .System/r DEO2
 	#f00a .System/g DEO2
 	#f00f .System/b DEO2
-	#0480 .Screen/width DEO2
-	#0280 .Screen/height DEO2
+	#02c0 .Screen/width DEO2
+	#0180 .Screen/height DEO2
 	;src/on-console .Console/vector DEO2
 	BRK
 
@@ -58,6 +58,9 @@
 	#0a18 DEO
 	font/get-buflut ;&buf !font/<load>
 
+(
+@|Sheet )
+
 %u16/abs ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
 
@@ -67,16 +70,67 @@
 %u16/gts ( a* b* -- f ) {
 	SWP2 u16/lts }
 
-(
-@|Sheet )
-
 %sign ( r-based -- res ) {
 	LIT "R SUB }
 
 @font/<redraw> ( -- )
-	;dict/d ;&ibo ;brush/odd2 #0002 /<draw>
-	;dict/long ;&ita ;brush/odd1 #0001 /<draw-block>
+	.Screen/width DEI2 #01 SFT2 #0040 line/<set-offset>
+	;dict/a ;&ita ;brush/odd1 #0001 /<draw-center>
+	.Screen/width DEI2 #01 SFT2 #0068 line/<set-offset>
+	;dict/b ;&ibo ;brush/odd1 #0001 /<draw-center>
+	.Screen/width DEI2 #01 SFT2 #00b0 line/<set-offset>
+	;dict/c ;&bol ;brush/odd1 #0003 /<draw-center>
+	.Screen/width DEI2 #01 SFT2 #00f0 line/<set-offset>
+	;dict/d ;&bol ;brush/odd1 #0001 /<draw-center>
+	.Screen/width DEI2 #01 SFT2 #0110 line/<set-offset>
+	;dict/e ;&reg ;brush/odd1 #0001 /<draw-center>
 	JMP2r
+
+@font/<draw-block> ( string* font* brush* scale* -- )
+	;line/scale STA2
+	.Screen/addr DEO2
+	;&font STA2
+	&>wdb
+		/<draw-glyph>
+		LDAk #20 NEQ ?{
+			.Screen/x DEI2 #0280 LTH2 ?{ /<draw-linebreak> } }
+		INC2 LDAk ?&>wdb
+	POP2 JMP2r
+
+@font/<draw-center> ( string* font* brush* scale* -- )
+	;line/scale STA2
+	.Screen/addr DEO2
+	;&font STA2
+	;line/ox LDA2 OVR2 /get-width ;line/scale LDA2 MUL2 #01 SFT2 SUB2 ;line/ox STA2
+	&>wdc
+		/<draw-glyph>
+		INC2 LDAk ?&>wdc
+	POP2 JMP2r
+
+@font/<draw> ( string* font* brush* scale* -- )
+	;line/scale STA2
+	.Screen/addr DEO2
+	;&font STA2
+	&>wd
+		/<draw-glyph>
+		INC2 LDAk ?&>wd
+	POP2 JMP2r
+
+@font/<draw-linebreak> ( -- )
+	[ LIT2 &anchor $2 ] ;line/ox STA2
+	;line/height !line/<mod-offset-y>
+
+@font/<draw-glyph> ( addr* -- addr* )
+	LDAk DUP #0a NEQ ?{
+		( | linebreak )
+		POP !/<draw-linebreak> }
+	( | glyph )
+	/get-glyph
+	( L ) INC2k SWP2 LDA sign #00 SWP SUB #00 SWP line/<mod-offset-x>
+	( R ) INC2k SWP2 LDA sign STH
+	LDAk #0a EQU ?{ pen/<trace> }
+	POP2
+	( pad ) #00 STHr !line/<mod-offset-x>
 
 @font/<load> ( buf* lut* path* -- )
 	.File/name DEO2
@@ -91,48 +145,29 @@
 		str/next INC2 INCr GTH2k ?&>l
 	POP2 POP2 POPr JMP2r
 
-@font/<draw-block> ( string* font* brush* scale* -- )
-	;line/scale STA2
-	.Screen/addr DEO2
-	,&font STR2
-	&>wb
-		/<draw-glyph>
-		LDAk #20 NEQ ?{
-			.Screen/x DEI2 #0280 LTH2 ?{ /<draw-linebreak> } }
-		INC2 LDAk ?&>wb
-	POP2 JMP2r
-
-@font/<draw> ( string* font* brush* scale* -- )
-	;line/scale STA2
-	.Screen/addr DEO2
-	,&font STR2
-	&>w
-		/<draw-glyph>
-		INC2 LDAk ?&>w
-	POP2 JMP2r
+@font/get-width ( str* -- width* )
+	[ LIT2r 0000 ]
+	&>wgw
+		LDAk DUP #20 LTH ?{
+			DUP /get-glyph LDA2
+			( | get width )
+			sign #00 ROT sign SUB ADD LITr 00 STH
+			ADD2r }
+		POP INC2 LDAk ?&>wgw
+	POP2 STH2r JMP2r
 
 @font/get-buflut ( id* -- buf* lut* )
 	#20 SFT2 ;&types ADD2 INC2k INC2 LDA2 SWP2 LDA2 JMP2r
 
-@font/<draw-linebreak> ( -- )
-	;Pad/x ;line/ox STA2
-	;line/height !line/<mod-offset-y>
+@font/get-glyph ( ascii -- addr* )
+	#00 SWP DUP ADD [ LIT2 &font $2 ] ADD2 LDA2 JMP2r
 
-@font/<draw-glyph> ( addr* -- addr* )
-	LDAk DUP #0a NEQ ?{
-		( | linebreak )
-		POP !/<draw-linebreak> }
-	( | glyph )
-	#00 SWP DUP ADD [ LIT2 &font $2 ] ADD2 LDA2
-	( L ) INC2k SWP2 LDA sign #00 SWP SUB #00 SWP line/<mod-offset-x>
-	( R ) INC2k SWP2 LDA sign STH
-	LDAk #0a EQU ?{
-		[ LIT2 00 _pen/is-down ] STR
-		&>wd
-			LDA2k pen/<apply>
-			INC2 INC2 LDAk #0a NEQ ?&>wd }
-	POP2
-	( pad ) #00 STHr !line/<mod-offset-x>
+@pen/<trace> ( -- )
+	[ LIT2 00 _pen/is-down ] STR
+	&>wdg
+		LDA2k pen/<apply>
+		INC2 INC2 LDAk #0a NEQ ?&>wdg
+	JMP2r
 
 @pen/<apply> ( x y -- )
 	DUP2 LIT2 20 "R NEQ2 ?{
@@ -162,6 +197,11 @@
 
 @line/<mod-offset-y> ( y* -- )
 	,&oy LDR2 ADD2 ,&oy STR2
+	JMP2r
+
+@line/<set-offset> ( x* y* -- )
+	,&oy STR2
+	,&ox STR2
 	JMP2r
 
 @line/<draw> ( x1* y1* x2* y2* -- )
@@ -222,10 +262,11 @@
 	&even5 [ 3c7e ffff ffff 7e3c ]
 	&even6 [ 7eff ffff ffff ff7e ]
 
-@dict/a "Hey 20 "there! 00
-	&b "Holy 20 "crap, 20
-	&c "it 20 "works. 00
-	&d "The 20 "Mingming 20 "Test 0a 0a 00
+@dict/a "Yo, 20 "listen 20 "up, 20 "here's 20 "the 20 "story 00
+	&b "About 20 "a 20 "little 20 "guy 20 "that 20 "lives 20 "in 20 "a 20 00
+	&c "BLUE 20 "WORLD 00
+	&d "And 20 "all 20 "day 20 "and 20 "all 20 "night 20 00
+	&e "and 20 "everything 20 "he 20 "sees 00
 	&reg "Regular: 20 00
 	&bol "Bold: 20 00
 	&ita "Italic: 20 00
