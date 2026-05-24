@@ -40,9 +40,23 @@
 	.File2/write DEO2
 	#0001 .File2/length DEO2 }
 
+%html/<attribute> ( body* attr* -- ) {
+	;ascii/space .File2/write DEO2
+	html/<str>
+	;ascii/equal .File2/write DEO2
+	[ LIT2r =ascii/quote LITr -File2/write ] DEO2kr
+	#0003 html/<length>
+	DEO2r }
+
 %html/<open> ( tag* -- ) {
 	;ascii/lt .File2/write DEO2
 	html/<str>
+	;ascii/gt .File2/write DEO2 }
+
+%html/<open-id> ( class* tag* -- ) {
+	;ascii/lt .File2/write DEO2
+	html/<str>
+	;dict/id html/<attribute>
 	;ascii/gt .File2/write DEO2 }
 
 %html/<close> ( tag* -- ) {
@@ -91,8 +105,8 @@
 	workarea/<load>
 	ORA ?{ POP2 JMP2r }
 	( | h3 )
-	;tag/h3 html/<open>
-	arvelie/make DUP2 #0003 html/<length>
+	arvelie/make DUP2 ;tag/h3 html/<open-id>
+	DUP2 #0003 html/<length>
 	;tag/h3 html/<close>
 	html/<lb>
 	( | article )
@@ -363,6 +377,7 @@
 	&desc "Journal 20 "Logs 00
 	&midnight "12:00:00 20 "-0000 00
 	&rss-path "links/log.xml 00
+	&id "id 00
 
 @path/url "https://wiki.xxiivv.com/ 00
 
