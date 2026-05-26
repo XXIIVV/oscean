@@ -50,6 +50,7 @@ static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
 @|System ------------------------------------------------------------ */
 
 static char *system_boot_path;
+static void emu_screenshot();
 
 static void
 system_print(char *name, int r)
@@ -119,13 +120,21 @@ system_deo_expansion(void)
 		fprintf(stderr, "Unknown command: %02x\n", ram[exp]);
 }
 
+static void
+system_deo_print(void)
+{
+	if(dev[0xe] & 0x1)
+		system_print("WST", 0), system_print("RST", 1);
+	if(dev[0xe] & 0x2)
+		emu_screenshot();
+}
+
 /* clang-format off */
 
 static Uint8 system_dei_wst(void) { return ptr[0]; }
 static Uint8 system_dei_rst(void) { return ptr[1]; }
 static void system_deo_wst(void) { ptr[0] = dev[4]; }
 static void system_deo_rst(void) { ptr[1] = dev[5]; }
-static void system_deo_print(void) { system_print("WST", 0), system_print("RST", 1); }
 
 /* clang-format on */
 
@@ -1107,6 +1116,35 @@ emu_restart(unsigned int soft)
 	uxn_eval(0x100);
 }
 
+static void
+emu_screenshot(void)
+{
+	FILE *f;
+	char filename[] = "_00x00.chr";
+	int tx, ty, row, col, tw = screen_width / 8, th = screen_height / 8;
+	put_size((Uint8 *)filename + 1, 2, tw);
+	put_size((Uint8 *)filename + 4, 2, th);
+	f = fopen(filename, "wb");
+	if(f) {
+		for(ty = 0; ty < th; ty++) {
+			for(tx = 0; tx < tw; tx++) {
+				Uint8 tile[16] = {0};
+				for(row = 0; row < 8; row++) {
+					const Uint8 *src = &screen_layers[(ty * 8 + row + 8) * screen_wmar2 + (tx * 8 + 8)];
+					Uint8 b1 = 0, b2 = 0;
+					for(col = 0; col < 8; col++) {
+						Uint8 px = src[col];
+						b1 |= ((px & 0x1) << (7 - col)), b2 |= (((px >> 2) & 0x1) << (7 - col));
+					}
+					tile[row] = b1, tile[row + 8] = b2;
+				}
+				fwrite(tile, 1, 16, f);
+			}
+		}
+		fclose(f);
+	}
+}
+
 static Uint8
 get_button(KeySym sym)
 {
@@ -1183,6 +1221,7 @@ emu_event(void)
 		case XK_F2: emu_deo(0xe, 0x1); break;
 		case XK_F4: console_close(), emu_restart(0); break;
 		case XK_F5: console_close(), emu_restart(1); break;
+		case XK_F6: emu_deo(0xe, 0x2); break;
 		}
 		controller_down(get_button(sym));
 		if(sym == XK_Tab)
@@ -1284,7 +1323,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator, 20 May 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator, 25 May 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
