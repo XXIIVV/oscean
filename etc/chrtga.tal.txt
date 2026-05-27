@@ -1,0 +1,138 @@
+( uxncli chrtga.rom img20x10.chr
+| output img20x10.tga )
+
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf $40
+	@dst/buf $40
+	@tga/size &w $1 &h $1
+
+|100
+
+@on-reset ( -> )
+	.Console/type DEI ?{
+		;dict/usage str/<print>
+		#010f DEO
+		BRK }
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ /<push>
+		BRK }
+	chr/<parse>
+	#010e DEO
+	#800f DEO
+	BRK
+
+@src/<push> ( c -- )
+	.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+	STZ
+	JMP2r
+
+@src/get-size ( -- w h )
+	,&ptr LDR #09 SUB
+	( w ) LDZ2k /read-byte STH
+	( x ) #03 ADD
+	( h ) LDZ2 /read-byte STHr SWP JMP2r
+
+@src/read-byte ( a b -- byte )
+	chr/hex SWP chr/hex #40 SFT ORA JMP2r
+
+@dst/<set-ext> ( ext* buf* -- )
+	/<push-str>
+	[ LIT2 fc _&ptr ] LDR ADD ,&ptr STR
+	( >> )
+
+@dst/<push-str> ( c -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		[ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ
+		INC2 !&>w
+
+(
+@|Core )
+
+@chr/<parse> ( -- )
+	;src/buf .File/name DEO2
+	#0010 .File/length DEO2
+	;dict/tga-ext ;src/buf dst/<set-ext>
+	( | )
+	;dst/buf .File2/name DEO2
+	src/get-size DUP2 .tga/size STZ2
+	tga/<write-head>
+	( | setup )
+	[ LIT2 00 -tga/h ] LDZ ,&ver STR2
+	[ LIT2 00 -tga/w ] LDZ DUP2 ,&hor STR2
+	#30 SFT2 DUP2 ,&w8 STR2
+	#30 SFT2 .File2/length DEO2
+	( | stream )
+	[ LIT2 &ver $2 ] #0000
+	&>v
+		[ LIT2 &hor $2 ] #0000
+		&>w
+			DUP2 #30 SFT2 ,&tx STR2
+			( read ) ;&tile .File/read DEO2
+			#0800
+			&>row
+				DUP ,&r STR
+				#0800
+				&>col
+					STHk #07 OVR SUB STH
+					;&tile [ LIT2 00 &r $1 ] ADD2
+					( ch1 ) LDAk STHkr SFT ROT ROT
+					( ch2 ) #0008 ADD2 LDA STHr SFT DUP ADD
+					( res ) #0102 AND2 ORA #00 SWP ;palette ADD2 LDA
+					( row ) [ LIT2 00 _&r ] LDR
+					( row*w ) [ LIT2 &w8 $2 ] MUL2
+					( row*w+tx ) [ LIT2 &tx $2 ] ADD2
+					( row*w+tx+col ) #00 STHr ADD2 ;tga/rowbuf ADD2 STA
+					INC GTHk ?&>col
+				POP2 INC GTHk ?&>row
+			POP2 INC2 GTH2k ?&>w
+		POP2 POP2
+		( write ) ;tga/rowbuf .File2/write DEO2
+		INC2 GTH2k ?&>v
+	POP2 POP2 JMP2r
+
+@palette [ ff aa 55 00 ]
+
+(
+@|Tga )
+
+@tga/<write-head> ( w h -- )
+	#00 SWP #30 SFT2 SWP ,&h-lh STR2
+	#00 SWP #30 SFT2 SWP ,&w-lh STR2
+	#0012 .File2/length DEO2
+	;&head .File2/write DEO2
+	JMP2r
+
+	&head [ 00 00 03 00 00 00 00 00 00 00 00 00 ]
+	&w-lh [ 00 00 ]
+	&h-lh [ 00 00 ] 08 20
+
+(
+@|Stdlib )
+
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@dict/usage "usage: 20 "chricn.rom 20 "input20x10.chr 0a00
+	&tga-ext ".tga 00
+
+@chr/tile $10
+
+@tga/rowbuf
+
