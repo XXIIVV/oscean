@@ -1,9 +1,10 @@
-	( uxncli icnchr.rom img20x10.icn
+( uxncli icnchr.rom img20x10.icn
 | output img20x10.chr )
 
-|10 	@Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 	@File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|b0 	@File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
@@ -56,8 +57,11 @@
 	&>s
 		;&buf .File/read DEO2
 		.File/success-lb DEI ?{ JMP2r }
+		( | ch1 -> ch2 )
+		;&copy .System/expansion DEO2
 		;&buf .File2/write DEO2 !&>s
-	&buf $10
+	&buf $8 &buf-ch2 $8
+	&copy [ 01 0008 0000 =&buf 0000 =&buf-ch2 ]
 
 (
 @|Stdlib )
