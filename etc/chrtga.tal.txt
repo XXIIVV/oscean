@@ -21,15 +21,22 @@
 	;src/on-console .Console/vector DEO2
 	BRK
 
+@src/<reset> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
+
 @src/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{ /<push>
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		POP .Console/read DEI /<push>
 		BRK }
 	chr/<parse>
-	#800f DEO
+	/<reset>
+	dst/<reset>
+	[ LIT2 04 -Console/type ] DEI NEQ ?{ #800f DEO }
 	BRK
 
 @src/<push> ( c -- )
-	.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+	[ LIT &ptr -&buf ] INCk ,&ptr STR
 	STZ
 	JMP2r
 
@@ -41,6 +48,10 @@
 
 @src/read-byte ( a b -- byte )
 	chr/hex SWP chr/hex #40 SFT ORA JMP2r
+
+@dst/<reset> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	JMP2r
 
 @dst/<set-ext> ( ext* buf* -- )
 	/<push-str>
@@ -62,7 +73,9 @@
 	#0010 .File/length DEO2
 	;dict/tga-ext ;src/buf dst/<set-ext>
 	( | )
-	;dst/buf .File2/name DEO2
+	;dst/buf DUP2 str/<print>
+	#0a18 DEO
+	.File2/name DEO2
 	src/get-size DUP2 .tga/size STZ2
 	tga/<write-head>
 	( | setup )
