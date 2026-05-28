@@ -53,28 +53,20 @@ function Emu (embed)
 				let rom = b64decode(rom_url[2]);
 				if(!rom_url[1])
 					rom = decodeUlz(rom);
-				this.load(rom);
+				this.load(rom, true);
 			}
-			else if (boot_ulz) 
-				this.load(decodeUlz(b64decode(boot_ulz)));
+			else if (boot_ulz) {
+				this.load(decodeUlz(b64decode(boot_ulz)), true);
+			}
+			// Or, get boot rom
+			else if(boot_rom)
+				this.load(boot_rom, true);
 			// Start screen vector
 			setInterval(() => {
 				window.requestAnimationFrame(() => {
 					if(this.screen.vector)
 						this.uxn.eval(this.screen.vector)
-					if(this.screen.repaint) {
-						this.screen.x1 = 0
-						this.screen.y1 = 0
-						this.screen.x2 = this.screen.width
-						this.screen.y2 = this.screen.height
-						this.screen.repaint = 0
-						let x = this.screen.x1, y = this.screen.y1;
-						let w = this.screen.x2 - x, h = this.screen.y2 - y;
-						this.screen.redraw()
-						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
-						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
-					}
-					if(this.screen.changed()) {
+					if(this.screen.x2 && this.screen.y2 && this.screen.changed()) {
 						let x = this.screen.x1, y = this.screen.y1;
 						let w = this.screen.x2 - x, h = this.screen.y2 - y;
 						this.screen.redraw()
@@ -86,14 +78,6 @@ function Emu (embed)
 		})
 	}
 
-	this.start = (rom) => {
-		this.console.start()
-		this.screen.set_zoom(default_zoom ? default_zoom : 1)
-		this.uxn.load(rom).eval(0x0100);
-		share.setROM(rom);
-		save.setROM(rom);
-	}
-
 	this.load_file = (file) => {
 		let reader = new FileReader()
 		reader.onload = (e) => {
@@ -102,8 +86,11 @@ function Emu (embed)
 		reader.readAsArrayBuffer(file)
 	}
 
-	this.load = (rom) => {
-		this.start(rom)
+	this.load = (rom, fromURL = false) => {
+		this.screen.set_zoom(default_zoom ? default_zoom : 1)
+		this.uxn.load(rom).eval(0x0100);
+		share.setROM(rom);
+		save.setROM(rom);
 	}
 
 	this.dei = (port) => {

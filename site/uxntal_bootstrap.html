@@ -31,16 +31,8 @@ choices:</p>
 or simply want to make sure that the assembler is unaltered, you will need the
 hexadecimal data of <a href='../etc/drifblim.rom.txt'>drifblim.rom</a>. Here
 are some portable tools to help with the bootstrapping process:</p>
-
-<h4>Step 0: xh.txt</h4>
-<p>First off, you need a way to create binary files from hex dumps. If you don't have
-access to <kbd>xxd</kbd>, you can paste the following line in a text file, and run a hex dump through it:</p>
-
-<pre style='margin-bottom:1px'>
-FAFAFXFZFwfaalFBFAAFFZFZXVGfoAAFXFZFFXXfoKgaam&/$AAAFXJgaam&/AFAAFXFFZZDYJF$/FXAKF|Bgaam/AAFXFZFXgBFAYXFEF|BGGoGAFAFXFZDYFEF|B/DAAFX_gBAGYgDAAFXFXAXZEEZXGPgBAAFXFFZZ_]GQFAPGA^GAQFAPgaamFPGAAFXFXFFXXW</pre>
-<pre>cat <a href='../etc/drifblim.rom.txt'>drifblim.rom.txt</a> | <a href='../etc/uxncli.c.txt'>uxncli</a> <b>xh.txt</b> > drifblim.rom</pre>
-
-<h4>Step 1: cat.rom</h4>
+<!--
+<h4>Step 0: cat.rom</h4>
 <p>If for some reason you do not have access to the unix <kbd>cat</kbd> program,
 you can read files and output their content through the console with the <a
 href='../etc/cat.tal.txt'>cat program</a>, which reads a file and outputs the
@@ -53,7 +45,15 @@ a001 0780 1037 0080 1216 0680 1f0a 2000
 0000 80a8 37a0 0001 80aa 37a0 014b 80ac
 b780 a316 2000 0302 226c a000 1817 40ff
 ef</pre>
-<pre>uxncli <b>cat.rom</b> <a href='../etc/drifblim.rom.txt'>drifblim.rom.txt</a> | uxncli xh.txt > drifblim.rom</pre>
+<pre>uxncli <b>cat.rom</b> <a href='../etc/drifblim.rom.txt'>drifblim.rom.txt</a> | uxncli <a href='../etc/xh.txt'>xh.txt</a> > drifblim.rom</pre>
+-->
+<h4>Step 1: xh.txt</h4>
+<p>First off, you need a way to create binary files from hex dumps. If you don't have
+access to <kbd>xxd</kbd>, you can paste the following line in a text file, and run a hex dump through it:</p>
+
+<pre style='margin-bottom:1px'>
+FAFAFXFZFwfaalFBFAAFFZFZXVGfoAAFXFZFFXXfoKgaam&/$AAAFXJgaam&/AFAAFXFFZZDYJF$/FXAKF|Bgaam/AAFXFZFXgBFAYXFEF|BGGoGAFAFXFZDYFEF|B/DAAFX_gBAGYgDAAFXFXAXZEEZXGPgBAAFXFFZZ_]GQFAPGA^GAQFAPgaamFPGAAFXFXFFXXW</pre>
+<pre>cat <a href='../etc/drifblim.rom.txt'>drifblim.rom.txt</a> | <a href='../etc/uxncli.c.txt'>uxncli</a> <a href='../etc/xh.txt'>xh.txt</a> > drifblim.rom</pre>
 
 <h4>Step 2: drifboot.rom</h4>
 
@@ -62,46 +62,38 @@ The next step is to make a new drifblim.rom from its source code, using
 the newly assembled rom.</p>
 
 <pre>
-uxncli drifblim.rom <a href='../etc/drifblim.tal.txt'>drifblim.tal.txt</a> drifboot.rom
+uxncli drifblim.rom <a href='../etc/drifblim.tal.txt'>drifblim.tal.txt</a> drifblim2.rom
 </pre>
 
 <p>Note that in Uxntal, hexadecimal numbers are valid code and so any rom can be
 recovered from a hex dump with a working assembler.</p>
 
+<!--
 <h4>Step 3: hx.rom</h4>
 
 <p>To close the circle, the assembled rom needs to turned back into a hex dump,
 we'll print its hex dump using a the following utility:</p>
 
-<pre style='margin-bottom:1px'>
-@on-reset ( -> )
-	;on-console #10 DEO2 BRK
-@on-console ( -> )
-	#0417 DEI NEQ [ JMP BRK ]
-	#12 DEI DUP #04 SFT emit emit INC
-@spacer ( c -> )
-	DUP #0f AND ?{ #0a18 DEO BRK }
-	DUP #01 AND ?{ #2018 DEO } BRK
-@emit ( c -- )
-	#0f AND DUP #09 GTH #27 MUL ADD
-	LIT "0 ADD #18 DEO JMP2r</pre>
 <pre>
 uxncli drifblim.rom <a href='../etc/hx.tal.txt'>hx.tal.txt</a> hx.rom
 cat drifboot.rom | uxncli hx.rom > drifboot.rom.txt
 </pre>
+-->
 
-<h4>Step 4: eq.rom</h4>
+<h4>Step 3: checksum.rom</h4>
 
-<p>Finally, we should have two identical hex dumps of the assembler, where one was
+<p>Finally, we should have two identical roms of the assembler, where one was
 assembled from the textual source. If for some reason you do not have access to
 the unix <kbd>diff</kbd> command, you can compare the two hexadecimal dumps
-with the <a href='../etc/eq.tal.txt'>eq program</a>, which takes two filepaths
+with the <a href='../etc/checksum.tal.txt'>checksum</a>, which takes two filepaths
 and compare their content.</p>
 
-<pre>
-uxncli drifblim.rom <a href='../etc/eq.tal.txt'>eq.tal.txt</a> eq.rom
-uxncli eq.rom drifblim.rom.txt drifboot.rom.txt
+<pre style='margin-bottom:1px'>
+uxncli drifblim.rom <a href='../etc/checksum.tal.txt'>checksum.tal.txt</a> checksum.rom
+uxncli checksum.rom drifblim.rom drifblim2.rom
 </pre>
+<pre>1fa03ffb drifblim.rom
+1fa03ffb drifblim2.rom</pre>
 
 <p>Alternatively, if your <a href='varvara.html'>Varvara</a> implementation does
 not support the <a href='varvara.html#file'>File device</a>, use the Drifloon
@@ -116,21 +108,29 @@ href='../etc/uxndis.tal.txt'>uxndis</a>.</p>
 <p>At this point, you have verified that Drifblim assembles itself correctly, assuming that uxncli is trustworthy. Now, let's remove that assumption. <a href='../etc/uxnmin.tal.txt'>uxnmin.tal</a> is a complete Uxn virtual machine, written in Uxntal. It's small enough to audit from its hexdump against the Uxn specification:</p>
 
 <pre>
-cat <a href='../etc/uxnmin.rom.txt'>uxnmin.rom.txt</a> | uxncli xh.txt > uxnmin.rom
+cat <a href='../etc/uxnmin.rom.txt'>uxnmin.rom.txt</a> | <a href='../etc/uxncli.c.txt'>uxncli</a> <a href='../etc/xh.txt'>xh.txt</a> > uxnmin.rom
 </pre>
 
-<p>Next, run Drifloon inside uxnmin and verify that it produces an identical assembler:</p>
+<p>Next, we'll use Drifloon for this part, let's assemble it:</p>
 
+<pre>cat <a href='../etc/drifloon.rom.txt'>drifloon.rom.txt</a> | uxncli <a href='../etc/xh.txt'>xh.txt</a> > drifloon.rom</pre>
+
+<p>Run Drifloon inside uxnmin and verify that it produces an identical assembler:</p>
+
+<pre style='margin-bottom:1px'>
+cat <a href='../etc/drifloon.tal.txt'>drifloon.tal.txt</a> | uxncli uxnmin.rom drifloon.rom > drifloon2.rom
+uxncli checksum.rom drifloon.rom drifloon2.rom
+</pre>
 <pre>
-cat drifloon.tal | uxncli uxnmin.rom drifloon.rom > drifloon2.rom
-uxncli eq.rom drifloon.rom drifloon2.rom
+566fd630 drifloon.rom
+566fd630 drifloon2.rom
 </pre>
 
 <p>Lastly, verify that uxnmin assembles itself through that inner assembler:</p>
 
 <pre>
-cat uxnmin.tal | uxncli uxnmin.rom drifloon.rom > uxnmin2.rom
-uxncli eq.rom uxnmin.rom uxnmin2.rom
+cat <a href='../etc/uxnmin.tal.txt'>uxnmin.tal.txt</a> | uxncli uxnmin.rom drifloon.rom > uxnmin2.rom
+uxncli checksum.rom uxnmin.rom uxnmin2.rom
 </pre>
 
 <p>The assembler and the virtual machine are each a witness to the other. If both comparisons pass, the trust boundary is the hexdump of uxnmin.rom(1kb). Everything above it is verified by the chain.</p>
