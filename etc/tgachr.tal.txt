@@ -25,7 +25,6 @@
 	[ LIT2 02 -Console/type ] DEI LTH ?{ /<push>
 		BRK }
 	;&buf tga/<parse>
-	#010e DEO
 	#800f DEO
 	BRK
 
@@ -96,15 +95,15 @@
 	#0000 ,&y STR2
 	&>stream
 		;&pixel STH2k .File/read DEO2
-		[ LIT2 &x $2 ] [ LIT2 &y $2 ] #0007 AND2 STH2r [ LIT2 &filter $2 ] JSR2
+		[ LIT2 &x $2 ] [ LIT2 &y $2 ] STH2r [ LIT2 &filter $2 ] JSR2
 		( chr ) #ff SWP SUB pixel/<set>
 		( | on linebreak )
 		,&x LDR2 INC2 DUP2 ,&x STR2
 		;&w LDA2 NEQ2 ?{
 			#0000 ,&x STR2
-			,&y LDR2 INC2 ,&y STR2
+			,&y LDR2 INC2 #0007 AND2 ,&y STR2
 			( | on row )
-			,&y LDR2 #0007 AND2 ORA ?{
+			,&y LDR2 ORA ?{
 				;&buffer .File2/write DEO2
 				.size LDZ2k .File2/length DEI2 ADD2 ROT STZ2 } }
 		.File/success DEI2 ORA ?&>stream
@@ -153,7 +152,6 @@
 	INC2 !/<print>
 
 @dict/usage "usage: 20 "tgachr.rom 20 "input.tga 0a00
-	&error-unknown "Unsupported 20 "tga-type. $1
 	&chr-ext ".chr 00
 
 (
