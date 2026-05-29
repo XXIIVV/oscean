@@ -78,12 +78,10 @@
 	;dst/buf .File2/name DEO2
 	;&w LDA2 #43 SFT2 .File2/length DEO2
 	( | get parser )
-	;&image-type LDA #02 NEQk NIP ?{
-		;filter/raw-true #0004 /<apply>
-		POP JMP2r }
-	#03 NEQk NIP ?{
-		;filter/raw-bw #0001 /<apply>
-		POP JMP2r }
+	;&image-type LDA
+	( | handlers )
+	DUP #02 NEQ ?{ POP ;filter/raw-true #0003 !/<apply> }
+	DUP #03 NEQ ?{ POP ;filter/raw-bw #0001 !/<apply> }
 	( error ) ;&error-txt !str/<print>
 
 	&error-txt "Unsupported 20 "tga-type: 20 00
@@ -109,15 +107,23 @@
 	JMP2r
 	&pixel $4
 
+@pixel/assoc-color ( color -- color )
+	DUP #10 LTH ?{
+		DUP #80 LTH ?{
+			#e0 LTH ?{ #03 JMP2r }
+			#01 JMP2r }
+		POP #02 JMP2r }
+	POP #00 JMP2r
+
 @pixel/<set> ( x* y* color -- )
-	STH
+	/assoc-color STH
 	OVR2 SWP2
 	( get addr ) DUP2 #0007 AND2 SWP2 #83 SFT2 ADD2 SWP2 #43 SFT2 ADD2 ;tga/buffer ADD2
-	( ch1 ) OVR2 OVR2 STHkr #00 /<toggle>
-	( ch2 ) #0008 ADD2 STHr #01
+	( ch1 ) OVR2 OVR2 STHkr #01 /<toggle>
+	( ch2 ) #0008 ADD2 STHr #00
 	( >> )
 
-@pixel/<toggle> ( x* addr* color -- )
+@pixel/<toggle> ( x* addr* color ch -- )
 	STH2
 	LDAk STH
 	SWP2 NIP STHr SWP SFTr STHr #01 AND ?{
