@@ -53,16 +53,16 @@
 	( name ) "Oekaki 0a
 	( desc ) "Drawing 20 "Program 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Mar 20 "2026 $2
+	( date ) "29 20 "May 20 "2026 00 00
 
-%abs2 ( a* -- res* ) {
+%u16/abs2 ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
 
-%lts2 ( a* b* -- f ) {
+%u16/lts2 ( a* b* -- f ) {
 	SUB2 POP #07 SFT }
 
-%gts2 ( a* b* -- f ) {
-	SWP2 lts2 }
+%u16/gts2 ( a* b* -- f ) {
+	SWP2 u16/lts2 }
 
 (
 @|vectors )
@@ -96,7 +96,7 @@
 
 @on-control-options ( -> )
 	.Controller/key DEI
-	( | keys )
+	( | handlers )
 	DUP [ LIT "n ] NEQ ?{ <make-file> }
 	DUP [ LIT "s ] NEQ ?{ <save-file> }
 	DUP [ LIT "o ] NEQ ?{ <open-file> }
@@ -323,7 +323,7 @@
 	JMP2r
 
 @menu/on-mouse ( -> )
-	#43 [ LIT2 00 -Mouse/state ] DEI NEQ STHk SUB ;hand-icn #00 STHr #30 SFT2 ADD2 <update-cursor>
+	#41 [ LIT2 00 -Mouse/state ] DEI NEQ STHk SUB ;hand-icn #00 STHr #30 SFT2 ADD2 <update-cursor>
 	.Mouse/state DEI ?{ BRK }
 	.Mouse/y DEI2 #0002 SUB2 #000a DIV2 NIP
 	( | tool )
@@ -365,11 +365,9 @@
 @menu/<draw> ( -- )
 	[ LIT2 00 -&hide ] LDZ EQU ?{ JMP2r }
 	( | background )
-	#000f .Screen/x DEO2
+	#000e .Screen/x DEO2
 	#0000 .Screen/y DEO2
 	[ LIT2 93 -Screen/pixel ] DEO
-	#000e .Screen/x DEO2
-	[ LIT2 91 -Screen/pixel ] DEO
 	#0003 .Screen/x DEO2
 	[ LIT2 04 -Screen/auto ] DEO
 	( | tools )
@@ -575,8 +573,8 @@
 @|filters )
 
 @get-speed ( x1* y1* x2* y2* -- distance* )
-	( abs y2 - y1 ) ROT2 SUB2 abs2 STH2
-	( abs x1 - x2 ) SUB2 abs2 STH2r
+	( abs y2 - y1 ) ROT2 SUB2 u16/abs2 STH2
+	( abs x1 - x2 ) SUB2 u16/abs2 STH2r
 	( max + min/2 ) OVR2 OVR2
 	( min ) GTH2k [ JMP SWP2 POP2 ] STH2
 	( max ) LTH2k [ JMP SWP2 POP2 ] #01 SFT2 STH2r ADD2 JMP2r
@@ -635,22 +633,22 @@
 	STH2
 	STH2
 	( | x )
-	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k abs2 ,&dx STR2
-	SWP2 lts2 [ JMP SWP POP ] ,&sx STR
+	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k u16/abs2 ,&dx STR2
+	SWP2 u16/lts2 [ JMP SWP POP ] ,&sx STR
 	SWP2r
 	( | y )
-	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
-	SWP2 lts2 [ JMP SWP POP ] ,&sy STR
+	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k u16/abs2 #0000 SWP2 SUB2 ,&dy STR2
+	SWP2 u16/lts2 [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
 	&>while
 		( draw ) OVR2r STH2r STH2kr [ LIT2 &fn $2 ] JSR2
 		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
 			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
 		( e -> e2 ) DUP2k ADD2 DUP2
-		( y ) [ LIT2 &dy $2 ] lts2 ?{
+		( y ) [ LIT2 &dy $2 ] u16/lts2 ?{
 			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
 			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
-		( x ) [ LIT2 &dx $2 ] gts2 ?{
+		( x ) [ LIT2 &dx $2 ] u16/gts2 ?{
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
 		!&>while
@@ -713,7 +711,7 @@
 @<open-file> ( -- )
 	state/<unchange>
 	src/is-icn ?<open-icn>
-	src/is-tga ?<open-tga>
+	src/is-tga ?tga/<open>
 	;src/buf .File/name DEO2
 	.canvas/length LDZ2 .File/length DEO2
 	;canvas/mem .File/read DEO2 !canvas/<redraw>
@@ -733,53 +731,6 @@
 		( | continue )
 		#0010 ADD2 .File/success-lb DEI ?&>s
 	POP2 ;dict/chr-ext src/<cat> !canvas/<redraw>
-
-@<open-tga> ( -- )
-	;src/buf .File/name DEO2
-	#0012 .File/length DEO2
-	;tga .File/read DEO2
-	;dict/chr-ext src/<cat>
-	( | flip endianness )
-	;tga/x LDA2k SWP SWP2 STA2
-	;tga/y LDA2k SWP SWP2 STA2
-	;tga/w LDA2k SWP SWP2 STA2
-	;tga/h LDA2k SWP SWP2 STA2
-	( | get parser )
-	;tga/image-type LDA
-	( ) DUP #02 EQU ?&rawt
-	( ) DUP #03 EQU ?&rawm
-	POP
-	( | error )
-	;&error-txt str/<print>
-	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 str/<print>
-	#0a18 DEO
-	JMP2r
-
-	&rawt ( type -- )
-	POP ;tga-rawt #0004 !parse-tga
-
-	&rawm ( type -- )
-	POP ;tga-rawm #0001 !parse-tga
-
-	&error-txt ( err )
-	"Unsupported 20 "image-type: 20 00
-
-@parse-tga ( filter* length* -- )
-	( | cache size )
-	.File/length DEO2
-	,&filter STR2
-	;tga/w LDA2 ,&w STR2
-	( | paint )
-	[ LIT2 01 -Screen/auto ] DEO
-	#0000 [ LIT2r 0000 ]
-	&stream ( -- )
-	;&pixel .File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU ?&end
-	STH2kr ;&pixel [ LIT2 &filter $2 ] JSR2 canvas/<set-pixel-raw>
-	POP2 INC2 DUP2 [ LIT2 &w $2 ] NEQ2 ?&stream
-	( lb ) POP2 #0000 INC2r !&stream
-	&end POP2 POP2r !canvas/<redraw>
-	&pixel $4
 
 @<snarf-rect> ( x* y* x2* y2* -- )
 	normalize-rect ;dict/snarf-ext .File/name DEO2
@@ -821,7 +772,54 @@
 	POP2 POP2 !canvas/<redraw>
 
 (
-@|filters )
+@|TGA )
+
+@tga/<open> ( -- )
+	;src/buf .File/name DEO2
+	#0012 .File/length DEO2
+	;tga .File/read DEO2
+	;dict/chr-ext src/<cat>
+	( | flip endianness )
+	;tga/x LDA2k SWP SWP2 STA2
+	;tga/y LDA2k SWP SWP2 STA2
+	;tga/w LDA2k SWP SWP2 STA2
+	;tga/h LDA2k SWP SWP2 STA2
+	( | get parser )
+	;tga/image-type LDA
+	( ) DUP #02 EQU ?&rawt
+	( ) DUP #03 EQU ?&rawm
+	POP
+	( | error )
+	;&error-txt str/<print>
+	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 str/<print>
+	#0a18 DEO
+	JMP2r
+
+	&rawt ( type -- )
+	POP ;tga-rawt #0004 !tga/<parse>
+
+	&rawm ( type -- )
+	POP ;tga-rawm #0001 !tga/<parse>
+
+	&error-txt ( err )
+	"Unsupported 20 "image-type: 20 00
+
+@tga/<parse> ( filter* length* -- )
+	( | cache size )
+	.File/length DEO2
+	,&filter STR2
+	;tga/w LDA2 ,&width STR2
+	( | paint )
+	[ LIT2 01 -Screen/auto ] DEO
+	#0000 [ LIT2r 0000 ]
+	&stream ( -- )
+	;&pixel .File/read DEO2
+	[ LIT2 00 -File/success-lb ] DEI EQU ?&end
+	STH2kr ;&pixel [ LIT2 &filter $2 ] JSR2 canvas/<set-pixel-raw>
+	POP2 INC2 DUP2 [ LIT2 &width $2 ] NEQ2 ?&stream
+	( lb ) POP2 #0000 INC2r !&stream
+	&end POP2 POP2r !canvas/<redraw>
+	&pixel $4
 
 @tga-rawt ( rgba* -- color )
 	STH2
@@ -832,9 +830,6 @@
 
 @tga-rawm ( grey* -- color )
 	( res ) LDA #06 SFT JMP2r
-
-(
-@|luts )
 
 @tga-types-txts
 	&null "missing-type $1
