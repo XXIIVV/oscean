@@ -1,0 +1,287 @@
+( uxnasm acid.tal acid.rom
+| uxncli acid.rom )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
+(
+@|Uxntal 54K )
+
+|0
+|f @padabs/p1
+|0f &p2
+|00f &p3
+|000f &p4
+
+|0
+$4 @padrel/p1
+$4 &p2
+$4 &p3
+$4 &p4
+
+|0
+|padrel/p1 @padlab/p1 $padrel/p1 &p2
+|/p1 &p3 $/p2 &p4
+
+(
+@|start )
+
+|100
+
+@on-reset ( -> )
+
+	padabs/<test> padrel/<test> padlab/<test>
+	coment/<test>
+	string/<test>
+	rawhex/<test> lithex/<test>
+	opcode/<test>
+	rawrel/<test> litrel/<test>
+	rawzep/<test> litzep/<test>
+	rawabs/<test> litabs/<test>
+	labels/<test>
+	lambda/<test>
+	rewind/<test>
+	macros/<test>
+	quirks/<test>
+
+	( | Check stacks are empty )
+	.System/wst DEI2 #0000 EQU2 { "finish 2000 } STH2r <validate>
+
+BRK
+
+(
+@|Tests )
+
+@padabs/<test> ( -- )
+	.&p1 .&p2 EQU
+	;&p3 ;&p4 EQU2
+		AND
+	.&p1 #0f EQU
+		AND
+	.&p5 #88 EQU
+		AND
+	;&name !<validate>
+	&name "padabs 2000
+
+@padrel/<test> ( -- )
+	.&p1 .&p2 ADD #0c EQU
+	;&p3 ;&p4 ADD2 #001c EQU2
+		AND
+	.&p1 #04 EQU
+		AND ;&name !<validate>
+	&name "padrel 2000
+
+@padlab/<test> ( -- )
+	.&p1 .&p3 EQU
+	;&p4 ;&p2 SUB2 ;&p1 EQU2
+		AND ;&name !<validate>
+	&name "padrel 2000
+
+@rawhex/<test> ( -- )
+	LIT 12 LIT 34 ADD LIT 46 EQU
+	LIT2 1234 LIT2 1234 ADD2 LIT2 2468 EQU2
+		AND ;&name !<validate>
+	&name "rawhex 2000
+
+@string/<test> ( -- )
+	LIT "0 #30 EQU
+	LIT2 "12 #3132 EQU2
+		AND
+	,&one LDR2 #61ff EQU2
+		AND
+	,&two LDR2 #ff61 EQU2
+		AND
+	;&name !<validate>
+	&name "string 2000
+	&one "a ff
+	&two ff "a
+
+@lithex/<test> ( -- )
+	#12 #34 ADD #46 EQU
+	#1234 #1234 ADD2 #2468 EQU2
+		AND ;&name !<validate>
+	&name "lithex 2000
+
+@opcode/<test> ( -- )
+	( normal ) #1234 #0001 ADD2 #1235 EQU2
+	( suffixes ) LITr 12 INCkkrr ADDr LITr 25 EQUrrkk STHr POP2r
+		AND ;&name !<validate>
+	&name "opcode 2000
+
+	@rawrel/backward
+@rawrel/<test> ( -- )
+	LIT _&backward #fd EQU
+	LIT _&forward #11 EQU
+	AND
+		;&name !<validate>
+	&name "rawrel 2000
+	&forward
+
+	@litrel/backward
+@litrel/<test> ( -- )
+	,&backward #fd EQU
+	,&forward #11 EQU
+	AND
+		;&name !<validate>
+	&name "litrel 2000
+	&forward
+
+@rawzep/<test> ( -- )
+	LIT -&target #ab EQU
+		;&name !<validate>
+	&name "rawzep 2000
+
+@litzep/<test> ( -- )
+	.&target #ab EQU
+		;&name !<validate>
+	&name "litzep 2000
+
+@rawabs/<test> ( -- )
+	LIT2 =&target #89ab EQU2
+		;&name !<validate>
+	&name "rawabs 2000
+
+@litabs/<test> ( -- )
+	;&target #89ab EQU2
+		;&name !<validate>
+	&name "litabs 2000
+
+@labels/<test> ( -- )
+	#3412 SWPk Object/<set-pos>
+	Object/get-y Object/get-x EQU2
+		;&name !<validate>
+	&name "labels 2000
+
+@lambda/<test> ( -- )
+	#0100 #00 ?{ ( eval ) INC } EQU
+	#0000 #01 ?{ ( skip ) INC } EQU
+		AND
+	#0000 !{ ( skip ) INC } EQU
+	#0100 { ( skip ) INC JMP2r } STH2r JSR2 EQU
+		AND
+	{ &a "string $1 } STH2r ;&a EQU2
+		AND
+	#ffff ;{ !{ "string $1 } &b } NIP2 ;&b EQU2
+		AND
+	;Lut/length LDA INC #05 EQU
+		AND
+	#00 ;Lut2/a LDA INC2 INC2 ;Lut2/a ADD2 ;Lut2/d EQU2
+		AND
+	#00 ;Lut2/b LDA INC2 INC2 ;Lut2/b ADD2 ;Lut2/c EQU2
+		AND
+		AND ;&name !<validate>
+	&name "lambda 2000
+
+@coment/<test> ( -- )
+	#01 ( ) #01 EQU
+	#01 #01 ( INC ) EQU
+		AND
+	#01 ( ( INC ) ) #01 EQU
+		AND
+	#01 ( (INC) ) #01 EQU
+		AND ;&name !<validate>
+	&name "coment 2000
+
+@rewind/<test> ( -- )
+	[ LIT2 &addr $2 ] #1234 EQU2
+	;&name !<validate>
+	&name "rewind 2000
+
+	@rewind/recover |rewind/addr 1234
+	|rewind/recover
+
+%macro { SWP POP }
+%macro-arity ( a b -- b ) { SWP POP }
+%macro-nested ( a b -- b ) { macro-arity }
+%macro-jci ( a -- b ) { #00 ?{ #01 SUB } }
+%macro-jmi ( a -- b ) { !{ #01 SUB } }
+%macro-jsi ( a -- b ) { { #01 SUB JMP2r } STH2r JSR2 }
+%macros/get-four ( -- 1 ) { #04 }
+
+@macros/<test> ( -- )
+	#0201 macro
+	#0201 macro-arity
+		AND
+	#0201 macro-nested
+		AND
+	#02 macro-jci
+		AND
+	#01 macro-jmi
+		AND
+	#02 macro-jsi
+		AND
+	#04 /get-four EQU
+		AND
+	#01 EQU
+	;&name !<validate>
+	&name "macros 2000
+
+@quirks/<test> ( -- )
+	;sym-at-ffff #ffff EQU2
+	;&name !<validate>
+	&name "quirks 2000
+
+(
+@|Utils )
+
+@<validate> ( flag name* -- )
+	str/<print>
+	?{ ;&fail str/<print> #010f DEO BRK }
+	;&pass !str/<print>
+	&fail "fail 0a $1
+	&pass "pass 0a $1
+
+@str/<print> ( str* -- )
+	&>w
+	LDAk DUP ?{ POP POP2 JMP2r }
+	.Console/write DEO INC2 !&>w
+
+(
+@|Object )
+
+@Object/y $1
+	&get-x ( -- x ) [ LIT &x $1 ] JMP2r
+	&<set-pos> ( x y -- ) ,&y STR ,&x STR JMP2r
+@Object/get-pos ( -- x y ) /get-x !/get-y
+@Object/get-y ( -- y ) ,&y LDR JMP2r
+
+(
+@|LUTs )
+
+@Lut
+	&length _{ 01 02 03 04 05 }
+
+@Lut2
+	&a _{ "a "b &b _{ "c "d } &c "e "f } &d
+
+@padabs/marker |88 @padabs/p5 |&marker
+
+(
+@|Comments )
+
+( a comment )
+( a ( nested ) comment )
+( non-nested 2+3*(5-2) )
+
+(
+@|References )
+
+@backward
+.backward -backward
+;backward =backward
+,backward _backward
+!backward ?backward
+
+.forward -forward
+;forward =forward
+,forward _forward
+!forward ?forward
+@forward
+
+|89ab
+	@litabs/target
+	@rawabs/target
+	@litzep/target
+	@rawzep/target
+
+|ffff @sym-at-ffff
