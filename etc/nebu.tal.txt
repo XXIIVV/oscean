@@ -1,5 +1,4 @@
-( build: uxnasm src/nebu.tal nebu.rom
-| start: uxnemu nebu.rom )
+( 54K . Nebu )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
@@ -43,7 +42,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Mar 20 "2025 $1 01
+	( date ) "12 20 "Mar 20 "2026 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -86,6 +85,9 @@
 (
 @|cmd )
 
+%MOD2 ( a* b* -- a%b* ) {
+	DIV2k MUL2 SUB2 }
+
 %char-is-uc ( c -- f ) {
 	[ LIT "A ] SUB #1a LTH }
 
@@ -101,11 +103,11 @@
 @cmd/<inject-rect> ( -- )
 	.select/b LDZ2 .select/a LDZ2 OVR2 NEQ2 ?{ POP2 JMP2r }
 	select/<size-u>
-	( -- )
+	( >> )
 
 @cmd/<write-rect> ( x y -- )
 	rect/create OVR2 cells/get-addr STH2
-	&>wi ( -- )
+	&>wi
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>wi
 	POP2 POP2r src/change !select/<set-a-force>
@@ -121,7 +123,7 @@
 	POP JMP2r
 
 @cmd/<erase> ( -- )
-	.select/b LDZ2 .select/a LDZ2 OVR2 EQU2 ?{ ;cmd/do-delete cmd/<apply> }
+	.select/b LDZ2 .select/a LDZ2 OVR2 EQU2 ?{ ;&do-delete /<apply> }
 	cells/get-addr DUP2 scap
 	( clamp ) NEQ2k ?{ POP2 POP2 JMP2r }
 	NIP2
@@ -133,15 +135,15 @@
 	src/change #0020 !<mclr>
 
 @cmd/<delete> ( -- )
-	;cmd/do-delete
+	;&do-delete
 	( >> )
 
 @cmd/<apply> ( fn* -- )
 	,&fn STR2
 	select/get-rect
-	&>lv ( -- )
+	&>lv
 		OVR2
-		&>lh ( -- )
+		&>lh
 			DUP OVR2 POP [ LIT2 &fn $2 ] JSR2
 			( ) INC GTHk ?&>lh
 		POP2 INC GTHk ?&>lv
@@ -166,7 +168,7 @@
 @|select )
 
 @select/get-rect ( -- bx ax by ay )
-	.select/bx LDZ INC .select/ax LDZ .select/by LDZ INC .select/ay LDZ JMP2r
+	.&bx LDZ INC .&ax LDZ .&by LDZ INC .&ay LDZ JMP2r
 
 @select/<reset> ( -- )
 	.cmd/inserted LDZ ?{
@@ -186,7 +188,7 @@
 	( clamp ) DUP ?{ POP2 JMP2r }
 	#01 SUB
 	( | follow )
-	DUP .select/scroll LDZ GTH ?{ DUP .select/scroll STZ }
+	DUP .&scroll LDZ GTH ?{ DUP .&scroll STZ }
 	.&a STZ2
 	&<size-u> ( -- )
 	.&b LDZ2 #01 SUB !/<set-b>
@@ -195,8 +197,8 @@
 	( clamp ) .&by LDZ .LINES #01 SUB LTH ?{ JMP2r }
 	.&a LDZ2 INC
 	( | follow )
-	DUP .viewport/h LDZ .select/scroll LDZ ADD LTH ?{
-		DUP .viewport/h LDZ SUB .select/scroll STZ }
+	DUP .viewport/h LDZ .&scroll LDZ ADD LTH ?{
+		DUP .viewport/h LDZ SUB .&scroll STZ }
 	.&a STZ2
 	&<size-d> ( -- )
 	.&b LDZ2 INC !/<set-b>
@@ -270,11 +272,11 @@
 
 @rect/<push-dec> ( short* -- )
 	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k DIV2k MUL2 SUB2 STH
+	&>get
+		SWP2k MOD2 STH
 		POP OVR2 DIV2 ORAk ?&>get
 	POP2 POP2
-	&>put ( -- )
+	&>put
 		STHr INCk ?{ POP JMP2r }
 		[ LIT "0 ] ADD /<push-char> !&>put
 
@@ -346,20 +348,20 @@
 	;header/height .Screen/y DEO2
 	#05 ;chicago/color STA
 	.viewport/w LDZ #00
-	&>rx ( -- )
+	&>rx
 		#00 OVR INC #60 SFT2 .Screen/x DEO2
 		DUP cell/<draw-hor>
 		INC GTHk ?&>rx
 	POP2
 	( | body )
 	.viewport/h LDZ INC #00
-	&>y ( -- )
+	&>y
 		#0000 .Screen/x DEO2
 		#00 OVR INC #40 SFT2 ;header/height ADD2 .Screen/y DEO2
 		DUP .select/scroll LDZ ADD DUP ,&ay STR
 		cell/<draw-ver>
 		.viewport/w LDZ #00
-		&>x ( -- )
+		&>x
 			#00 OVR INC #60 SFT2 .Screen/x DEO2
 			DUP [ LIT &ay $1 ] cell/<draw>
 			INC GTHk ?&>x
@@ -443,7 +445,7 @@
 	( | fill )
 	#00 /<draw-fill>
 	/<draw-frame>
-	#0004 ADD2 .Screen/x DEO2 !cell/<draw-val>
+	#0004 ADD2 .Screen/x DEO2 !/<draw-val>
 
 @cell/<draw-rect> ( x y rect* -- )
 	( val ) OVR2 calc/validate exists ?/<draw-type-calc>
@@ -528,9 +530,9 @@
 	STH
 	( opc ini acc** ) [ LITr 00 LIT2r $2 LIT2r $2 ]
 	( .. ) rect-unpack
-	&>lv ( -- )
+	&>lv
 		OVR2
-		&>lh ( -- )
+		&>lh
 			DUP OVR2 POP
 			( x y ) STH2r STH2r ROT2
 			( acc** x y ) /get-num
@@ -544,9 +546,9 @@
 
 @calc/run-len ( rect* op -- res** )
 	POP rect-unpack [ LITr 00 ]
-	&>lvl ( -- )
+	&>lvl
 		OVR2
-		&>lhl ( -- )
+		&>lhl
 			DUP OVR2 POP /get-num x32-is-zero ?{ INCr }
 			INC GTHk ?&>lhl
 		POP2 INC GTHk ?&>lvl
@@ -560,9 +562,9 @@
 
 @calc/run-cat ( rect* -- )
 	rect-unpack
-	&>lcv ( -- )
+	&>lcv
 		OVR2
-		&>lch ( -- )
+		&>lch
 			DUP OVR2 POP /get-cat
 			( ) INC GTHk ?&>lch
 		POP2 INC GTHk ?&>lcv
@@ -604,9 +606,9 @@
 
 @cells/find-bounds ( -- x 0 y 0 )
 	[ LIT2r 0000 ] #4000
-	&>lfv ( -- )
+	&>lfv
 		#0800
-		&>lfh ( -- )
+		&>lfh
 			DUP OVR2 POP DUP2 /get-addr LDA #00 EQU ?{
 				( y ) DUP STHr GTHk [ JMP SWP ] POP STH
 				( . ) SWP SWPr
@@ -626,9 +628,9 @@
 
 @cells/<save-rect> ( bx ax by ay src* -- )
 	.File/name DEO2
-	&>lv ( -- )
+	&>lv
 		OVR2
-		&>lh ( -- )
+		&>lh
 			DUP OVR2 POP /get-addr File/<save-text>
 			DUP2 INC EQU ?{ .src/spacer LDZ File/<save-char> }
 			INC GTHk ?&>lh
@@ -645,7 +647,7 @@
 	/<reset>
 	#0001 .File/length DEO2
 	;&bufcap ;&buf
-	&>sl ( -- )
+	&>sl
 		;&b .File/read DEO2
 		.File/success-lb DEI ?{ POP2 POP2 src/change !grid/<draw> }
 		[ LIT &b $1 ] /<push>
@@ -753,8 +755,8 @@
 
 @decs ( short* -- str* )
 	[ LIT2r =&cap ]
-	&>w ( -- )
-		DUP2 #000a DIV2k MUL2 SUB2 [ LIT "0 ] ADD STH2kr STA2
+	&>w
+		DUP2 #000a MOD2 [ LIT "0 ] ADD STH2kr STA2
 		[ LIT2r 0001 SUB2r ] #000a DIV2
 		( ) ORAk ?&>w
 	POP2 STH2r INC2 INC2 JMP2r
@@ -762,7 +764,7 @@
 
 @sdec ( str* -- cap* hex* )
 	[ LIT2r 0000 ]
-	&>w ( -- )
+	&>w
 		LDAk [ LIT "0 ] LTH ?&end
 		LDAk #39 GTH ?&end
 		LDAk [ LIT "0 ] SUB #00 SWP STH2r #000a MUL2 ADD2 STH2
@@ -771,14 +773,6 @@
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
 	( utf8 ) #06 SFT #02 EQU ?next-glyph
-	JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
 @<perr> ( str* -: )
@@ -1215,8 +1209,8 @@
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	.File/success-lb DEI ?{ !theme/<reset> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
 
 	&path ".theme $1
 

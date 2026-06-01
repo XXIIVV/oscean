@@ -1,4 +1,5 @@
-( Of, or relating to structure, as opposed to substance. )
+( 54K . Modal
+| Of, or relating to structure, as opposed to substance. )
 
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
 
@@ -44,7 +45,7 @@
 	( >> )
 
 @token/<store> ( -- )
-	[ LIT2 00 -&buf ]
+	;&buf
 	( ) LDZk ?{ POP2 JMP2r }
 	( ) DUP2 dec/valid ?/<store-number>
 	( ) dict/find-alloc body/<push-cell>
@@ -160,7 +161,7 @@
 
 @rules/<push> ( addr* -- addr* )
 	LDA2k ORA ?{
-		( no lhs ) !/<print> }
+		( no lhs ) !rules/<print> }
 	DUP2 tuple/walk LDA2k ORA ?{
 		( no rhs ) NIP2 JMP2r }
 	tuple/walk SWP2
@@ -196,8 +197,8 @@
 
 @body/<push-number> ( num* -- )
 	DUP2
-	( a ) ;dict/sym-a /<push-times>
-	( 0 ) ;dict/sym-zero /<push-cell>
+	( a ) ;dict/sym-a body/<push-times>
+	( 0 ) ;dict/sym-zero body/<push-cell>
 	( b ) ;dict/sym-b
 	( >> )
 
@@ -318,7 +319,7 @@
 @str/to-dec ( str* -- val* )
 	[ LIT2r 0000 ]
 	&>w
-		( acc ) [ LIT2r 000a ] MUL2r
+		( -- ) ( acc ) [ LIT2r 000a ] MUL2r
 		( add ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
 		ADD2r
 		( next ) INC2 LDAk ?&>w
@@ -327,7 +328,7 @@
 @err/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	.Console/error DEO
-	INC2 !/<print>
+	INC2 !err/<print>
 
 @dec/<print> ( short* -- )
 	#000a SWP2 [ LITr ff ]

@@ -1,5 +1,4 @@
-( build: uxnasm src/hershey.tal hershey.ram
-| start: uxnemu hershey.rom )
+( 54K . Hershey )
 
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
@@ -73,6 +72,25 @@
 %sign ( r-based -- res ) {
 	LIT "R SUB }
 
+@font/<load> ( buf* lut* path* -- )
+	.File/name DEO2
+	,&lut-buf STR2
+	;Buf/len .File/length DEO2
+	DUP2 .File/read DEO2
+	( | scan )
+	[ LITr 20 ] DUP2 .File/success DEI2 ADD2 SWP2
+	&>l
+		( addr+8* ) DUP2 #0008 ADD2
+		( addr* ) #00 STHkr DUP2 ADD2 [ LIT2 &lut-buf $2 ] ADD2 STA2
+		str/next INC2 INCr GTH2k ?&>l
+	POP2 POP2 POPr JMP2r
+
+@font/<redraw2> ( -- )
+	#0020 #0020 line/<set-offset>
+	#0200 /<set-boundary>
+	;dict/long ;&reg ;brush/odd1 #0001 /<draw-block>
+	JMP2r
+
 @font/<redraw> ( -- )
 	.Screen/width DEI2 #01 SFT2 #0040 line/<set-offset>
 	;dict/a ;&ita ;brush/odd1 #0001 /<draw-center>
@@ -82,8 +100,8 @@
 	;dict/c ;&bol ;brush/odd1 #0003 /<draw-center>
 	.Screen/width DEI2 #01 SFT2 #00f0 line/<set-offset>
 	;dict/d ;&bol ;brush/odd1 #0001 /<draw-center>
-	.Screen/width DEI2 #01 SFT2 #0110 line/<set-offset>
-	;dict/e ;&reg ;brush/odd1 #0001 /<draw-center>
+	.Screen/width DEI2 #01 SFT2 #0128 line/<set-offset>
+	;dict/e ;&reg ;brush/even1 #0002 /<draw-center>
 	JMP2r
 
 @font/<draw-block> ( string* font* brush* scale* -- )
@@ -93,7 +111,7 @@
 	&>wdb
 		/<draw-glyph>
 		LDAk #20 NEQ ?{
-			.Screen/x DEI2 #0280 LTH2 ?{ /<draw-linebreak> } }
+			INC2k /get-word-width .Screen/x DEI2 ADD2 [ LIT2 &boundary $2 ] LTH2 ?{ /<draw-linebreak> } }
 		INC2 LDAk ?&>wdb
 	POP2 JMP2r
 
@@ -132,35 +150,39 @@
 	POP2
 	( pad ) #00 STHr !line/<mod-offset-x>
 
-@font/<load> ( buf* lut* path* -- )
-	.File/name DEO2
-	,&lut-buf STR2
-	;Buf/len .File/length DEO2
-	DUP2 .File/read DEO2
-	( | scan )
-	[ LITr 20 ] DUP2 .File/success DEI2 ADD2 SWP2
-	&>l
-		( addr+8* ) DUP2 #0008 ADD2
-		( addr* ) #00 STHkr DUP2 ADD2 [ LIT2 &lut-buf $2 ] ADD2 STA2
-		str/next INC2 INCr GTH2k ?&>l
-	POP2 POP2 POPr JMP2r
+@font/<set-boundary> ( x* -- )
+	DUP2 guide/<draw-ver>
+	;&boundary STA2
+	JMP2r
+
+@font/get-word-width ( str* -- width* )
+	[ LIT2r 0000 ]
+	&>wgww
+		LDAk #21 LTH ?{
+			LDAk /get-glyph-width LITr 00 STH
+			ADD2r INC2 LDAk ?&>wgww }
+	POP2 STH2r JMP2r
 
 @font/get-width ( str* -- width* )
 	[ LIT2r 0000 ]
 	&>wgw
 		LDAk DUP #20 LTH ?{
-			DUP /get-glyph LDA2
-			( | get width )
-			sign #00 ROT sign SUB ADD LITr 00 STH
+			DUP /get-glyph-width LITr 00 STH
 			ADD2r }
 		POP INC2 LDAk ?&>wgw
 	POP2 STH2r JMP2r
 
-@font/get-buflut ( id* -- buf* lut* )
-	#20 SFT2 ;&types ADD2 INC2k INC2 LDA2 SWP2 LDA2 JMP2r
+@font/get-glyph-width ( ascii -- width* )
+	/get-glyph LDA2 sign #00 ROT sign SUB ADD JMP2r
 
 @font/get-glyph ( ascii -- addr* )
 	#00 SWP DUP ADD [ LIT2 &font $2 ] ADD2 LDA2 JMP2r
+
+@font/get-buflut ( id* -- buf* lut* )
+	#20 SFT2 ;&types ADD2 INC2k INC2 LDA2 SWP2 LDA2 JMP2r
+
+(
+@|Pen-Line )
 
 @pen/<trace> ( -- )
 	[ LIT2 00 _pen/is-down ] STR
@@ -185,9 +207,6 @@
 	( x2 ) [ LIT2 00 &x2 $1 ] DUP ,&x1 STR
 	( y2 ) [ LIT2 00 &y2 $1 ] DUP ,&y1 STR !line/<draw>
 
-(
-@|Line )
-
 @line/norm ( c* -- c* )
 	#80 ADD #0080 SUB2 [ LIT2 &scale 0001 ] MUL2 JMP2r
 
@@ -201,6 +220,7 @@
 
 @line/<set-offset> ( x* y* -- )
 	,&oy STR2
+	DUP2 ;font/anchor STA2
 	,&ox STR2
 	JMP2r
 
@@ -232,6 +252,22 @@
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
 		!&>w
+
+(
+@|Guide )
+
+@guide/<draw-ver> ( x* -- )
+	#0008 ADD2 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	;&icn .Screen/addr DEO2
+	LIT2 02 -Screen/auto DEO
+	.Screen/height DEI2 #03 SFT2 SUB
+	&>l
+		[ LIT2r 0f -Screen/sprite ] DEOr
+		INC DUP ?&>l
+	POP JMP2r
+
+	&icn [ 8000 8000 8000 8000 ]
 
 (
 @|Stdlib )
