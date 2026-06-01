@@ -28,7 +28,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "May 20 "2026 $2
+	( date ) "1 20 "June 20 "2026 $2
 
 (
 @|Source )
@@ -105,21 +105,21 @@
 
 @walk-comment ( t* -- )
 	;&c .File/read DEO2
-	;File/succ-lb DEI EQU ?<sclr>
+	;File/succ-lb DEI EQU ?str/<clear>
 	[ LIT2 &c $1 "( ] INC NEQ ?walk-comment
-	!<sclr>
+	!str/<clear>
 
 @walk-block ( t* -- )
 	;&c .File/read DEO2
-	;File/succ-lb DEI EQU ?<sclr>
+	;File/succ-lb DEI EQU ?str/<clear>
 	[ LIT2 &c $1 "[ ] INC INC NEQ ?walk-block
-	reset !<sclr>
+	reset !str/<clear>
 
 @parse-token ( t* -- )
 	LDAk [ LIT "( ] EQU ?walk-comment
 	LDAk [ LIT "[ ] EQU ?walk-block
 	LDAk [ LIT "% ] NEQ ?{ INC2k macros/<push-str> }
-	( blank ) LDAk #00 EQU ?<sclr>
+	( blank ) LDAk #00 EQU ?str/<clear>
 	( token count ) .stats/tokens LDZ2k INC2 ROT STZ2
 	( new scope ) DUP2 is-new-scope #00 EQU ?{ INC2k scope/<set> }
 	( macro reset scope ) LDAk LIT "% NEQ ?{ scope/<unset> }
@@ -143,6 +143,8 @@
 		str/cap INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
 		INC2 INC2 GTH2k ?&>loop3
 	POP2 POP2
+	( | unsafe runes )
+	unsafe-runes/<test>
 	( | literal duplicates: #1234 #1234 )
 	;piece-a/buf is-static #00 EQU ?{
 		;piece-a/buf ;piece-b/buf str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
@@ -162,12 +164,43 @@
 	( | use local )
 	;piece-a/buf is-local #00 EQU ?{ ;use-local <print-warn> }
 	;piece-b/buf ;piece-c/buf <scpy>
-	;piece-a/buf DUP2 ;piece-b/buf <scpy> !<sclr>
+	;piece-a/buf DUP2 ;piece-b/buf <scpy> !str/<clear>
+
+@unsafe-runes/<test> ( -- )
+	;piece-b/buf LDA
+	( | handlers )
+	;piece-a/buf ;dict/lda str/cmp3 ?&abs
+	;piece-a/buf ;dict/sta str/cmp3 ?&abs
+	;piece-a/buf ;dict/ldz str/cmp3 ?&zep
+	;piece-a/buf ;dict/stz str/cmp3 ?&zep
+	;piece-a/buf ;dict/ldr str/cmp3 ?&rel
+	;piece-a/buf ;dict/str str/cmp3 ?&rel
+	POP JMP2r
+
+	&abs ( c -- )
+	DUP [ LIT ". ] EQU ?/fail
+	DUP [ LIT ", ] EQU ?/fail
+	POP JMP2r
+
+	&zep ( c -- )
+	DUP [ LIT "; ] EQU ?/fail
+	DUP [ LIT ", ] EQU ?/fail
+	POP JMP2r
+
+	&rel ( c -- )
+	DUP [ LIT ". ] EQU ?/fail
+	DUP [ LIT "; ] EQU ?/fail
+	POP JMP2r
+
+	&fail ( c -- )
+	POP ;&msg !<print-warn2>
+
+	&msg "Unsafe 00
 
 @reset ( -- )
-	;piece-a/buf <sclr>
-	;piece-b/buf <sclr>
-	;piece-c/buf !<sclr>
+	;piece-a/buf str/<clear>
+	;piece-b/buf str/<clear>
+	;piece-c/buf !str/<clear>
 
 @include ( -- )
 	;piece-a/buf str/cap #000a SUB2 ;dict/assets-tal str/cmp ?{
@@ -484,7 +517,7 @@
 (
 @|old )
 
-@<sclr> ( str* -- )
+@str/<clear> ( str* -- )
 	#0000 SWP2 STA2
 	JMP2r
 
@@ -594,6 +627,12 @@
 	&default-scope "@on-reset $1
 	&warnings-txt "warnings. $1
 	&assets-tal "assets.tal $1
+&sta "STA 00
+	&lda "LDA 00
+&stz "STZ 00
+	&ldz "LDZ 00
+&str "STR 00
+	&ldr "LDR 00
 
 (
 @|hints )
@@ -618,7 +657,6 @@
 @hop "Hop $1 ( jci over jmi )
 @nested "Nested $1 ( nested square brackets )
 @cmporder "Static-order $1 ( postfix static )
-@rune "Unsafe 20 "rune $1 ( wrong rune usage )
 @call-private "Private-call $1
 
 (
@@ -952,43 +990,6 @@
 	( eager )
 	"{2} $1 "NIP2 $1 =eagerstack
 	"{1} $1 "NIP $1 =eagerstack
-	( runes )
-	".* $1 "STR* $1 =rune
-	"-* $1 "STR* $1 =rune
-	";* $1 "STR* $1 =rune
-	"=* $1 "STR* $1 =rune
-	"#* $1 "STR* $1 =rune
-
-	".* $1 "LDR* $1 =rune
-	"-* $1 "LDR* $1 =rune
-	";* $1 "LDR* $1 =rune
-	"=* $1 "LDR* $1 =rune
-	"#* $1 "LDR* $1 =rune
-
-	",* $1 "STZ* $1 =rune
-	"_* $1 "STZ* $1 =rune
-	";* $1 "STZ* $1 =rune
-	"=* $1 "STZ* $1 =rune
-	"#* $1 "STZ* $1 =rune
-
-	",* $1 "LDZ* $1 =rune
-	"_* $1 "LDZ* $1 =rune
-	";* $1 "LDZ* $1 =rune
-	"=* $1 "LDZ* $1 =rune
-	"#* $1 "LDZ* $1 =rune
-
-	".* $1 "STA* $1 =rune
-	"-* $1 "STA* $1 =rune
-	",* $1 "STA* $1 =rune
-	"_* $1 "STA* $1 =rune
-	"#* $1 "STA* $1 =rune
-
-	".* $1 "LDA* $1 =rune
-	"-* $1 "LDA* $1 =rune
-	",* $1 "LDA* $1 =rune
-	"_* $1 "LDA* $1 =rune
-	"#* $1 "LDA* $1 =rune
-
 	&end
 
 @rules3
