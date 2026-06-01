@@ -1,4 +1,5 @@
-( let's go!! )
+( 54K . Polycat
+| let's go!! )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
@@ -7,12 +8,6 @@
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 |06 @Tile/length
 |03 @Gravity
-|0190 @Screen/w
-|00f0 @Screen/h
-|00c8 @Screen/center
-|0078 @Screen/center-50
-|0078 @Screen/middle
-|0028 @Screen/middle-50
 
 |000
 
@@ -29,30 +24,22 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | Playdate resolution )
-	;Screen/w .Screen/width DEO2
-	;Screen/h .Screen/height DEO2
+	#0190 .Screen/width DEO2
+	#00f0 .Screen/height DEO2
 	( | Center )
-	;Screen/w #01 SFT2 .camera/center STZ2
-	;Screen/h #01 SFT2 .camera/middle STZ2
-	random/<init>
-	drool/<enter>
+	.Screen/width DEI2 #01 SFT2 .camera/center STZ2
+	.Screen/height DEI2 #01 SFT2 .camera/middle STZ2
+	<drool-init>
 	BRK
 
 @meta 00
 	( name ) "Polycat 0a
 	( details ) "A 20 "Platformer 20 "Game 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "29 20 "Apr 20 "2026 00 00
-
-%Screen/<set-pos> ( x* y* -- ) {
-	.Screen/y DEO2
-	.Screen/x DEO2 }
+	( date ) "22 20 "Jul 20 "2025 00 00
 
 (
 @|Game )
-
-@drool/<leave> ( -- )
-	( >> )
 
 @game/<boot> ( -- )
 	#720f .System/r DEO2
@@ -62,7 +49,7 @@
 
 @game/<start> ( -- )
 	;player/on-control .Controller/vector DEO2
-	;&on-frame .Screen/vector DEO2
+	;game/on-frame .Screen/vector DEO2
 	#00 ;player/fidle STA
 	#ff00 ;&wipe STA2
 	#0000 ;timer/t STA2
@@ -76,15 +63,15 @@
 	;world/one !scene/<enter>
 
 @game/<end> ( -- )
-	;&on-frame-end .Screen/vector DEO2
+	;game/on-frame-end .Screen/vector DEO2
 	#43 ;text/color-num STA
 	#43 ;timer/color-dot STA
 	JMP2r
 
 @game/<credit> ( -- )
-	;&on-frame-credit .Screen/vector DEO2
+	;game/on-frame-credit .Screen/vector DEO2
 	#4f ;text/color-char STA
-	;&on-button-credit .Controller/vector DEO2
+	;game/on-button-credit .Controller/vector DEO2
 	JMP2r
 
 @game/30fps ( -- bang )
@@ -98,7 +85,7 @@
 
 @game/on-frame-end ( -> )
 	[ LIT2 66 -Screen/auto ] DEO
-	;Screen/h #0000 [ LIT2r 0a -Screen/sprite ]
+	.Screen/height DEI2 #0000 [ LIT2r 0a -Screen/sprite ]
 	&>l
 		;gradient/sprite .Screen/addr DEO2
 		DUP2 [ LIT2 &wipe ff00 ] ADD2 .Screen/x DEO2
@@ -112,24 +99,27 @@
 		player/<draw>
 		;timer/t LDA2 timer/<draw>
 		BRK }
-	POP2 /<credit>
+	POP2 game/<credit>
 	BRK
 
 @game/on-frame-credit ( -> )
 	/30fps ?{
-		#0000 #0000 Screen/<set-pos>
+		#0000 .Screen/x DEO2
+		#0000 .Screen/y DEO2
 		[ LIT2 82 -Screen/pixel ] DEO
 		player/<draw-happy>
 		;timer/t LDA2 timer/<draw>
-		.camera/center LDZ2 .camera/middle LDZ2 #0040 SUB2 Screen/<set-pos>
+		.camera/center LDZ2 .Screen/x DEO2
+		.camera/middle LDZ2 #0040 SUB2 .Screen/y DEO2
 		;dict/credit text/<draw-center> }
 	BRK
 
 @game/on-button-credit ( -> )
 	.Controller/button DEI #01 AND ?{ BRK }
-	#0000 #0000 Screen/<set-pos>
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
 	[ LIT2 c0 -Screen/pixel ] DEO
-	/<start>
+	game/<start>
 	BRK
 
 (
@@ -148,7 +138,8 @@
 @|Scene )
 
 @scene/when-frame ( -- )
-	#0000 #0000 Screen/<set-pos>
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | draw scene )
 	.&room LDZ2 LDA2k SWP2 INC2 INC2
@@ -549,7 +540,8 @@
 	( >> )
 
 @timer/<draw> ( count* -- )
-	.camera/center LDZ2 #000c SUB2 #0018 Screen/<set-pos>
+	.camera/center LDZ2 #000c SUB2 .Screen/x DEO2
+	#0018 .Screen/y DEO2
 	[ LIT2 01 -Screen/auto ] DEO
 	( to seconds ) #0003 DIV2
 	( x00 ) STH2k #000a DIV2
@@ -619,29 +611,9 @@
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
-(
-@|Random )
 
-@random/<init> ( -- )
-	[ LIT2 00 -DateTime/second ] DEI
-	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
-	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&+x STR2
-	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
-	( ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
-	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
-	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&+y STR2
-	JMP2r
 
-@random/create ( -- number* )
-	[ LIT2 &+x $2 ]
-	( ) DUP2 #50 SFT2 EOR2
-	( ) DUP2 #03 SFT2 EOR2
-	( ) [ LIT2 &+y $2 ]
-	( ) DUP2 ,&+x STR2
-	DUP2 #01 SFT2 EOR2 EOR2
-	( ) ,&+y STR2k POP JMP2r
-
-~src/events.tal( @|Events )
+( @|Events )
 
 @block [ =&req-draw ( pass-through ) 0f ]
 
@@ -752,7 +724,9 @@
 	no matter where you go,
 	there you are. )
 
-~src/world.tal(
+
+
+(
 @|World )
 
 @world/one
@@ -1061,194 +1035,207 @@
 (
 @|Dict )
 
-@dict/credit "thank 20 "you 20 "for 20 "playing. 20 00
+@dict/credit "thank 20 "you 20 "for 20 "playing. 20 $1
 
-@dict/tutorial-one "jump 20 "a 00
-@dict/tutorial-two "hold 20 "a 00
-@dict/tutorial-thr "kick 20 "a 20 "b 00
-@dict/tutorial-fou "toutau 20 "rafau 00
-@dict/tutorial-sev "demor 20 "rafau 00
+@dict/tutorial-one "jump 20 "a $1
+@dict/tutorial-two "hold 20 "a $1
+@dict/tutorial-thr "kick 20 "a 20 "b $1
+@dict/tutorial-fou "toutau 20 "rafau $1
+@dict/tutorial-sev "demor 20 "rafau $1
 
-@dict/one "rise 00 ( lobby )
-@dict/two "dauri 00 ( fork )
-@dict/thr "siul 00 ( jump )
-@dict/fou "dotou 00 ( platform )
-@dict/fiv "toutau 00 ( collapse<key> )
-@dict/six "riutou 00 ( block )
-@dict/sev "resau 00 ( tower )
-@dict/eig "demor 00 ( lion<key> )
+@dict/one "rise $1 ( lobby )
+@dict/two "dauri $1 ( fork )
+@dict/thr "siul $1 ( jump )
+@dict/fou "dotou $1 ( platform )
+@dict/fiv "toutau $1 ( collapse<key> )
+@dict/six "riutou $1 ( block )
+@dict/sev "resau $1 ( tower )
+@dict/eig "demor $1 ( lion<key> )
 
-~src/drool.tal( Animated by Andrew Alderwick, 2021 )
 
-@drool/on-button ( -> )
-	.Controller/button DEI ?{ BRK }
-	/<leave>
-	BRK
 
-@drool/on-frame-dawn ( -> )
-	;&buf #00c8 OVR ,&fa LDR MUL2 ADD2 DUP2 #00c8 ADD2 SWP2
-	&>loop-rabbits
-		DUP2 rabbit/<move>
+@on-drool-control ( -> )
+	game/<boot> BRK
+
+@on-drool-setup ( -> )
+	;rabbits #00c8 OVR ,&f LDR MUL2 ADD2 DUP2 #00c8 ADD2 SWP2
+	&>loop-rabbits ( -- )
+		DUP2 <move-rabbit>
 		INC2 INC2 GTH2k ?&>loop-rabbits
 	POP2 POP2
-	( | incr frame )
-	[ LIT &fa $1 ] INCk ,&fa STR
-	#05 NEQ ?{
-		#0003 /<draw-rabbits>
-		[ LIT2 00 _&fb ] STR
-		;&on-frame-sunrise .Screen/vector DEO2 }
+	( incr frame ) [ LIT &f $1 ] INCk ,&f STR
+	#05 EQU ?{ BRK }
+	( | init display )
+	.Screen/width DEI2 #01 SFT2 #0050 SUB2 ;<draw-rabbit>/xoffset STA2
+	.Screen/height DEI2 #01 SFT2 #0050 SUB2 ;<draw-rabbit>/yoffset STA2
+	;rabbit-icn .Screen/addr DEO2
+	;on-drool-anim .Screen/vector DEO2
 	BRK
 
-@drool/on-frame-sunrise ( -> )
-	[ LIT &fb $1 ] INCk ,&fb STR
-	#00 OVR #02 SFT #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2
-	#ff03 /<draw-rabbits>
-	#20 NEQ ?{
-		#ff03 /<draw-rabbits>
-		[ LIT2 ff _&fc ] STR
-		;&on-frame-daytime .Screen/vector DEO2 }
+@on-drool-anim ( -> )
+	( incr counter ) [ LIT &counter $1 ] #01 SUB DUP ,&counter STR
+	DUP #f0 LTH ?{
+		#ff OVR SUB #00 DUP2 .System/r DEO2
+		DUP2 .System/g DEO2
+		.System/b DEO2 }
+	INCk #0000
+	&>clear-loop ( -- )
+		ROTk <draw-rabbit>
+		INC DUP #64 LTH ?&>clear-loop
+	POP2 POP #0500
+	&>draw-loop ( -- )
+		ROTk <draw-rabbit>
+		INC DUP #64 LTH ?&>draw-loop
+	POP2 ?{ ;on-drool-sunset .Screen/vector DEO2 }
 	BRK
 
-@drool/on-frame-daytime ( -> )
-	[ LIT2 ff &fc ff ] ADD DUP ,&fc STR
-	;&frolic .Screen/addr DEO2
-	( | Clear )
-	;Screen/center-50 .Screen/x DEO2
-	;Screen/middle-50 .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	( | Draw )
-	DUP #0f /<draw-rabbits>
-	?{
-		[ LIT2 20 _&fc ] STR
-		;&on-frame-sunset .Screen/vector DEO2 }
+@on-drool-sunset ( -> )
+	;on-drool-anim/counter LDA #02 SUB
+	( ) DUP ;on-drool-anim/counter STA
+	( ) DUP #1f GTH ?{
+		( ) DUP #01 SFT #00
+		( ) DUP2 .System/r DEO2
+		( ) DUP2 .System/g DEO2
+		.System/b DEO2
+		#6400
+		&>draw-loop ( -- )
+			#05 OVR #00 <draw-rabbit>
+			INC GTHk ?&>draw-loop
+		POP2 }
+	?{ game/<boot> }
 	BRK
 
-@drool/on-frame-sunset ( -> )
-	[ LIT2 ff &fd 20 ] ADD DUP ,&fd STR
-	#00 OVR #02 SFT #30 SFT2 ;&sprite ADD2 .Screen/addr DEO2
-	#0003 /<draw-rabbits>
-	?{ /<leave> }
-	BRK
+(
+@|drool )
 
-@drool/<enter> ( -- )
-	#0f0f .System/r DEO2
-	#000f .System/g DEO2
-	#000f .System/b DEO2
+@<drool-init> ( -- )
+	<prng-init>
+	;on-drool-control .Controller/vector DEO2
 	[ LIT2 00 -Screen/auto ] DEO
-	[ LIT2r =&buf ]
+	( | setup synth )
+	[ LIT2r =rabbits ]
 	( | )
 	#0f05
-	&>x
+	&>x ( -- )
 		#0f05
-		&>y
+		&>y ( -- )
 			ROTk SWP STH2kr STA2
 			POP INC2r INC2r INC GTHk ?&>y
 		POP2 INC GTHk ?&>x
-	POP2 POP2r occupied/<init>
-	#00 ;&fa STA
-	;&on-frame-dawn .Screen/vector DEO2
-	;&on-button .Controller/vector DEO2
-	JMP2r
-
-@drool/<draw-rabbits> ( f color -- )
-	;rabbit/color STA
-	STH
-	#6400
-	&>loop-sunset
-		DUP STHkr rabbit/<draw>
-		INC GTHk ?&>loop-sunset
-	POP2 POPr JMP2r
-
-%occupied/get-addr ( x y -- addr* ) {
-	#00 SWP #0014 MUL2 ROT #00 SWP ADD2 ;occupied/buf ADD2 }
-
-%occupied/<set> ( x y value -- ) {
-	STH
-	occupied/get-addr STH2
-	STAr }
-
-%occupied/get ( x y -- value ) {
-	occupied/get-addr LDA }
-
-@occupied/<init> ( -- )
+	POP2 POP2r
+	( | init occupancy )
 	#1400
-	&>y2
+	&>y2 ( -- )
 		#1400
-		&>x2
-			ROTk #00 /<set>
+		&>x2 ( -- )
+			ROTk #00 <set-occupied>
 			POP INC GTHk ?&>x2
 		POP2 INC GTHk ?&>y2
 	POP2
 	( | )
-	;&buf-cap ;&buf
-	&>li
-		LDA2k #01 /<set>
-		INC2 INC2 GTH2k ?&>li
-	POP2 POP2 JMP2r
+	;rabbits DUP2 #00c8 ADD2 SWP2
+	&>l ( -- )
+		LDA2k #01 <set-occupied>
+		INC2 INC2 GTH2k ?&>l
+	POP2 POP2 #00 ;on-drool-setup/f STA
+	;on-drool-setup .Screen/vector DEO2
+	JMP2r
 
-@occupied/check-move ( possible* new-x new-y -- possible'* )
-	DUP2 /get ?{
-		OVR2r [ LIT2r 00c8 ] SUB2r
-		&>l
-			;drool/buf-next STH2kr GTH2 ?&history-okay
-			DUP2 STH2kr LDA2 EQU2 ?&history-clash
-			[ LIT2r 00c8 ] SUB2r !&>l
-		&history-okay POP2r OVR2 STA2
-		INC2 INC2 JMP2r
-		&history-clash POP2r }
-	POP2 JMP2r
+@<set-occupied> ( x y value -- )
+	STH
+	#00 SWP #0014 MUL2 ROT #00 SWP ADD2 ;occupied ADD2 STH2
+	STAr
+	JMP2r
 
-@rabbit/<move> ( addr* -- )
-	STH2k LDA2 DUP2 #00 occupied/<set>
-	;&moves-buf
-	( u ) OVR2 #01 SUB occupied/check-move
-	( d ) OVR2 INC INC occupied/check-move
-	( l ) OVR2 #0100 SUB2 occupied/check-move
-	( r ) OVR2 #0100 ADD2 occupied/check-move
-	( ) ;&moves-buf SUB2 DUP ?{
-		POP2
-		&write ( x y / addr* )
-		DUP2 #01 occupied/<set>
-		STH2r #00c8 ADD2 STA2
-		JMP2r }
+@<move-rabbit> ( addr* -- )
+	STH2k LDA2 DUP2 #00 <set-occupied>
+	;&possible-moves
+	( up ) OVR2 #01 SUB check-move
+	( down ) OVR2 INC INC check-move
+	( left ) OVR2 #0100 SUB2 check-move
+	( right ) OVR2 #0100 ADD2 check-move
+	( ) ;&possible-moves SUB2 DUP ?&can-move
+	POP2
+	&write ( x y / addr* )
+	DUP2 #01 <set-occupied>
+	STH2r #00c8 ADD2 STA2
+	JMP2r
+
+	&can-move ( x y num-possible-times-2* / addr* )
 	NIP2
-	( num-possible-times-2* / addr* ) random/create SWP2 DIV2k MUL2 SUB2 #fe AND
-	( chosen-move* / addr* ) ;&moves-buf ADD2 LDA2 !&write
+	( num-possible-times-2* / addr* ) prng SWP2 DIV2k MUL2 SUB2 #fe AND
+	( chosen-move* / addr* ) ;&possible-moves ADD2 LDA2 !&write
+	&possible-moves $10
 
-@rabbit/<draw> ( n counter -- )
-	OVR LTHk ?&<finish>
+@check-move ( possible* new-x new-y -- possible'* )
+	DUP2 get-occupied ?&blocked
+	OVR2r LIT2r 00c8 SUB2r
+	( possible* new-x new-y / previous-frame-addr* )
+	&>l ( -- )
+		;rabbits INC2 STH2kr GTH2 ?&history-okay
+		DUP2 STH2kr LDA2 EQU2 ?&history-clash
+		LIT2r 00c8 SUB2r !&>l
+	&history-okay POP2r OVR2 STA2
+	INC2 INC2 JMP2r
+	&history-clash POP2r &blocked POP2 JMP2r
+
+@get-occupied ( x y -- value )
+	#00 SWP #0014 MUL2 ROT #00 SWP ADD2 ;occupied ADD2 LDA JMP2r
+
+@<prng-init> ( -- )
+	( ) [ LIT2 00 -DateTime/second ] DEI
+	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/day ] DEI DUP2 ADD2 EOR2
+	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	JMP2r
+
+@prng ( -- number* )
+	[ LIT2 &x $2 ]
+	( ) DUP2 #50 SFT2 EOR2
+	( ) DUP2 #03 SFT2 EOR2 [ LIT2 &y $2 ] DUP2 ,&x STR2
+	( ) DUP2 #01 SFT2 EOR2 EOR2
+	( ) ,&y STR2k POP JMP2r
+
+(
+@|drawing )
+
+@<draw-rabbit> ( color n counter -- )
+	OVR LTHk ?&finish
 	SUB
-	( color n timeline ) DUP #63 GTH ?&<start>
+	( color n timeline ) DUP #63 GTH ?&start
 	#17 DIVk STHk MUL SUB
-	( color n stage-timeline / frame ) DUP #07 GTH ?&<static>
-	( | rabbit is in-between two frames )
-	#08 OVR SUB ,&from-weight STR
+	( color n stage-timeline / frame ) DUP #07 GTH ?&static
+	( rabbit is in-between two frames ) #08 OVR SUB ,&from-weight STR
 	,&to-weight STR
-	( color n / frame ) #00 SWP DUP2 ADD2 ;drool/buf ADD2 #00c8 #00 STHr MUL2 ADD2
+	( color n / frame ) #00 SWP DUP2 ADD2 ;rabbits ADD2 #00c8 #00 STHr MUL2 ADD2
 	( color from-addr* ) LDA2k STH2
 	#00c8 ADD2 LDA2
-	&>l
-		( y ) STHr /mix ;Screen/middle-50 ADD2 .Screen/y DEO2
-		( x ) STHr /mix ;Screen/center-50 ADD2 .Screen/x DEO2
-		[ LIT2 &color $1 -Screen/sprite ] DEO
+	&>draw ( color to-x to-y / from-x from-y )
+		STHr <draw-rabbit>/mix
+		[ LIT2 &yoffset $2 ] ADD2 .Screen/y DEO2
+		STHr <draw-rabbit>/mix
+		[ LIT2 &xoffset $2 ] ADD2 .Screen/x DEO2
+		.Screen/sprite DEO
 		JMP2r
-	
-		&<start> ( color n counter -- )
-		[ LITr 04 ]
-		( >> )
-		&<static> ( color n counter / frame -- )
-		INCr POP #00 SWP DUP2 ADD2 ;drool/buf ADD2 #00c8
-		( ) #00 STHr MUL2 ADD2 LDA2 STH2k !&>l
 
-	&<finish> ( color n counter n -- )
-	POP [ LITr ff ] !&<static>
+		&mix ( to-z from-z -- mixed* )
+		#00 SWP LIT2 00
+		&from-weight 00 MUL2 ROT #00 SWP LIT2 00
+		&to-weight 00 MUL2 ADD2 JMP2r
 
-@rabbit/mix ( to-z from-z -- mixed* )
-	#00 SWP
-	( ) [ LIT2 00 &from-weight 00 ] MUL2 ROT #00 SWP
-	( ) [ LIT2 00 &to-weight 00 ] MUL2 ADD2 JMP2r
+		&finish ( color n counter n )
+		POP LITr ff !&static
 
-~src/assets.tal
+		&start ( color n counter )
+		LITr 04
+		&static ( color n counter / frame )
+		INCr POP #00 SWP DUP2 ADD2 ;rabbits ADD2 #00c8
+		( ) #00 STHr MUL2 ADD2 LDA2 STH2k !&>draw
+
+
 
 (
 @|Assets )
@@ -2441,18 +2428,15 @@ f0f0 e0c0 0000 0000 f8f8 f0e0 c000 0000
 f8f8 f8f0 80a0 9000 fcfc fcf8 f0f0 f8f8
 0000 0000 0000 0000 0000 0000 0000 0000 ]
 
-@drool/sprite [
-	0000 0000 0000 0000 0000 0010 0000 0000
-	0000 1038 1000 0000 0000 3838 3800 0000
-	0010 387c 3810 0000 0038 7c7c 7c38 0000
-	1038 7cfe 7c38 1000 107c 7cfe 7c7c 1000 ]
-	&frolic [
-	387c fefe fe7c 3800 7cfe fefe fefe 7c00 ]
+@rabbit-icn
+	[ 003c 7e7e 7e7e 3c00 ]
+@occupied $190
+@rabbits
 
 @room/collisions $400
 @moss/mem $20
 
-@rabbit/moves-buf $10
-@occupied/buf $c8 &buf-cap $c8
-@drool/buf $1 &buf-next ( overlap asset buffers )
+
+
+
  
