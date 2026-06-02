@@ -4,7 +4,7 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom bin/dir.rom bin/img.rom bin/log.rom links/img.xml links/log.xml docs/index.html etc/index.html repl
+run: bin/oscean.rom bin/arvelie.rom links/img.xml links/log.xml docs/index.html etc/index.html repl
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ echo "HTML(site)"
@@ -42,16 +42,16 @@ bin/img.rom: src/img.tal
 bin/log.rom: src/log.tal
 	@ ${ASM} src/log.tal bin/log.rom
 
-links/img.xml: src/tables/diary/*
+links/img.xml: bin/img.rom src/tables/diary/*
 	@ echo "RSS(img)"
 	@ ${EMU} bin/img.rom > links/img.xml
-links/log.xml: src/log/*
+links/log.xml: bin/log.rom src/log/*
 	@ echo "RSS(log)"
 	@ ${EMU} bin/log.rom
-docs/index.html: docs/*
+docs/index.html: bin/dir.rom docs/*
 	@ echo "HTML(docs)"
 	@ ${EMU} bin/dir.rom docs/
-etc/index.html: etc/*
+etc/index.html: bin/dir.rom etc/*
 	@ echo "HTML(etc)"
 	@ ${EMU} bin/dir.rom etc/
 
