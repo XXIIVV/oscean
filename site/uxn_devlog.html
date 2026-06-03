@@ -183,8 +183,8 @@ Memory
 	A cell is 8 bits
 
 	There are two LIFO stacks: Wst and Rst
-	The stacks have 256 cells and a pointer
-	The pointer is a cell
+	A stack has 256 cells and a pointer
+	A pointer is a cell
 	
 	Ram is 65536 cells
 	Dev is 256 cells
@@ -196,18 +196,18 @@ Bytecode
 	
 	80 Pop does not consume items
 	40 Wst becomes Rst, and vice-versa
-	20 Values are big-endian shorts
+	20 Values are two big-endian cells
 	
 	Immediate opcodes have no modes
 
 Standard Opcodes
 
-	Operations are on Wst, unless stated by a dot
-	addr is relative, or absolute with 20 bit mode
+	v1 is always one cell
+	v2 is always two big-endian cells
 	#v is read from memory
-	v1 is always byte
-	v2 is always big-endian short
 	v follows the 20 bit mode
+	.v is on the Rst
+	addr is relative, or absolute with 20 bit mode
 
 	00            BRK --
 	01          a INC -- a+1
@@ -223,8 +223,8 @@ Standard Opcodes
 	0b        a b LTH -- a&lt;b1
 	0c       addr JMP --
 	0d cond1 addr JCN --
-	0e       addr JSR -- . pc2
-	0f          a STH -- . a
+	0e       addr JSR -- .pc2
+	0f          a STH -- .a
 	10       abs1 LDZ -- #abs
 	11   val abs1 STZ --
 	12       rel1 LDR -- #rel
@@ -244,13 +244,15 @@ Standard Opcodes
 
 Immediate Opcodes
 
+	J** read a signed two-cells distance relative to the post-fetch PC
+
 	20      cond1 JCI --
 	40            JMI --
-	60            JSI -- . pc2
+	60            JSI -- .pc2
 	80            LIT -- #pc
-	a0           LIT2 -- #pc #pc+1
-	c0           LITr -- . #pc
-	e0          LIT2r -- . #pc #pc+1
+	a0           LIT2 -- #pc2
+	c0           LITr -- .#pc
+	e0          LIT2r -- .#pc2
 </pre>
 </details>
 
