@@ -1,6 +1,6 @@
 <h2>A programming language</h2>
 
-<p>A <i>binding error</i> is when a name has outlived its value, it's are a common class of errors in software that happens when a reference is shared between two things that should not have shared it, like when a variable initialized in one context is read in another.</p>
+<p>A <i>binding error</i> is when a name has outlived its value, it's a common class of errors in software that happens when a reference is shared between two things that should not have shared it, like when a variable initialized in one context is read in another.</p>
 
 <pre>
 char *buf = malloc(64);
@@ -15,12 +15,16 @@ buf[0] = 'x';
 <pre style='margin-bottom:1px'>
 MOV R0, 12
 MOV R1, 34
-SUB R2, R1, R0
+SUB R2, R1, R0 <i>( uh oh )</i>
 DIV R3, R0, R2
 </pre>
 <pre>
 #12 #34 OVR SUB DIV
 </pre>
+
+<article>
+	<p>The correctness of the final result depends on nothing having touched R0 in between SUB and DIV. In the stack version, OVR copies the value to the top so it can be used twice, there is no name holding the reference open.</p>
+</article>
 
 <p>In stack machine assembly there are no variables, no registers, no scope and no environment, unlike other languages where linearity is enforced by tooling and runtime checks, aliasing is altogether not expressible in the model. The consequence is that the entire family of bugs caused by names cannot be written.</p>
 
@@ -47,6 +51,10 @@ bodies:</p>
 </pre>
 
 <p>This is a very basic and permissive type system by the standards of academic type theory, but it is the type system that fits a machine whose defining property is the absence of names. It takes minutes to understand, seconds to check, and costs nothing at runtime.</p>
+
+<article>
+	<p>One might look at Uxntal code and point at labels, thinking, isn't this a name? A label marks a position in memory, it doesn't hold a value and can't go stale.</p>
+</article>
 
 <h3>II. Algebraic Reduction</h3>
 
@@ -78,10 +86,5 @@ fall-through.</p>
 </pre>
 
 <p>What makes these rewrites reliable is precisely the absence of names. In a language with variables, any of these transformations might be invalid because a name could introduce a dependency invisible to the optimizer. When there are no names there are no invisible dependencies. The sequence of operations is all there is, and what can be said about it algebraically is everything that can be said about it.</p>
-
-<p>It's justified to assume that programming with so few primitives, will make it
-difficult for software tools, to infer meaning from a program's source files.
-But we can still convey a lot of details about the intent of various data
-structures by encoding information in the few tools at our disposal.</p>
 
 <img src='../media/generic/varvara.potato.png' width='200'/>
