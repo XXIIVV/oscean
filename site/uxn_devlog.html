@@ -100,7 +100,7 @@ machine with thousands of instructions; or a single instruction machine
 building abstract logic from thousands of primitive parts.</p>
 
 <article>
-	<p>So, why not the <a href='https://tinlizzie.org/VPRIPapers/tr2015004_cuneiform.pdf' target='_blank'>Chifir</a>? Because of its 16-bytes long instructions, incomplete specification and unspecified behaviors,. It's still a project <a href='https://gopher.floodgap.com/gopher/gw?a=gopher%3A%2F%2Fthelambdalab.xyz%2F1cuneiforth%2F' target='_blank'>worth looking into</a>!</p>
+	<p>So, why not the <a href='https://tinlizzie.org/VPRIPapers/tr2015004_cuneiform.pdf' target='_blank'>Chifir</a>? Because of its 16-bytes long instructions, incomplete specification and unspecified behaviors.</p>
 </article>
 
 <h3>III. Things Betwixt</h3>
@@ -119,7 +119,7 @@ rests on an intricate and inefficient garbage collected system. I was able to wr
 an <a href='../etc.secd.c.txt'>implementation</a> in about <b>two weeks</b>.</p>
 
 <article>
-	<p>So, why not <i>Nock</i>? While it is supposedly a clean slate computing stack(turned webapp delivery system somehow), its fascists and technocratic ties points in the opposite direction of where I want to go.</p>
+	<p>So, why not <i>Nock</i>? While it is supposedly a clean slate computing stack(turned webapp delivery system somehow), its fascists, blockchain and technocratic ties points in the opposite direction of where I want to go, to say nothing of the challenge of making the system runs reliably and fast.</p>
 </article>
 
 <img src="../media/refs/computers.png" width="300">
@@ -135,8 +135,7 @@ and not that of hardware, so I do no consider FPGAs.</p>
 <img src='../media/refs/ma.png' class="right" style='width:100px'/>
 	<p>So, why not <a href='https://www.lexaloffle.com/pico-8.php' target='_blank'>Pico-8</a>? The comparison comes from people conflating Uxn with <a href='varvara.html'>Varvara</a>. A better comparison would be Uxn
 and the LuaVM, which lives at the core of Pico-8, but isn't intended to be targeted directly
-and is subject to change. On the other hand, Uxn is a VM focused on long-term
-stability, implementability, and portability.</p>
+and is subject to change.</p>
 </article>
 
 <h3>IV. Back & Forth</h3>
@@ -149,10 +148,10 @@ resulting capabilities of its language eventually brought me back to stack machi
 <p><a href='concatenative.html'>Concatenative languages</a> consist of breaking a
 program into a list of words, and to interpret each word, words are often
 combinations of other words, combined to create more complex words. Brackets
-and parentheses are unnecessary: the program merely performs calculations in
-the order that is required, letting the automatic stack store intermediate
-results on the fly for later use. Likewise, there is no requirement for
-precedence rules.</p>
+and parentheses are unnecessary, there is no requirement for
+precedence rules, the program merely performs calculations in
+the order that is required, letting the stack store intermediate
+results on the fly for later use.</p>
 
 <table border="1">
 	<tr><td><i>operation</i></td><th>3</th><th>10</th><th>5</th><th>+</th><th>*</th></tr>
@@ -161,11 +160,9 @@ precedence rules.</p>
 	<tr><td>3</td></tr>
 </table>
 
-<p>In <a href='forth.html'>Forth</a>, memory is made of blocks of cells, which
-are typically <a href='binary.html'>16-bits in length</a>, meaning that each
-piece of data is a number from 0 to 65535. For this specific imaginary system,
-I wanted the memory to consist of cells of 8-bit, or numbers from 0 to 255. For
-example, the <code>12 / (34 - 12)</code> sequence is equivalent to the 6
+<p>For this specific imaginary system,
+I wanted the memory, program and stacks to consist of 8-bit cells. For
+example, the <code>12 / (34 - 12)</code> sequence is equivalent to the following six
 bytes:</p>
 
 <pre>
@@ -178,69 +175,89 @@ language, I've combined a few stack-machine operations, arithmetic, bitwise func
 expressive virtual machine that can be implemented in a <b>weekend</b> running at a reasonable speed. An emulator capable of running the self-hosted assembler
 is about <a href="../etc/uxnmin.c.txt" target="_blank">150 lines of C</a>.</p>
 
+<details>
+<summary>Napkin Definition</summary>
 <pre>
-00            BRK --
-01          a INC -- a+1
-02          a POP --
-03        a b NIP -- b
-04        a b SWP -- b a
-05      a b c ROT -- b c a
-06          a DUP -- a a
-07        a b OVR -- a b a
-08        a b EQU -- a=b1
-09        a b NEQ -- a≠b1
-0a        a b GTH -- a&gt;b1
-0b        a b LTH -- a&lt;b1
-0c       addr JMP --
-0d cond1 addr JCN --
-0e       addr JSR -- . pc2
-0f          a STH -- . a
-10       abs1 LDZ -- [abs]
-11   val abs1 STZ --
-12       rel1 LDR -- [rel]
-13   val rel1 STR --
-14       abs2 LDA -- [abs]
-15   val abs2 STA --
-16       dev1 DEI -- [dev]
-17   val dev1 DEO --
-18        a b ADD -- a+b
-19        a b SUB -- a-b
-1a        a b MUL -- a×b
-1b        a b DIV -- a÷b
-1c        a b AND -- a&b
-1d        a b ORA -- a|b
-1e        a b EOR -- a^b
-1f      a hl1 SFT -- res&gt;&gt;l&lt;&lt;h
+Memory
 
-20      cond1 JCI --
-40            JMI --
-60            JSI -- . pc2
-80            LIT -- [pc]
-a0           LIT2 -- [pc] [pc+1]
-c0           LITr -- . [pc]
-e0          LIT2r -- . [pc] [pc+1]
+	A cell is 8 bits
+	
+	Wst is 256 cells, a pointer
+	Rst is 256 cells, a pointer
+	Dev is 256 cells
+	Ram is 65536 cells
+
+Bytecode
+
+	A standard opcode is 5 bits, and 3 mode bits
+
+	The stacks are Last In, First Out
+	The notation indicates operation on Wst
+	A dot indicates an effect on the Rst
+	#v is read from memory
+	v1 is always byte
+	v2 is always short
+	v follows the 20 bit mode
+
+Modes Bits
+
+	80 Pop does not consume items
+	40 Wst becomes Rst, and vice-versa
+	20 Values are 16 bits big-endian
+	
+	Immediate opcodes have no modes
+
+Standard Opcodes
+
+	00            BRK --
+	01          a INC -- a+1
+	02          a POP --
+	03        a b NIP -- b
+	04        a b SWP -- b a
+	05      a b c ROT -- b c a
+	06          a DUP -- a a
+	07        a b OVR -- a b a
+	08        a b EQU -- a=b1
+	09        a b NEQ -- a≠b1
+	0a        a b GTH -- a&gt;b1
+	0b        a b LTH -- a&lt;b1
+	0c       addr JMP --
+	0d cond1 addr JCN --
+	0e       addr JSR -- . pc2
+	0f          a STH -- . a
+	10       abs1 LDZ -- #abs
+	11   val abs1 STZ --
+	12       rel1 LDR -- #rel
+	13   val rel1 STR --
+	14       abs2 LDA -- #abs
+	15   val abs2 STA --
+	16       dev1 DEI -- #dev
+	17   val dev1 DEO --
+	18        a b ADD -- a+b
+	19        a b SUB -- a-b
+	1a        a b MUL -- a×b
+	1b        a b DIV -- a÷b
+	1c        a b AND -- a&b
+	1d        a b ORA -- a|b
+	1e        a b EOR -- a^b
+	1f      a hl1 SFT -- res&gt;&gt;l&lt;&lt;h
+
+Immediate Opcodes
+
+	20      cond1 JCI --
+	40            JMI --
+	60            JSI -- . pc2
+	80            LIT -- #pc
+	a0           LIT2 -- #pc #pc+1
+	c0           LITr -- . #pc
+	e0          LIT2r -- . #pc #pc+1
 </pre>
+</details>
 
-<p>Its documentation encourages
-re-implementation instead of adoption of a specific implementation. It operates
+<p>For it to work as an <i>Archival Computer</i>, it must remain completely detached from dependencies, and highly discoverable. It operates
 on bytes as to remain portable on small systems, abstracting I/O entirely to
-the host system via dedicated opcodes. For it to work as an <i>Archival Computer</i>, it must remain completely detached from dependencies, and highly discoverable for future generation:</p>
-
-<ul>
-	<li><b>Frozen Specification</b>: Uxn is implicitly frozen at <a href='kelvin_versioning.html'>0 Kelvin</a>, it can be implemented in a hundred lines in most languages.</li>
-	<li><b>Zero Dependencies</b>: The toolchain is entirely <a href='uxntal_bootstrap.html'>bootstrappable</a>, no dependency on host OS semantics beyond I/O abstraction.</li>
-	<li><b>Minimal Conventions</b>: <a href='varvara.html'>Varvara</a> is the current baseline specification, but is not frozen.</li>
-	<li><b>Archival Format Contract</b>: Uxntal has a standard for <a href='metadata.html'>ROM metadata</a>, but is not frozen.</li>
-	<li><b>Operational Correctness</b>: <a href='../etc/opctest.tal.txt'>Opctest</a> is an extensive test suite that validates every single opcode, passing the test yields a compatible implementation. Correctness is defined operationally, Uxn has no undefined behaviors and cannot error.</li>
-	<li><b>Independent Redundancy</b>: Uxn, by way of Varvara, has open source emulation for dozens of architectures already.</li>
-	<li><b>Artifact friendliness</b>: Deterministic execution model is inspectable step-by-step, accessible <a href='symbols.html'>symbol files</a>.</li>
-	<li><b>Cultural Preservation Efforts</b>: The ecosystem features its own <a href='uxntal_reference.html'>sign-language and glyph system</a>, but currently lacks multilingual documentation.</li>
-	<!--
-	<li><b>Self-contained Offline Archives</b>: None exists at the moment, other than the <a href='varvara_zine.html'>zine</a>, napkin definition and printing the <a href='uxn.html'>website</a>. The completion of <i>Turnip Complete</i> might challenge that. There are third-party ASCII-only <a href='../docs/uxn38.txt'>reference manuals</a>.</li>
-	<li><b>Security</b>: Uxn currently lacks a rigidly standardized virtual sandbox.</li>
-	<li><b>Human Readability</b>: Uxn lacks a stable high-level language that is itself archival-grade, <a href='rejoice.html'>Rejoice</a> might be an attempt at challenging that.</li>
-	-->
-</ul>
+the host system via dedicated opcodes and, hopefully, its design will encourage
+re-implementation instead of adoption.</p>
 <ul></ul><p><b>incoming: </b><a href="devlog.html" class="parent">devlog</a> <a href="2022.html">2022</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
