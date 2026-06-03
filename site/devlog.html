@@ -110,12 +110,10 @@ project.</p>
 writing emulation software for each new platform, the specifications should be
 painless to implement.</p>
 
-<img src='../media/refs/bthennota.png' width='100'/>
-
 <p>Let's use the time one would need to write a passable
 emulator as a limit in complexity for this system. Could a computer science
 student implement an emulation of the <a href='6502.html'>6502 instructions</a>
-in an afternoon? Could that design be simplified, changed in some way to make
+in an afternoon, a week, a month? Could that design be simplified, changed in some way to make
 it more approachable for would-be implementers?</p>
 
 <ul>
@@ -155,32 +153,21 @@ languages. The system was later expanded with arithmetic and IO operations, but
 rests on an intricate and inefficient garbage collected system. I was able to write
 an <a href='../etc.secd.c.txt'>implementation</a> in about <b>two weeks</b>.</p>
 
-<img src="../media/refs/computers.png" width="300">
-
-<p>In the early 1980s , when computer access was still not yet widespread, a <a
-href='paper_register.html'>paper computer</a> was designed, consisting of a
-piece of paper with 21 lines of <i>code</i> and eight registers. The
-instruction set of five commands(inc, dec, jmp, isz, stp) is small but <a
-href='https://en.wikipedia.org/wiki/Turing_completeness' target='_blank'>Turing
-complete</a>, meaning that it can approximately simulate the computational
-aspects of any other real-world general-purpose computer, and is therefore
-enough to represent all mathematical functions.</p>
-
 <article>
 	<p>So, why not <i>Nock</i>? While it is supposedly a clean slate computing stack(turned webapp delivery system somehow), its fascists and technocratic ties points in the opposite direction of where I want to go.</p>
 </article>
 
-<img src='../media/refs/ma.png' class="right" style='width:100px'/>
+<img src="../media/refs/computers.png" width="300">
 
 <p>Somewhere along this voyage into finding a suitable host for my programs, I
 began thinking about <a href='collapse.html'>electronic waste</a>, and I
 couldn't justify surrounding myself with <a href='salvage_computing.html'>yet
-more electronics</a>.</p>
-<p>This dream platform would therefore be designed to be
+more electronics</a>. This dream platform would therefore be designed to be
 emulated, its complexity would be designed around the complexity of software
 and not that of hardware, so I do no consider FPGAs.</p>
 
 <article>
+<img src='../media/refs/ma.png' class="right" style='width:100px'/>
 	<p>So, why not <a href='https://www.lexaloffle.com/pico-8.php' target='_blank'>Pico-8</a>? The comparison comes from people conflating Uxn with <a href='varvara.html'>Varvara</a>. A better comparison would be Uxn
 and the LuaVM, which lives at the core of Pico-8, but isn't intended to be targeted directly
 and is subject to change. On the other hand, Uxn is a VM focused on long-term
@@ -226,22 +213,47 @@ language, I've combined a few stack-machine operations, arithmetic, bitwise func
 expressive virtual machine that can be implemented in a <b>weekend</b> running at a reasonable speed. An emulator capable of running the self-hosted assembler
 is about <a href="../etc/uxnmin.c.txt" target="_blank">150 lines of C</a>.</p>
 
-<pre style='width:770px'>
-   Stack I                Logic                  Memory I               Arithmetic
-00 BRK --              08 EQU a b -- a=b      10 LDZ abs8 -- [abs]   18 ADD a b -- a+b
-01 INC a -- a+1        09 NEQ a b -- a≠b      11 STZ val abs8 --     19 SUB a b -- a-b
-02 POP a --            0a GTH a b -- a&gt;b      12 LDR rel8 -- [rel]   1a MUL a b -- a×b
-03 NIP a b -- b        0b LTH a b -- a&lt;b      13 STR val rel8 --     1b DIV a b -- a÷b
+<pre>
+00            BRK --
+01          a INC -- a+1
+02          a POP --
+03        a b NIP -- b
+04        a b SWP -- b a
+05      a b c ROT -- b c a
+06          a DUP -- a a
+07        a b OVR -- a b a
+08        a b EQU -- a=b1
+09        a b NEQ -- a≠b1
+0a        a b GTH -- a&gt;b1
+0b        a b LTH -- a&lt;b1
+0c       addr JMP --
+0d cond1 addr JCN --
+0e       addr JSR -- . pc2
+0f          a STH -- . a
+10       abs1 LDZ -- [abs]
+11   val abs1 STZ --
+12       rel1 LDR -- [rel]
+13   val rel1 STR --
+14       abs2 LDA -- [abs]
+15   val abs2 STA --
+16       dev1 DEI -- [dev]
+17   val dev1 DEO --
+18        a b ADD -- a+b
+19        a b SUB -- a-b
+1a        a b MUL -- a×b
+1b        a b DIV -- a÷b
+1c        a b AND -- a&b
+1d        a b ORA -- a|b
+1e        a b EOR -- a^b
+1f      a hl1 SFT -- res&gt;&gt;l&lt;&lt;h
 
-   Stack II               Stash                  Memory II              Bitwise
-04 SWP a b -- b a      0c JMP addr --         14 LDA abs16 -- [abs]  1c AND a b -- a&b
-05 ROT a b c -- b c a  0d JCN cond8 addr --   15 STA val abs16 --    1d ORA a b -- a|b
-06 DUP a -- a a        0e JSR addr -- . pc16  16 DEI dev -- [dev]    1e EOR a b -- a^b
-07 OVR a b -- a b a    0f STH a -- . a        17 DEO val dev --      1f SFT a hl8 -- res&gt;&gt;l&lt;&lt;h
-
-   Immediate
-00 BRK --              20 JCI cond8 --        40 JMI --              60 JSI -- . pc16
-80 LIT -- [pc]8        a0 LIT2 -- [pc]16      c0 LITr -- . [pc]8     e0 LIT2r -- . [pc]16
+20      cond1 JCI --
+40            JMI --
+60            JSI -- . pc2
+80            LIT -- [pc]
+a0           LIT2 -- [pc] [pc+1]
+c0           LITr -- . [pc]
+e0          LIT2r -- . [pc] [pc+1]
 </pre>
 
 <p>Its documentation encourages
