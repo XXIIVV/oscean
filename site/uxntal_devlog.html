@@ -18,118 +18,43 @@
 <nav><ul><li><a href="events.html">events</a></li><li><a href="blog.html">blog</a></li><li><a href="devlog.html" class="parent">devlog</a></li><li><a href="now.html">now</a></li></ul><ul><li><a href="uxn_devlog.html">uxn devlog</a></li><li><a href="uxntal_devlog.html" class="self">uxntal devlog</a></li><li><a href="varvara_devlog.html">varvara devlog</a></li><li><a href="now_lie_in_it.html">now lie in it</a></li></ul><ul></ul></nav>
 <main><h2>A programming language</h2>
 
-<p>It is fair to assume that programming with so few primitives, will make it
-difficult for software tools, to infer meaning from a program's source files.
-But we can still convey a lot of details about the intent of various data
-structures by encoding information in the few tools at our disposal.</p>
-
-<h3>I. Structural Editing</h3>
-
-<p>Let's consider the following uxn program, and associated symbols file,
-created with <a href='drifblim.html'>Drifblim</a>:</p>
+<p>A <i>binding error</i> is when a name has outlived its value, it's are a common class of errors in software that happens when a reference is shared between two things that should not have shared it, like when a variable initialized in one context is read in another.</p>
 
 <pre>
-<i>hello.rom</i>
-
-a001 1560 0001 0040 0005 9480 1817 2194
-20ff f722 6c48 656c 6c6f 2057 6f72 6c64
-21
-
-<i>hello.rom.sym</i>
-
-0018 write           0100 ( -> )
-0100 on-reset        0107 ( str* -: )
-0107 &lt;print&gt;         010a ( -- )
-010a &lt;print&gt;/while   010a ( send )
-010f &lt;print&gt;/        010e ( loop )
-0115 hello-txt
+char *buf = malloc(64);
+free(buf);
+buf[0] = 'x';
 </pre>
-
-<p>It is possible to <a href='https://git.sr.ht/~rabbits/uxnrea'
-target='_blank'>recreate</a> a textual source file by walking through the
-program data, drawing from the symbols file, as: first the labels, second the
-sublabels, lastly the comments, and create the following valid program:</p>
-
-<pre>
-|0018 @write |0100 @on-reset ( -> ) ;hello-txt &lt;print&gt; BRK @&lt;print&gt; ( str* -: ) !& &while ( -- ) ( send ) LDAk .write DEO ( loop ) INC2 & LDAk ?&while POP2 JMP2r @hello-txt 48 65 6c 6c 6f 20 57 6f 72 6c 64 
-</pre>
-
-<p>While this text stream can be reassembled into the program from which it
-originates, it will first need to be <a
-href='uxnfor.html'>reformatted</a> to be
-readable as a programming artifact.</p>
-
-<pre>
-|0018 
-@write 
-|0100 
-@on-reset ( -> )
-	;hello-txt &lt;print&gt; BRK
-@&lt;print&gt; ( str* -: )
-	!& &while ( -- )
-		( send ) LDAk .write DEO
-		( loop ) INC2 & LDAk ?&while POP2 JMP2r
-@hello-txt 
-	48 65 6c 6c 6f 20 57 6f 72 6c 64
-</pre>
-
-<p>By breaking on absolute padding, label tokens, non-defining comments, and
-tabbing the content of sublabels, we can improve readability further and can
-already return to something like what the original source file might have
-looked like:</p>
-
-<pre>
-|0018 
-
-@write
-
-|0100 
-
-@on-reset ( -> )
-	;hello-txt &lt;print&gt;
-	BRK
-
-@&lt;print&gt; ( str* -: )
-	!&
-	&while ( -- )
-		( send ) LDAk .write DEO
-		( loop ) INC2 & LDAk ?&while
-	POP2 JMP2r
-
-@hello-txt
-	"Hello 20 "World! 00
-</pre>
-
-<p>Finally, we can ensure that lines terminate on emiting
-opcodes(STZ/STR/STA/DEO) and some immediate opcodes(JCI, JMI). To make explicit
-that some routines are emiting, and therefore line-terminating, I chose to use
-the <code>&lt;label&gt;</code> format</code>.</p>
 
 <img src='../media/generic/potato.png' width='100' class="right"/>
 
-<p>Labels marking the start of binary information use prefixes that communicate
-to the reassembler, how to handle the content. For example, <i>txt</i> for
-ascii characters, <i>icn</i> for 1-bit graphics and <i>chr</i> for 2-bit
-graphics.</p>
+<p>The majority of what we call progress and think of as the signs of a good programming language(garbage collection, borrow checkers, static analysis, null safety..) are the side-effects of managing the fallout from the decision to name things. So let's not even go there.</p>
 
-<h3>II. Source Validation</h3>
+<pre style='margin-bottom:1px'>
+MOV R0, 12
+MOV R1, 34
+SUB R2, R1, R0
+DIV R3, R0, R2
+</pre>
+<pre>
+#12 #34 OVR SUB DIV
+</pre>
 
-<p>Lacking data types, there is not much to go on as far as static validation,
-but there is still <a href='https://git.sr.ht/~rabbits/uxnrea'
-target='_blank'>space</a> to explore here. Type inference in Uxntal is done by
+<p>In stack machine assembly there are no variables, no registers, no scope and no environment, unlike other languages where linearity is enforced by tooling and runtime checks, aliasing is altogether not expressible in the model. The consequence is that the entire family of bugs caused by names cannot be written.</p>
+
+<h3>I. Programming without names</h3>
+
+<p>Lacking named variables, the natural description of a word's behavior is its effect on the stack. Type inference in Uxntal is done by
 checking the stack effect declarations of words, against the sum of stack
 changes predicted to occur based on the arity of each token in their
-bodies.</p>
+bodies:</p>
 
 <pre>
 @add ( a* b* -: c* ) <i>Warning: Imbalance in @add of +2</i>
 	DUP2 ADD2 <b>JMP2r</b>
 </pre>
 
-<p>Words that do not pass the stack-checker are generating a warning, and so
-essentially this defines a very basic and permissive type system that
-nevertheless catches some invalid programs and enables compiler optimizations.
-</p>
+<p>The system extends naturally to branching. Each branch of a conditional must produce the same stack effect as the other, words that fail to balance generate a warning, which catches a meaningful proportion of invalid programs:</p>
 
 <pre>
 @routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
@@ -139,28 +64,26 @@ nevertheless catches some invalid programs and enables compiler optimizations.
 		POP2 #000b JMP2r
 </pre>
 
-<h3>III. Peephole Optimization</h3>
+<p>This is a very basic and permissive type system by the standards of academic type theory, but it is the type system that fits a machine whose defining property is the absence of names. It takes minutes to understand, seconds to check, and costs nothing at runtime.</p>
 
-<p>Routines are sequences of combinators that ingest values from the stacks,
-some permutations of these combinators are obviously redundant and <a
-href='uxnlin.html'>reducing</a> these
-extraneous transformations can be done on source files, for example: </p>
+<h3>II. Algebraic Reduction</h3>
+
+<p>Because operations have no hidden dependencies through variable names, sequences of stack operations can be reasoned about purely algebraically. Any permutation that produces the same stack transformation as another is a valid rewrite. This makes a class of optimizations mechanical. Redundant permutations collapse to simpler ones, for example:</p>
 
 <pre>
 #12 #34 <b>SWP POP</b> -> NIP 
 </pre>
 
 <p>Tail-call optimization happen where jumps to subroutines are followed by
-subroutine returns and can be replaced instead by a single jump. </p>
+subroutine returns and can be replaced instead by a single jump:</p>
 
 <pre>
 @routine ( a b -: c )
 	SWP ;function <b>JSR2 JMP2r</b> -> JMP2
 </pre>
 
-<p>Going one step further, routines that would otherwise terminate in a tail-call
-optimization could even be relocated before their tail's location in memory and
-do away with the ending jump altogether. Incidentally, we leave here a comment
+<p>Going one step further, routines that would otherwise terminate in a tail-call could even be relocated before their tail's location in memory and
+do away with the ending jump altogether. We leave here a comment
 marker to indicate to the stack-effect checker that the routine's tail will
 fall-through.</p>
 
@@ -172,18 +95,14 @@ fall-through.</p>
 	DIV JMP2r
 </pre>
 
-<p>These are just a handful of examples, <br />there is still many <a
-href='uxntal_labyrinth.html'>more things to explore</a>.</p>
+<p>What makes these rewrites reliable is precisely the absence of names. In a language with variables, any of these transformations might be invalid because a name could introduce a dependency invisible to the optimizer. When there are no names there are no invisible dependencies. The sequence of operations is all there is, and what can be said about it algebraically is everything that can be said about it.</p>
+
+<p>It's justified to assume that programming with so few primitives, will make it
+difficult for software tools, to infer meaning from a program's source files.
+But we can still convey a lot of details about the intent of various data
+structures by encoding information in the few tools at our disposal.</p>
 
 <img src='../media/generic/varvara.potato.png' width='200'/>
-
-<p>The previous notes contain experiments done with <a
-href='uxntal_software.html'>self-hosted tools</a>, from the assembly,
-formatting, to the validation &mdash; each tool is written it the language that
-it assembles, formats or validates. Each program follows the same pattern of
-ingesting a file path, emitting errors and warnings through the Console/error
-port, and emits the same file path through Console/write on success, making
-them composable.</p>
 <ul></ul><p><b>incoming: </b><a href="devlog.html" class="parent">devlog</a> <a href="2023.html">2023</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
