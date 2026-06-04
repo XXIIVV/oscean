@@ -6,73 +6,74 @@ Memory
 	A relative short is a signed short offset.
 
 	There are 2 stacks
-	A stack has 0x100 bytes of data
+	A stack has 256 bytes of data
 	A stack pointer is a byte and wraps
 
-	Ram is 0x10000 bytes and wraps
-	Dev is 0x100 bytes and wraps
-	Rom is loaded and evaluated at 0x100
+	Ram is 65536 bytes and wraps
+	Dev is 256 bytes and wraps
+	Rom is loaded and evaluated at address 256
 
 Standard Opcode Modes
 
 	A standard opcode has 5 bits, and 3 mode bits
 	
-	0x80 Stack reads don't consume items
-	0x40 Operates on the other stack
-	0x20 Values are shorts
+	80 Stack reads don't consume items
+	40 Operates on the other stack
+	20 Values are shorts
+	1f Opcode bits
 
 Standard Opcodes
 
 	 v is a byte or a short
-	v1 is always a byte
-	v2 is always a short
+	(v) is always a byte
+	[v] is always a short
 	#v is read from memory
 	.v is on the other stack
 	?v may have side-effects
-	J* move pc by rel1, or to abs2 in 0x20 mode
+	0c, 0d, 0e move pc by (rel) or to [abs]
 
-	01          a INC -- a+1
-	02          a POP --
-	03        a b NIP -- b
-	04        a b SWP -- b a
-	05      a b c ROT -- b c a
-	06          a DUP -- a a
-	07        a b OVR -- a b a
-	08        a b EQU -- a=b1
-	09        a b NEQ -- a≠b1
-	0a        a b GTH -- a>b1
-	0b        a b LTH -- a<b1
-	0c       addr JMP --
-	0d cond1 addr JCN --
-	0e       addr JSR -- .pc2
-	0f          a STH -- .a
-	10       abs1 LDZ -- #abs
-	11  val #abs1 STZ --
-	12       rel1 LDR -- #rel
-	13  val #rel1 STR --
-	14       abs2 LDA -- #abs
-	15  val #abs2 STA --
-	16       dev1 DEI -- ?dev
-	17  val ?dev1 DEO --
-	18        a b ADD -- a+b
-	19        a b SUB -- a-b
-	1a        a b MUL -- a×b
-	1b        a b DIV -- a÷b|0
-	1c        a b AND -- a&b
-	1d        a b ORA -- a|b
-	1e        a b EOR -- a^b
-	1f      a hl1 SFT -- a>>l<<h
+	01           a -- a+1
+	02           a --
+	03         a b -- b
+	04         a b -- b a
+	05       a b c -- b c a
+	06           a -- a a
+	07         a b -- a b a
+	08         a b -- (a=b)
+	09         a b -- (a≠b)
+	0a         a b -- (a>b)
+	0b         a b -- (a<b)
+	0c        addr --
+	0d (cond) addr --
+	0e        addr -- .[pc]
+	0f           a -- .a
+	10       (abs) -- #abs
+	11  val #(abs) --
+	12       (rel) -- #rel
+	13  val #(rel) --
+	14       [abs] -- #abs
+	15  val #[abs] --
+	16       (dev) -- ?dev
+	17  val ?(dev) --
+	18         a b -- a+b
+	19         a b -- a-b
+	1a         a b -- a×b
+	1b         a b -- a÷b|0
+	1c         a b -- a&b
+	1d         a b -- a|b
+	1e         a b -- a^b
+	1f      a (hl) -- a>>l<<h
 
 Immediate Opcodes
 
 	Immediate opcodes have no modes
-	J* move pc by rel2
+	20, 40, 60 move pc by #[rel]
 
-	00            BRK    returns from evaluation
-	20      cond1 JCI --
-	40            JMI --
-	60            JSI -- .pc2
-	80            LIT -- #pc
-	a0           LIT2 -- #pc2
-	c0           LITr -- .#pc
-	e0          LIT2r -- .#pc2
+	00             -> returns from evaluation
+	20      (cond) --
+	40             --
+	60             -- .[pc]
+	80             -- #(pc)
+	a0             -- #[pc]
+	c0             -- .#(pc)
+	e0             -- .#[pc]
