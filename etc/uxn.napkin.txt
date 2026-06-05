@@ -1,9 +1,7 @@
 Memory
 
-	A byte is 8 bits
-	A short is two big-endian bytes
-	A relative byte is a signed byte offset.
-	A relative short is a signed short offset.
+	A byte' is 8 bits
+	A short" is two big-endian bytes
 
 	There are 2 stacks
 	A stack has 256 bytes of data
@@ -13,23 +11,12 @@ Memory
 	Ram is 65536 bytes and wraps
 	Rom is loaded and evaluated at 256
 
-Standard Opcode Modes
+Bytecode
 
-	A standard opcode has 3 mode bits
-	
 	20 Values are shorts
 	40 Operates on the other stack
-	80 Stack reads don't consume items
-
-Standard Opcodes
-
-	(v) is always a byte
-	[v] is always a short
-	 v  is a byte or a short
-	 #  is read from Ram
-	 .  is on the other stack
-	 ?  may have side-effects
-	0c, 0d, 0e move pc by (rel) or to [abs]
+	80 Values are not consumed when read
+	[] moves pc by signed' or to absolute"
 
 	          a  01  a+1
 	          a  02
@@ -38,22 +25,22 @@ Standard Opcodes
 	      a b c  05  b c a
 	          a  06  a a
 	        a b  07  a b a
-	        a b  08  (a=b)
-	        a b  09  (a≠b)
-	        a b  0a  (a>b)
-	        a b  0b  (a<b)
-	       addr  0c
-	(cond) addr  0d
-	       addr  0e  .[pc]
-	          a  0f  .a
-	      (abs)  10  #abs
-	 val #(abs)  11
-	      (rel)  12  #rel
-	 val #(rel)  13
-	      [abs]  14  #abs
-	 val #[abs]  15
-	      (dev)  16  ?dev
-	 val ?(dev)  17
+	        a b  08  a=b'
+	        a b  09  a≠b'
+	        a b  0a  a>b'
+	        a b  0b  a<b'
+	       addr [0c]
+	 cond' addr [0d]
+	       addr [0e] . pc"
+	          a  0f  . a
+	       abs'  10  #abs
+	  val #abs'  11
+	       sig'  12  #sig
+	  val #sig'  13
+	       abs"  14  #abs
+	  val #abs"  15
+	       dev'  16  ?dev
+	  val ?dev'  17
 	        a b  18  a+b
 	        a b  19  a-b
 	        a b  1a  a×b
@@ -61,19 +48,16 @@ Standard Opcodes
 	        a b  1c  a&b
 	        a b  1d  a|b
 	        a b  1e  a^b
-	     a (hl)  1f  a>>l<<h
-
-Immediate Opcodes
+	      a hl'  1f  a>>l<<h
 
 	Immediate opcodes have no modes
-	20, 40, 60 move pc by #[rel]
-	00 return evaluation
+	[] moves pc by #pc"
 	
-	             00
-	     (cond)  20
-	             40
-	             60  .[pc]
-	             80  #(pc)
-	             a0  #[pc]
-	             c0  .#(pc)
-	             e0  .#[pc]
+	             00  <return evaluation>
+	      cond' [20]
+	            [40]
+	            [60] . pc"
+	             80  #pc'
+	             a0  #pc"
+	             c0  . #pc'
+	             e0  . #pc"
