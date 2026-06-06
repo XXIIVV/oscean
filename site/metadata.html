@@ -47,11 +47,9 @@
 <p>The metadata format begins with a byte for the <a href='varvara.html#version'>varvara version</a>, followed by a null-terminating text:</p>
 
 <pre>
-|0100 ( -> )
-
+|0100 @on-reset( -> )
 	;meta #06 DEO2
-
-BRK
+	BRK
 
 @meta 
 	&version
@@ -59,14 +57,12 @@ BRK
 	&text
 		"Nasu 0a "A 20 "Sprite 20 "Editor 00
 	&fields
-		03
+		02
 		( ver. ) 56 0050
 		( icon ) 83 =appicon
-		( mask ) 41 1705
 </pre>
 
 <p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html#system'>system device</a>, via <code>#06 DEO2</code>, informs the emulator of the metadata's location, and it may choose to handle this information when a ROM is started.</p>
-
 
 <h3>Reading Metadata</h3>
 
@@ -74,14 +70,13 @@ BRK
 
 <pre>
 @has-meta ( filename* -- bool )
-
 	.File/name DEO2
 	#0003 .File/length DEO2
 	;&b .File/read DEO2k DEO2
-	,&litport LDR2 #8006 EQU2
-	,&deo2 LDR #37 EQU AND
+	#8006 ,&litport LDR2 EQU2
+	#37 ,&deo2 LDR EQU AND
+	JMP2r
 
-JMP2r
 	&b &litport $2 &deo2 $1
 </pre>
 
@@ -93,7 +88,6 @@ JMP2r
 	.addr { font-family:mono;background:#eee; color:black }
 	.key { font-family:mono;background:#72dec2; color:black }
 </style>
-
 <ul></ul><p><b>incoming: </b><a href="roms.html">roms</a> <a href="varvara.html">varvara</a> <a href="now_lie_in_it.html">now lie in it</a> <a href="2023.html">2023</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
