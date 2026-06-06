@@ -10,18 +10,21 @@
 
 <p>The address corresponds to the absolute location of the metadata, once loaded in memory, so it has a 0x100 bytes offset(the zero-page) which needs to be accounted for when accessing the metadata externally.</p>
 
-<p>The body of the metadata can be anything, but it is recommended that it be plain-text with <code>0a</code> as line separator, and that the first line be the name of the application. Here are some suggestions for lines to include in the body of the metadata:</p>
+<h3>Body</h3>
 
-<ul>
-	<li><b>name</b>: application name</li>
-	<li><b>version</b>: release id</li>
-	<li><b>description</b>: what it is</li>
-	<li><b>author</b>: who built it</li>
-</ul>
+<p>The body of the metadata must start with a metadata <b>version byte</b>(typically zero), followed by a null-terminated <b>string</b> to display the program name and author. The metadata is stored in the rom itself to allow the program to make use of this information internally. The entire size of the metadata should be at most 256 bytes.</p>
 
-<p>The metadata is stored in the rom itself to allow the program to make use of this information internally. The entire size of the metadata should be at most 256 bytes.</p>
+<h3>Fields</h3>
 
-<h3>Implementation</h3>
+<p>The metadata body is followed by a byte that contains the <b>fields count</b>, or zero. The count is then followed by fields made of a <b>identifier byte</b> and a <b>value short</b>.</p>
+
+<table border='1'>
+	<tr><th>a0</th><td>The application <a href='manifest.html'>manifest</a>.</td></tr>
+	<tr><th>56</th><td>The <a href='varvara.html#version'>Varvara version</a>.</td></tr>
+	<tr><th>83</td><td>A 24x24 icon in the <a href='chr_format.html'>chr format</a>.</td></tr>
+</table>
+
+<h3>Example</h3>
 
 <p>The metadata format begins with a byte for the <a href='varvara.html#version'>varvara version</a>, followed by a null-terminating text:</p>
 
@@ -32,29 +35,20 @@
 
 BRK
 
-@meta 00 &body
-	( name ) "Nasu 0a
-	( details ) "A 20 "Sprite 20 "Editor 0a
-	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Jan 20 "8, 20 "2023 00
-	02
+@meta 
+	&version
+		00
+	&text
+		"Nasu 0a "A 20 "Sprite 20 "Editor 00
+	&fields
+		03
+		( ver. ) 56 0050
 		( icon ) 83 =appicon
 		( mask ) 41 1705
 </pre>
 
 <p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html#system'>system device</a>, via <code>#06 DEO2</code>, informs the emulator of the metadata's location, and it may choose to handle this information when a ROM is started.</p>
 
-<h3>Extended</h3>
-
-<p>The length of the metadata can be extended and host various other informations. The format for the fields is: a single byte id field, followed by a 2 bytes value field.</p>
-
-<table border='1'>
-	<tr><th>Application</th><th>id</th><th>value</th></tr>
-	<tr><th>--<th>41</td><td>Expected <a href='varvara.html#mask'>device mask</a>.</td></tr>
-	<tr><th rowspan='3'><a href='potato.html'>Potato</a></th><th>83</td><td>24x24 icon in the <a href='chr_format.html'>chr format</a>.</td></tr>
-	<tr><th>88</td><td>64x64 icon in the <a href='icn_format.html'>icn format</a>.</td></tr>
-	<tr><th>a0</th><td>The application <a href='manifest.html'>manifest</a>.</td></tr>
-</table>
 
 <h3>Reading Metadata</h3>
 

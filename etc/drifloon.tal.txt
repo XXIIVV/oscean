@@ -622,20 +622,21 @@
 		chex INC ?{ LDA #00 EQU JMP2r }
 		INC2 !&>wih
 
+@str/cap/>l
+	INC2 ( >> )
 @str/cap ( str* -- end* )
-	LDAk ?{ INC2 JMP2r }
-	INC2 !/cap
+	LDAk ?/cap/>l
+	INC2 JMP2r
 
 @str/cmp ( a* b* -- bool )
-	DUP2k /cap SWP2 SUB2 SWP2
-	( >> )
+	STH2 DUP2 /cap SWP2 !mem/>r
 
 @mem/cmp ( a* length* b* -- t )
 	STH2
 	OVR2 ADD2 SWP2
-	&>l
+	!{ &>l INC2 INC2r } &>r ( end* a* . b* -- t )
 		EQU2k ?{
-			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
+			LDAk LDAkr STHr EQU ?&>l }
 	POP2r EQU2 JMP2r
 
 (
