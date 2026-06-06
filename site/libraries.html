@@ -86,6 +86,21 @@ program's labels.</p>
 
 <p>The body of the metadata must start with a metadata <b>version byte</b>(typically zero), followed by a null-terminated <b>string</b> to display the program name and author. The metadata is stored in the rom itself to allow the program to make use of this information internally. The entire size of the metadata should be at most 256 bytes.</p>
 
+<pre>
+|100 ( 54K . Example metadata )
+
+@on-reset( -> )
+	;meta #06 DEO2
+	BRK
+
+@meta 
+	( ver. ) 00
+	( text ) "Nasu 0a "A 20 "Sprite 20 "Editor 00
+	02 
+		56 0050
+		83 =appicon
+</pre>
+
 <h3>Fields</h3>
 
 <p>The metadata body is followed by a byte that contains the <b>fields count</b>, or zero. The count is then followed by fields made of a <b>identifier byte</b> and a <b>value short</b>.</p>
@@ -95,28 +110,6 @@ program's labels.</p>
 	<tr><th>83</td><td>A 24x24 icon in the <a href='chr_format.html'>chr format</a>.</td></tr>
 	<tr><th>a0</th><td>The application <a href='manifest.html'>manifest</a>.</td></tr>
 </table>
-
-<h3>Example</h3>
-
-<p>The metadata format begins with a byte for the <a href='varvara.html#version'>varvara version</a>, followed by a null-terminating text:</p>
-
-<pre>
-|100
-
-@on-reset( -> )
-	;meta #06 DEO2
-	BRK
-
-@meta 
-	&version
-		00
-	&text
-		"Nasu 0a "A 20 "Sprite 20 "Editor 00
-	&fields
-		02
-		( ver. ) 56 0050
-		( icon ) 83 =appicon
-</pre>
 
 <p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html#system'>system device</a>, via <code>#06 DEO2</code>, informs the emulator of the metadata's location, and it may choose to handle this information when a ROM is started.</p>
 
