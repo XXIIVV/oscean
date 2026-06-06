@@ -7,6 +7,7 @@
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|0050 @Varvara/version
 
 |000
 
@@ -58,10 +59,10 @@
 	( name ) "Adelie 0a
 	( details ) "A 20 "Slideshow 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "24 20 "Feb 20 "2026 00
-	02
-	( icon ) 83 =appicon
-	( mask ) 41 1705
+	( date ) "6 20 "Jun 20 "2026 00
+	( . ) 02
+	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
 
 (
 @|vectors )
@@ -243,7 +244,7 @@
 @|watch )
 
 @<start-watch> ( -- )
-	get-sec .watch STZ2 
+	get-sec .watch STZ2
 	JMP2r
 
 @get-sec ( s* m* h* -- sec* )
@@ -255,10 +256,9 @@
 @|helpers )
 
 @is-stopped ( slide* -- f )
-
 	&>w
-	;dict/stop OVR2 sseg ?&end
-	;dict/name OVR2 sseg ?&end & scap/ INC2 LDAk ?&>w &end ;dict/stop SWP2 !sseg
+		;dict/stop OVR2 sseg ?&end
+		;dict/name OVR2 sseg ?&end & scap/ INC2 LDAk ?&>w &end ;dict/stop SWP2 !sseg
 
 @find-link ( x* y* -- name* )
 	,&y STR2
@@ -541,7 +541,7 @@
 @<draw-uf5> ( text* -- )
 	.pen/mode LDZ ,&color STR
 	[ LIT2 45 -Screen/auto ] DEO
-	&>w ( -- )
+	&>w
 		( | tab )
 		LDAk #09 NEQ ?{
 			.Screen/x DEI2 #0080 ADD2 #77 SFT2 .Screen/x DEO2 !&resume }
@@ -563,10 +563,10 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	SWP STH
 	#00
-	&>hloop ( -- )
+	&>hloop
 		[ LIT2 &x $2 ] .Screen/x DEO2
 		STHkr #00
-		&>wloop ( -- )
+		&>wloop
 			[ LIT &color 0f ] .Screen/sprite DEO
 			INC GTHk ?&>wloop
 		POP2 .Screen/y DEI2k #0008 ADD2 ROT DEO2
@@ -616,7 +616,7 @@
 	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
 	SWP2 lts2 [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
-	&>while ( -- )
+	&>while
 		DUP2r [ LITr -Screen/y ] DEO2r
 		OVR2r [ LITr -Screen/x ] DEO2r
 		[ LIT2 &color $1 -Screen/pixel ] DEO
@@ -750,13 +750,19 @@
 @<animate-theme> ( -- )
 	( | r )
 	.System/r DEI2 [ LIT2 &r $2 ] EQU2k ?&>r-ok
-	transition-color .System/r DEO2 &>r-ok POP2 POP2
+	transition-color .System/r DEO2
+	&>r-ok
+		POP2 POP2
 		( | g )
 		.System/g DEI2 [ LIT2 &g $2 ] EQU2k ?&>g-ok
-	transition-color .System/g DEO2 &>g-ok POP2 POP2
+	transition-color .System/g DEO2
+	&>g-ok
+		POP2 POP2
 		( | b )
 		.System/b DEI2 [ LIT2 &b $2 ] EQU2k ?&>b-ok
-	transition-color .System/b DEO2 &>b-ok POP2 POP2 JMP2r
+	transition-color .System/b DEO2
+	&>b-ok
+		POP2 POP2 JMP2r
 
 @transition-color ( a* b* -- a* b* c* )
 	OVR2 OVR2 ,&b STR2
@@ -945,6 +951,16 @@
 
 ( warning, this file is larger than 64kb )
 
+@appicon [
+	0003 0418 2010 0808 0000 0000 0000 0000
+	fe01 0000 3800 0000 0000 0000 0000 0000
+	0000 8040 2020 1010 0000 0000 0000 0000
+	0f1f 1f3f 3f7f 7f7f 000f 0f1f 1f3f 3f3f
+	80e0 f0f0 f8f8 f8f8 0080 e0e0 f0f0 f0f0
+	1008 0808 0808 4848 0000 0000 0000 0000
+	7f7f 7f3f 3f1f 0f03 3f3f 3f1f 1f0f 0300
+	f8f8 fcfe ffff ffff f0f0 f8fc fe7f bf00
+	4848 4828 e888 84fe 0000 0000 0000 0000 ]
 @fill-icn
 	ffff ffff ffff ffff
 @cursor-icn
@@ -2358,11 +2374,5 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 
-@appicon ( 3x3 )
-	0000 0307 1f0f 0707 0003 071f 3f1f 0f0f 00fe ffff ffff ffff feff ffff c7ff ffff 
-	0000 0080 c0c0 e0e0 0000 80c0 e0e0 f0f0 000f 0f1f 1f3f 3f3f 0f1f 1f3f 3f7f 7f7f 
-	7f9f efef f7f7 f7f7 ffff ffff ffff ffff e0f0 f0f0 f0f0 b0b0 f0f8 f8f8 f8f8 f8f8 
-	3f3f 3f1f 1f0f 0300 7f7f 7f3f 3f1f 0f03 f7f7 fbfd fe7f bf00 ffff ffff ffff ffff 
-	b0b0 b0d0 1070 7800 f8f8 f8f8 f8f8 fcfe
 
 @slides ( buf )
