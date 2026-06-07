@@ -15,7 +15,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="physical.html">physical</a></li><li><a href="photography.html">photography</a></li><li><a href="illustration.html">illustration</a></li><li><a href="software.html" class="parent">software</a></li></ul><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html">utilities</a></li><li><a href="libraries.html" class="self">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="snarf.html">snarf</a></li><li><a href="symbols.html">symbols</a></li><li><a href="metadata.html">metadata</a></li><li><a href="manifest.html">manifest</a></li><li><a href="indental.html">indental</a></li><li><a href="tablatal.html">tablatal</a></li></ul></nav>
+<nav><ul><li><a href="physical.html">physical</a></li><li><a href="photography.html">photography</a></li><li><a href="illustration.html">illustration</a></li><li><a href="software.html" class="parent">software</a></li></ul><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html">utilities</a></li><li><a href="libraries.html" class="self">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="snarf.html">snarf</a></li><li><a href="symbols.html">symbols</a></li><li><a href="metadata.html">metadata</a></li><li><a href="manifest.html">manifest</a></li><li><a href="kelvin_versioning.html">kelvin versioning</a></li></ul></nav>
 <main><h2>A collection of Varvara application support standards.</h2>
 
 <p>This is a collection of various libraries used in the <a href='roms.html'>Varvara roms</a>.</p>
@@ -142,59 +142,100 @@ program's labels.</p>
 </style>
 <h2>Manifest exposes a rom's features.</h2>
 
-<p>A manifest is a simple data structure that allows Varvara applications to specify what feature can be reached by shortcuts.</p>
-
-<p>The <code>manifest.tal</code> is a support library created to this end. You can see support coverage <a href='roms.html'>here</a>, it is also used in the definition of applications in <a href='potato.html'>Potato</a>.</p>
+<p>A manifest is a simple data structure that allows <a href='uxntal.html'>Uxntal</a> applications to specify what feature can be reached by shortcuts. The <code>manifest.tal</code> is a support library created to this end. You can see support coverage <a href='roms.html'>here</a>.</p>
 
 <pre>
-@manifest
-	04 "Application $1
-		01 'n :file-new "New $1
-		01 'r :file-rename "Rename $1
-		01 'o :file-open "Open $1
-		01 's :file-save "Save $1
-	03 "Edit $1
-		01 'c :edit-copy "Copy $1
-		01 'v :edit-paste "Paste $1
-		01 'x :edit-cut "Cut $1
-	02 "Select $1
-		00 1b :select-reset "Reset $1
-		01 'a :select-all "All $1
-	$1
+@manifest/dat
+	={ =dict/flick
+		00 "1 =tool/color1 $2
+		00 "2 =tool/color2 $2
+		00 "3 =tool/color3 $2
+		00 "4 =tool/color4 $2
+		00 "q =tool/type1 $2
+		00 "w =tool/type2 $2
+		00 "[ =tool/decr-size $2
+		00 "] =tool/incr-size $2 }
+	={ =dict/scene
+		40 00 =scene/select-prev $2
+		80 00 =scene/select-next $2
+		00 1b =scene/reset $2
+		00 08 =canvas/wipe $2 }
+	={ =dict/snarf
+		01 "c =snarf/copy $2
+		01 "v =snarf/paste $2
+		05 "V =snarf/paste-1bit $2
+		01 "x =snarf/cut $2 }
+	( ) $1
 </pre>
 
-<h2>Indental is a plaintext dictionary-type database format designed to store elements accessible by name.</h2>
-
-<p>In the Indental file, an unindented line declares the key to a new root node, indented lines associate parameters or lists to their root node, a key-value pair is declared with a colon, and a list is declared by a sequence of equally indented lines.</p>
+<p>To match controller input to the functions in the table:</p>
 
 <pre>
-NAME
-	KEY &#58; VALUE
-	LIST
-		ITEM1
-		ITEM2
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		LDA2k OVR2 #0004 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?&>opt
+		POP2 POP2 LDA2 LDAk ?&>cat
+	POP2 #ffff JMP2r
 </pre>
+<h2>Software versioning in which a version is an integer in Kelvin. </h2>
 
-<p>Or, <code>&#123;NAME:&#123;KEY:VALUE,LIST:[ITEM1,ITEM2])&#125;</code></p>
+<p>In short, a supporting component must always be strictly cooler than anything
+it supports, or be at absolute zero conjointly with anything it supports.
+Absolute zero means that a program is <b>frozen</b>, no further updates are
+possible. If your versions don't track your
+actual progress, you run out of integers.</p>
 
-<p>This database format was used to store the plain-text content of the <a href='oscean.html'>Oscean</a> wiki between 2014 and 2020. </p>
+<table border='1' class='right'>
+	<tr><th colspan='3'>Dependencies</th><th>Versions</th></tr>
+	<tr><td colspan='3'>A</td><td>9K</td></tr>
+	<tr><td></td><td colspan='2'>B</td><td>19K</td></tr>
+	<tr><td></td><td></td><td colspan='1'>C</td><td>20K</td></tr>
+	<tr><td></td><td></td><td colspan='1'>D</td><td>28K</td></tr>
+</table>
 
-<h2>Tablatal is a plaintext list-type database format designed to store a list of elements of the same length, accessible by id.</h2>
+<p>If tool B sits on platform A, either both A and B must be at absolute zero, or
+B must be warmer than A. Whenever the temperature of platform A declines,
+the temperature of tool B must also decline. Of course, if B itself is a
+platform on which some higher-level tool C depends, it must follow the same
+constraints recursively.</p>
 
-<p>In the Tablatal file, the first line declares the key, the spacing between each key defines the length of the parameters for all subsequent lines. The format was originally designed to store the <a href='horaire.html'>Horaire</a> logs.</p>
+<ol>
+	<li>A's version <strong>SHALL</strong> be a nonnegative integer.</li>
+	<li>A, at any specific version, <strong>MUST NOT</strong> be modified after release.</li>
+	<li>At version 0, new versions of A <strong>MUST NOT</strong> be released.</li>
+	<li>New releases of A <strong>MUST</strong> be assigned a new version, and this version <strong>MUST</strong> be strictly less than the previous one.</li>
+	<li>If A supports another component B that also follows kelvin versioning, then:
+		<ul>
+		<li>Either both A and B <strong>MUST</strong> be at version 0, or B's version <strong>MUST</strong> be
+		strictly greater than A's version.</li>
+		<li>If a new version of A is released and that version supports B, then a new
+		version of B <strong>MUST</strong> be released.</li>
+		</ul>
+	</li>
+</ol>
 
-<pre>
-NAME    AGE   COLOR
-Erica   12    Opal
-Alex    23    Cyan
-Nike    34    Red
-Ruca    45    Grey
-</pre>
-
-<p>Or, <code>[&#123;name:Erica,Age:12,Color:Blue&#125;,&#123;name:Alex,Age..&#125;</code></p><ul>
-	<li><a href='https://github.com/XXIIVV/oscean/blob/main/archive/projects/utils/ndtl.sublime-syntax' target='_blank'>syntax highlight</a></li>
-	<li><a href='https://github.com/milofultz/tablatal_parser' target='_blank'>python parser</a></li>
+<h3>Reference</h3>
+<ul style='columns:2'>
+	<li>0K: Theoretical minimum energy.</li>
+	<li>2K: Triple of helium.</li>
+	<li>13K: Triple point of hydrogen.</li>
+	<li>54K: Triple point of oxygen.</li>
+	<li>77K: Boiling point of Nitrogen</li>
+	<li>234K: Triple point of Mercury.</li>
+	<li>273K: Freezing point of water</li>
+	<li>273K: Triple point of water </li>
+	<li>373K: Boiling point of water</li>
+	<li>4000K: Sublimation of carbon</li>
 </ul>
+
+<img src='../media/refs/0kel.png' width='60'/>
 
 <ul></ul></main>
 <footer>
