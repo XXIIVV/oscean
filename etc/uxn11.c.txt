@@ -384,7 +384,7 @@ system_deo_colorize(void)
 		colors[i] |= colors[i] << 4;
 	}
 	for(i = 0; i < 16; i++)
-		screen_palette[i] = colors[i >> 2 ? i >> 2 : i & 3];
+		screen_palette[i] = colors[i < 4 ? i : i >> 2];
 	screen_reqdraw = 1;
 }
 
@@ -417,17 +417,17 @@ screen_redraw(void)
 			src_ptr += 0x10;
 		}
 	} else {
-		int x, y, i, k, l;
 		const int stride = screen_width * screen_zoom;
-		for(y = 0; y < screen_height; y++) {
-			const int ys = y * screen_zoom;
-			for(x = 0, i = (x + 8) + (y + 8) * screen_wmar2; x < screen_width; x++, i++) {
+		const int zoom_stride = screen_zoom * stride;
+		int x, y, k, l, row_base = 0, i_base = 8 * screen_wmar2 + 8;
+		for(y = 0; y < screen_height; y++, row_base += zoom_stride, i_base += screen_wmar2) {
+			int i = i_base, xs = 0;
+			for(x = 0; x < screen_width; x++, i++, xs += screen_zoom) {
 				const int c = screen_palette[screen_layers[i]];
-				for(k = 0; k < screen_zoom; k++) {
-					const int oo = (ys + k) * stride + x * screen_zoom;
+				int oo = row_base + xs;
+				for(k = 0; k < screen_zoom; k++, oo += stride)
 					for(l = 0; l < screen_zoom; l++)
 						screen_pixels[oo + l] = c;
-				}
 			}
 		}
 	}
@@ -1323,7 +1323,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(80K), 1 Jun 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(80K), 7 Jun 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
