@@ -1218,7 +1218,9 @@
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
-	name/validate ;/<push-byte> for-each #00
+	[ LIT2r =&ptr ] LDA2kr #00 /<push-byte>
+	name/validate ;/<push-byte> for-each SWP2r LDA2r OVR2r SUB2r SWP2r STAr
+	POPr #00
 	( >> )
 
 @syms/<push-byte> ( byte -- )
@@ -1230,13 +1232,20 @@
 	STA
 	JMP2r
 
-@syms/find-name ( name* -- <sym>* )
+@syms/find-name ( name* -- name* <sym>* )
+	DUP2 [ LITr 01 ] !&c1
+
+	&>wn
+		INC2 INCr &c1 LDAk ?&>wn
+	POP2
+	( | )
+	STHr ,&namelen STR
 	STH2k ,&ptr LDR2 ;&mem
 	&>lfn
-		DUP2 #0003 ADD2 STH2kr str/cmp ?{
-			#0003 ADD2 str/cap GTH2k ?&>lfn
-		POP2 #ffff }
-	NIP2 POP2r JMP2r
+		DUP2 #0003 ADD2 LDAk [ LIT &namelen $1 ] NEQ ?&c2
+		INC2k STH2kr str/cmp ?{ &c2 LDA #00 SWP ADD2 #0004 ADD2 GTH2k ?&>lfn
+		#ffff SWP2 }
+	POP2 NIP2 POP2r JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
 	/find-name INC2k ORA ?{
@@ -1256,12 +1265,12 @@
 		EQU2k ?{
 			/is-used ?{
 				LDA2k #0100 EQU2 ?{
-					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+					DUP2 #0004 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
 						;dict/unused info/<print>
 						DUP2 info/<print>
 						#0a info/<emit> }
 					POP2 } }
-			#0003 ADD2 str/cap !&>ls }
+			#0004 ADD2 str/cap !&>ls }
 	POP2 POP2 !rom/<emit>
 
 @syms/byte-distance ( addr* -- addr* )
@@ -1486,7 +1495,7 @@
 	/<print>
 	;dict/spacer /<print>
 	( ref* sym* ) [ LIT2 &ref $2 ] INC2k INC2 LDA2
-	( ref* sym/name* ) #0003 ADD2 /<print>
+	( ref* sym/name* ) #0004 ADD2 /<print>
 	( ref* ref/line* ) DUP2 #0008 ADD2 LDA2
 	( line* ref/scope* ) SWP2 #0006 ADD2 LDA2
 	( line* scope/name* ) #0003 ADD2 !/<print-location>
@@ -1564,7 +1573,7 @@
 @refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
 	$3000 &memend
 
-@syms/mem ( addr*, SymType, name\0 )
+@syms/mem ( addr*, SymType, len, name )
 	$4800 &memend
 
 @rom/mem ( zeropage )
