@@ -1343,8 +1343,7 @@
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
 	LDA2k head/<set>
-	( ref* sym* ) INC2k INC2 LDA2
-	syms/is-defined ?{
+	( ref* sym* ) INC2k INC2 LDA2 syms/is-defined ?{
 		( ! ) ;dict/invalid !info/<error-resolution> }
 	( ref* sym/addr* ) LDA2 JMP2r
 
@@ -1457,19 +1456,24 @@
 		chex INC ?{ LDA #00 EQU JMP2r }
 		INC2 !&>wih
 
-@str/cap/>l
-	INC2 ( >> )
+@str/cap1 INC2
+	( >> )
+
 @str/cap ( str* -- end* )
-	LDAk ?/cap/>l
+	LDAk ?/cap1
 	INC2 JMP2r
 
 @str/cmp ( a* b* -- bool )
-	STH2 DUP2 /cap SWP2 !mem/>r
+	STH2
+	DUP2 /cap SWP2 !mem/r
 
 @mem/cmp ( a* length* b* -- t )
 	STH2
-	OVR2 ADD2 SWP2
-	!{ &>l INC2 INC2r } &>r ( end* a* . b* -- t )
+	OVR2 ADD2 SWP2 !&c
+
+	&>l
+		INC2 INC2r &c
+		&r ( end* a* . b* -- t )
 		EQU2k ?{
 			LDAk LDAkr STHr EQU ?&>l }
 	POP2r EQU2 JMP2r

@@ -4,9 +4,10 @@
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|56 @Field/varvara
-|83 @Field/icon
-|a0 @Field/manifest
+|0050 @Varvara/version
+|0056 @Field/varvara
+|0083 @Field/icon
+|00a0 @Field/manifest
 
 |000
 
@@ -23,30 +24,16 @@
 	#0100 .Screen/width DEO2
 	#0078 .Screen/height DEO2
 	( | start )
-	[ LIT2 03 -Console/type ] DEI AND ?{ ;dict/usage str/<print> }
+	[ LIT2 03 -Console/type ] DEI AND ?{ metadata/<missing-file> }
 	;src/on-console .Console/vector DEO2
 	BRK
 
 @meta 00
-	( name ) "Meta 0a
-	( details ) "A 20 "Metadata 20 "Viewer 0a
-	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Jun 20 "2026 $1
-	( fields ) 05
-	( varv ) 56 0050
-	( skip ) 00 abcd
-	( skip ) 01 ef01
-	( icon ) 83 =appicon
-	( mani ) a0 =&manifest
-
-@meta/manifest ( . )
-	={ =dict/meta
-	( - ) 00 "q =&quit =dict/exit }
-	00
-
-@meta/quit ( --> )
-	#800f DEO
-	JMP2r
+	( ) "Meta 0a
+	( ) "A 20 "Metadata 20 "Viewer 0a
+	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( ) "6 20 "Jun 20 "2026 $1
+	( fields ) 02 [ 56 =Varvara/version 83 =appicon ]
 
 (
 @|Src )
@@ -67,7 +54,8 @@
 	.File/name DEO2
 	#0006 .File/length DEO2
 	;&header .File/read DEO2
-	#0637 ;&deo LDA2 NEQ2 ?/<missing>
+	.File/success-lb DEI ?{ !/<missing-file> }
+	#0637 ;&deo LDA2 NEQ2 ?/<missing-meta>
 	;&start LDA2 #0100 SUB2 file/<seek>
 	( | version )
 	#0001 .File/length DEO2
@@ -91,10 +79,17 @@
 		#0003 ADD2 GTH2k ?&>lp
 	POP2 POP2 !/<draw>
 
-@metadata/<missing> ( -- )
-	;dict/body-missing /<draw-body>
-	;appicon/missing /<draw-icon>
+@metadata/<missing-meta> ( -- )
+	;dict/body-nometa /<draw-body>
+	;src/buf chicago/<draw-left>
+	;appicon/nometa /<draw-icon>
 	#0000 !/<draw-varvara>
+
+@metadata/<missing-file> ( -- )
+	;dict/body-nofile /<draw-body>
+	;src/buf LDAk ?{ POP2 ;dict/blank }
+	chicago/<draw-left>
+	;appicon/nofile !/<draw-icon>
 
 @metadata/<set-varvara> ( field* -- field* )
 	INC2k LDA2 .&varvara STZ2
@@ -280,12 +275,11 @@
 (
 @|Assets )
 
-@dict/usage "usage: 20 "meta.rom 20 "game.rom 0a00
-	&unknown-field "No 20 "version 20 "found. 00
-	&body-missing "No 20 "metadata 20 "found. 00
-	&varvara "Varvara 20 00
-	&meta "Meta 00
-	&exit "Exit 00 &compatible 20 "compatible. 00
+@dict/varvara "Varvara 20 00
+	&unknown-field "No 20 "version 20 "found. 0a 00
+	&body-nometa "No 20 "metadata 20 "found: 0a 00
+	&body-nofile "Invalid 20 "file: 0a 00 &compatible 20 "compatible. 00
+	&blank "<blank> 00
 
 @line/wave [ 0c33 c000 0000 0000 000c 3fff ffff ffff ]
 	&wave-blank [ 0c33 c000 0000 0000 0000 0000 0000 0000 ]
@@ -303,12 +297,22 @@
 	1010 0f00 0000 0000 0000 0000 0000 0000
 	0000 ff00 0000 0000 0000 0000 0000 0000
 	0808 f000 0000 0000 0000 0000 0000 0000 ]
-	&missing [
+	&nometa [
 	0000 0000 0f10 101f 0000 0000 000f 0f00
 	0000 0000 ff00 00ff 0000 0000 00ff ff00
 	0000 0000 f078 78b8 0000 0000 00b0 b000
 	1010 1010 1010 1010 0000 0000 0000 0000
 	0000 0042 003c 4200 0000 0000 0000 0000
+	0808 0808 0808 0808 0000 0000 0000 0000
+	1010 0f00 0000 0000 0000 0000 0000 0000
+	0000 ff00 0000 0000 0000 0000 0000 0000
+	0808 f000 0000 0000 0000 0000 0000 0000 ]
+	&nofile [
+	0000 0000 0f10 101f 0000 0000 000f 0f00
+	0000 0000 ff00 00ff 0000 0000 00ff ff00
+	0000 0000 f078 78b8 0000 0000 00b0 b000
+	1010 1010 1010 1010 0000 0000 0000 0000
+	0000 4424 1424 4400 0000 0000 0000 0000
 	0808 0808 0808 0808 0000 0000 0000 0000
 	1010 0f00 0000 0000 0000 0000 0000 0000
 	0000 ff00 0000 0000 0000 0000 0000 0000
@@ -529,11 +533,10 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0032 4c00 0000 0000 0000 0000 ]
 
-@metadata [
-	&header $1 &start $3
-	&deo $2 &version $1
-	&body $100 &length $1
-	&fields $ff ]
+@metadata/header $1 [
+	&start $3 &deo $2
+	&version $1 &body $100
+	&length $1 &fields $ff ]
 
 @icon/buf $90
 

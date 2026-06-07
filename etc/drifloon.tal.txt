@@ -3,6 +3,7 @@
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|0050 @Varvara/version
 
 |000
 
@@ -21,7 +22,9 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Mar 20 "2026 0000
+	( date ) "6 20 "Mar 20 "2026 00
+	( . ) 01
+	( - ) 56 =Varvara/version
 
 @assembly/on-console ( -> )
 	[ LIT2 04 -Console/type ] DEI EQU ?{ .Console/read DEI token/<push-byte>
@@ -508,8 +511,7 @@
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
 	LDA2k head/<set>
-	( ref* sym* ) INC2k INC2 LDA2
-	syms/is-defined ?{
+	( ref* sym* ) INC2k INC2 LDA2 syms/is-defined ?{
 		( ! ) ;dict/invalid !info/<error-resolution> }
 	( ref* sym/addr* ) LDA2 JMP2r
 
@@ -622,19 +624,24 @@
 		chex INC ?{ LDA #00 EQU JMP2r }
 		INC2 !&>wih
 
-@str/cap/>l
-	INC2 ( >> )
+@str/cap1 INC2
+	( >> )
+
 @str/cap ( str* -- end* )
-	LDAk ?/cap/>l
+	LDAk ?/cap1
 	INC2 JMP2r
 
 @str/cmp ( a* b* -- bool )
-	STH2 DUP2 /cap SWP2 !mem/>r
+	STH2
+	DUP2 /cap SWP2 !mem/r
 
 @mem/cmp ( a* length* b* -- t )
 	STH2
-	OVR2 ADD2 SWP2
-	!{ &>l INC2 INC2r } &>r ( end* a* . b* -- t )
+	OVR2 ADD2 SWP2 !&c
+
+	&>l
+		INC2 INC2r &c
+		&r ( end* a* . b* -- t )
 		EQU2k ?{
 			LDAk LDAkr STHr EQU ?&>l }
 	POP2r EQU2 JMP2r
