@@ -35,7 +35,7 @@ device</a>:</p>
 
 <h3 id='summary'>Summary</h3>
 <pre>
-Memory
+Uxn
 
 	A byte' is 8 bits
 	A short" is two big-endian bytes
@@ -48,12 +48,11 @@ Memory
 	Ram(M) is 65536 bytes and wraps
 	Rom is loaded and evaluated at 256
 
-Bytecode
+opcode&lt;-M[pc], pc&lt;-pc+1
 
-	20|opcode Values are shorts instead of bytes
+	20|opcode Values are shorts instead of bytes, addr is abs" or rel' 
 	40|opcode Values are read or written on . the other stack
 	80|opcode Values are not consumed when read
-	{} moves pc by signed-addr' or to absolute-addr"
 
 	           a  01  a+1
 	           a  02
@@ -66,14 +65,14 @@ Bytecode
 	         a b  09  a≠b'
 	         a b  0a  a&gt;b'
 	         a b  0b  a&lt;b'
-	        addr {0c}
-	  cond' addr {0d}
-	        addr {0e} . pc"
+	        addr  0c pc&lt;-addr
+	  cond' addr  0d pc&lt;-addr
+	        addr  0e pc&lt;-addr . pc"
 	           a  0f  . a
 	        abs'  10  M[abs]
 	 val M[abs]'  11
-	        sig'  12  M[sig]
-	 val M[sig]'  13
+	        rel'  12  M[rel]
+	 val M[rel]'  13
 	        abs"  14  M[abs]
 	 val M[abs]"  15
 	        abs'  16  D[abs]
@@ -88,12 +87,11 @@ Bytecode
 	       a hl'  1f  a&gt;&gt;l&lt;&lt;h
 
 	Immediate opcodes have no modes
-	{} moves pc by M[pc]"
 	
-	              00  return evaluation
-	       cond' {20}
-	             {40}
-	             {60} . pc"
+	              00 pc&lt;-0
+	       cond'  20 pc&lt;-M[pc]"
+	              40 pc&lt;-M[pc]"
+	              60 pc&lt;-M[pc]" . pc"
 	              80  M[pc]'
 	              a0  M[pc]"
 	              c0  . M[pc]'
