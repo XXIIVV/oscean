@@ -1,61 +1,63 @@
 Uxn
 
-	A byte' is 8 bits
-	A short" is two big-endian bytes
-
-	There are 2 stacks
-	Each stack has 256 bytes of data
-	Each stack pointer is a byte and wraps
-
-	Dev(D) is 256 bytes and wraps
-	Ram(M) is 65536 bytes and wraps
-	Rom is loaded and evaluated at 256
-
-opcode<-M[pc], pc<-pc+1
-
-	20|opcode Values are shorts not bytes, addr is abs" not rel' 
-	40|opcode Values are read or written on . the other stack
-	80|opcode Values are read but not consumed
-
-	           a  01  a+1
-	           a  02
-	         a b  03  b
-	         a b  04  b a
-	       a b c  05  b c a
-	           a  06  a a
-	         a b  07  a b a
-	         a b  08  a=b'
-	         a b  09  a≠b'
-	         a b  0a  a>b'
-	         a b  0b  a<b'
-	        addr  0c pc<-addr
-	  cond' addr  0d pc<-addr
-	        addr  0e pc<-addr . pc"
-	           a  0f  . a
-	        abs'  10  M[abs]
-	 val M[abs]'  11
-	        rel'  12  M[rel]
-	 val M[rel]'  13
-	        abs"  14  M[abs]
-	 val M[abs]"  15
-	        abs'  16  D[abs]
-	 val D[abs]'  17
-	         a b  18  a+b
-	         a b  19  a-b
-	         a b  1a  a×b
-	         a b  1b  a÷b|0
-	         a b  1c  a&b
-	         a b  1d  a|b
-	         a b  1e  a^b
-	       a hl'  1f  a>>l<<h
-
-	Immediate opcodes have no modes
+	0 0000  4 0100  8 1000  c 1100
+	1 0001  5 0101  9 1001  d 1101
+	2 0010  6 0110  a 1010  e 1110
+	3 0011  7 0111  b 1011  f 1111
 	
-	              00 pc<-0
-	       cond'  20 pc<-M[pc]"
-	              40 pc<-M[pc]"
-	              60 pc<-M[pc]" . pc"
-	              80  M[pc]'
-	              a0  M[pc]"
-	              c0  . M[pc]'
-	              e0  . M[pc]"
+	1 a' 0000 0001
+	1 a" 0000 0000 0000 0001
+	
+	M[0..10000]
+	D[0..100]
+	P:100
+
+O:M[P], P:P+1
+
+	          00  P:0
+	      a'  20  a?P:P+M[P]"
+	          40  P:P+M[P]"
+	          60  P:P+M[P]" .P"
+	          80  M[P]' P:P+1
+	          a0  M[P]" P:P+2
+	          c0  .M[P]' P:P+1
+	          e0  .M[P]" P:P+2
+
+	  x P+:y  00|O  x' P:P+y'
+	  x P+:y  20|O  x" P:y"
+	    x .y  00|O  x .y
+	    x .y  40|O  .x y
+	x y -- z  00|O  x y -- z
+	x y -- z  80|O  x y -- x y z
+
+	       a  01  a+1
+	       a  02
+	     a b  03  b
+	     a b  04  b a
+	   a b c  05  b c a
+	       a  06  a a
+	     a b  07  a b a
+	     a b  08  a=b'
+	     a b  09  a≠b'
+	     a b  0a  a>b'
+	     a b  0b  a<b'
+	       a  0c  P+:a
+	    a' b  0d  q?P+:b
+	       a  0e  P+:a .P"
+	       a  0f  .a
+	      a'  10  M[a]
+	    a b'  11  M[b]:v
+	      a'  12  M[P+a]
+	    a b'  13  M[P+b]:v
+	      a"  14  M[a]
+	    a b"  15  M[b]:v
+	      a'  16  D[a]
+	    a b'  17  D[b]:v
+	     a b  18  a+b
+	     a b  19  a-b
+	     a b  1a  a×b
+	     a b  1b  a÷b|0
+	     a b  1c  a&b
+	     a b  1d  a|b
+	     a b  1e  a^b
+	   a hl'  1f  a>>l<<h
