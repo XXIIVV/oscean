@@ -151,7 +151,7 @@
 	( name ) "Opctest 0a
 	( details ) "A 20 "Testing 20 "Program 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "May 20 "2026 $2
+	( date ) "9 20 "Jun 20 "2026 $2
 
 (
 @|Tests )
@@ -303,16 +303,20 @@
 	( - ) #5602 [ STZ ] #02 LDZ #56 EQU JMP2r
 
 @op-ldr ( -- pass )
-	( advance ) [ !{ &u 34 ] }
+	( advance ) [ !{ &a 12 ( -128 ) $6e &u 34 } ]
 	( - ) ,&t LDR #12 EQU
-	( - ) ,&u LDR #34 EQU AND JMP2r
-	&t 12
+	( - ) ,&u LDR #34 EQU AND
+	( -128 ) ,&a LDR #12 EQU AND
+	( +127 ) ,&b LDR #56 EQU AND [ !{ &t 12 ( +127 ) $77 &b 56 } ] JMP2r
 
 @op-str ( -- pass )
-	( advance ) [ !{ &u $1 ] }
+	( advance ) [ !{ &a $1 ( -128 ) $63 &u $1 ] }
 	( - ) #34 ,&t [ STR ] ,&t LDR #34 EQU
-	( - ) #12 ,&u [ STR ] ,&u LDR #12 EQU AND JMP2r
-	&t $1
+	( - ) #12 ,&u [ STR ] ,&u LDR #12 EQU AND
+	( -128 ) [ LIT2 56 _&a ] STR
+	( +127 ) [ LIT2 56 _&b ] STR
+	[ !{ &t $1 ( +127 ) $7b &b $1 } ]
+	( - check ) ;&a LDA #56 EQU AND ;&b LDA #56 EQU AND JMP2r
 
 @op-lda ( -- pass )
 	( - ) ;&value LDA #ef EQU JMP2r
@@ -455,16 +459,20 @@
 	( - ) #5678 #04 [ STZ2 ] #04 LDZ2 #5678 EQU2 JMP2r
 
 @op-ldr2 ( -- pass )
-	( advance ) [ !{ &u 1234 ] }
+	( advance ) [ !{ &a 1234 ( -128 ) $6a &u 3456 } ]
 	( - ) ,&t LDR2 #1234 EQU2
-	( - ) ,&u LDR2 #1234 EQU2 AND JMP2r
-	&t 1234
+	( - ) ,&u LDR2 #3456 EQU2 AND
+	( -128 ) ,&a LDR2 #1234 EQU2 AND
+	( +127 ) ,&b LDR2 #5678 EQU2 AND [ !{ &t 1234 ( +127 ) $75 &b 5678 } ] JMP2r
 
 @op-str2 ( -- pass )
-	( advance ) [ !{ &u $2 ] }
+	( advance ) [ !{ &a $2 ( -128 ) $5b &u $2 ] }
 	( - ) #1234 ,&t [ STR2 ] ,&t LDR2 #1234 EQU2
-	( - ) #1234 ,&u [ STR2 ] ,&u LDR2 #1234 EQU2 AND JMP2r
-	&t $2
+	( - ) #1234 ,&u [ STR2 ] ,&u LDR2 #1234 EQU2 AND
+	( -128 ) #1234 ,&a STR2
+	( +127 ) #1234 ,&b STR2
+	[ !{ &t $2 ( +127 ) $7a &b $2 } ]
+	( - check ) ;&a LDA2 #1234 EQU2 AND ;&b LDA2 #1234 EQU2 AND JMP2r
 
 @op-lda2 ( -- pass )
 	( - ) ;&t LDA2 #1234 EQU2 JMP2r
