@@ -22,7 +22,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Jun 20 "2026 00
+	( date ) "9 20 "Jun 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
@@ -401,18 +401,13 @@
 	JMP2r
 
 @syms/find-name ( name* -- name* <sym>* )
-	DUP2 [ LITr 01 ] !&c1
-
-	&>wn
-		INC2 INCr &c1 LDAk ?&>wn
-	POP2
-	( | )
-	[ LITr _&namelen ] STRr
-	STH2k ,&ptr LDR2 ;&mem
+	STH2k str/len INC ,&namelen STR
+	,&ptr LDR2 ;&mem
 	&>lfn
 		DUP2 #0003 ADD2 LDAk [ LIT &namelen $1 ] NEQ ?&c2
-		INC2k STH2kr str/cmp ?{ &c2 LDA #00 SWP ADD2 #0004 ADD2 GTH2k ?&>lfn
-		#ffff SWP2 }
+		INC2k STH2kr str/cmp ?&found &c2 LDA #00 SWP ADD2 #0004 ADD2 GTH2k ?&>lfn
+	#ffff SWP2
+	&found ( to from * . name* -- name* <sym>* )
 	POP2 NIP2 POP2r JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
@@ -427,18 +422,29 @@
 		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
 	/use LDA2 NIP2 JMP2r
 
+%syms/is-used ( sym* -- sym* t ) {
+	INC2k INC2 LDA .SymType/used AND }
+
+%syms/is-reset ( sym* -- sym* t ) {
+	LDA2k #0100 EQU2 }
+
+%syms/is-capitalized ( sym* -- sym* t ) {
+	DUP2 #0004 ADD2 LDAk [ LIT "A ] SUB #1a LTH }
+
+%syms/next-sym ( sym* -- next-sym* ) {
+	#0004 ADD2 str/cap }
+
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
 	&>ls
-		EQU2k ?{
-			/is-used ?{
-				LDA2k #0100 EQU2 ?{
-					DUP2 #0004 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-						;dict/unused info/<print>
-						DUP2 info/<print>
-						#0a info/<emit> }
-					POP2 } }
-			#0004 ADD2 str/cap !&>ls }
+		/is-used ?{
+			/is-reset ?{
+				/is-capitalized ?{
+					;dict/unused info/<print>
+					DUP2 info/<print>
+					#0a info/<emit> }
+				POP2 } }
+		/next-sym GTH2k ?&>ls
 	POP2 POP2 !rom/<emit>
 
 @syms/byte-distance ( addr* -- addr* )
@@ -451,9 +457,6 @@
 
 @syms/is-declared ( sym* -- sym* t )
 	INC2k INC2 LDA .SymType/declared AND JMP2r
-
-@syms/is-used ( sym* -- sym* t )
-	INC2k INC2 LDA .SymType/used AND JMP2r
 
 @syms/use ( sym* -- sym* )
 	INC2k INC2 STH2k LDA .SymType/used ORA STH2r STA
@@ -666,7 +669,7 @@
 	( ref* sym/name* ) #0004 ADD2 /<print>
 	( ref* ref/line* ) DUP2 #0008 ADD2 LDA2
 	( line* ref/scope* ) SWP2 #0006 ADD2 LDA2
-	( line* scope/name* ) #0003 ADD2 !/<print-location>
+	( line* scope/name* ) #0004 ADD2 !/<print-location>
 
 @info/<error-token> ( adj* topic* -- )
 	/<print-ws>
