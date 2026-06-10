@@ -15,14 +15,15 @@
 |0010 @canvas/y1
 |0140 @canvas/x2
 |00c8 @canvas/y2
-|000e @pane/x1
+|000a @pane/x1
 |000e @pane/y1
-|001f @scene/x1
-|0020 @scene/x1+1
-|00db @scene/y1
-|00dc @scene/y1+1
-|0114 @scene/x2
-|001b @scene/y2
+|0050 @scene/x1
+|0051 @scene/x1+1
+|00df @scene/y1
+|00e0 @scene/y1+1
+|00ed @scene/y1+eye
+|010f @scene/x2
+|001f @scene/y2
 
 |000
 
@@ -45,10 +46,10 @@
 	BRK
 
 @meta 00
-	( name ) "Flick 0a
-	( details ) "A 20 "Point-n-click 20 "Engine 0a
-	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Jun 20 "2026 00
+	( ) "Flick 0a
+	( ) "A 20 "Point-n-click 20 "Engine 0a
+	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( ) "10 20 "Jun 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
@@ -112,16 +113,10 @@
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
 	DUP2 #0101 NEQ2 ?{
-		.Mouse/x DEI2 ;&x1 SUB2 DUP2 ;&x2 LTH2 ?{
-			( slider ) ;&x2 SUB2 #03 SFT2 NIP #0f
-			( value ) .Mouse/y DEI2 ;&y1 LDA2 SUB2 NIP #01 SFT SUB /<colorize>
-			POP2 BRK }
+		.Mouse/x DEI2 ;&x1 SUB2 DUP2 ;&x2 LTH2 ?{ }
 		POP2 }
 	#0001 NEQ2 ?{
-		.Mouse/x DEI2 ;&x1 SUB2 DUP2 ;&x2 LTH2 ?{
-			( slider ) ;&x2 SUB2 #03 SFT2 NIP #0f
-			( value ) .Mouse/y DEI2 ;&y1 SUB2 NIP #01 SFT SUB /<colorize>
-			BRK }
+		.Mouse/x DEI2 ;&x1 SUB2 DUP2 ;&x2 LTH2 ?{ }
 		POP2
 		( x* ) .Mouse/x DEI2 ;&x1 SUB2 #0011 DIV2
 		( y* ) .Mouse/y DEI2 ;&y1 SUB2
@@ -135,7 +130,7 @@
 			( clamp ) DUP2 #0010 LTH2 ?{ POP2 BRK }
 			( link ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 /<set-link>
 			BRK }
-		DUP2 #001f GTH2 ?{
+		DUP2 ;&x1 GTH2 ?{
 			POP2
 			( clamp ) DUP2 #0010 LTH2 ?{ POP2 BRK }
 			( shift ) #0001 SWP2 NIP #40 SFT SFT2
@@ -146,7 +141,7 @@
 
 @scene/catch ( x* y* -- x* y* )
 	DUP2 ;&y1+1 SUB2 ;&y2 GTH2 ?{
-		OVR2 ;&x1 SUB2 #0140 GTH2 ?{ #00 JMP2r } }
+		OVR2 ;&x1 SUB2 ;&x2 GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
 @scene/<trap> ( -- )
@@ -158,7 +153,7 @@
 @scene/<draw> ( -- )
 	( | clear )
 	;&x1 .Screen/x DEO2
-	;&y1 #000e ADD2 .Screen/y DEO2
+	;&y1+eye .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
 	/<draw-frame>
 	/<draw-links>
@@ -172,75 +167,33 @@
 	POP2
 	( | draw selection )
 	[ LIT2 00 -&id ] LDZ #0011 MUL2 ;&x1+1 ADD2 .Screen/x DEO2
-	;&y1 #000e ADD2 .Screen/y DEO2
+	;&y1+eye .Screen/y DEO2
 	[ LIT2 16 -Screen/auto ] DEO
-	#0000 ;canvas/time LDA NEQ #40 SFT2 ;&still-icn ADD2 .Screen/addr DEO2
+	#0000 ;canvas/time LDA NEQ #40 SFT2 ;&eye-icn ADD2 .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
-	( | sliders )
-	#0010 #0011 MUL2 ;&x1+1 INC2 ADD2 .Screen/x DEO2
-	;&y1 .Screen/y DEO2
-	;canvas/r LDA #04 SFT #0a /<draw-slider>
-	;canvas/g LDA #04 SFT #0a /<draw-slider>
-	;canvas/b LDA #04 SFT #0a /<draw-slider>
-	;canvas/r LDA #0f AND #0f /<draw-slider>
-	;canvas/g LDA #0f AND #0f /<draw-slider>
-	;canvas/b LDA #0f AND #0f /<draw-slider>
 	( | corners )
-	;&x1 ;&y1 ;&x1 #0110 ADD2 ;&y1 #001f ADD2 !rect/<draw-corners>
-
-@scene/<draw-slider> ( value color -- )
-	[ LIT2 35 -Screen/auto ] DEO
-	;&slider-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
-	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
-	( | )
-	.Screen/x DEI2k #0008 SUB2 ROT DEO2
-	.Screen/y DEI2k #0019 ADD2 ROT DEO2
-	[ LIT2 00 -Screen/auto ] DEO
-	STH
-	[ LITr -Screen/sprite ] #00
-	&>lds
-		;&slider-bar-icn .Screen/addr DEO2
-		.Screen/y DEI2k #0002 SUB2 ROT DEO2
-		DEOkr
-		INC GTHk ?&>lds
-	POP2 POP2r
-	( | recover )
-	[ LITr -Screen/y ] DEO2r
-	[ LITr -Screen/x ] DEO2r
-	JMP2r
-
-	&slider-bar-icn [ 0000 0000 0000 1e1e ]
-	&slider-icn [
-	3f21 2121 2121 2121 2121 2121 2121 2121
-	2121 2121 2121 2121 2121 2121 2121 213f ]
+	;&x1 ;&y1 ;&x1 #0110 ADD2 ;&y1 ;&x1 ADD2 !rect/<draw-corners>
 
 @scene/<draw-frame> ( -- )
 	;&x1 .Screen/x DEO2
 	;&y1 .Screen/y DEO2
-	#05de ;&horlin-icn #01 <draw-times>
-	;&x1 .Screen/x DEO2
-	;&y1 #000d ADD2 .Screen/y DEO2
-	#05de ;&horlin-icn #01 <draw-times>
-	;&x1 .Screen/x DEO2
-	;&y1 #001f ADD2 .Screen/y DEO2
-	#05de ;&horlin-icn #01 <draw-times>
-	;&x1 .Screen/x DEO2
-	;&y1 #0016 ADD2 .Screen/y DEO2
-	#05de ;&hordot-icn #01 <draw-times>
-	#1100
-	&>ldv
-		#00 OVR #0011 MUL2 ;&x1 ADD2 #0007 SUB2 .Screen/x DEO2
-		;&y1 .Screen/y DEO2
-		#05fc ;&verlin-icn #02 <draw-times>
-		INC GTHk ?&>ldv
-	POP2 JMP2r
+	[ LIT2 35 -Screen/auto ] DEO
+	[ LIT2r 05 -Screen/sprite ] #1000
+	&>l
+		;&cell .Screen/addr DEO2
+		[ DEOkr DEOkr DEOkr ] .Screen/x DEI2k #0007 SUB2 ROT DEO2
+		INC GTHk ?&>l
+	POP2 POP2r JMP2r
 
-	&horlin-icn [ ff00 0000 0000 0000 ]
-	&hordot-icn [ aa00 0000 0000 0000 ]
-	&verlin-icn [ 0101 0101 0101 0101 ]
-	&still-icn [ 0007 1821 0203 0100 00e0 1884 c0c0 8000 ]
-	&time-icn [ 0000 001b 1b00 0000 0020 3078 7830 2000 ]
+	&eye-icn [ 0007 1821 0203 0100 00e0 1884 c0c0 8000 ]
+	( time ) [ 0000 001b 1b00 0000 0020 3078 7830 2000 ]
+	&cell [
+	7f80 8080 8080 8080 8080 8080 807f 8080
+	8080 8080 8080 d580 8080 8080 8080 807f
+	ff00 0000 0000 0000 0000 0000 00ff 0000
+	0000 0000 0000 5500 0000 0000 0000 00ff
+	8040 4040 4040 4040 4040 4040 4080 4040
+	4040 4040 4040 4040 4040 4040 4040 4080 ]
 
 @scene/<draw-links> ( -- )
 	;canvas/links LDA2 EQUk ?{
@@ -248,7 +201,7 @@
 		#0800 ROT !/<draw-link> }
 	( | overlap )
 	POP #00 SWP #0011 MUL2 ;&x1+1 ADD2 .Screen/x DEO2
-	;&y1 #000e ADD2 .Screen/y DEO2
+	;&y1+eye .Screen/y DEO2
 	[ LIT2 16 -Screen/auto ] DEO
 	;&links-chr .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEO
@@ -257,7 +210,7 @@
 @scene/<draw-timelink> ( -- )
 	;canvas/time LDA DUP ?{ POP JMP2r }
 	[ LIT2 00 -&id ] LDZ ROT ADD #0f AND #0011 MUL2 ;&x1+1 ADD2 .Screen/x DEO2
-	;&y1 #000e ADD2 .Screen/y DEO2
+	;&y1+eye .Screen/y DEO2
 	[ LIT2 16 -Screen/auto ] DEO
 	;&timelink-icn .Screen/addr DEO2
 	[ LIT2 05 -Screen/sprite ] DEOk DEO
@@ -269,7 +222,7 @@
 
 @scene/<draw-link> ( color x* -- )
 	#0011 MUL2 ;&x1+1 ADD2 .Screen/x DEO2
-	;&y1 #000e ADD2 .Screen/y DEO2
+	;&y1+eye .Screen/y DEO2
 	[ LIT2 16 -Screen/auto ] DEO
 	;&link-icn .Screen/addr DEO2
 	.Screen/sprite DEO
@@ -530,6 +483,8 @@
 
 @tool/<set-size> ( color -- )
 	#03 AND DUP .&size LDZ NEQ ?{ POP JMP2r }
+	[ LIT2 00 -&type ] LDZ NEQ ?{ #01 /<set-type> }
+	[ LIT2 03 -&type ] LDZ NEQ ?{ #01 /<set-type> }
 	.&size STZ !pane/<draw>
 
 	&<decr-size> [ LIT2 ff -&size ] LDZ ADD !/<set-size>
@@ -672,7 +627,7 @@
 	.Screen/x DEI2k #0008 SUB2 ROT DEO2
 	#35d8 ;&hor-icn #01 <draw-times>
 	( | Corners )
-	;&x1 #0002 SUB2 ;&y1 #0001 SUB2 ;&x1 ;&x2 ADD2 ;&y1 ;&y2 ADD2 !rect/<draw-corners>
+	;&x1 #0001 SUB2 ;&y1 #0001 SUB2 ;&x1 ;&x2 ADD2 ;&y1 ;&y2 ADD2 !rect/<draw-corners>
 
 	&ver-icn [ 0101 0101 0101 0101 ]
 	&hor-icn [ ff00 0000 0000 0000 ]
@@ -831,6 +786,7 @@
 	&end POP2 POP2r POP2r JMP2r
 
 @rect/<draw-corners> ( x1* y1* x2* y2* -- )
+	[ LIT2 00 -Screen/auto ] DEO
 	.Screen/y DEO2
 	DUP2 .Screen/x DEO2
 	( br ) [ LIT2r 00 -Screen/pixel ] DEOkr

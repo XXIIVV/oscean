@@ -29,6 +29,13 @@
 %u8/max ( a b -- min ) {
 	GTHk [ JMP SWP ] POP }
 
+@u8/pow ( v exp -- v^exp )
+	OVR STH
+	&>lp
+		#01 SUB DUP ?{ POP2 STHr JMP2r }
+		OVR STH
+		MULr !&>lp
+
 @u8/sqrt ( n -- sq )
 	DUP ?{ JMP2r }
 	INCk ?{ POP #10 JMP2r }
@@ -68,6 +75,13 @@
 %u16/max ( a b -- min ) {
 	GTH2k [ JMP SWP2 ] POP2 }
 
+@u16/pow ( v* exp* -- v^exp* )
+	OVR2 STH2
+	&>lp
+		#0001 SUB2 ORAk ?{ POP2 POP2 STH2r JMP2r }
+		OVR2 STH2
+		MUL2r !&>lp
+
 @u16/sqrt ( n* -- sq* )
 	ORAk ?{ POP JMP2r }
 	INC2k ORA ?{ INC SWP INC2 JMP2r }
@@ -102,6 +116,8 @@
 	#04 #06 /min #04 NEQ ?&fail
 	#06 #04 /max #06 NEQ ?&fail
 	#04 #06 /max #06 NEQ ?&fail
+	#02 #03 /pow #08 NEQ ?&fail
+	#03 #03 /pow #1b NEQ ?&fail
 	#04 /sqrt #02 NEQ ?&fail
 	#01 JMP2r
 	&fail #00 JMP2r
@@ -114,6 +130,8 @@
 	#0004 #0006 /min #0004 NEQ2 ?&fail
 	#0006 #0004 /max #0006 NEQ2 ?&fail
 	#0004 #0006 /max #0006 NEQ2 ?&fail
+	#0002 #0003 /pow #0008 NEQ2 ?&fail
+	#0003 #0003 /pow #001b NEQ2 ?&fail
 	#0004 /sqrt #0002 NEQ2 ?&fail
 	#01 JMP2r
 	&fail #00 JMP2r
