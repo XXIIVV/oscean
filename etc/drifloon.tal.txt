@@ -22,7 +22,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Jun 20 "2026 00
+	( date ) "11 20 "Jun 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
@@ -372,6 +372,18 @@
 (
 @|Syms )
 
+%syms/next-sym ( sym* -- next-sym* ) {
+	#0003 ADD2 LDAk #00 SWP INC ADD2 }
+
+%syms/is-used ( sym* -- sym* t ) {
+	INC2k INC2 LDA .SymType/used AND }
+
+%syms/is-reset ( sym* -- sym* t ) {
+	LDA2k ;on-reset EQU2 }
+
+%syms/is-capitalized ( sym* -- sym* t ) {
+	DUP2 #0004 ADD2 LDAk [ LIT "A ] SUB #1a LTH }
+
 @syms/<new> ( name* -- )
 	/find-name INC2k ORA ?{
 		POP2 ;&ptr LDA2 refs/<record-scope>
@@ -400,19 +412,22 @@
 	STA
 	JMP2r
 
-@syms/find-name ( name* -- name* <sym>* )
-	STH2k str/len INC ,&namelen STR
+@syms/find-name ( name* -- <sym>* )
+	DUP2 ,&name STR2
+	str/len INC STH
 	,&ptr LDR2 ;&mem
 	&>lfn
-		DUP2 #0003 ADD2 LDAk [ LIT &namelen $1 ] NEQ ?&c2
-		INC2k STH2kr str/cmp ?&found &c2 LDA #00 SWP ADD2 #0004 ADD2 GTH2k ?&>lfn
-	#ffff SWP2
-	&found ( to from * . name* -- name* <sym>* )
-	POP2 NIP2 POP2r JMP2r
+		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
+			INC2k [ LIT2 &name $2 ] str/cmp ?&found }
+		POP2 /next-sym GTH2k ?&>lfn
+	POP2 POP2 #ffff POPr JMP2r
+
+	&found ( to* from* . len -- sym* )
+	POP2 NIP2 POPr JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
 	/find-name INC2k ORA ?{
-		( null* .. next* ) POP2 ,&ptr LDR2
+		( null* .. next* ) POP2 ;&ptr LDA2
 		( alloc ) SWP2 .SymType/used #ffff !/<push-sym> }
 	NIP2 JMP2r
 
@@ -421,18 +436,6 @@
 	name/unpack /find-name /is-defined ?{
 		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
 	/use LDA2 NIP2 JMP2r
-
-%syms/is-used ( sym* -- sym* t ) {
-	INC2k INC2 LDA .SymType/used AND }
-
-%syms/is-reset ( sym* -- sym* t ) {
-	LDA2k #0100 EQU2 }
-
-%syms/is-capitalized ( sym* -- sym* t ) {
-	DUP2 #0004 ADD2 LDAk [ LIT "A ] SUB #1a LTH }
-
-%syms/next-sym ( sym* -- next-sym* ) {
-	#0004 ADD2 str/cap }
 
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
@@ -486,11 +489,11 @@
 	( >> )
 
 @refs/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k
+	[ LIT2 &+ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/References info/<error-token> }
-	,&ptr STR2
+	,&+ptr STR2
 	STA
 	JMP2r
 
@@ -513,7 +516,7 @@
 	INC2 INC2 SUB2 JMP2r
 
 @refs/<resolve-all> ( -- )
-	,&ptr LDR2 ;&mem
+	,&+ptr LDR2 ;&mem
 	&>l
 		EQU2k ?{
 			DUP2 ;info/ref STA2
