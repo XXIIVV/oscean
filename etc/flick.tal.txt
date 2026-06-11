@@ -15,6 +15,7 @@
 |0010 @canvas/y1
 |0140 @canvas/x2
 |00c8 @canvas/y2
+|3e80 @canvas/memlen
 |000a @pane/x1
 |000e @pane/y1
 |0050 @scene/x1
@@ -72,7 +73,7 @@
 	={ =dict/snarf
 	( - ) 01 "c =snarf/<copy> 0000
 	( - ) 01 "v =snarf/<paste> 0000
-	( - ) 05 "V =snarf/<paste-1bit> 0000
+	( - ) 05 "V =snarf/<paste-icn> 0000
 	( - ) 01 "x =snarf/<cut> 0000 }
 	( ) $1
 
@@ -300,6 +301,10 @@
 	&<select-next> .&id LDZ INC !/<select-static>
 	&<anim> /<play>
 	.&id LDZ ;canvas/time LDA ADD #0f AND !/<select-force>
+
+@scene/<reselect> ( -- )
+	.&id LDZ
+	( >> )
 
 @scene/<select-static> ( id -- )
 	/<stop> !/<select-force>
@@ -651,10 +656,9 @@
 	#af ;&r STA
 	#d7 ;&g STA
 	#b6 ;&b STA
-	;&mem #3e80 mem/<clr>
+	;&mem ;&memlen mem/<clr>
 	/<draw-preview>
-	project/<write>
-	.scene/id LDZ !scene/<select-static>
+	project/<write> !scene/<reselect>
 
 (
 @|onion )
@@ -666,7 +670,10 @@
 	JMP2r
 
 	&cmd-get [
-	01 3e80 &src-page $2 &src-addr $2 0000 =&mem ]
+	01 =canvas/memlen
+	&src-page $2
+	&src-addr $2
+	0000 =&mem ]
 
 @onion/<draw> ( -- )
 	[ LIT2 00 -Screen/auto ] DEO
@@ -704,10 +711,9 @@
 	;scene/length .File/length DEO2
 	;canvas/mem .File/read DEO2
 	canvas/<draw-preview>
-	project/<write>
-	.scene/id LDZ !scene/<select-static>
+	project/<write> !scene/<reselect>
 
-@snarf/<paste-1bit> ( -- )
+@snarf/<paste-icn> ( -- )
 	;&filename .File/name DEO2
 	#0008 .File/length DEO2
 	;canvas/memcap ;canvas/mem
@@ -715,8 +721,7 @@
 		DUP2 .File/read DEO2
 		#0010 ADD2 GTH2k ?&>lp
 	POP2 POP2 canvas/<draw-preview>
-	project/<write>
-	.scene/id LDZ !scene/<select-static>
+	project/<write> !scene/<reselect>
 
 @snarf/<cut> ( -- )
 	/<copy> !canvas/<wipe>
@@ -1075,12 +1080,12 @@
 (
 @|Assets )
 
-@canvas/mem $3e80
-	&memcap ( - )
-	( lnk ) &links &link1 $1 &link2 $1
+@canvas/mem $&memlen
+	&memcap ( lnk )
+	&links &link1 $1 &link2 $1
 	( rgb ) &color &r $1 &g $1 &b $1
 	( req ) &masks &mask1 $2 &mask2 $2
 	( mov ) &time $1
 
-@onion/mem $3e80
+@onion/mem $canvas/memlen
 

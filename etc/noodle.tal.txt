@@ -55,7 +55,7 @@
 @meta 00 "Noodle 0a
 	( ) "A 20 "Drawing 20 "Program 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "15 20 "Dec 20 "2025 00
+	( ) "11 20 "Jun 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -180,8 +180,9 @@
 @filepath/<put-size> ( w h -- )
 	[ LIT2 "x _&ptr ] LDR #07 SUB LDZ NEQ ?{
 		( h ) hex/chr2 ,&ptr LDR #06 SUB STZ2
-		( w ) hex/chr2 ,&ptr LDR #09 SUB STZ2 }
-	JMP2r
+		( w ) hex/chr2 ,&ptr LDR #09 SUB STZ2
+		JMP2r }
+	POP2 JMP2r
 
 @filepath/get-size ( -- w h )
 	[ LIT2 "x _&ptr ] LDR #07 SUB LDZ NEQ ?{
@@ -612,6 +613,23 @@
 		;&w LDZ #30 SFT2 ADD2 GTH2k ?&>lsr
 	POP2 POP2 POP2r
 	( update ) .&size LDZ2 #0100 ADD2 !/<set-size>
+
+(
+@|Snarf )
+
+@snarf/copy ( -- )
+	;&path .File/name DEO2
+	canvas/get-length .File/length DEO2
+	;canvas/buf .File/write DEO2
+	JMP2r
+
+@snarf/paste ( -- )
+	;&path .File/name DEO2
+	canvas/get-length .File/length DEO2
+	;canvas/buf .File/read DEO2
+	JMP2r
+
+@snarf/path ".snarf 00
 
 (
 @|Zoom )
@@ -1565,46 +1583,48 @@
 
 
 @manifest
-	04 "Noodle $1 [
-		01 "n =filepath/<new> "New $1
-		01 "o =filepath/<open> "Open $1
-		01 "s =filepath/<save> "Save $1
-		01 "q =exit "Exit $1 ]
-	09 "Edit $1 [
-		14 00 =canvas/drag-u "Drag 20 "Up $1
-		24 00 =canvas/drag-d "Drag 20 "Down $1
-		44 00 =canvas/drag-l "Drag 20 "Left $1
-		84 00 =canvas/drag-r "Drag 20 "Right $1
-		21 00 =canvas/crop-h "Crop 20 "Height $1
-		11 00 =canvas/size-h "Size 20 "Height $1
-		41 00 =canvas/crop-w "Crop 20 "Width $1
-		81 00 =canvas/size-w "Size 20 "Width $1
-		00 09 =canvas/invert "Invert $1 ]
-	05 "Zoom $1 [
-		02 00 =zoom/<toggle> "Toggle $1
-		10 00 =zoom/move-u "Up $1
-		20 00 =zoom/move-d "Down $1
-		40 00 =zoom/move-l "Left $1
-		80 00 =zoom/move-r "Right $1 ]
-	09 "Tool $1 [
-		00 "q =brush/<set-tool-pen> "Pen $1
-		00 "w =brush/<set-tool-brush> "Brush $1
-		00 "e =brush/<set-tool-line> "Line $1
-		00 "r =brush/<set-tool-magic> "Magic $1
-		00 "t =brush/<set-tool-rect> "Rect $1
-		00 "y =brush/<set-tool-zoom> "Zoom $1
-		00 "x =brush/<toggle-erase> "Erase $1
-		00 "[ =brush/<decr-size> "Decr.Size $1
-		00 "] =brush/<incr-size> "Incr.Size $1 ]
-	08 "Pattern $1 [
-		00 "1 =brush/<set-patt1> "Full $1
-		00 "2 =brush/<set-patt2> "HalftoneA $1
-		00 "3 =brush/<set-patt3> "HalftoneB $1
-		00 "4 =brush/<set-patt4> "PokeDot $1
-		00 "5 =brush/<set-patt5> "DiagonalA $1
-		00 "6 =brush/<set-patt6> "DiagonalB $1
-		00 "7 =brush/<set-patt7> "Vertical $1
-		00 "8 =brush/<set-patt8> "Horizontal $1 ]
+	04 "Noodle 00 [
+		01 "n =filepath/<new> "New 00
+		01 "o =filepath/<open> "Open 00
+		01 "s =filepath/<save> "Save 00
+		01 "q =exit "Exit 00 ]
+	0b "Edit 00 [
+		14 00 =canvas/drag-u "Drag 20 "Up 00
+		24 00 =canvas/drag-d "Drag 20 "Down 00
+		44 00 =canvas/drag-l "Drag 20 "Left 00
+		84 00 =canvas/drag-r "Drag 20 "Right 00
+		21 00 =canvas/crop-h "Crop 20 "Height 00
+		11 00 =canvas/size-h "Size 20 "Height 00
+		41 00 =canvas/crop-w "Crop 20 "Width 00
+		81 00 =canvas/size-w "Size 20 "Width 00
+		00 09 =canvas/invert "Invert 00
+		01 "c =snarf/copy "Copy 00
+		01 "v =snarf/paste "Paste 00 ]
+	05 "Zoom 00 [
+		02 00 =zoom/<toggle> "Toggle 00
+		10 00 =zoom/move-u "Up 00
+		20 00 =zoom/move-d "Down 00
+		40 00 =zoom/move-l "Left 00
+		80 00 =zoom/move-r "Right 00 ]
+	09 "Tool 00 [
+		00 "q =brush/<set-tool-pen> "Pen 00
+		00 "w =brush/<set-tool-brush> "Brush 00
+		00 "e =brush/<set-tool-line> "Line 00
+		00 "r =brush/<set-tool-magic> "Magic 00
+		00 "t =brush/<set-tool-rect> "Rect 00
+		00 "y =brush/<set-tool-zoom> "Zoom 00
+		00 "x =brush/<toggle-erase> "Erase 00
+		00 "[ =brush/<decr-size> "Decr.Size 00
+		00 "] =brush/<incr-size> "Incr.Size 00 ]
+	08 "Pattern 00 [
+		00 "1 =brush/<set-patt1> "Full 00
+		00 "2 =brush/<set-patt2> "HalftoneA 00
+		00 "3 =brush/<set-patt3> "HalftoneB 00
+		00 "4 =brush/<set-patt4> "PokeDot 00
+		00 "5 =brush/<set-patt5> "DiagonalA 00
+		00 "6 =brush/<set-patt6> "DiagonalB 00
+		00 "7 =brush/<set-patt7> "Vertical 00
+		00 "8 =brush/<set-patt8> "Horizontal 00 ]
 	$1
 
 ( icn )
