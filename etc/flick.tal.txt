@@ -24,6 +24,9 @@
 |00ed @scene/y1+eye
 |010f @scene/x2
 |001f @scene/y2
+|4000 @scene/length
+|0020 @theme/x1
+|00de @theme/y1
 
 |000
 
@@ -55,12 +58,10 @@
 
 @manifest/dat ( . )
 	={ =dict/flick
-	( - ) 00 "1 =tool/<color1> 0000
-	( - ) 00 "2 =tool/<color2> 0000
-	( - ) 00 "3 =tool/<color3> 0000
-	( - ) 00 "4 =tool/<color4> 0000
-	( - ) 00 "q =tool/<type1> 0000
-	( - ) 00 "w =tool/<type2> 0000
+	( - ) 10 00 =tool/<prev-type> 0000
+	( - ) 20 00 =tool/<next-type> 0000
+	( - ) 11 00 =tool/<prev-color> 0000
+	( - ) 21 00 =tool/<next-color> 0000
 	( - ) 00 "[ =tool/<decr-size> 0000
 	( - ) 00 "] =tool/<incr-size> 0000 }
 	={ =dict/scene
@@ -93,9 +94,11 @@
 	POP2 BRK
 
 @window/on-button ( -> )
-	.Controller/button DEI2 manifest/scan INC2k ORA ?{
-		( insert ) POP2 BRK }
-	( * ) JSR2 BRK
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{
+		POP2
+		( insert ) theme/<read-key>
+		POP BRK }
+	( * ) JSR2 POP2 BRK
 
 @window/on-mouse-touch ( states* -> )
 	POP2 BRK
@@ -328,28 +331,6 @@
 	#0000 .Screen/vector DEO2
 	JMP2r
 
-@scene/<colorize> ( id value -- )
-	STH
-	DUP ?{
-		POP ;canvas/r LDAk #0f AND STHr #40 SFT ORA DUP .System/rl DEO
-		ROT ROT STA !/<draw> }
-	DUP #01 NEQ ?{
-		POP ;canvas/g LDAk #0f AND STHr #40 SFT ORA DUP .System/gl DEO
-		ROT ROT STA !/<draw> }
-	DUP #02 NEQ ?{
-		POP ;canvas/b LDAk #0f AND STHr #40 SFT ORA DUP .System/bl DEO
-		ROT ROT STA !/<draw> }
-	DUP #03 NEQ ?{
-		POP ;canvas/r LDAk #f0 AND STHr ORA DUP .System/rl DEO
-		ROT ROT STA !/<draw> }
-	DUP #04 NEQ ?{
-		POP ;canvas/g LDAk #f0 AND STHr ORA DUP .System/gl DEO
-		ROT ROT STA !/<draw> }
-	DUP #05 NEQ ?{
-		POP ;canvas/b LDAk #f0 AND STHr ORA DUP .System/bl DEO
-		ROT ROT STA !/<draw> }
-	POPr JMP2r
-
 @scene/pass-mask ( color -- pass )
 	( mask* ) #00 SWP #02 SUB DUP ADD ;canvas/masks ADD2 LDA2
 	( seen* ) DUP2 .&seen LDZ2 AND2 EQU2 JMP2r
@@ -461,6 +442,18 @@
 (
 @|Tool )
 
+@tool/<prev-color> ( -- )
+	[ LIT2 ff -&color ] LDZ ADD !/<set-color>
+
+@tool/<next-color> ( -- )
+	.&color LDZ INC !/<set-color>
+
+@tool/<prev-type> ( -- )
+	[ LIT2 ff -&type ] LDZ ADD !/<set-type>
+
+@tool/<next-type> ( -- )
+	.&type LDZ INC !/<set-type>
+
 @tool/<set-type> ( type -- )
 	#03 AND DUP .&type LDZ NEQ ?{ POP JMP2r }
 	.&type STZ !pane/<draw>
@@ -470,12 +463,14 @@
 	&<type4> #03 !/<set-type>
 
 @tool/get-color ( -- color )
+	theme/<reset-ptr>
 	[ LIT2 02 -Mouse/state ] DEI GTH ?{ #00 JMP2r }
 	.&color LDZ JMP2r
 
 @tool/<set-color> ( color -- )
 	#03 AND DUP .&color LDZ NEQ ?{ POP JMP2r }
-	.&color STZ !pane/<draw>
+	.&color STZ
+	theme/<draw> !pane/<draw>
 	&<color1> #00 !/<set-color>
 	&<color2> #01 !/<set-color>
 	&<color3> #02 !/<set-color>
@@ -700,13 +695,13 @@
 
 @snarf/<copy> ( -- )
 	;&filename .File/name DEO2
-	#4000 .File/length DEO2
+	;scene/length .File/length DEO2
 	;canvas/mem .File/write DEO2
 	JMP2r
 
 @snarf/<paste> ( -- )
 	;&filename .File/name DEO2
-	#4000 .File/length DEO2
+	;scene/length .File/length DEO2
 	;canvas/mem .File/read DEO2
 	canvas/<draw-preview>
 	project/<write>
@@ -816,7 +811,7 @@
 
 @project/<read> ( -- )
 	;&filename .File/name DEO2
-	#4000 .File/length DEO2
+	;scene/length .File/length DEO2
 	#1000
 	&>lr
 		DUP .scene/id STZ
@@ -829,7 +824,7 @@
 @project/<write> ( -- )
 	scene/<commit>
 	.scene/id LDZ ;&filename .File/name DEO2
-	#4000 .File/length DEO2
+	;scene/length .File/length DEO2
 	#1000
 	&>lw
 		DUP .scene/id STZ
@@ -864,6 +859,75 @@
 
 	&path ".theme $1
 
+@theme/<reset-ptr> ( -- )
+	[ LIT2 00 _&ptr ] STR
+	JMP2r
+
+@theme/<read-key> ( key -- )
+	[ LIT2 01 -tool/color ] LDZ LTH ?{ POP JMP2r }
+	chr/hex INCk ?{ POP JMP2r }
+	[ LIT &ptr $1 ] INCk #03 DIVk MUL SUB ,&ptr STR
+	( r ) DUP #00 EQU ?/<set-r>
+	( g ) DUP #01 EQU ?/<set-g>
+	( b ) DUP #02 EQU ?/<set-b>
+	POP2 JMP2r
+
+@theme/<set-r> ( key pos -- )
+	POP
+	( | 2/3 )
+	[ LIT2r =canvas/r ] [ LIT2 03 -tool/color ] LDZ EQU ?{
+		#40 SFT LDAkr STHr #0f AND ORA DUP .System/rl DEO
+		STH2r STA
+		/<draw> !scene/<draw> }
+	LDAkr STHr #f0 AND ORA DUP .System/rl DEO
+	STH2r STA
+	/<draw> !scene/<draw>
+
+@theme/<set-g> ( key pos -- )
+	POP
+	( | 2/3 )
+	[ LIT2r =canvas/g ] [ LIT2 03 -tool/color ] LDZ EQU ?{
+		#40 SFT LDAkr STHr #0f AND ORA DUP .System/gl DEO
+		STH2r STA
+		/<draw> !scene/<draw> }
+	LDAkr STHr #f0 AND ORA DUP .System/gl DEO
+	STH2r STA
+	/<draw> !scene/<draw>
+
+@theme/<set-b> ( key pos -- )
+	POP
+	( | 2/3 )
+	[ LIT2r =canvas/b ] [ LIT2 03 -tool/color ] LDZ EQU ?{
+		#40 SFT LDAkr STHr #0f AND ORA DUP .System/bl DEO
+		STH2r STA
+		/<draw> !scene/<draw> }
+	LDAkr STHr #f0 AND ORA DUP .System/bl DEO
+	STH2r STA
+	/<draw> !scene/<draw>
+
+@theme/<draw> ( -- )
+	;&x1 .Screen/x DEO2
+	;&y1 .Screen/y DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	.tool/color LDZ
+	( | handlers )
+	DUP #02 NEQ ?{
+		POP ;canvas/r LDA #04 SFT /<draw-digit>
+		;canvas/g LDA #04 SFT /<draw-digit>
+		;canvas/b LDA #04 SFT !/<draw-digit> }
+	DUP #03 NEQ ?{
+		POP ;canvas/r LDA #0f AND /<draw-digit>
+		;canvas/g LDA #0f AND /<draw-digit>
+		;canvas/b LDA #0f AND !/<draw-digit> }
+	POP ;fill-icn .Screen/addr DEO2
+	[ LIT2 00 -Screen/sprite ] DEOk DEOk DEO
+	JMP2r
+
+@theme/<draw-digit> ( value -- )
+	#00 SWP #30 SFT2 ;&font ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	JMP2r
+
 (
 @|Cursor )
 
@@ -894,6 +958,11 @@
 
 (
 @|Stdlib )
+
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
 
 @manifest/scan ( but key -- fn* )
 	ORAk ?{ POP2 #ffff JMP2r }
@@ -929,6 +998,16 @@
 @|Assets )
 
 @fill-icn [ ffff ffff ffff ffff ]
+
+@theme/font [
+	003e 4141 4141 413e 0008 1808 0808 081c
+	007e 0101 3e40 407f 007e 0101 3e01 017e
+	0011 2141 7f01 0101 007f 4040 3e01 017e
+	003e 4140 7e41 413e 007f 0101 0204 0808
+	003e 4141 3e41 413e 003e 4141 3f01 0204
+	003e 4141 7f41 4141 007e 4141 7e41 417e
+	003e 4140 4040 413e 007c 4241 4141 427c
+	003f 4040 7f40 403f 007f 4040 7e40 4040 ]
 
 @pane/line-icn [
 	000f 3040 4080 8080 00e0 1804 0402 0202
