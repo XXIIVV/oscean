@@ -316,6 +316,9 @@
 		POP2 #ffff }
 	JMP2r
 
+%lexicon/is-found ( name* -- t ) {
+	lexicon/find INC2 ORA }
+
 @lexicon/<parse> ( -- )
 	;&buf DUP2 .File/success DEI2 ADD2 SWP2
 	&>lp
@@ -383,13 +386,6 @@
 			INC2 INC2 LDA [ LIT "l ] EQU JMP2r } }
 	POP2 #00 JMP2r
 
-@link/<print-err> ( src* link* -- src* link* )
-	#010f DEO
-	;dict/err-redlink str/<print>
-	;path-tmp-map/resbuf str/<print>
-	;dict/in str/<print>
-	DUP2 !str/<print-ln>
-
 @link/<parse> ( src* link* -- )
 	/is-not-self-relative ?{ #0008 ADD2 }
 	/is-relative ?{
@@ -397,8 +393,8 @@
 			/is-external ?{
 				path-tmp-map/make
 				( | handlers )
-				;path-tmp-map/resbuf lexicon/find INC2 ORA ?{ /<print-err> }
-				/has-html-ext ?{ /<print-err> }
+				;path-tmp-map/resbuf lexicon/is-found ?{ OVR2 ;path-tmp-map/resbuf SWP2 error/<print> }
+				/has-html-ext ?{ DUP2 ;path-tmp-map/resbuf SWP2 error/<print> }
 				;path-tmp-map/resbuf [ LIT2 20 "_ ] str/<swap-char>
 				;path-tmp-map/res .File2/name DEO2
 				html/<str>
@@ -774,6 +770,8 @@
 	LIT2 "- 18 DEOk DEO
 	#2018 DEO
 	( msg ) str/<print>
+	LIT2 ": 18 DEO
+	#2018 DEO
 	( name ) str/<print>
 	#0a18 DEO
 	JMP2r
@@ -782,6 +780,8 @@
 	LIT2 "- 18 DEOk DEO
 	#2018 DEO
 	( msg ) str/<print>
+	LIT2 ": 18 DEO
+	#2018 DEO
 	( name ) str/<print>
 	#0a18 DEO
 	#010f DEO
@@ -945,11 +945,11 @@
 @ext/html ".html 00
 	&htm ".htm 00
 
-@warnings/source "Source: 20 00
-	&orphan "Orphan: 20 00
-	&hidden "Hidden: 20 00
-	&duplicate "Duplicate 20 "diary: 20 00
-	&unknown "Unknown 20 "diary: 20 00
+@warnings/source "Source 00
+	&orphan "Orphan 00
+	&hidden "Hidden 00
+	&duplicate "Duplicate 20 "diary 00
+	&unknown "Unknown 20 "diary 00
 
 @path/lexicon "src/tables/lexicon 00
 	&sitemap "src/htm/sitemap.htm 00
@@ -970,7 +970,6 @@
 	&incoming-txt "incoming: 20 00
 	&right-txt "right 00 &spacer 20 "&mdash; 20 00
 	&available-txt ".. 20 "Available 20 "diary: 20 00 &in 20 "in 20 00
-	&err-redlink "!! 20 "Redlink: 20 00
 
 (
 @|memory )
