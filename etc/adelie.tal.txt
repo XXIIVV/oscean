@@ -213,9 +213,11 @@
 
 @slides/<eval> ( addr* -- )
 	links/<reset>
+	.&eof LDZ2 SWP2
 	&>we
-		LDA2k LIT2 "NA NEQ2 ?{ POP2 JMP2r }
-		DUP2 ops/find JSR2 str/cap INC2 !&>we
+		LDA2k LIT2 "NA EQU2 ?{
+			DUP2 ops/find JSR2 str/cap INC2 GTH2k ?&>we }
+	POP2 POP2 JMP2r
 
 @slides/<restart> ( -- )
 	/<load>
@@ -237,7 +239,9 @@
 	str/cap INC2 !/<eval>
 
 @slides/<next> ( -- )
-	/is-stop ?{ .&id LDZ2 INC2 !/<select> }
+	/is-stop ?{
+		.&id LDZ2 INC2k .&count LDZ2 LTH2 ?{ POP2 JMP2r }
+		INC2 !/<select> }
 	JMP2r
 
 @slides/<prev> ( -- )
@@ -245,10 +249,10 @@
 	#0001 SUB2 !/<select>
 
 @slides/is-stop ( -- t )
-	/get-addr-next .&id LDZ2 /get-addr
-	&>lis
-		LDA2k [ LIT2 "ST ] NEQ2 ?{ POP2 POP2 #01 JMP2r }
-		str/cap INC2 GTH2k ?&>lis
+	/get-addr-next .&id LDZ2 /get-addr EQU2k ?{
+		&>lis
+			LDA2k [ LIT2 "ST ] NEQ2 ?{ POP2 POP2 #01 JMP2r }
+			str/cap INC2 GTH2k ?&>lis }
 	POP2 POP2 #00 JMP2r
 
 @slides/get-addr-next ( -- addr* )
