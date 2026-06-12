@@ -51,23 +51,23 @@
 	<open-file>
 	BRK
 
-@meta $1
+@meta 00
 	( ) "Oekaki 0a
 	( ) "Drawing 20 "Program 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "1 20 "June 20 "2026 00
+	( ) "12 20 "June 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
 
-%u16/abs2 ( a* -- res* ) {
+%s16/abs ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
 
-%u16/lts2 ( a* b* -- f ) {
+%s16/lth ( a* b* -- f ) {
 	SUB2 POP #07 SFT }
 
-%u16/gts2 ( a* b* -- f ) {
-	SWP2 u16/lts2 }
+%s16/gth ( a* b* -- f ) {
+	SWP2 s16/lth }
 
 (
 @|vectors )
@@ -578,8 +578,8 @@
 @|filters )
 
 @get-speed ( x1* y1* x2* y2* -- distance* )
-	( abs y2 - y1 ) ROT2 SUB2 u16/abs2 STH2
-	( abs x1 - x2 ) SUB2 u16/abs2 STH2r
+	( abs y2 - y1 ) ROT2 SUB2 s16/abs STH2
+	( abs x1 - x2 ) SUB2 s16/abs STH2r
 	( max + min/2 ) OVR2 OVR2
 	( min ) GTH2k [ JMP SWP2 POP2 ] STH2
 	( max ) LTH2k [ JMP SWP2 POP2 ] #01 SFT2 STH2r ADD2 JMP2r
@@ -638,22 +638,22 @@
 	STH2
 	STH2
 	( | x )
-	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k u16/abs2 ,&dx STR2
-	SWP2 u16/lts2 [ JMP SWP POP ] ,&sx STR
+	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k s16/abs ,&dx STR2
+	SWP2 s16/lth [ JMP SWP POP ] ,&sx STR
 	SWP2r
 	( | y )
-	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k u16/abs2 #0000 SWP2 SUB2 ,&dy STR2
-	SWP2 u16/lts2 [ JMP SWP POP ] ,&sy STR
+	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k s16/abs #0000 SWP2 SUB2 ,&dy STR2
+	SWP2 s16/lth [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
 	&>while
 		( draw ) OVR2r STH2r STH2kr [ LIT2 &fn $2 ] JSR2
 		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
 			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
 		( e -> e2 ) DUP2k ADD2 DUP2
-		( y ) [ LIT2 &dy $2 ] u16/lts2 ?{
+		( y ) [ LIT2 &dy $2 ] s16/lth ?{
 			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
 			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
-		( x ) [ LIT2 &dx $2 ] u16/gts2 ?{
+		( x ) [ LIT2 &dx $2 ] s16/gth ?{
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
 		!&>while
@@ -785,26 +785,26 @@
 	;tga .File/read DEO2
 	;dict/chr-ext src/<cat>
 	( | flip endianness )
-	;tga/x LDA2k SWP SWP2 STA2
-	;tga/y LDA2k SWP SWP2 STA2
-	;tga/w LDA2k SWP SWP2 STA2
-	;tga/h LDA2k SWP SWP2 STA2
+	;&x LDA2k SWP SWP2 STA2
+	;&y LDA2k SWP SWP2 STA2
+	;&w LDA2k SWP SWP2 STA2
+	;&h LDA2k SWP SWP2 STA2
 	( | get parser )
-	;tga/image-type LDA
+	;&image-type LDA
 	( ) DUP #02 EQU ?&rawt
 	( ) DUP #03 EQU ?&rawm
 	POP
 	( | error )
 	;&error-txt str/<print>
-	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 str/<print>
+	#00 ;&image-type LDA DUP ADD ;tga-types ADD2 LDA2 str/<print>
 	#0a18 DEO
 	JMP2r
 
 	&rawt ( type -- )
-	POP ;tga-rawt #0004 !tga/<parse>
+	POP ;tga-rawt #0004 !/<parse>
 
 	&rawm ( type -- )
-	POP ;tga-rawm #0001 !tga/<parse>
+	POP ;tga-rawm #0001 !/<parse>
 
 	&error-txt ( err )
 	"Unsupported 20 "image-type: 20 00
@@ -813,7 +813,7 @@
 	( | cache size )
 	.File/length DEO2
 	,&filter STR2
-	;tga/w LDA2 ,&width STR2
+	;&w LDA2 ,&width STR2
 	( | paint )
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 [ LIT2r 0000 ]
