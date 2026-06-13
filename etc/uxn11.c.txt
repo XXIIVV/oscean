@@ -641,47 +641,19 @@ mouse_deo_vector(void)
 #include <string.h>
 
 typedef struct {
-	FILE *f;
-	DIR *dir;
+	union {
+		FILE *f;
+		DIR *dir;
+	} h;
 	char *filepath;
 	enum { IDLE,
 		FILE_READ,
 		FILE_WRITE,
 		DIR_READ,
-		DIR_WRITE
-	} state;
+		DIR_WRITE } state;
 } UxnFile;
 
 static UxnFile ufs[2];
-
-static void
-make_pathfile(char *pathbuf, const char *filepath, const char *basename)
-{
-	char c = '/';
-	while(*filepath)
-		c = *filepath++, *pathbuf = c, pathbuf++;
-	if(c != '/')
-		*pathbuf = '/', pathbuf++;
-	while(*basename)
-		*pathbuf = *basename++, pathbuf++;
-	*pathbuf = 0;
-}
-
-static inline unsigned int
-put_fill(Uint8 *dest, unsigned int len, char c)
-{
-	memset(dest, c, len);
-	return len;
-}
-
-static inline unsigned int
-put_size(Uint8 *dest, unsigned int len, unsigned int size)
-{
-	unsigned int i;
-	for(i = 0, dest += len; i < len; i++, size >>= 4)
-		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
-	return len;
-}
 
 static inline unsigned int
 put_text(Uint8 *dest, const char *text)
@@ -696,20 +668,29 @@ put_text(Uint8 *dest, const char *text)
 static unsigned int
 put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, unsigned int dir, unsigned int capsize)
 {
-	if(err) return put_fill(dest, len, '!');
-	if(dir) return put_fill(dest, len, '-');
-	if(capsize && size >= 0x10000) return put_fill(dest, len, '?');
-	return put_size(dest, len, size);
+	unsigned int i;
+	if(err || dir || (capsize && size >= 0x10000)) {
+		memset(dest, err ? '!' : dir ? '-' :
+									   '?',
+			len);
+		return len;
+	}
+	for(i = 0, dest += len; i < len; i++, size >>= 4)
+		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+	return len;
 }
 
 static unsigned int
-put_statfile(Uint8 *dest, const char *filepath, const char *basename)
+put_statfile(Uint8 *dest, char *pathbuf, unsigned int prefix_len, unsigned int cap, const char *basename)
 {
 	unsigned int err, dir;
 	struct stat st;
 	Uint8 *anchor = dest;
-	char pathbuf[0x200];
-	make_pathfile(pathbuf, filepath, basename);
+	char *p = pathbuf + prefix_len, *end = pathbuf + cap - 1;
+	const char *b = basename;
+	while(*b && p < end)
+		*p++ = *b++;
+	*p = 0;
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
 	dest += put_stat(dest, 4, st.st_size, err, dir, 1);
@@ -724,11 +705,19 @@ put_fdir(Uint8 *dest, unsigned int len, const char *filepath, DIR *dir)
 {
 	Uint8 *p = dest, *end = dest + len - 1;
 	struct dirent *de;
+	char pathbuf[0x200];
+	unsigned int prefix_len = 0;
+	char c = '/';
+	const char *fp = filepath;
+	while(*fp && prefix_len < sizeof pathbuf - 1)
+		c = *fp++, pathbuf[prefix_len++] = c;
+	if(c != '/' && prefix_len < sizeof pathbuf - 1)
+		pathbuf[prefix_len++] = '/';
 	while((de = readdir(dir)) && p < end) {
 		const char *name = de->d_name;
 		if(name[0] == '.' && (!name[1] || (name[1] == '.' && !name[2])))
 			continue;
-		p += put_statfile(p, filepath, name);
+		p += put_statfile(p, pathbuf, prefix_len, sizeof pathbuf, name);
 	}
 	*p = 0;
 	return p - dest;
@@ -753,9 +742,9 @@ static unsigned int
 file_write_dir(const char *p)
 {
 	char buf[0x200];
-	char *s = buf;
+	char *s = buf, *end = buf + sizeof buf - 1;
 	unsigned int ok = 1;
-	while(*p && ok) {
+	while(*p && ok && s < end) {
 		*s++ = *p;
 		if(*p++ == '/') {
 			s[-1] = '\0';
@@ -763,15 +752,48 @@ file_write_dir(const char *p)
 			s[-1] = '/';
 		}
 	}
-	return ok;
+	return ok && !*p;
 }
 
 static void
 file_reset(unsigned int id)
 {
-	if(ufs[id].f != NULL) fclose(ufs[id].f), ufs[id].f = NULL;
-	if(ufs[id].dir != NULL) closedir(ufs[id].dir), ufs[id].dir = NULL;
+	switch(ufs[id].state) {
+	case FILE_READ:
+	case FILE_WRITE: fclose(ufs[id].h.f); break;
+	case DIR_READ: closedir(ufs[id].h.dir); break;
+	default: break;
+	}
 	ufs[id].state = IDLE;
+}
+
+static unsigned int
+file_open(unsigned int id, unsigned int want_write, Uint8 flags)
+{
+	UxnFile *u = &ufs[id];
+	struct stat st;
+	if(want_write) {
+		if(u->state == FILE_WRITE || u->state == DIR_WRITE)
+			return 1;
+		file_reset(id);
+		file_write_dir(u->filepath);
+		if(is_dir_path(u->filepath)) {
+			u->state = is_dir_real(u->filepath) ? DIR_WRITE : IDLE;
+		} else if((u->h.f = fopen(u->filepath, (flags & 0x01) ? "ab" : "wb"))) {
+			u->state = FILE_WRITE;
+		}
+	} else {
+		if(u->state == FILE_READ || u->state == DIR_READ)
+			return 1;
+		file_reset(id);
+		if(stat(u->filepath, &st) == 0 && S_ISDIR(st.st_mode)) {
+			if((u->h.dir = opendir(u->filepath)))
+				u->state = DIR_READ;
+		} else if((u->h.f = fopen(u->filepath, "rb"))) {
+			u->state = FILE_READ;
+		}
+	}
+	return u->state != IDLE;
 }
 
 static unsigned int
@@ -786,56 +808,35 @@ static unsigned int
 file_read(unsigned int id, Uint16 addr, unsigned int len)
 {
 	void *dest = &ram[addr];
-	struct stat st;
 	unsigned int n;
 	if(ufs[id].filepath == 0)
 		return 0;
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
-	if(ufs[id].state != FILE_READ && ufs[id].state != DIR_READ) {
-		file_reset(id);
-		if(stat(ufs[id].filepath, &st) == 0 && S_ISDIR(st.st_mode)) {
-			if((ufs[id].dir = opendir(ufs[id].filepath)) != NULL)
-				ufs[id].state = DIR_READ;
-		} else if((ufs[id].f = fopen(ufs[id].filepath, "rb")) != NULL) {
-			ufs[id].state = FILE_READ;
-		}
-	}
-	if(ufs[id].state == FILE_READ) {
-		n = fread(dest, 1, len, ufs[id].f);
-		if(n == 0) file_reset(id);
-		return n;
-	}
-	if(ufs[id].state == DIR_READ) {
-		n = put_fdir(dest, len, ufs[id].filepath, ufs[id].dir);
-		if(n == 0) file_reset(id);
-		return n;
-	}
-	return 0;
+	if(!file_open(id, 0, 0))
+		return 0;
+	if(ufs[id].state == FILE_READ)
+		n = fread(dest, 1, len, ufs[id].h.f);
+	else
+		n = put_fdir(dest, len, ufs[id].filepath, ufs[id].h.dir);
+	if(n == 0) file_reset(id);
+	return n;
 }
 
 static unsigned int
 file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
 {
-	unsigned int ret = 0;
 	if(ufs[id].filepath == 0)
 		return 0;
 	if(addr + len > 0x10000)
 		len = 0x10000 - addr;
-	file_write_dir(ufs[id].filepath);
-	if(ufs[id].state != FILE_WRITE && ufs[id].state != DIR_WRITE) {
-		file_reset(id);
-		if(is_dir_path(ufs[id].filepath))
-			ufs[id].state = DIR_WRITE;
-		else if((ufs[id].f = fopen(ufs[id].filepath, (flags & 0x01) ? "ab" : "wb")) != NULL)
-			ufs[id].state = FILE_WRITE;
+	if(!file_open(id, 1, flags))
+		return 0;
+	if(ufs[id].state == FILE_WRITE) {
+		unsigned int ret = fwrite(&ram[addr], 1, len, ufs[id].h.f);
+		return (ret > 0 && fflush(ufs[id].h.f) != 0) ? 0 : ret;
 	}
-	if(ufs[id].state == FILE_WRITE)
-		if((ret = fwrite(&ram[addr], 1, len, ufs[id].f)) > 0 && fflush(ufs[id].f) != 0)
-			ret = 0;
-	if(ufs[id].state == DIR_WRITE)
-		ret = is_dir_real(ufs[id].filepath);
-	return ret;
+	return is_dir_real(ufs[id].filepath);
 }
 
 static unsigned int
@@ -1116,6 +1117,15 @@ emu_restart(unsigned int soft)
 	uxn_eval(0x100);
 }
 
+static inline unsigned int
+put_size(Uint8 *dest, unsigned int len, unsigned int size)
+{
+	unsigned int i;
+	for(i = 0, dest += len; i < len; i++, size >>= 4)
+		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+	return len;
+}
+
 static void
 emu_screenshot(void)
 {
@@ -1323,7 +1333,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(80K), 7 Jun 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(80K), 13 Jun 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

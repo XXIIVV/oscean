@@ -25,16 +25,17 @@
 	;src/on-console .Console/vector DEO2
 	;images/on-control .Controller/vector DEO2
 	.Console/type DEI ?{ src/<set-default> }
+	images/<draw-nil>
 	BRK
 
 @meta 00
 	( ) "Image 0a
 	( ) "An 20 "Image 20 "Viewer 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "5 20 "Jun 20 "2026 00
-	( ) 02
-	( ) 56 =Varvara/version
-	( ) 83 =appicon
+	( ) "13 20 "Jun 20 "2026 00
+	( . ) 02
+	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
 
 (
 @|vectors )
@@ -57,7 +58,9 @@
 
 @src/<apply> ( -- )
 	#0000 .Console/vector DEO2
-	;&buf !path/<set>
+	;&buf path/<set>
+	images/is-valid ?{ #00 !images/<select> }
+	;&buf !image/<draw>
 
 @src/<push> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
@@ -110,8 +113,10 @@
 @|Images )
 
 @images/on-control ( -> )
-	.Controller/button DEI
-	( | handlers )
+	.Controller/button DEI2
+	( | key )
+	#1b NEQ ?{ #800f DEO }
+	( | button )
 	DUP #40 NEQ ?{ /<select-prev> }
 	DUP #80 NEQ ?{ /<select-next> }
 	DUP #01 NEQ ?{ /<invert> }
@@ -128,7 +133,7 @@
 	&>ws
 		#0005 ADD2 DUP2 /<push>
 		str/cap INC2 LDAk ?&>ws
-	POP2 #00 !/<select>
+	POP2 JMP2r
 
 @images/<select-next> ( -- )
 	.&selected LDZ INC
@@ -147,8 +152,6 @@
 	( >> )
 
 @images/<draw> ( name* -- )
-	#0000 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
 	imgpath/make
 	( | Display )
 	.&selected LDZ INC u8/<print-dec>
@@ -160,10 +163,10 @@
 
 @images/<draw-nil> ( -- )
 	#1010 /<set-size>
-	#0030 .Screen/x DEO2
-	#0030 .Screen/y DEO2
+	.Screen/width DEI2 #01 SFT2 #000c SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #01 SFT2 #000c SUB2 .Screen/y DEO2
 	;&nil-icn .Screen/addr DEO2
-	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 26 -Screen/auto ] DEO
 	[ LIT2 03 -Screen/sprite ] DEOk DEOk DEO
 	JMP2r
 
@@ -204,6 +207,9 @@
 @|Image )
 
 @image/<draw> ( path* -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	DUP2 /exists ?{ POP2 !images/<draw-nil> }
 	DUP2 .File/name DEO2
 	( | depth )
 	DUP2 /read-depth .File/length DEO2
@@ -241,6 +247,13 @@
 	str/cap #0003 SUB2 LDA2 [ LIT2 "ch ] EQU2 ?{
 		[ LIT2 03 -Screen/sprite ] #0008 JMP2r }
 	[ LIT2 81 -Screen/sprite ] #0010 JMP2r
+
+@image/exists ( path* -- t )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI JMP2r
+	&b $1
 
 (
 @|Stdlib )
@@ -316,12 +329,11 @@
 	0808 30c0 0000 0000 0000 0000 0000 0000 ]
 
 @images/nil-icn [
-	7f80 8080 8080 8080 ff00 0000 0000 0060
-	ff00 0000 0000 0006 fe01 0101 0101 0101
-	8080 8080 8080 8080 6020 4000 0000 0304
-	0602 0400 0000 c020 0101 0101 0101 01fe
-	8080 809a 9d80 807f 0000 0020 0000 00ff
-	0101 0101 0101 01fe 54a8 50a0 4080 0000 ]
+	0000 0001 030c 1010 0000 c324 3c00 0000
+	0609 0182 c032 0808 2020 2020 2020 2020
+	0000 4200 0018 2400 0404 0404 0404 0404
+	1010 0c03 0000 0000 0000 00ff 0000 0000
+	0808 30c0 0000 0000 ]
 
 @image/mem $10
 
