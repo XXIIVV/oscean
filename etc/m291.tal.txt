@@ -1,5 +1,5 @@
 ( 54K . m291
-| I thought you meant 0x123 )
+| Requires mpg123 and uxn11 )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
@@ -8,7 +8,6 @@
 |90 @Mouse/vector $2 &x $2 &y $2 &state $6 &scrolly &scrolly-hb $1 &scrolly-lb $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
-|0050 @Varvara/version
 |0100 @WIDTH
 |00f0 @WIDTH-10
 |2000 @dir/SZ
@@ -54,16 +53,21 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "6 20 "Jun 20 "2026 00
-	( . ) 02
-	( - ) 56 =Varvara/version
+	( date ) "13 20 "Jun 20 "2026 00
+	( . ) 01
 	( - ) 83 =appicon
 
 (
 @|macros )
 
-%min ( x y -- min ) {
+%u8/min ( x y -- min ) {
 	LTHk [ JMP SWP POP ] }
+
+%u8/mod ( x y -- x%y ) {
+	DIVk MUL SUB }
+
+%u16/mod ( n* mod* -- n* ) {
+	DIV2k MUL2 SUB2 }
 
 %llen ( str* -- length* ) {
 	DUP2 str/next-line SWP2 SUB2 }
@@ -80,9 +84,6 @@
 @is-mp3-ext ( str* -- str* t )
 	LDA2k [ LIT2 ".m ] EQU2 ?{ #00 JMP2r }
 	INC2k INC2 LDA2 [ LIT2 "p3 ] EQU2 JMP2r
-
-%MOD2 ( n* mod* -- n* ) {
-	DIV2k MUL2 SUB2 }
 
 (
 @|vectors )
@@ -146,7 +147,7 @@
 	.selection/scroll LDZ ADD INCk ?{ POP BRK }
 	lines/count #18 SUB
 	( needs scroll ) DUP #80 LTH ?{ POP2 BRK }
-	( max scroll ) min .selection/scroll STZ
+	( max scroll ) u8/min .selection/scroll STZ
 	<redraw-dir>
 	BRK
 
@@ -213,8 +214,8 @@
 	( | shuffle )
 	[ LIT2 01 -controls/shuffle ] LDZ NEQ ?{
 		prng/<new>
-		ADD .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks }
-	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
+		ADD .lines/tracks LDZ u8/mod !<pick>/tracks }
+	.selection/track LDZ INC .lines/tracks LDZ u8/mod !<pick>/tracks
 
 @<seek-prev> ( -- )
 	.secfrom LDZ2 #000a LTH2 ?<skip-prev>
@@ -487,7 +488,7 @@
 
 @<y-id> ( y* -- id )
 	[ LIT2 00 -playing ] LDZ EQU ?{ #0080 SUB2 }
-	#001c SUB2 #04 SFT2 NIP #17 min .selection/scroll LDZ ADD JMP2r
+	#001c SUB2 #04 SFT2 NIP #17 u8/min .selection/scroll LDZ ADD JMP2r
 
 @dir/<refresh> ( -- )
 	;path/buf .File/name DEO2
@@ -508,7 +509,7 @@
 
 @<fit-window> ( -- )
 	( folders ) [ LIT2 00 -lines/folders ] LDZ
-	( tracks ) .lines/tracks LDZ ADD #18 min
+	( tracks ) .lines/tracks LDZ ADD #18 u8/min
 	( empty ) DUP #00 EQU ADD #40 SFT2
 	( padding ) #0020 ADD2
 	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
@@ -596,7 +597,7 @@
 	#0080 ADD2
 	&>loop
 		GTH2k ?{ POP2 POP2 STHr JMP2r }
-		DUP2 [ LIT2 &s0 $2 ] str-prefix STHr min STH
+		DUP2 [ LIT2 &s0 $2 ] str-prefix STHr u8/min STH
 		#0080 ADD2 !&>loop
 
 @pos-to-seconds ( pos* -- seconds* )
@@ -835,7 +836,7 @@
 			#0001 .Screen/x DEO2
 			#001a .Screen/y DEO2
 			#01 ;chicago/color STA
-			#04 SFT2 #00 ;id3/title str/len MOD2 ;id3/title STH2k utf8/next-nth #01 chicago/<draw-left-color>
+			#04 SFT2 #00 ;id3/title str/len u16/mod ;id3/title STH2k utf8/next-nth #01 chicago/<draw-left-color>
 			.Screen/x DEI2k #0004 ADD2 ROT DEO2
 			STH2r #01 !chicago/<draw-left-color> }
 		POP2 }
@@ -1005,7 +1006,7 @@
 @dec/<print> ( short* -- )
 	#000a SWP2 [ LITr ff ]
 	&>get
-		SWP2k MOD2 STH
+		SWP2k u16/mod STH
 		POP OVR2 DIV2 ORAk ?&>get
 	POP2 POP2
 	&>put
