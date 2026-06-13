@@ -8,13 +8,13 @@ static unsigned int console_vector;
 static Uint8 ram[0x10000], dev[0x100], ptr[2], stk[2][0x100];
 
 static Uint8
-emu_dei(const Uint8 port)
+emu_dei(Uint8 port)
 {
 	return dev[port];
 }
 
 static void
-emu_deo(const Uint8 port, const Uint8 value)
+emu_deo(Uint8 port, Uint8 value)
 {
 	dev[port] = value;
 	switch(port) {
@@ -24,15 +24,6 @@ emu_deo(const Uint8 port, const Uint8 value)
 	}
 }
 
-#define OPC(opc, A, B) {\
-	case 0x00|opc: {const Uint8 d=0,r=0;A B} break;\
-	case 0x20|opc: {const Uint8 d=1,r=0;A B} break;\
-	case 0x40|opc: {const Uint8 d=0,r=1;A B} break;\
-	case 0x60|opc: {const Uint8 d=1,r=1;A B} break;\
-	case 0x80|opc: {const Uint8 d=0,r=0,k=ptr[0];A ptr[0]=k;B} break;\
-	case 0xa0|opc: {const Uint8 d=1,r=0,k=ptr[0];A ptr[0]=k;B} break;\
-	case 0xc0|opc: {const Uint8 d=0,r=1,k=ptr[1];A ptr[1]=k;B} break;\
-	case 0xe0|opc: {const Uint8 d=1,r=1,k=ptr[1];A ptr[1]=k;B} break;}
 #define DEC(m) stk[m][--ptr[m]]
 #define INC(m) stk[m][ptr[m]++]
 #define IMM a = ram[pc++] << 8, a |= ram[pc++];
@@ -45,6 +36,15 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define DEI(i,v) v[0] = emu_dei(i); if(d) v[1] = emu_dei(i + 1); PUT(v,r)
 #define POK(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
 #define PEK(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUT(v,r)
+#define OPC(opc, A, B) {\
+	case 0x00|opc: {Uint8 d=0,r=0;A B} break;\
+	case 0x20|opc: {Uint8 d=1,r=0;A B} break;\
+	case 0x40|opc: {Uint8 d=0,r=1;A B} break;\
+	case 0x60|opc: {Uint8 d=1,r=1;A B} break;\
+	case 0x80|opc: {Uint8 d=0,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xa0|opc: {Uint8 d=1,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xc0|opc: {Uint8 d=0,r=1,k=ptr[1];A ptr[1]=k;B} break;\
+	case 0xe0|opc: {Uint8 d=1,r=1,k=ptr[1];A ptr[1]=k;B} break;}
 
 static unsigned int
 uxn_eval(Uint16 pc)
