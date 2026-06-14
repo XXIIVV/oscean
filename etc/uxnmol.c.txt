@@ -41,20 +41,18 @@ deo(Uint8 port, Uint8 val)
 }
 
 /*
-@|Primitives */
+@|Core */
 
 /* clang-format off */
 
 #define Get1(o) u.stk[r][(Uint8)(u.ptr[r] - (o))]
 #define Get2(o) (Get1(o) << 8 | Get1(o - 1))
-#define Getx(off8,off16) d ? Get2(off16) : Get1(off8)
+#define Getx(o1,o2) d ? Get2(o2) : Get1(o1)
 #define Put1(s,v) u.stk[s][u.ptr[s]++] = v
+#define Put2(s,v) { Put1(s, v >> 8); Put1(s, v); }
 #define Putx(s,v) { const int t = v; if(d) Put1(s, t >> 8); Put1(s, t); }
 
 /* clang-format on */
-
-/*
-@|Core */
 
 static unsigned int
 uxn_eval(Uint16 start_pc)
@@ -149,7 +147,7 @@ uxn_eval(Uint16 start_pc)
 			case 0x0e: {
 				const int x = Getx(1, 2);
 				if(!k) u.ptr[r] -= d + 1;
-				Put1(!r, pc >> 8), Put1(!r, pc);
+				Put2(!r, pc);
 				pc = d ? x : pc + (Sint8)x;
 			} break;
 			case 0x0f: {
@@ -206,14 +204,16 @@ uxn_eval(Uint16 start_pc)
 				const int x = Get1(1);
 				if(!k) u.ptr[r] -= 1;
 				Put1(r, dei(x));
-				if(d) Put1(r, dei(x + 1));
+				if(d) Put1(r, dev[(x + 1) & 0xff]);
 			} break;
 			case 0x17: {
 				const int x = Get1(1);
 				const int y = Getx(2, 3);
 				if(!k) u.ptr[r] -= d + 2;
-				if(d) deo(x, y >> 8);
-				deo(d ? x + 1 : x, y);
+				if(d)
+					dev[x] = y >> 8, deo(d ? x + 1 : x, y);
+				else
+					deo(d ? x + 1 : x, y);
 			} break;
 			case 0x18: {
 				const int x = Getx(1, 2);
@@ -280,7 +280,7 @@ uxn_eval(Uint16 start_pc)
 			case 0x60: {
 				const int a = ram[pc] << 8 | ram[pc + 1];
 				pc += 2;
-				Put1(1, (pc >> 8)), Put1(1, pc);
+				Put2(1, pc);
 				pc += a;
 			} break;
 			case 0x80: Put1(0, ram[pc++]); break;

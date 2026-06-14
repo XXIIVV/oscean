@@ -127,8 +127,8 @@ console_input(int c, unsigned int type)
 static void console_deo_vector(void) { console_vector = peek2(&dev[0x10]); }
 static void console_deo_stdout(void) { fputc(dev[0x18], stdout); }
 static void console_deo_stderr(void) { fputc(dev[0x19], stderr); }
-static void console_deo_hb(void) { fprintf(stderr, "%02x", dev[0x1a]); }
-static void console_deo_lb(void) { fprintf(stderr, "%02x", dev[0x1b]); }
+static void console_deo_debug1(void) { fprintf(stderr, "%02x", dev[0x1a]); }
+static void console_deo_debug2(void) { fprintf(stderr, "%02x%02x", dev[0x1a], dev[0x1b]); }
 
 /* clang-format on */
 
@@ -400,16 +400,22 @@ datetime_update(void)
 
 /* clang-format off */
 
-static Uint8 datetime_dei_yhb(void) { datetime_update(); return (datetime_t->tm_year + 1900) >> 8; }
-static Uint8 datetime_dei_ylb(void) { datetime_update(); return (datetime_t->tm_year + 1900); }
+static Uint8 datetime_dei_y(void) {
+	datetime_update();
+	const int v = (datetime_t->tm_year + 1900);
+	dev[0xc1] = v;
+	return v >> 8; }
 static Uint8 datetime_dei_mon(void) { datetime_update(); return datetime_t->tm_mon; }
 static Uint8 datetime_dei_day(void) { datetime_update(); return datetime_t->tm_mday; }
 static Uint8 datetime_dei_hou(void) { datetime_update(); return datetime_t->tm_hour; }
 static Uint8 datetime_dei_min(void) { datetime_update(); return datetime_t->tm_min; }
 static Uint8 datetime_dei_sec(void) { datetime_update(); return datetime_t->tm_sec; }
 static Uint8 datetime_dei_wday(void) { datetime_update(); return datetime_t->tm_wday; }
-static Uint8 datetime_dei_ydayhb(void) { datetime_update(); return datetime_t->tm_yday >> 8; }
-static Uint8 datetime_dei_ydaylb(void) { datetime_update(); return datetime_t->tm_yday; }
+static Uint8 datetime_dei_yday(void) {
+	datetime_update();
+	const int v = datetime_t->tm_yday;
+	dev[0xc9] = v;
+	return v >> 8; }
 static Uint8 datetime_dei_dst(void) { datetime_update(); return datetime_t->tm_isdst; }
 
 /* clang-format on */
@@ -420,16 +426,14 @@ static Uint8 datetime_dei_dst(void) { datetime_update(); return datetime_t->tm_i
 static const dei_handler dei_handlers[256] = {
 	[0x04] = system_dei_wst,
 	[0x05] = system_dei_rst,
-	[0xc0] = datetime_dei_yhb,
-	[0xc1] = datetime_dei_ylb,
+	[0xc0] = datetime_dei_y,
 	[0xc2] = datetime_dei_mon,
 	[0xc3] = datetime_dei_day,
 	[0xc4] = datetime_dei_hou,
 	[0xc5] = datetime_dei_min,
 	[0xc6] = datetime_dei_sec,
 	[0xc7] = datetime_dei_wday,
-	[0xc8] = datetime_dei_ydayhb,
-	[0xc9] = datetime_dei_ydaylb,
+	[0xc8] = datetime_dei_yday,
 	[0xca] = datetime_dei_dst,
 };
 
@@ -441,8 +445,8 @@ static const deo_handler deo_handlers[256] = {
 	[0x11] = console_deo_vector,
 	[0x18] = console_deo_stdout,
 	[0x19] = console_deo_stderr,
-	[0x1a] = console_deo_hb,
-	[0x1b] = console_deo_lb,
+	[0x1a] = console_deo_debug1,
+	[0x1b] = console_deo_debug2,
 	[0xa5] = filea_deo_stat,
 	[0xa6] = filea_deo_delete,
 	[0xa9] = filea_deo_name,
@@ -486,8 +490,8 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define Pux(s,v)    if(d) Pu1(s,(v)>>8) Pu1(s,v)
 #define Lda(s,o)    Pu1(r,ram[o]) if(d) Pu1(r,ram[(s)(o+1)])
 #define Sta(s,o,u)  if(d) ram[o]=u>>8, ram[(s)(o+1)]=u; else ram[o]=u;
-#define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,emu_dei(x+1))
-#define Deo         if(d) emu_deo(x,y>>8), emu_deo(x+1,y); else emu_deo(x,y);
+#define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,dev[(x+1)&0xff])
+#define Deo         if(d) dev[x&0xff]=y>>8, emu_deo(x+1,y); else emu_deo(x,y);
 
 #define MUTE (void)x;(void)y;(void)z;(void)r;(void)d;
 
@@ -557,7 +561,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(80K), 13 Jun 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara Emulator(80K), 14 Jun 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

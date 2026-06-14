@@ -338,8 +338,8 @@ static Uint8 console_dei_childexit(void) { check_child(); return dev[CMD_EXIT]; 
 static void console_deo_vector(void) { console_vector = peek2(&dev[0x10]); }
 static void console_deo_stdout(void) { fputc(dev[0x18], stdout), fflush(stdout); }
 static void console_deo_stderr(void) { fputc(dev[0x19], stderr), fflush(stderr); }
-static void console_deo_hb(void) { fprintf(stderr, "%02x", dev[0x1a]); }
-static void console_deo_lb(void) { fprintf(stderr, "%02x", dev[0x1b]); }
+static void console_deo_debug1(void) { fprintf(stderr, "%02x", dev[0x1a]); }
+static void console_deo_debug2(void) { fprintf(stderr, "%02x%02x", dev[0x1a], dev[0x1b]); }
 
 /* clang-format on */
 
@@ -532,12 +532,9 @@ screen_deo_sprite(void)
 
 /* clang-format off */
 
-static Uint8 screen_dei_rxhb(void) { return rX >> 8; }
-static Uint8 screen_dei_rxlb(void) { return rX; }
-static Uint8 screen_dei_ryhb(void) { return rY >> 8; }
-static Uint8 screen_dei_rylb(void) { return rY; }
-static Uint8 screen_dei_rahb(void) { return rA >> 8; }
-static Uint8 screen_dei_ralb(void) { return rA; }
+static Uint8 screen_dei_rx(void) { dev[0x29] = rX; return rX >> 8; }
+static Uint8 screen_dei_ry(void) { dev[0x2b] = rY; return rY >> 8; }
+static Uint8 screen_dei_ra(void) { dev[0x2d] = rA; return rA >> 8; }
 static void screen_deo_vector(void) { screen_vector = peek2(&dev[0x20]); }
 static void screen_deo_width(void) { screen_resize(peek2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
 static void screen_deo_height(void) { screen_resize(screen_width & 0xfff, peek2(&dev[0x24]) & 0xfff); }
@@ -901,16 +898,22 @@ datetime_update(void)
 
 /* clang-format off */
 
-static Uint8 datetime_dei_yhb(void) { datetime_update(); return (datetime_t->tm_year + 1900) >> 8; }
-static Uint8 datetime_dei_ylb(void) { datetime_update(); return (datetime_t->tm_year + 1900); }
+static Uint8 datetime_dei_y(void) {
+	datetime_update();
+	const int v = (datetime_t->tm_year + 1900);
+	dev[0xc1] = v;
+	return v >> 8; }
 static Uint8 datetime_dei_mon(void) { datetime_update(); return datetime_t->tm_mon; }
 static Uint8 datetime_dei_day(void) { datetime_update(); return datetime_t->tm_mday; }
 static Uint8 datetime_dei_hou(void) { datetime_update(); return datetime_t->tm_hour; }
 static Uint8 datetime_dei_min(void) { datetime_update(); return datetime_t->tm_min; }
 static Uint8 datetime_dei_sec(void) { datetime_update(); return datetime_t->tm_sec; }
 static Uint8 datetime_dei_wday(void) { datetime_update(); return datetime_t->tm_wday; }
-static Uint8 datetime_dei_ydayhb(void) { datetime_update(); return datetime_t->tm_yday >> 8; }
-static Uint8 datetime_dei_ydaylb(void) { datetime_update(); return datetime_t->tm_yday; }
+static Uint8 datetime_dei_yday(void) {
+	datetime_update();
+	const int v = datetime_t->tm_yday;
+	dev[0xc9] = v;
+	return v >> 8; }
 static Uint8 datetime_dei_dst(void) { datetime_update(); return datetime_t->tm_isdst; }
 
 /* clang-format on */
@@ -923,22 +926,17 @@ static const dei_handler dei_handlers[256] = {
 	[0x05] = system_dei_rst,
 	[0x15] = console_dei_childlive,
 	[0x16] = console_dei_childexit,
-	[0x28] = screen_dei_rxhb,
-	[0x29] = screen_dei_rxlb,
-	[0x2a] = screen_dei_ryhb,
-	[0x2b] = screen_dei_rylb,
-	[0x2c] = screen_dei_rahb,
-	[0x2d] = screen_dei_ralb,
-	[0xc0] = datetime_dei_yhb,
-	[0xc1] = datetime_dei_ylb,
+	[0x28] = screen_dei_rx,
+	[0x2a] = screen_dei_ry,
+	[0x2c] = screen_dei_ra,
+	[0xc0] = datetime_dei_y,
 	[0xc2] = datetime_dei_mon,
 	[0xc3] = datetime_dei_day,
 	[0xc4] = datetime_dei_hou,
 	[0xc5] = datetime_dei_min,
 	[0xc6] = datetime_dei_sec,
 	[0xc7] = datetime_dei_wday,
-	[0xc8] = datetime_dei_ydayhb,
-	[0xc9] = datetime_dei_ydaylb,
+	[0xc8] = datetime_dei_yday,
 	[0xca] = datetime_dei_dst,
 };
 
@@ -946,28 +944,22 @@ static const deo_handler deo_handlers[256] = {
 	[0x03] = system_deo_expansion,
 	[0x04] = system_deo_wst,
 	[0x05] = system_deo_rst,
-	[0x08] = system_deo_colorize,
 	[0x09] = system_deo_colorize,
-	[0x0a] = system_deo_colorize,
 	[0x0b] = system_deo_colorize,
-	[0x0c] = system_deo_colorize,
 	[0x0d] = system_deo_colorize,
 	[0x0e] = system_deo_print,
 	[0x11] = console_deo_vector,
 	[0x18] = console_deo_stdout,
 	[0x19] = console_deo_stderr,
-	[0x1a] = console_deo_hb,
-	[0x1b] = console_deo_lb,
+	[0x1a] = console_deo_debug1,
+	[0x1b] = console_deo_debug2,
 	[0x1f] = console_deo_fork,
 	[0x21] = screen_deo_vector,
 	[0x23] = screen_deo_width,
 	[0x25] = screen_deo_height,
 	[0x26] = screen_deo_auto,
-	[0x28] = screen_deo_x,
 	[0x29] = screen_deo_x,
-	[0x2a] = screen_deo_y,
 	[0x2b] = screen_deo_y,
-	[0x2c] = screen_deo_addr,
 	[0x2d] = screen_deo_addr,
 	[0x2e] = screen_deo_pixel,
 	[0x2f] = screen_deo_sprite,
@@ -1013,8 +1005,8 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define Pux(s,v)    if(d) Pu1(s,(v)>>8) Pu1(s,v)
 #define Lda(s,o)    Pu1(r,ram[o]) if(d) Pu1(r,ram[(s)(o+1)])
 #define Sta(s,o,u)  if(d) ram[o]=u>>8, ram[(s)(o+1)]=u; else ram[o]=u;
-#define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,emu_dei(x+1))
-#define Deo         if(d) emu_deo(x,y>>8), emu_deo(x+1,y); else emu_deo(x,y);
+#define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,dev[(x+1)&0xff])
+#define Deo         if(d) dev[x]=y>>8, emu_deo(x+1,y); else emu_deo(x,y);
 
 #define MUTE (void)x;(void)y;(void)z;(void)r;(void)d;
 
@@ -1333,7 +1325,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(80K), 13 Jun 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(80K), 14 Jun 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
