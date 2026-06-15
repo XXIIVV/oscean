@@ -30,7 +30,7 @@
 	[ LIT2 -&cap -&name ]
 	&>l
 		#00 OVR STZ
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 JMP2r
 
 @term/<set-name> ( name* -- )
@@ -39,7 +39,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		[ LIT2 00 &name-ptr -&name ] INCk ,&name-ptr STR
 		STZ2
-		INC2 !&>wn
+		INC2 !/>wn
 
 @term/<set-parent> ( name* -- )
 	[ LIT2 -&parent _&parent-ptr ] STR
@@ -47,7 +47,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		[ LIT2 00 &parent-ptr -&parent ] INCk ,&parent-ptr STR
 		STZ2
-		INC2 !&>wp
+		INC2 !/>wp
 
 @term/<set-diary> ( diary* -- )
 	INC2k ORA ?{ POP2 JMP2r }
@@ -56,7 +56,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		[ LIT2 00 &diary-ptr -&diary ] INCk ,&diary-ptr STR
 		STZ2
-		INC2 !&>wd
+		INC2 !/>wd
 
 (
 @|Html )
@@ -225,14 +225,14 @@
 	;&buf
 	&>wf
 		log/has-no-picture ?{ JMP2r }
-		str/cap LDAk ?&>wf
+		str/cap LDAk ?/>wf
 	POP2 #ffff JMP2r
 
 @diary/count ( -- count )
 	[ LITr 00 ] ;&buf
 	&>wc
 		log/has-no-picture ?{ INCr }
-		str/cap LDAk ?&>wc
+		str/cap LDAk ?/>wc
 	POP2 STHr JMP2r
 
 (
@@ -258,8 +258,8 @@
 			log/is-valid ?{
 				DUP2 #000a ADD2 ;warnings/unknown warning/<print> }
 			journal/<write-log>
-			str/cap str/cap str/cap GTH2k ?&>l-logs
-		POP2 POP2 DUP ?&>l-pages
+			str/cap str/cap str/cap GTH2k ?/>l-logs
+		POP2 POP2 DUP ?/>l-pages
 	POP ;tag/p html/<close>
 	JMP2r
 
@@ -283,7 +283,7 @@
 	#0001
 	&>w
 		DUP2 /get ?{ JMP2r }
-		INC2 !&>w
+		INC2 !/>w
 
 @diaries/<print-available> ( -- )
 	;dict/available-txt str/<print>
@@ -304,7 +304,7 @@
 @lexicon/<build> ( -- )
 	;&buf
 	&>wb
-		INC2 INC2 page/build str/cap LDAk ?&>wb
+		INC2 INC2 page/build str/cap LDAk ?/>wb
 	POP2 JMP2r
 
 @lexicon/find ( name* -- term* )
@@ -312,7 +312,7 @@
 	;&buf
 	&>w
 		INC2 INC2 DUP2 [ LIT2 &t $2 ] str/cmp ?{
-			str/cap LDAk ?&>w
+			str/cap LDAk ?/>w
 		POP2 #ffff }
 	JMP2r
 
@@ -329,9 +329,9 @@
 				LDA2k [ LIT2 "hr ] NEQ2 ?{
 					INC2k INC2 LDA2 [ LIT2 "ef ] NEQ2 ?{
 						[ LIT2 &src $2 ] OVR2 #0006 ADD2 link/<parse> } }
-				INC2 GTH2k ?&>ll
+				INC2 GTH2k ?/>ll
 			POP2 POP2 }
-		str/cap GTH2k ?&>lp
+		str/cap GTH2k ?/>lp
 	POP2 POP2 JMP2r
 
 @lexicon/<write-children-rec> ( addr* -- next* )
@@ -358,7 +358,7 @@
 	&>lf
 		#0001 SUB2 str/head INC2k LDA chr/hex [ LIT &depth $1 ] NEQ ?{
 			NIP2 INC2 INC2 INC2 JMP2r }
-		LTH2k ?&>lf
+		LTH2k ?/>lf
 	#0002 JMP2r
 
 (
@@ -472,12 +472,12 @@
 	;tag/ul html/<open>
 	stash-depth
 	&>w
-		stop-at-siblings ?&end
+		stop-at-siblings ?/end
 		when-depth+1 ?{
 			;tag/li html/<open>
 			INC2k INC2 html/<local>
 			;tag/li html/<close> }
-		INC2 INC2 str/cap LDAk ?&>w
+		INC2 INC2 str/cap LDAk ?/>w
 	&end ( name* . depth -- )
 	POP2 POPr ;tag/ul html/<close>
 	JMP2r
@@ -494,7 +494,7 @@
 			;dict/mdash-entity-txt html/<str>
 			( name ) DUP2 #000a ADD2 str/walk html/<str>
 			;tag/li html/<close> }
-		str/cap LDAk ?&>wbe
+		str/cap LDAk ?/>wbe
 	POP2 ;tag/ul html/<close>
 	JMP2r
 
@@ -508,7 +508,7 @@
 			DUP2 html/<local>
 			;ascii/space .File2/write DEO2
 			POP2r STH2k }
-		str/cap LDAk ?&>wbi
+		str/cap LDAk ?/>wbi
 	POP2 POP2r ;tag/p html/<close>
 	JMP2r
 	&null ffff
@@ -523,7 +523,7 @@
 		( ) DUP2 .File2/length DEO2
 		( ) #0000 EQU2 ?{
 			DUP2 .File2/write DEO2
-			INCr !&>s }
+			INCr !/>s }
 	POP2 STHr ?{ DUP2 ;warnings/source error/<print> }
 	POP2
 	( restore ) #0001 .File2/length DEO2
@@ -543,19 +543,19 @@
 	&>wbd
 		log/has-no-picture ?{
 			DUP2 #0006 ADD2 ;term/pict str/cmp3 ?{ DUP2 #01 html/<photo> } }
-		str/cap LDAk ?&>wbd
+		str/cap LDAk ?/>wbd
 	POP2 JMP2r
 
 @portal-module/<build> ( name* -- name* )
 	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
-		stop-at-siblings ?&end1
+		stop-at-siblings ?/end1
 		when-depth+1 ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
-		INC2 INC2 str/cap LDAk ?&>w
+		INC2 INC2 str/cap LDAk ?/>w
 	&end1 ( name* . depth -- )
 	POP2 POPr
 	( restore diary ) DUP2 !diary/<load>
@@ -564,9 +564,9 @@
 	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
-		stop-at-siblings ?&end2
+		stop-at-siblings ?/end2
 		when-depth+1 ?{ INC2 INC2 DUP2 <build-include> }
-		INC2 INC2 str/cap LDAk ?&>w
+		INC2 INC2 str/cap LDAk ?/>w
 	&end2 ( name* . depth -- )
 	POP2 POPr JMP2r
 
@@ -574,13 +574,13 @@
 	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
-		stop-at-siblings ?&end3
+		stop-at-siblings ?/end3
 		when-depth+1 ?{
 			INC2k INC2 diary/<load>
 			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
 			POP2 }
 		when-depth+1 ?{ INC2 INC2 DUP2 <build-include> }
-		INC2 INC2 str/cap LDAk ?&>w
+		INC2 INC2 str/cap LDAk ?/>w
 	&end3 ( name* . depth -- )
 	POP2 POPr JMP2r
 
@@ -673,7 +673,7 @@
 		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
-		INC2 !&>w
+		INC2 !/>w
 	&buf $30
 
 @path/make ( name* -- buf* )
@@ -686,7 +686,7 @@
 		DUP #20 NEQ ?{ POP LIT "_ }
 		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 		STZ2
-		INC2 !&>w
+		INC2 !/>w
 
 @path/length ( -- length* )
 	[ LIT2 00 _&ptr ] LDR .&buf SUB JMP2r
@@ -701,7 +701,7 @@
 		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
-		INC2 !&>w
+		INC2 !/>w
 
 	&res [ "site/ &buf $30 ]
 
@@ -715,7 +715,7 @@
 		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA2
-		INC2 !&>w
+		INC2 !/>w
 
 	&res [ "src/htm/ &buf $30 ]
 
@@ -727,7 +727,7 @@
 		DUP #20 NEQ ?{ POP LIT "_ }
 		#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
 		STA2
-		INC2 !&>w
+		INC2 !/>w
 
 	&res [ "tmp/log- &resbuf $30 ]
 
@@ -735,10 +735,10 @@
 	;&resbuf ,&ptr STR2
 	&>w
 		LDAk DUP #1f GTH ?{ &end POP JMP2r }
-		DUP [ LIT ". ] EQU ?&end
+		DUP [ LIT ". ] EQU ?/end
 		DUP [ LIT "_ ] NEQ ?{ POP #20 }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @path-tmp-map/set-path2 ( name* -- buf* )
 	;&resbuf ,&ptr STR2
@@ -747,7 +747,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP #20 NEQ ?{ POP LIT "_ }
 		/<push>
-		INC2 !&>w2
+		INC2 !/>w2
 
 @path-tmp-map/<push> ( c -- )
 	#00 [ LIT2 &ptr =&resbuf ] INC2k ,&ptr STR2
@@ -788,33 +788,33 @@
 	[ LIT2r 0000 ]
 	&>w
 		LIT2r 000a MUL2r [ LITr 00 ] LDAk #30 SUB STH
-		ADD2r INC2 LDAk ?&>w
+		ADD2r INC2 LDAk ?/>w
 	POP2 STH2r JMP2r
 
 @str/head ( addr* -- addr* )
 	&>wh
 		LDAk ?{ JMP2r }
-		#0001 SUB2 !&>wh
+		#0001 SUB2 !/>wh
 
 @str/next ( str* -- next* )
 	&>wn
-		LDAk #20 LTH ?{ INC2 !&>wn }
+		LDAk #20 LTH ?{ INC2 !/>wn }
 	INC2 JMP2r
 
 @str/walk ( str* -- next* )
 	&>ww
-		INC2 LDAk #1f GTH ?&>ww
+		INC2 LDAk #1f GTH ?/>ww
 	INC2 JMP2r
 
 @str/cap ( str* -- end* )
 	&>wc
 		LDAk ?{ INC2 JMP2r }
-		INC2 !&>wc
+		INC2 !/>wc
 
 @str/tail ( str* -- end* )
 	&>w2
 		LDAk ?{ JMP2r }
-		INC2 !&>w2
+		INC2 !/>w2
 
 @str/cmp ( a* b* -- bool )
 	DUP2k /cap SWP2 SUB2 SWP2 !mem/cmp
@@ -830,7 +830,7 @@
 	&>wsc
 		LDAk [ LIT &a $1 ] NEQ ?{
 			STH2k [ LIT &b $1 ] STH2r STA }
-		INC2 LDAk ?&>wsc
+		INC2 LDAk ?/>wsc
 	POP2 JMP2r
 
 @str/<print-ln> ( str* -- )
@@ -842,17 +842,17 @@
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
-		INC2 !&>wp
+		INC2 !/>wp
 
 @dec/<print> ( dec* -- )
 	#000a SWP2 [ LITr ff ]
 	&>get
 		SWP2k DIV2k MUL2 SUB2 STH
-		POP OVR2 DIV2 ORAk ?&>get
+		POP OVR2 DIV2 ORAk ?/>get
 	POP2 POP2
 	&>put
 		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
+		[ LIT "0 ] ADD #18 DEO !/>put
 
 @chr/hex ( c -- <val> )
 	( dec ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
@@ -864,7 +864,7 @@
 	OVR2 ADD2 SWP2
 	&>l
 		EQU2k ?{
-			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !/>l } }
 	POP2r EQU2 JMP2r
 
 @mem/<clr> ( dst* len* -- )
