@@ -80,7 +80,7 @@
 	[ LIT2 -logs/to -logs/from ]
 	&>l
 		DUP /<parse-year>
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 JMP2r
 
 @now/<parse-year> ( arv-year -- )
@@ -95,7 +95,7 @@
 	&>lp
 		#01 SUB DUP src-log-path/<set-month>
 		STHkr OVR ;src-log-path/buf /<parse-month>
-		DUP ?&>lp
+		DUP ?/>lp
 	POP POPr JMP2r
 
 @now/<parse-head> ( year path* -- )
@@ -148,7 +148,7 @@
 	[ LIT2 -logs/from -logs/to ]
 	&>l
 		DUP /<parse-year>
-		#01 SUB NEQk ?&>l
+		#01 SUB NEQk ?/>l
 	POP /<parse-year>
 	;tag/channel html/<close>
 	;tag/rss html/<close>
@@ -160,7 +160,7 @@
 	&>lp
 		#01 SUB DUP src-log-path/<set-month>
 		STHkr OVR ;src-log-path/buf /<parse-month>
-		DUP ?&>lp
+		DUP ?/>lp
 	POP POPr JMP2r
 
 @rss/<parse-month> ( year month path* -- )
@@ -305,10 +305,10 @@
 	STH2
 	#0c00
 	&>l2
-		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
-		STH2k SUB2r !&continue2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?/skip2
+		STH2k SUB2r !/continue2
 		&skip2 POP2 !{
-		&continue2 POP2 INC GTHk ?&>l2 }
+		&continue2 POP2 INC GTHk ?/>l2 }
 	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
 
 @dotw/make ( dotw -- )
@@ -334,12 +334,12 @@
 @dec/<emit> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP #30 ADD ,&b STR
 		;&b .File2/write DEO2
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 	&b $1
 
@@ -358,13 +358,13 @@
 
 @str/next ( str* -- next* )
 	&>wn
-		LDAk #20 LTH ?{ INC2 !&>wn }
+		LDAk #20 LTH ?{ INC2 !/>wn }
 	INC2 JMP2r
 
 @str/tail ( str* -- end* )
 	&>w2
 		LDAk ?{ JMP2r }
-		INC2 !&>w2
+		INC2 !/>w2
 
 @u16/chr4 ( short* -- a b c d )
 	( a ) DUP2 #03e8 DIV2 u8/dec [ STH POP ]

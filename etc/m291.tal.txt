@@ -16,16 +16,15 @@
 
 |000
 
-	@selection $1 &track $1 &scroll $1
+	@selection/id $1 &track $1 &scroll $1
 	@lines/folders-tracks &folders $1 &tracks $1
-	@playing $1
-	@paused $1
-	@prefix/folders $1 &tracks $1
+	@controls/repeat $1 &shuffle $1 &volume $1 &playing $1 &paused $1
+	@folders/prefix $1
+	@tracks/prefix $1
 	@secfrom $2
 	@secto $2
 	@secprog $2
 	@frames/a $2 &b $2
-	@controls/repeat $1 &shuffle $1 &volume $1
 	@path/buf $2 &null $80
 
 |100
@@ -38,7 +37,7 @@
 	;dict/mpg-cmd .Console/addr DEO2
 	[ LIT2 03 -Console/mode ] DEO
 	[ LIT2 01 -Console/exec ] DEO
-	[ LIT2 00 -playing ] STZ
+	[ LIT2 00 -controls/playing ] STZ
 	;dict/home-path path/<set>
 	dir/<refresh>
 	prng/<init>
@@ -53,7 +52,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "13 20 "Jun 20 "2026 00
+	( date ) "15 20 "Jun 20 "2026 00
 	( . ) 01
 	( - ) 83 =appicon
 
@@ -75,13 +74,13 @@
 %lines/count ( -- lines ) {
 	.lines/folders-tracks LDZ2 ADD }
 
-%is-folder ( line* -- line* f ) {
+%line/is-folder ( line* -- line* f ) {
 	DUP2 str/next-line #0001 SUB2 LDA [ LIT "/ ] EQU }
 
-%is-mp3 ( line* -- line*f ) {
+%line/is-mp3 ( line* -- line* f ) {
 	DUP2 str/next-line #0003 SUB2 ;dict/mp3-ext str/cmp3 }
 
-@is-mp3-ext ( str* -- str* t )
+@line/is-mp3-ext ( str* -- str* t )
 	LDA2k [ LIT2 ".m ] EQU2 ?{ #00 JMP2r }
 	INC2k INC2 LDA2 [ LIT2 "p3 ] EQU2 JMP2r
 
@@ -100,26 +99,26 @@
 	BRK
 
 @on-mouse-body ( -> )
-	.Mouse/scrolly-lb DEI DUP ?&scroll
+	.Mouse/scrolly-lb DEI DUP ?/scroll
 	POP
 	( | cursor )
 	cursor/<update>
 	( | route events )
 	.Mouse/y DEI2
 	( within window ) DUP2 #8000 LTH2 ?{ POP2 BRK }
-	( > ) [ LIT2 00 -playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?&player }
+	( > ) [ LIT2 00 -controls/playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?/player }
 	( | on list )
-	<y-id>
-	.Mouse/state DEI ?{ <select>
+	player/<y-id>
+	.Mouse/state DEI ?{ selection/<select>
 		BRK }
-	<pick>
+	selection/<pick>
 	;on-mouse-locked .Mouse/vector DEO2
 	BRK
 
 	&player ( y* -> )
 	.Mouse/state DEI ?{ POP2 BRK }
-	#0050 SUB2 DUP2 #0020 LTH2 ?&controls
-	#0030 SUB2 #0010 LTH2 ?&seeker
+	#0050 SUB2 DUP2 #0020 LTH2 ?/controls
+	#0030 SUB2 #0010 LTH2 ?/seeker
 	BRK
 
 	&controls ( y* -> )
@@ -128,9 +127,9 @@
 	DUP2 #0024 GTH2 ?{ POP2 BRK }
 	DUP2 #003c GTH2 ?{ controls/<toggle-repeat> !/lock }
 	DUP2 #0050 GTH2 ?{ controls/<decr-volume> !/lock }
-	DUP2 #0070 GTH2 ?{ <skip-prev> !/lock }
-	DUP2 #0090 GTH2 ?{ <send-pause> !/lock }
-	DUP2 #00ac GTH2 ?{ <skip-next> !/lock }
+	DUP2 #0070 GTH2 ?{ selection/<skip-prev> !/lock }
+	DUP2 #0090 GTH2 ?{ selection/<send-pause> !/lock }
+	DUP2 #00ac GTH2 ?{ selection/<skip-next> !/lock }
 	DUP2 #00c4 GTH2 ?{ controls/<incr-volume> !/lock }
 	DUP2 #00d8 GTH2 ?{ controls/<toggle-shuffle> }
 	( >> )
@@ -139,7 +138,7 @@
 	POP2 BRK
 
 	&seeker ( -> )
-	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 <seek>
+	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 selection/<seek>
 		DUP2 progress/<force> }
 	POP2 BRK
 
@@ -148,24 +147,24 @@
 	lines/count #18 SUB
 	( needs scroll ) DUP #80 LTH ?{ POP2 BRK }
 	( max scroll ) u8/min .selection/scroll STZ
-	<redraw-dir>
+	dir/<redraw>
 	BRK
 
 @on-control ( -> )
 	( | key )
 	.Controller/key DEI
-	( esc ) DUP #1b NEQ ?{ <escape> }
-	( bsp ) DUP #08 NEQ ?{ <escape> }
-	( brk ) DUP #0d NEQ ?{ .selection LDZ <pick> }
-	( spc ) DUP #20 NEQ ?{ <send-pause> }
+	( esc ) DUP #1b NEQ ?{ selection/<escape> }
+	( bsp ) DUP #08 NEQ ?{ selection/<escape> }
+	( brk ) DUP #0d NEQ ?{ .selection/id LDZ selection/<pick> }
+	( spc ) DUP #20 NEQ ?{ selection/<send-pause> }
 	DUP #20 SUB #5f GTH ?{ DUP <find-any> }
 	POP
 	( | button )
 	.Controller/button DEI
-	( u ) DUP #10 NEQ ?{ #ff <move> }
-	( d ) DUP #20 NEQ ?{ #01 <move> }
-	( l ) DUP #40 NEQ ?{ <seek-prev> }
-	( r ) DUP #80 NEQ ?{ <seek-next> }
+	( u ) DUP #10 NEQ ?{ #ff selection/<move> }
+	( d ) DUP #20 NEQ ?{ #01 selection/<move> }
+	( l ) DUP #40 NEQ ?{ selection/<seek-prev> }
+	( r ) DUP #80 NEQ ?{ selection/<seek-next> }
 	POP BRK
 
 (
@@ -199,128 +198,207 @@
 	JMP2r
 
 (
-@|controls )
+@|Selection )
 
-@<skip-prev> ( -- )
+@selection/<skip-prev> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
-	.selection/track LDZ #01 SUB INCk ?{
+	.&track LDZ #01 SUB INCk ?{
 		POP .lines/tracks LDZ #01 SUB }
-	!<pick>/tracks
+	!/<pick-track>
 
-@<skip-next> ( -- )
+@selection/<skip-next> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
 	( | repeat )
-	[ LIT2 01 -controls/repeat ] LDZ NEQ ?{ .selection/track LDZ !<pick>/tracks }
+	[ LIT2 01 -controls/repeat ] LDZ NEQ ?{ .&track LDZ !/<pick-track> }
 	( | shuffle )
 	[ LIT2 01 -controls/shuffle ] LDZ NEQ ?{
 		prng/<new>
-		ADD .lines/tracks LDZ u8/mod !<pick>/tracks }
-	.selection/track LDZ INC .lines/tracks LDZ u8/mod !<pick>/tracks
+		ADD .lines/tracks LDZ u8/mod !/<pick-track> }
+	.&track LDZ INC .lines/tracks LDZ u8/mod !/<pick-track>
 
-@<seek-prev> ( -- )
-	.secfrom LDZ2 #000a LTH2 ?<skip-prev>
+@selection/<seek-prev> ( -- )
+	.secfrom LDZ2 #000a LTH2 ?/<skip-prev>
 	;dict/jump-cmd str/<print>
 	.secprog LDZ2 pos-to-seconds #000a SUB2 dec/<print>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
 
-@<seek-next> ( -- )
-	.secto LDZ2 #000a LTH2 ?<skip-next>
+@selection/<seek-next> ( -- )
+	.secto LDZ2 #000a LTH2 ?/<skip-next>
 	;dict/jump-cmd str/<print>
 	.secprog LDZ2 pos-to-seconds #000a ADD2 dec/<print>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
 
-@<seek> ( x* -- )
+@selection/<seek> ( x* -- )
 	;dict/jump-cmd str/<print>
 	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 dec/<print>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
 
-@<send-load> ( file* -- )
+@selection/<send-load> ( file* -- )
 	;dict/load-cmd str/<print>
 	;path/buf str/<print>
 	DUP2 str/<print>
 	#0a18 DEO
-	<tags-autofill>
-	[ LIT2 01 -playing ] STZ !<fit-window>
+	id3/<autofill>
+	[ LIT2 01 -controls/playing ] STZ !window/<fit>
 
-@<send-pause> ( -- )
-	.playing LDZ ?{ JMP2r }
-	[ LIT2 02 -paused ] LDZ ORA .paused STZ
+@selection/<send-pause> ( -- )
+	.controls/playing LDZ ?{ JMP2r }
+	[ LIT2 02 -controls/paused ] LDZ ORA .controls/paused STZ
 	;dict/pause-cmd str/<print> !controls/<draw-play>
 
-@<send-volume> ( vol -- )
+@selection/<send-volume> ( vol -- )
 	;dict/volume str/<print>
 	#00 SWP #14 MUL dec/<print>
 	#0a18 DEO
 	JMP2r
 
-@<move> ( mod -- )
-	.selection LDZ ADD
+@selection/<move> ( mod -- )
+	.&id LDZ ADD
 	( top ) INCk ?{ POP JMP2r }
 	( bottom ) DUP lines/count NEQ ?{ POP JMP2r }
 	( >> )
 
-@<select> ( id -- )
+@selection/<select> ( id -- )
 	( | follow )
-	DUP .selection/scroll LDZ SUB
+	DUP .&scroll LDZ SUB
 	( top ) DUP #80 AND #00 EQU ?{
-		DUP .selection/scroll LDZ ADD .selection/scroll STZ !&resume }
+		DUP .&scroll LDZ ADD .&scroll STZ !/resume }
 	( bottom ) DUP #18 LTH ?{
-		DUP .selection/scroll LDZ ADD #17 SUB .selection/scroll STZ }
+		DUP .&scroll LDZ ADD #17 SUB .&scroll STZ }
 	&resume ( id scroll -- )
 	POP
 	( | continue )
 	[ LIT &last ff ] NEQk ?{ POP2 JMP2r }
 	POP DUP ,&last STR
-	.selection STZ !<redraw-dir>
+	.&id STZ !dir/<redraw>
 
-@<pick> ( alt id -- )
-	DUP .lines/folders LDZ LTH ?&folder
-	.lines/folders LDZ SUB DUP .lines/tracks LDZ LTH ?&tracks
+@selection/<pick> ( alt id -- )
+	DUP .lines/folders LDZ LTH ?/<pick-folder>
+	.lines/folders LDZ SUB DUP .lines/tracks LDZ LTH ?/<pick-track>
 	POP JMP2r
 
-	&tracks ( id -- )
-	DUP .selection/track STZ
+@selection/<pick-track> ( id -- )
+	DUP .&track STZ
 	#00 SWP
-	( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 !<send-load>
+	( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 !/<send-load>
 
-	&folder ( id -- )
+@selection/<pick-folder> ( id -- )
 	#00 SWP
 	( CELLSIZE ) #70 SFT2 ;folders/buf ADD2
-	( > ) [ LIT2 00 -selection/scroll ] STZ
-	( > ) [ LIT2 00 -selection ] STZ
-	#ff ;<select>/last STA
+	( > ) [ LIT2 00 -&scroll ] STZ
+	( > ) [ LIT2 00 -&id ] STZ
+	#ff ;&last STA
 	path/<push-str> !dir/<refresh>
 
-@<escape> ( -- )
+@selection/<escape> ( -- )
 	;path/null LDA ?{ JMP2r }
-	[ LIT2 00 -selection/scroll ] STZ
-	[ LIT2 00 -selection ] STZ
-	#ff ;<select>/last STA
+	[ LIT2 00 -&scroll ] STZ
+	[ LIT2 00 -&id ] STZ
+	#ff ;&last STA
 	path/pop !dir/<refresh>
 
-@<find-any> ( letter -- )
-	( case insensitive ) chr/lc STH
-	( | folders )
-	.lines/folders LDZ #00
-	&>folders
-		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;folders/buf ADD2 LDA chr/lc STHkr NEQ ?{ POPr NIP !<select> }
-		INC GTHk ?&>folders
-	POP2
-	( | tracks )
-	.lines/tracks LDZ #00
-	&>tracks
-		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 LDA chr/lc STHkr NEQ ?{
-			POPr NIP .lines/folders LDZ ADD !<select> }
-		INC GTHk ?&>tracks
-	POP2 POPr JMP2r
+(
+@|Player )
+
+@player/<redraw> ( -- )
+	.controls/playing LDZ ?{ JMP2r }
+	#ffff ;chicago/last STA2
+	#ffff ;progress/last STA2
+	id3/<draw-title>
+	id3/<draw-artist>
+	id3/<draw-album>
+	controls/<draw-repeat>
+	controls/<draw-prev>
+	controls/<draw-volume>
+	controls/<draw-play>
+	controls/<draw-next>
+	controls/<draw-shuffle>
+	progress/<draw> !chicago/<draw-timestamp>
+
+@player/<y-id> ( y* -- id )
+	[ LIT2 00 -controls/playing ] LDZ EQU ?{ #0080 SUB2 }
+	#001c SUB2 #04 SFT2 NIP #17 u8/min .selection/scroll LDZ ADD JMP2r
+
+@id3/<autofill> ( file* -- )
+	;dict/no-album /<set-album>
+	( | find spacer )
+	DUP2 find-spacer INC2 ORA ?{ /<set-title>
+		;dict/no-artist !/<set-artist> }
+	( | copy artist )
+	/set-artist INC2 INC2 INC2 !/<set-title>
+
+@id3/<draw-title> ( -- )
+	;&title #001a !/<draw-label>
+
+@id3/<draw-artist> ( -- )
+	;&artist #002a !/<draw-label>
+
+@id3/<draw-album> ( -- )
+	;&album #003a
+	( >> )
+
+@id3/<draw-label> ( str* y* -- )
+	.Screen/y DEO2k line/<clear>
+	DEO2
+	( | str* )
+	#0000 ;<draw-title-scroll>/f STA2
+	DUP2 chicago/get-str-width ;WIDTH LTH2 ?{
+		#0008 .Screen/x DEO2
+		#01 !chicago/<draw-left-color> }
+	( | center )
+	#0080 .Screen/x DEO2
+	#01 !chicago/<draw-center-color>
+
+@id3/<handle> ( buf* char -- )
+	POP [ LIT ". ] find-next INC2 LDA2k
+	( | parse lines )
+	DUP2 [ LIT2 "ti ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 /<set-title> }
+	DUP2 [ LIT2 "ar ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 /<set-artist> }
+	DUP2 [ LIT2 "al ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 /<set-album> }
+	POP2 POP2 !message/<new>
+
+@id3/<set-title> ( title* -- )
+	[ LIT2r =&title ]
+	&>wti
+		line/is-mp3-ext ?/end
+		LDAk DUP ?{
+			POP &end POP2 POP2r JMP2r }
+		#00 STH2kr STA2
+		INC2r INC2 !/>wti
+
+@id3/<set-artist> ( artist* -- )
+	[ LIT2r =&artist ]
+	&>war
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		#00 STH2kr STA2
+		INC2r INC2 !/>war
+
+@id3/set-artist ( str* -- cap* )
+	[ LIT2r =&artist ]
+	&>war2
+		LDA2k [ LIT2 20 "- ] EQU2 ?{
+			LDAk #00 STH2kr INC2r STA2
+			INC2 LDAk ?/>war2 }
+	POP2r JMP2r
+
+@id3/<set-album> ( album* -- )
+	[ LIT2r =&album ]
+	&>wal
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		#00 STH2kr STA2
+		INC2r INC2 !/>wal
+
+(
+@|Controls )
 
 @controls/<draw-prev> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
@@ -334,13 +412,13 @@
 	#0070 .Screen/x DEO2
 	#0050 .Screen/y DEO2
 	[ LIT2 36 -Screen/auto ] DEO
-	;button-icn #00 [ LIT2 01 -paused ] LDZ AND #80 SFT2 ADD2 .Screen/addr DEO2
+	;button-icn #00 [ LIT2 01 -controls/paused ] LDZ AND #80 SFT2 ADD2 .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEO
 	( | icon )
 	[ LIT2 16 -Screen/auto ] DEO
 	#0078 .Screen/x DEO2
 	#0058 .Screen/y DEO2
-	;&pause-icn [ LIT2 00 -paused ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
+	;&pause-icn [ LIT2 00 -controls/paused ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
 	[ LIT2 05 -Screen/sprite ] DEOk DEO
 	JMP2r
 
@@ -388,8 +466,8 @@
 
 @controls/<set-volume> ( volume -- )
 	DUP .&volume STZ
-	.playing LDZ ?{ POP JMP2r }
-	<send-volume> !/<draw-volume>
+	.controls/playing LDZ ?{ POP JMP2r }
+	selection/<send-volume> !/<draw-volume>
 
 @controls/<draw-volume> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
@@ -404,39 +482,6 @@
 	DEOk DEO
 	JMP2r
 
-@progress/<draw> ( -- )
-	.secprog LDZ2
-	( | catch redraws )
-	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
-	&<force> ( x* -- )
-	DUP2 ,&last STR2
-	[ LIT2 15 -Screen/auto ] DEO
-	#0004 .Screen/x DEO2
-	#0084 .Screen/y DEO2
-	( | cap left )
-	;&left-chr .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEO
-	( | cap middle )
-	#e3
-	&>t
-		;&middle-chr .Screen/addr DEO2
-		[ LIT2 81 -Screen/sprite ] DEO
-		INC DUP ?&>t
-	POP
-	( | cap right )
-	;&right-chr .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEO
-	( | fill )
-	#0008 .Screen/x DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	#0000
-	&>l
-		DUP2 #0004 ADD2 .Screen/x DEO2
-		;&fill-icn .Screen/addr DEO2
-		[ LIT2 0a -Screen/sprite ] DEOk DEO
-		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
 (
 @|events )
 
@@ -447,24 +492,24 @@
 	POP POP2 !message/<new>
 
 @handle-status ( buf* char -- )
-	[ LIT2 01 -playing ] STZ
+	[ LIT2 01 -controls/playing ] STZ
 	( | force redraws )
-	<fit-window>
-	POP POP2 <redraw-player> !message/<new>
+	window/<fit>
+	POP POP2 player/<redraw> !message/<new>
 
 @handle-frame ( buf* char -- )
 	POP
 	( skip key ) INC2 INC2
-	( curr-frame ) parse-dec .frames/a STZ2
+	( curr-frame ) str/parse-dec .frames/a STZ2
 	INC2
-	( next-frame ) parse-dec .frames/b STZ2
+	( next-frame ) str/parse-dec .frames/b STZ2
 	INC2
 	( | <curr-secs> )
-	parse-dec STH2k .secfrom STZ2
+	str/parse-dec STH2k .secfrom STZ2
 	INC2 LDAk [ LIT "5 ] LTH ?{ INC2r }
 	#20 find-next INC2
 	( | <remaining-secs> )
-	parse-dec STH2k .secto STZ2
+	str/parse-dec STH2k .secto STZ2
 	INC2 LDAk [ LIT "5 ] LTH ?{ INC2r }
 	POP2 SWP2r STH2r STH2r OVR2 ADD2 SWP2
 	( | print )
@@ -477,18 +522,109 @@
 	POP INC2 INC2 LDA
 	( stop ) DUP [ LIT "0 ] NEQ ?{ }
 	( paused ) DUP [ LIT "1 ] NEQ ?{
-		[ LIT2 01 -paused ] STZ }
+		[ LIT2 01 -controls/paused ] STZ }
 	( playing ) DUP [ LIT "2 ] NEQ ?{
-		[ LIT2 00 -paused ] STZ }
-	( end ) DUP [ LIT "3 ] NEQ ?{ <skip-next> }
+		[ LIT2 00 -controls/paused ] STZ }
+	( end ) DUP [ LIT "3 ] NEQ ?{ selection/<skip-next> }
 	POP controls/<draw-play> !message/<new>
 
 (
-@|core )
+@|Folders )
 
-@<y-id> ( y* -- id )
-	[ LIT2 00 -playing ] LDZ EQU ?{ #0080 SUB2 }
-	#001c SUB2 #04 SFT2 NIP #17 u8/min .selection/scroll LDZ ADD JMP2r
+@folders/<draw> ( -- )
+	.selection/id LDZ ,&sel STR
+	#0008 .Screen/x DEO2
+	.lines/folders LDZ #00 NEQk ?{ POP2 JMP2r }
+	.selection/scroll LDZ ADD GTHk ?{ POP2 JMP2r }
+	&>l
+		( | background )
+		[ LITr 01 ] #00 line/<draw-background>
+		( | selected )
+		DUP [ LIT &sel $1 ] NEQ ?{
+			#03 line/<draw-background>
+			POPr [ LITr 05 ] }
+		( | gizmo )
+		[ LIT2 15 -Screen/auto ] DEO
+		;WIDTH-10 .Screen/x DEO2
+		.Screen/y DEI2
+		( ) #03c0 ;chicago/glyphs ADD2 .Screen/addr DEO2
+		DUPr [ LITr -Screen/sprite ] DEOr
+		.Screen/y DEO2
+		( | normal )
+		#0008 .Screen/x DEO2
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;&buf ADD2 STHr folder/<draw>
+		.Screen/y DEI2 #0010 ADD2
+		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
+		.Screen/y DEO2
+		INC GTHk ?/>l
+	POP2 JMP2r
+
+@folders/<sort> ( -- )
+	.lines/folders LDZ ?{ JMP2r }
+	;&buf DUP2 [ LIT2 00 -lines/folders ] LDZ #01 SUB
+	( CELLSIZE ) #70 SFT2 ADD2 !files/<sort>
+
+@folder/<draw> ( text* color -- )
+	STH
+	.folders/prefix LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
+	;dict/ellipses STHkr chicago/<draw-left-color>
+	[ LIT2 00 -folders/prefix ] LDZ ADD2 STHr !chicago/<draw-left-color>
+
+@folder/common-prefix ( -- len )
+	[ LIT2 03 -lines/folders ] LDZ LTH ?{ #00 JMP2r }
+	;folders/buf DUP2 [ LIT2 00 -lines/folders ] LDZ #70 SFT2 ADD2 !common-prefix-0
+
+(
+@|Tracks )
+
+@tracks/<draw> ( -- )
+	.selection/id LDZ .lines/folders LDZ SUB ,&sel STR
+	#0008 .Screen/x DEO2
+	.lines/tracks LDZ #00 NEQk ?{ POP2 JMP2r }
+	.selection/scroll LDZ .lines/folders LDZ LTH ?{
+		.selection/scroll LDZ .lines/folders LDZ SUB ADD }
+	&>l
+		#00 line/<draw-background>
+		[ LITr 05 ]
+		( | playing )
+		DUP .selection/track LDZ NEQ ?{
+			#01 line/<draw-background>
+			[ LIT2 15 -Screen/auto ] DEO
+			#0000 .Screen/x DEO2
+			;poke-icn .Screen/addr DEO2
+			[ LIT2 00 -Screen/sprite ] DEO
+			POPr [ LITr 04 ] }
+		( | selected )
+		DUP [ LIT &sel $1 ] NEQ ?{
+			#03 line/<draw-background>
+			POPr [ LITr 05 ] }
+		( | normal )
+		#0008 .Screen/x DEO2
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 STHr track/<draw>
+		.Screen/y DEI2 #0010 ADD2
+		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
+		.Screen/y DEO2
+		INC GTHk ?/>l
+	POP2 JMP2r
+
+@tracks/<sort> ( -- )
+	.lines/tracks LDZ ?{ JMP2r }
+	;tracks/buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #01 SUB
+	( CELLSIZE ) #70 SFT2 ADD2 !files/<sort>
+
+@track/<draw> ( text* color -- )
+	STH
+	.tracks/prefix LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
+	[ LIT2 00 -tracks/prefix ] LDZ ADD2 STHr !chicago/<draw-left-color>
+
+@track/common-prefix ( -- len )
+	[ LIT2 03 -lines/tracks ] LDZ LTH ?{ #00 JMP2r }
+	;tracks/buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2 !common-prefix-0
+
+(
+@|Directory )
 
 @dir/<refresh> ( -- )
 	;path/buf .File/name DEO2
@@ -501,24 +637,15 @@
 		( | parse )
 		;&buf
 		&>w
-			DUP2 <parse-line>
-			str/next-line INC2 LDAk ?&>w
+			DUP2 /<parse-line>
+			str/next-line INC2 LDAk ?/>w
 		POP2 }
-	<post-refresh>
-	( >> )
+	<post-refresh> !window/<fit>
 
-@<fit-window> ( -- )
-	( folders ) [ LIT2 00 -lines/folders ] LDZ
-	( tracks ) .lines/tracks LDZ ADD #18 u8/min
-	( empty ) DUP #00 EQU ADD #40 SFT2
-	( padding ) #0020 ADD2
-	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
-	!window/<set-height>
-
-@<parse-line> ( line* -- )
-	#0005 ADD2 LDAk [ LIT ". ] EQU ?&hidden
-	is-folder ?&folder
-	is-mp3 ?&mp3
+@dir/<parse-line> ( line* -- )
+	#0005 ADD2 LDAk [ LIT ". ] EQU ?/hidden
+	line/is-folder ?/folder
+	line/is-mp3 ?/mp3
 	POP2 JMP2r
 
 	&folder ( line* -- )
@@ -543,102 +670,15 @@
 	&hidden ( line* -- )
 	POP2 JMP2r
 
-@<post-refresh> ( -- )
-	common-folder-prefix .prefix/folders STZ
-	common-track-prefix .prefix/tracks STZ
-	sort-folders !sort-tracks
-
-@sort-folders ( -- )
-	.lines/folders LDZ ?{ JMP2r }
-	;folders/buf DUP2 [ LIT2 00 -lines/folders ] LDZ #01 SUB
-	( CELLSIZE ) #70 SFT2 ADD2 !sort-files
-
-@sort-tracks ( -- )
-	.lines/tracks LDZ ?{ JMP2r }
-	;tracks/buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #01 SUB
-	( CELLSIZE ) #70 SFT2 ADD2
-	( >> )
-
-@sort-files ( first* last* -- )
-	SWP2
-	&>loop
-		GTH2k ?{ POP2 POP2 JMP2r }
-		OVR2 OVR2 STH2k #0080 ADD2
-		&>loop2
-			LTH2k ?&done
-			DUP2 STH2kr str/lth ?&replace
-			!{
-			&replace POP2r STH2k }
-		#0080 ADD2 !&>loop2
-
-	&done ( -- )
-	POP2 POP2 DUP2 STH2r swap-tracks #0080 ADD2 !&>loop
-
-@swap-tracks ( src* dst* -- )
-	EQU2k ?{
-		DUP2 ;tmp/buf str/<copy>
-		OVR2 STH2
-		str/<copy>
-		;tmp/buf STH2r !str/<copy> }
-	POP2 POP2 JMP2r
-
-@common-folder-prefix ( -- len )
-	[ LIT2 03 -lines/folders ] LDZ LTH ?{ #00 JMP2r }
-	;folders/buf DUP2 [ LIT2 00 -lines/folders ] LDZ #70 SFT2 ADD2 !common-prefix-0
-
-@common-track-prefix ( -- len )
-	[ LIT2 03 -lines/tracks ] LDZ LTH ?{ #00 JMP2r }
-	;tracks/buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2
-	( >> )
-
-@common-prefix-0 ( first* limit* -- len )
-	SWP2 DUP2k str/len STH
-	,&s0 STR2
-	#0080 ADD2
-	&>loop
-		GTH2k ?{ POP2 POP2 STHr JMP2r }
-		DUP2 [ LIT2 &s0 $2 ] str-prefix STHr u8/min STH
-		#0080 ADD2 !&>loop
-
-@pos-to-seconds ( pos* -- seconds* )
-	.secfrom LDZ2 .secto LDZ2 ADD2 #00e7 DIV2k STH2k MUL2 SUB2 OVR2 STH2
-	MUL2r MUL2 #00e7 DIV2 STH2r ADD2 JMP2r
-
-@calc-width ( total* curr* -- width* )
-	STH2
-	DUP2 #011b LTH2 ?{
-		&scale ( -- )
-		DUP2 #0237 LTH2 ?{
-			#01 SFT2 LITr 01 SFT2r !&scale }
-		INC2 #01 SFT2 INC2r LITr 01 SFT2r }
-	[ LIT2r 00e7 ] MUL2r STH2r SWP2 DIV2 JMP2r
-
-@find-next ( buf* c -- index* )
-	,&t STR
-	&>loop
-		LDAk [ LIT &t $1 ] EQU ?{ INC2 !&>loop }
-	JMP2r
-
-@parse-dec ( buf* -- end* res* )
-	[ LIT2r 000a ] [ LIT2r 0000 ]
-	&>loop
-		LDAk [ LIT "0 ] SUB DUP #09 GTH ?{
-			OVR2r MUL2r [ LITr 00 ] STH
-			ADD2r INC2 !&>loop }
-	POP STH2r POP2r JMP2r
-
-@<tags-autofill> ( file* -- )
-	;dict/no-album id3/<set-album>
-	( | find spacer )
-	DUP2 find-spacer INC2 ORA ?{ id3/<set-title>
-		;dict/no-artist !id3/<set-artist> }
-	( | copy artist )
-	id3/set-artist INC2 INC2 INC2 !id3/<set-title>
-
-@find-spacer ( file* -- <file>* )
-	LDA2k [ LIT2 20 "- ] NEQ2 ?{ JMP2r }
-	INC2 LDAk ?find-spacer
-	POP2 #ffff JMP2r
+@dir/<redraw> ( -- )
+	#001a [ LIT2 00 -controls/playing ] LDZ EQU ?{ #0080 ADD2 }
+	.Screen/y DEO2
+	( | empty )
+	lines/count ?{
+		#0008 .Screen/x DEO2
+		;dict/empty #05 !chicago/<draw-left-color> }
+	( | folders )
+	folders/<draw> !tracks/<draw>
 
 (
 @|path )
@@ -652,7 +692,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 		STZ2
-		INC2 !&>wpu
+		INC2 !/>wpu
 
 @path/pop ( -- )
 	/nest INC #00 OVR STZ
@@ -666,111 +706,130 @@
 @path/nest ( -- addr )
 	[ LIT2 -&buf _&ptr ] LDR #01 SUB
 	&>rew
-		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?&>rew }
+		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?/>rew }
 	NIP JMP2r
 
 (
-@|ID3 )
+@|Misc )
 
-@id3/<handle> ( buf* char -- )
-	POP [ LIT ". ] find-next INC2 LDA2k
-	( | parse lines )
-	DUP2 [ LIT2 "ti ] NEQ2 ?{
-		OVR2 [ LIT ": ] find-next INC2 /<set-title> }
-	DUP2 [ LIT2 "ar ] NEQ2 ?{
-		OVR2 [ LIT ": ] find-next INC2 /<set-artist> }
-	DUP2 [ LIT2 "al ] NEQ2 ?{
-		OVR2 [ LIT ": ] find-next INC2 /<set-album> }
-	POP2 POP2 !message/<new>
+@<find-any> ( letter -- )
+	( case insensitive ) chr/lc STH
+	( | folders )
+	.lines/folders LDZ #00
+	&>folders
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;folders/buf ADD2 LDA chr/lc STHkr NEQ ?{ POPr NIP !selection/<select> }
+		INC GTHk ?/>folders
+	POP2
+	( | tracks )
+	.lines/tracks LDZ #00
+	&>tracks
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 LDA chr/lc STHkr NEQ ?{
+			POPr NIP .lines/folders LDZ ADD !selection/<select> }
+		INC GTHk ?/>tracks
+	POP2 POPr JMP2r
 
-@id3/<set-title> ( title* -- )
-	[ LIT2r =&title ]
-	&>wti
-		is-mp3-ext ?&end
-		LDAk DUP ?{
-			POP &end POP2 POP2r JMP2r }
-		#00 STH2kr STA2
-		INC2r INC2 !&>wti
+@progress/<draw> ( -- )
+	.secprog LDZ2
+	( | catch redraws )
+	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
+	&<force> ( x* -- )
+	DUP2 ,&last STR2
+	[ LIT2 15 -Screen/auto ] DEO
+	#0004 .Screen/x DEO2
+	#0084 .Screen/y DEO2
+	( | cap left )
+	;&left-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEO
+	( | cap middle )
+	#e3
+	&>t
+		;&middle-chr .Screen/addr DEO2
+		[ LIT2 81 -Screen/sprite ] DEO
+		INC DUP ?/>t
+	POP
+	( | cap right )
+	;&right-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEO
+	( | fill )
+	#0008 .Screen/x DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	#0000
+	&>l
+		DUP2 #0004 ADD2 .Screen/x DEO2
+		;&fill-icn .Screen/addr DEO2
+		[ LIT2 0a -Screen/sprite ] DEOk DEO
+		INC2 GTH2k ?/>l
+	POP2 POP2 JMP2r
 
-@id3/<set-artist> ( artist* -- )
-	[ LIT2r =&artist ]
-	&>war
-		LDAk DUP ?{ POP POP2 POP2r JMP2r }
-		#00 STH2kr STA2
-		INC2r INC2 !&>war
+@<post-refresh> ( -- )
+	folder/common-prefix .folders/prefix STZ
+	track/common-prefix .tracks/prefix STZ
+	folders/<sort> !tracks/<sort>
 
-@id3/set-artist ( str* -- cap* )
-	[ LIT2r =&artist ]
-	&>war2
-		LDA2k [ LIT2 20 "- ] EQU2 ?{
-			LDAk #00 STH2kr INC2r STA2
-			INC2 LDAk ?&>war2 }
-	POP2r JMP2r
+@files/<sort> ( first* last* -- )
+	SWP2
+	&>loop
+		GTH2k ?{ POP2 POP2 JMP2r }
+		OVR2 OVR2 STH2k #0080 ADD2
+		&>loop2
+			LTH2k ?/done
+			DUP2 STH2kr str/lth ?/replace
+			!{
+			&replace POP2r STH2k }
+		#0080 ADD2 !/>loop2
 
-@id3/<set-album> ( album* -- )
-	[ LIT2r =&album ]
-	&>wal
-		LDAk DUP ?{ POP POP2 POP2r JMP2r }
-		#00 STH2kr STA2
-		INC2r INC2 !&>wal
+	&done ( -- )
+	POP2 POP2 DUP2 STH2r swap-tracks #0080 ADD2 !/>loop
 
-(
-@|drawing )
+@swap-tracks ( src* dst* -- )
+	EQU2k ?{
+		DUP2 ;tmp/buf str/<copy>
+		OVR2 STH2
+		str/<copy>
+		;tmp/buf STH2r !str/<copy> }
+	POP2 POP2 JMP2r
+
+@common-prefix-0 ( first* limit* -- len )
+	SWP2 DUP2k str/len STH
+	,&s0 STR2
+	#0080 ADD2
+	&>loop
+		GTH2k ?{ POP2 POP2 STHr JMP2r }
+		DUP2 [ LIT2 &s0 $2 ] str/get-prefix STHr u8/min STH
+		#0080 ADD2 !/>loop
+
+@pos-to-seconds ( pos* -- seconds* )
+	.secfrom LDZ2 .secto LDZ2 ADD2 #00e7 DIV2k STH2k MUL2 SUB2 OVR2 STH2
+	MUL2r MUL2 #00e7 DIV2 STH2r ADD2 JMP2r
+
+@calc-width ( total* curr* -- width* )
+	STH2
+	DUP2 #011b LTH2 ?{
+		&scale ( -- )
+		DUP2 #0237 LTH2 ?{
+			#01 SFT2 LITr 01 SFT2r !/scale }
+		INC2 #01 SFT2 INC2r LITr 01 SFT2r }
+	[ LIT2r 00e7 ] MUL2r STH2r SWP2 DIV2 JMP2r
+
+@find-next ( buf* c -- index* )
+	,&t STR
+	&>loop
+		LDAk [ LIT &t $1 ] EQU ?{ INC2 !/>loop }
+	JMP2r
+
+@find-spacer ( file* -- <file>* )
+	LDA2k [ LIT2 20 "- ] NEQ2 ?{ JMP2r }
+	INC2 LDAk ?find-spacer
+	POP2 #ffff JMP2r
 
 @<redraw-all> ( -- )
 	( | clear )
 	#0000 .Screen/x DEO2
 	#0012 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
-	<redraw-player>
-	( >> )
-
-@<redraw-dir> ( -- )
-	#001a [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
-	.Screen/y DEO2
-	( | empty )
-	lines/count ?{
-		#0008 .Screen/x DEO2
-		;dict/empty #05 !chicago/<draw-left-color> }
-	( | folders )
-	<draw-folders>
-	( >> )
-
-@<draw-tracks> ( -- )
-	.selection LDZ .lines/folders LDZ SUB ,&sel STR
-	#0008 .Screen/x DEO2
-	.lines/tracks LDZ #00 NEQk ?{ POP2 JMP2r }
-	.selection/scroll LDZ .lines/folders LDZ LTH ?{
-		.selection/scroll LDZ .lines/folders LDZ SUB ADD }
-	&>l
-		#00 <draw-background>
-		[ LITr 05 ]
-		( | playing )
-		DUP .selection/track LDZ NEQ ?{
-			#01 <draw-background>
-			[ LIT2 15 -Screen/auto ] DEO
-			#0000 .Screen/x DEO2
-			;poke-icn .Screen/addr DEO2
-			[ LIT2 00 -Screen/sprite ] DEO
-			POPr [ LITr 04 ] }
-		( | selected )
-		DUP [ LIT &sel $1 ] NEQ ?{
-			#03 <draw-background>
-			POPr [ LITr 05 ] }
-		( | normal )
-		#0008 .Screen/x DEO2
-		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 STHr <draw-track>
-		.Screen/y DEI2 #0010 ADD2
-		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
-		.Screen/y DEO2
-		INC GTHk ?&>l
-	POP2 JMP2r
-
-@<draw-track> ( text* color -- )
-	STH
-	.prefix/tracks LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
-	[ LIT2 00 -prefix/tracks ] LDZ ADD2 STHr !chicago/<draw-left-color>
+	player/<redraw> !dir/<redraw>
 
 @<draw-times-addr> ( color times addr* auto -- )
 	.Screen/auto DEO
@@ -780,59 +839,15 @@
 	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
-
-@<draw-folders> ( -- )
-	.selection LDZ ,&sel STR
-	#0008 .Screen/x DEO2
-	.lines/folders LDZ #00 NEQk ?{ POP2 JMP2r }
-	.selection/scroll LDZ ADD GTHk ?{ POP2 JMP2r }
-	&>l
-		( | background )
-		[ LITr 01 ] #00 <draw-background>
-		( | selected )
-		DUP [ LIT &sel $1 ] NEQ ?{
-			#03 <draw-background>
-			POPr [ LITr 05 ] }
-		( | gizmo )
-		[ LIT2 15 -Screen/auto ] DEO
-		;WIDTH-10 .Screen/x DEO2
-		.Screen/y DEI2
-		( ) #03c0 ;chicago/glyphs ADD2 .Screen/addr DEO2
-		DUPr [ LITr -Screen/sprite ] DEOr
-		.Screen/y DEO2
-		( | normal )
-		#0008 .Screen/x DEO2
-		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;folders/buf ADD2 STHr <draw-folder>
-		.Screen/y DEI2 #0010 ADD2
-		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
-		.Screen/y DEO2
-		INC GTHk ?&>l
-	POP2 JMP2r
-
-@<redraw-player> ( -- )
-	.playing LDZ ?{ JMP2r }
-	#ffff ;chicago/last STA2
-	#ffff ;progress/last STA2
-	track/<draw-title>
-	track/<draw-artist>
-	track/<draw-album>
-	controls/<draw-repeat>
-	controls/<draw-prev>
-	controls/<draw-volume>
-	controls/<draw-play>
-	controls/<draw-next>
-	controls/<draw-shuffle>
-	progress/<draw> !chicago/<draw-timestamp>
 
 @<draw-title-scroll> ( -- )
 	;id3/title chicago/get-str-width ;WIDTH LTH2 ?{
 		[ LIT2 &f $2 ] INC2k ,&f STR2
 		DUP #0f AND ?{
 			#001a .Screen/y DEO2
-			<clear-line>
+			line/<clear>
 			#0001 .Screen/x DEO2
 			#001a .Screen/y DEO2
 			#01 ;chicago/color STA
@@ -842,46 +857,7 @@
 		POP2 }
 	JMP2r
 
-@track/<draw-title> ( -- )
-	( | clear )
-	#001a .Screen/y DEO2
-	<clear-line>
-	#0000 ;<draw-title-scroll>/f STA2
-	( | draw )
-	#001a .Screen/y DEO2
-	;id3/title chicago/get-str-width ;WIDTH LTH2 ?{
-		#0008 .Screen/x DEO2
-		;id3/title #01 !chicago/<draw-left-color> }
-	( | center )
-	#0080 .Screen/x DEO2
-	;id3/title #01 !chicago/<draw-center-color>
-
-@track/<draw-artist> ( -- )
-	( | clear )
-	#002a .Screen/y DEO2
-	<clear-line>
-	( | draw )
-	#002a .Screen/y DEO2
-	;id3/artist chicago/get-str-width ;WIDTH LTH2 ?{
-		#0008 .Screen/x DEO2
-		;id3/artist #01 !chicago/<draw-left-color> }
-	( | center )
-	#0080 .Screen/x DEO2
-	;id3/artist #01 !chicago/<draw-center-color>
-
-@track/<draw-album> ( -- )
-	( | clear )
-	#003a .Screen/y DEO2
-	<clear-line>
-	( | draw )
-	#0080 .Screen/x DEO2
-	#003a .Screen/y DEO2
-	;id3/album #01 !chicago/<draw-center-color>
-
-(
-@|controls )
-
-@<clear-line> ( -- )
+@line/<clear> ( -- )
 	[ LITr -Screen/y ] DEI2r
 	( ) #0000 .Screen/x DEO2
 	;fill-icn .Screen/addr DEO2
@@ -892,7 +868,7 @@
 	DEOk DEO
 	JMP2r
 
-@<draw-background> ( color -- )
+@line/<draw-background> ( color -- )
 	STH
 	#0000 .Screen/x DEO2
 	.Screen/y DEI2
@@ -909,11 +885,13 @@
 	.Screen/y DEO2
 	JMP2r
 
-@<draw-folder> ( text* color -- )
-	STH
-	.prefix/folders LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
-	;dict/ellipses STHkr chicago/<draw-left-color>
-	[ LIT2 00 -prefix/folders ] LDZ ADD2 STHr !chicago/<draw-left-color>
+@window/<fit> ( -- )
+	( folders ) [ LIT2 00 -lines/folders ] LDZ
+	( tracks ) .lines/tracks LDZ ADD #18 u8/min
+	( empty ) DUP #00 EQU ADD #40 SFT2
+	( padding ) #0020 ADD2
+	( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?{ #0080 ADD2 }
+	!/<set-height>
 
 @header/<draw-title> ( -- )
 	path/get-location #0084 OVR2 chicago/get-str-width #01 SFT2 SUB2
@@ -944,19 +922,19 @@
 	[ LITr 00 ]
 	&>l
 		LDAk ?{ POP2 STHr JMP2r }
-		INCr utf8/next !&>l
+		INCr utf8/next !/>l
 
 @str/<print> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
-		INC2 !&>w
+		INC2 !/>w
 
 @str/<copy> ( src* dst* -- )
 	STH2
 	&>wc
 		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>wc
+		INC2r INC2 LDAk ?/>wc
 	POP2 POP2r JMP2r
 
 @str/<copy-line> ( src* dst* -- )
@@ -966,32 +944,40 @@
 			POP2 #00 STH2r STA
 			JMP2r }
 		LDAk #00 STH2kr STA2
-		INC2r INC2 !&>wcl
+		INC2r INC2 !/>wcl
 
 @str/lth ( a* b* -- a>b )
 	STH2
 	&>ll
 		( lc ) LDAk chr/lc
 		( lc ) LDAkr STHr chr/lc SUBk ?{
-			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>ll } }
+			ORAk #00 EQU ?{ POP2 INC2 INC2r !/>ll } }
 	NIP2 LTH POP2r JMP2r
 
 @str/next-line ( str* -- next-line* )
 	&>wnl
-		LDAk #0b LTH ?{ INC2 !&>wnl }
+		LDAk #0b LTH ?{ INC2 !/>wnl }
 	JMP2r
 
-@str-prefix ( a* b* -- len )
+@str/get-prefix ( a* b* -- len )
 	STH2
 	DUP2 ,&a0 STR2
-	&>loop
+	&>lgp
 		LDAk LDAkr STHr NEQk ?{
-			ORAk #00 EQU ?{ POP2 INC2 INC2r !&>loop } }
+			ORAk #00 EQU ?{ POP2 INC2 INC2r !/>lgp } }
 	POP2 POP2r [ LIT2 &a0 $2 ] SUB2 NIP JMP2r
+
+@str/parse-dec ( buf* -- end* res* )
+	[ LIT2r 000a ] [ LIT2r 0000 ]
+	&>lpd
+		LDAk [ LIT "0 ] SUB DUP #09 GTH ?{
+			OVR2r MUL2r [ LITr 00 ] STH
+			ADD2r INC2 !/>lpd }
+	POP STH2r POP2r JMP2r
 
 @utf8/next ( addr* -- addr* )
 	&>w
-		INC2 LDAk #06 SFT #02 EQU ?&>w
+		INC2 LDAk #06 SFT #02 EQU ?/>w
 	JMP2r
 
 @utf8/next-nth ( offset* text* -- text* )
@@ -1000,24 +986,24 @@
 		&>l
 			STH2r /next LDAk ?{ POP2 STH2kr }
 			STH2
-			INC2 GTH2k ?&>l }
+			INC2 GTH2k ?/>l }
 	POP2 POP2 STH2r POP2r JMP2r
 
 @dec/<print> ( short* -- )
 	#000a SWP2 [ LITr ff ]
 	&>get
 		SWP2k u16/mod STH
-		POP OVR2 DIV2 ORAk ?&>get
+		POP OVR2 DIV2 ORAk ?/>get
 	POP2 POP2
 	&>put
 		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
+		[ LIT "0 ] ADD #18 DEO !/>put
 
 @err/<print> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#19 DEO
-		INC2 !&>w
+		INC2 !/>w
 
 (
 @|assets )
@@ -1117,30 +1103,30 @@
 @chicago/get-utf8-addr ( addr* -- addr* glyph* )
 	LDAk #20 LTH ?{
 		LDAk #7f GTH ?{
-			LDAk #20 SUB #00 SWP #50 SFT2 ;/glyphs ADD2 JMP2r }
+			LDAk #20 SUB #00 SWP #50 SFT2 ;&glyphs ADD2 JMP2r }
 		LDAk #c3 NEQ ?{
-			INC2k LDA #80 SUB #00 SWP #50 SFT2 ;/latin2-glyphs ADD2 JMP2r }
+			INC2k LDA #80 SUB #00 SWP #50 SFT2 ;&latin2-glyphs ADD2 JMP2r }
 		LDAk #d0 NEQ ?{
-			INC2k LDA #90 SUB #00 SWP #50 SFT2 ;/cyrillic-glyphs ADD2 JMP2r }
+			INC2k LDA #90 SUB #00 SWP #50 SFT2 ;&cyrillic-glyphs ADD2 JMP2r }
 		LDAk #d1 NEQ ?{
-			INC2k LDA #50 SUB #00 SWP #50 SFT2 ;/cyrillic-glyphs ADD2
-			( cap ) DUP2 ;/cyrillic-glyphs-end LTH2 ?{ POP2 ;check-icn }
+			INC2k LDA #50 SUB #00 SWP #50 SFT2 ;&cyrillic-glyphs ADD2
+			( cap ) DUP2 ;&cyrillic-glyphs-end LTH2 ?{ POP2 ;check-icn }
 			JMP2r }
 		LDA2k #e381 SUB2 #0003 GTH2 ?{
 			INC2k LDA2 #8180 SUB2 STH
-			#00 SWP #60 SFT2 #00 STHr ADD2 #50 SFT2 ;/hiragana-glyphs ADD2 JMP2r } }
+			#00 SWP #60 SFT2 #00 STHr ADD2 #50 SFT2 ;&hiragana-glyphs ADD2 JMP2r } }
 	;check-icn JMP2r
 
 @chicago/get-utf8-width ( addr* -- addr* width* )
 	LDAk #7f GTH ?{
-		LDAk #20 SUB #0000 ROT ;/widths ADD2 LDA JMP2r }
+		LDAk #20 SUB #0000 ROT ;&widths ADD2 LDA JMP2r }
 	LDAk #c3 NEQ ?{
-		INC2k LDA #80 SUB #00 SWP ;/latin2-widths ADD2 LDA #00 SWP JMP2r }
+		INC2k LDA #80 SUB #00 SWP ;&latin2-widths ADD2 LDA #00 SWP JMP2r }
 	LDAk #d0 NEQ ?{
-		INC2k LDA #90 SUB #00 SWP ;/cyrillic-widths ADD2 LDA #00 SWP JMP2r }
+		INC2k LDA #90 SUB #00 SWP ;&cyrillic-widths ADD2 LDA #00 SWP JMP2r }
 	LDAk #d1 NEQ ?{
-		INC2k LDA #50 SUB #00 SWP ;/cyrillic-widths ADD2
-		( cap ) DUP2 ;/cyrillic-widths-end LTH2 ?{ POP2 #0008 JMP2r }
+		INC2k LDA #50 SUB #00 SWP ;&cyrillic-widths ADD2
+		( cap ) DUP2 ;&cyrillic-widths-end LTH2 ?{ POP2 #0008 JMP2r }
 		LDA #00 SWP JMP2r }
 	LDAk #e3 NEQ ?{ #000d JMP2r }
 	#0008 JMP2r
@@ -1149,7 +1135,7 @@
 	[ LIT2r 0000 ]
 	&>ww
 		/get-utf8-width STH2
-		( > ) ADD2r utf8/next LDAk ?&>ww
+		( > ) ADD2r utf8/next LDAk ?/>ww
 	POP2 STH2r JMP2r
 
 @chicago/<draw-timestamp> ( -- )
@@ -1159,7 +1145,7 @@
 	DUP2 ,&last STR2
 	( | clear )
 	#0070 .Screen/y DEO2
-	<clear-line>
+	line/<clear>
 	( | from )
 	[ LIT2 15 -Screen/auto ] DEO
 	#0008 .Screen/x DEO2
@@ -1205,9 +1191,9 @@
 			/<draw-utf8>
 			POP2 JMP2r }
 		( | trim mp3 )
-		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext str/cmp3 ?&end }
+		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext str/cmp3 ?/end }
 		/<draw-utf8>
-		utf8/next LDAk ?&>wsc &end POP2 JMP2r
+		utf8/next LDAk ?/>wsc &end POP2 JMP2r
 
 @chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r

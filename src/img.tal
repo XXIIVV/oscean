@@ -110,8 +110,8 @@
 		( linecap ) ;workarea/buf #0a00 str/<swap-char>
 		&>l-logs
 			log/has-no-picture ?{ log/is-muted ?{ log/<emit> } }
-			str/cap GTH2k ?&>l-logs
-		POP2 POP2 DUP ?&>l-pages
+			str/cap GTH2k ?/>l-logs
+		POP2 POP2 DUP ?/>l-pages
 	POP JMP2r
 
 (
@@ -162,8 +162,8 @@
 	&lut [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
 
 @year/is-leap ( year* -- bool )
-	DUP2 #0190 u16/mod #0000 EQU2 ?&leap
-	DUP2 #0064 u16/mod #0000 EQU2 ?&not-leap
+	DUP2 #0190 u16/mod #0000 EQU2 ?/leap
+	DUP2 #0064 u16/mod #0000 EQU2 ?/not-leap
 	#0003 AND2 #0000 EQU2 JMP2r
 	&not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
@@ -173,10 +173,10 @@
 	STH2
 	#0c00
 	&>l2
-		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?&skip2
-		STH2k SUB2r !&continue2
+		DUP [ LIT2 &year $2 ] ROT year-month/days #00 SWP DUP2 STH2kr GTH2 ?/skip2
+		STH2k SUB2r !/continue2
 		&skip2 POP2 !{
-		&continue2 POP2 INC GTHk ?&>l2 }
+		&continue2 POP2 INC GTHk ?/>l2 }
 	NIP STHr POPr INC ,&year LDR2 SWP2 JMP2r
 
 @dotw/<print> ( dotw -- )
@@ -217,11 +217,11 @@
 @dec/<print> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP #30 ADD #18 DEO
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
 @dec/parse ( str* -- dec* )
@@ -238,7 +238,7 @@
 	&>wp
 		LDAk DUP #1f GTH ?{ POP POP2 JMP2r }
 		#18 DEO
-		INC2 !&>wp
+		INC2 !/>wp
 
 @str/<print-url> ( str* -- )
 	&>wpu
@@ -246,7 +246,7 @@
 		DUP #20 NEQ ?{
 			POP [ LIT "_ ] }
 		#18 DEO
-		INC2 !&>wpu
+		INC2 !/>wpu
 
 @str/cmp3 ( a* b* -- f )
 	STH2
@@ -255,7 +255,7 @@
 
 @str/next ( str* -- next* )
 	&>wn
-		LDAk #20 LTH ?{ INC2 !&>wn }
+		LDAk #20 LTH ?{ INC2 !/>wn }
 	INC2 JMP2r
 
 @str/<swap-char> ( str* a b -- )
@@ -264,13 +264,13 @@
 	&>wsc
 		LDAk [ LIT &a $1 ] NEQ ?{
 			STH2k [ LIT &b $1 ] STH2r STA }
-		INC2 LDAk ?&>wsc
+		INC2 LDAk ?/>wsc
 	POP2 JMP2r
 
 @str/cap ( str* -- end* )
 	&>wc
 		LDAk ?{ INC2 JMP2r }
-		INC2 !&>wc
+		INC2 !/>wc
 
 (
 @|Assets )

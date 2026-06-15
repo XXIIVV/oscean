@@ -27,7 +27,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "June 20 "2026 $2
+	( date ) "15 20 "June 20 "2026 $2
 
 (
 @|Source )
@@ -144,6 +144,7 @@
 	POP2 POP2
 	( | unsafe runes )
 	unsafe-runes/<test>
+	mismatch-runes/<test>
 	( | literal duplicates: #1234 #1234 )
 	;piece-a/buf is-static #00 EQU ?{
 		;piece-a/buf ;piece-b/buf str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
@@ -195,6 +196,21 @@
 	POP ;&msg !<print-warn2>
 
 	&msg "Unsafe 00
+
+@mismatch-runes/<test> ( -- )
+	;piece-a/buf LDA2
+	( | handlers )
+	DUP2 LIT2 "?& EQU2 ?&fail
+	DUP2 LIT2 "!& EQU2 ?&fail
+	DUP2 LIT2 "./ EQU2 ?&fail
+	DUP2 LIT2 ",/ EQU2 ?&fail
+	DUP2 LIT2 ";/ EQU2 ?&fail
+	POP2 JMP2r
+
+	&fail ( ab* -- )
+	POP2 ;&msg !<print-warn2>
+
+	&msg "Mismatch 00
 
 @reset ( -- )
 	;piece-a/buf str/<clear>
