@@ -202,9 +202,8 @@
 
 @selection/<skip-prev> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
-	.&track LDZ #01 SUB INCk ?{
-		POP .lines/tracks LDZ #01 SUB }
-	!/<pick-track>
+	.&track LDZ #01 SUB INCk ?/<pick-track>
+	POP .lines/tracks LDZ #01 SUB !/<pick-track>
 
 @selection/<skip-next> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
@@ -466,7 +465,7 @@
 
 @controls/<set-volume> ( volume -- )
 	DUP .&volume STZ
-	.controls/playing LDZ ?{ POP JMP2r }
+	.&playing LDZ ?{ POP JMP2r }
 	selection/<send-volume> !/<draw-volume>
 
 @controls/<draw-volume> ( -- )
@@ -565,6 +564,15 @@
 	;&buf DUP2 [ LIT2 00 -lines/folders ] LDZ #01 SUB
 	( CELLSIZE ) #70 SFT2 ADD2 !files/<sort>
 
+@folders/<push> ( str* -- )
+	DUP2 llen #003f LTH2 ?{ POP2 JMP2r }
+	;&buf [ LIT2 00 -lines/folders ] LDZ
+	( | max folders = 3000 / 80 = 60 )
+	DUP #60 LTH ?{ POP POP2 JMP2r }
+	( CELLSIZE ) #70 SFT2 ADD2 str/<copy-line>
+	.lines/folders LDZ INC .lines/folders STZ
+	JMP2r
+
 @folder/<draw> ( text* color -- )
 	STH
 	.folders/prefix LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
@@ -602,7 +610,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;tracks/buf ADD2 STHr track/<draw>
+		( CELLSIZE ) #70 SFT2 ;&buf ADD2 STHr track/<draw>
 		.Screen/y DEI2 #0010 ADD2
 		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
 		.Screen/y DEO2
@@ -611,8 +619,18 @@
 
 @tracks/<sort> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
-	;tracks/buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #01 SUB
+	;&buf DUP2 [ LIT2 00 -lines/tracks ] LDZ #01 SUB
 	( CELLSIZE ) #70 SFT2 ADD2 !files/<sort>
+
+@tracks/<push> ( line* -- )
+	DUP2 llen
+	( CELLSIZE ) #007f LTH2 ?{ POP2 JMP2r }
+	;&buf [ LIT2 00 -lines/tracks ] LDZ
+	( | max tracks = 80 )
+	DUP #80 LTH ?{ POP JMP2r }
+	( CELLSIZE ) #70 SFT2 ADD2 str/<copy-line>
+	.lines/tracks LDZ INC .lines/tracks STZ
+	JMP2r
 
 @track/<draw> ( text* color -- )
 	STH
@@ -644,29 +662,8 @@
 
 @dir/<parse-line> ( line* -- )
 	#0005 ADD2 LDAk [ LIT ". ] EQU ?/hidden
-	line/is-folder ?/folder
-	line/is-mp3 ?/mp3
-	POP2 JMP2r
-
-	&folder ( line* -- )
-	DUP2 llen #003f LTH2 ?{ POP2 JMP2r }
-	;folders/buf [ LIT2 00 -lines/folders ] LDZ
-	( | max folders = 3000 / 80 = 60 )
-	DUP #60 LTH ?{ POP POP2 JMP2r }
-	( CELLSIZE ) #70 SFT2 ADD2 str/<copy-line>
-	.lines/folders LDZ INC .lines/folders STZ
-	JMP2r
-
-	&mp3 ( line* -- )
-	DUP2 llen
-	( CELLSIZE ) #007f LTH2 ?{ POP2 JMP2r }
-	;tracks/buf [ LIT2 00 -lines/tracks ] LDZ
-	( | max tracks = 80 )
-	DUP #80 LTH ?{ POP JMP2r }
-	( CELLSIZE ) #70 SFT2 ADD2 str/<copy-line>
-	.lines/tracks LDZ INC .lines/tracks STZ
-	JMP2r
-
+	line/is-folder ?folders/<push>
+	line/is-mp3 ?tracks/<push>
 	&hidden ( line* -- )
 	POP2 JMP2r
 
@@ -890,8 +887,8 @@
 	( tracks ) .lines/tracks LDZ ADD #18 u8/min
 	( empty ) DUP #00 EQU ADD #40 SFT2
 	( padding ) #0020 ADD2
-	( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?{ #0080 ADD2 }
-	!/<set-height>
+	( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?/<set-height>
+	#0080 ADD2 !/<set-height>
 
 @header/<draw-title> ( -- )
 	path/get-location #0084 OVR2 chicago/get-str-width #01 SFT2 SUB2
@@ -956,8 +953,9 @@
 
 @str/next-line ( str* -- next-line* )
 	&>wnl
-		LDAk #0b LTH ?{ INC2 !/>wnl }
-	JMP2r
+		LDAk DUP ?{ POP &end JMP2r }
+		#0a EQU ?/end
+		INC2 !/>wnl
 
 @str/get-prefix ( a* b* -- len )
 	STH2

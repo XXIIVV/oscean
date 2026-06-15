@@ -43,7 +43,7 @@
 	[ LIT2 -&buf _&ptr ] STR
 	&>w
 		LDAk /<push>
-		INC2 LDAk ?&>w
+		INC2 LDAk ?/>w
 	LDA
 	( >> )
 
@@ -67,7 +67,7 @@
 	&>w
 		LDAk LIT "/ EQU ?{
 			LDAk /<push>
-			INC2 LDAk ?&>w }
+			INC2 LDAk ?/>w }
 	POP2 #00
 	( >> )
 
@@ -88,12 +88,12 @@
 	;&c .File/read
 	&>s
 		DEO2k .File/succ-lb DEI ?{ POP2 POP !<print-summary> }
-		[ LIT &c $1 ] walk !&>s
+		[ LIT &c $1 ] walk !/>s
 
 @walk ( char -- )
 	DUP #0a NEQ ?{
 		.stats/lines LDZ2k INC2 ROT STZ2 }
-	DUP #20 GTH ?&append
+	DUP #20 GTH ?/append
 	POP ;piece-a/buf LDAk ?parse-token
 	POP2 JMP2r
 
@@ -129,7 +129,7 @@
 		str/cap INC2
 		( b ) DUP2 ;piece-a/buf scmp-wild STH
 		str/cap INC2 ANDr STHr #00 EQU ?{ LDA2k <print-warn2> }
-		INC2 INC2 GTH2k ?&>loop2
+		INC2 INC2 GTH2k ?/>loop2
 	POP2 POP2
 	( | 3 elements )
 	;rules3/end ;rules3
@@ -140,11 +140,12 @@
 		str/cap INC2
 		( c ) DUP2 ;piece-a/buf scmp-wild STH
 		str/cap INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
-		INC2 INC2 GTH2k ?&>loop3
+		INC2 INC2 GTH2k ?/>loop3
 	POP2 POP2
 	( | unsafe runes )
 	unsafe-runes/<test>
 	mismatch-runes/<test>
+	deadzone/<test>
 	( | literal duplicates: #1234 #1234 )
 	;piece-a/buf is-static #00 EQU ?{
 		;piece-a/buf ;piece-b/buf str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
@@ -156,9 +157,6 @@
 	;piece-a/buf LDA [ LIT "$ ] NEQ ?{
 		;piece-b/buf is-label ?{
 			;piece-b/buf LDA LIT "" EQU ?{ ;unnamed-buf <print-warn2> } } }
-	( | dead-region )
-	;piece-b/buf is-jump/strict #00 EQU ?{
-		;piece-a/buf is-static ;piece-a/buf is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
 	( | use private )
 	;piece-a/buf is-calling-local #00 EQU ?{ ;call-private <print-warn> }
 	( | use local )
@@ -169,12 +167,12 @@
 @unsafe-runes/<test> ( -- )
 	;piece-b/buf LDA
 	( | handlers )
-	;piece-a/buf ;dict/lda str/cmp3 ?&abs
-	;piece-a/buf ;dict/sta str/cmp3 ?&abs
-	;piece-a/buf ;dict/ldz str/cmp3 ?&zep
-	;piece-a/buf ;dict/stz str/cmp3 ?&zep
-	;piece-a/buf ;dict/ldr str/cmp3 ?&rel
-	;piece-a/buf ;dict/str str/cmp3 ?&rel
+	;piece-a/buf ;dict/lda str/cmp3 ?/abs
+	;piece-a/buf ;dict/sta str/cmp3 ?/abs
+	;piece-a/buf ;dict/ldz str/cmp3 ?/zep
+	;piece-a/buf ;dict/stz str/cmp3 ?/zep
+	;piece-a/buf ;dict/ldr str/cmp3 ?/rel
+	;piece-a/buf ;dict/str str/cmp3 ?/rel
 	POP JMP2r
 
 	&abs ( c -- )
@@ -200,17 +198,23 @@
 @mismatch-runes/<test> ( -- )
 	;piece-a/buf LDA2
 	( | handlers )
-	DUP2 LIT2 "?& EQU2 ?&fail
-	DUP2 LIT2 "!& EQU2 ?&fail
-	DUP2 LIT2 "./ EQU2 ?&fail
-	DUP2 LIT2 ",/ EQU2 ?&fail
-	DUP2 LIT2 ";/ EQU2 ?&fail
+	DUP2 LIT2 "?& EQU2 ?/fail
+	DUP2 LIT2 "!& EQU2 ?/fail
+	DUP2 LIT2 "./ EQU2 ?/fail
+	DUP2 LIT2 ",/ EQU2 ?/fail
+	DUP2 LIT2 ";/ EQU2 ?/fail
 	POP2 JMP2r
 
 	&fail ( ab* -- )
-	POP2 ;&msg !<print-warn2>
+	POP2 ;&msg !<print-warn>
 
 	&msg "Mismatch 00
+
+@deadzone/<test> ( -- )
+	;piece-b/buf is-jump/strict ?{ JMP2r }
+	;piece-a/buf is-label ?{
+		;piece-a/buf is-macro ?{ ;dead-region <print-warn2> } }
+	JMP2r
 
 @reset ( -- )
 	;piece-a/buf str/<clear>
@@ -218,11 +222,10 @@
 	;piece-c/buf !str/<clear>
 
 @include ( -- )
-	;piece-a/buf str/cap #000a SUB2 ;dict/assets-tal str/cmp ?{
-		;piece-a/buf+1 src/<set>
-		;src/buf .File/name DEO2
-		#0000 .stats/lines STZ2 }
-	!reset
+	;piece-a/buf str/cap #000a SUB2 ;dict/assets-tal str/cmp ?reset
+	;piece-a/buf+1 src/<set>
+	;src/buf .File/name DEO2
+	#0000 .stats/lines STZ2 !reset
 
 (
 @|helpers )
@@ -233,9 +236,12 @@
 			LDAk LIT "} EQU ?{ POP2 #00 JMP2r } } }
 	POP2 #01 JMP2r
 
+@is-macro ( str* -- flag )
+	LDA LIT "% EQU JMP2r
+
 @is-new-scope ( str* -- flag )
-	LDAk [ LIT "@ ] NEQ ?&fail
-	INC2k LDA chr/is-uc ?&fail
+	LDAk [ LIT "@ ] NEQ ?/fail
+	INC2k LDA chr/is-uc ?/fail
 	POP2 #01 JMP2r
 
 	&fail ( str* -- flag )
@@ -246,20 +252,20 @@
 	DUP2 scope/length ADD2 LDA LIT "/ EQU JMP2r
 
 @is-jump ( str* -- flag )
-	DUP2 ;brk str/cmp ?&pass
-	DUP2 ;jmp str/cmp3 ?&pass
-	LDAk [ LIT "? ] EQU ?&pass
+	LDAk [ LIT "? ] EQU ?/pass
 	&strict ( str* -- flag )
-	LDAk [ LIT "! ] EQU ?&pass
+	DUP2 ;brk str/cmp ?/pass
+	DUP2 ;jmp str/cmp3 ?/pass
+	LDAk [ LIT "! ] EQU ?/pass
 	POP2 #00 JMP2r
 
 	&pass ( str* -- flag )
 	POP2 #01 JMP2r
 
 @is-litbyte ( str* -- flag )
-	LDAk [ LIT ", ] EQU ?&pass
-	LDAk [ LIT ". ] EQU ?&pass
-	LDAk [ LIT "# ] EQU ?&hex
+	LDAk [ LIT ", ] EQU ?/pass
+	LDAk [ LIT ". ] EQU ?/pass
+	LDAk [ LIT "# ] EQU ?/hex
 	POP2 #00 JMP2r
 
 	&hex ( str* -- flag )
@@ -276,8 +282,8 @@
 	POP2 #00 JMP2r
 
 @is-litshort ( str* -- flag )
-	LDAk [ LIT "; ] EQU ?&pass
-	LDAk [ LIT "# ] EQU ?&hex
+	LDAk [ LIT "; ] EQU ?/pass
+	LDAk [ LIT "# ] EQU ?/hex
 	POP2 #00 JMP2r
 
 	&hex ( str* -- flag )
@@ -291,14 +297,14 @@
 	( ) STH2r is-litbyte ORA JMP2r
 
 @is-opcode ( string* -- f )
-	LDAk LIT "? EQU ?&on-found
-	LDAk LIT "! EQU ?&on-found
-	DUP2 ;opcodes/brk str/cmp3 ?&on-found
+	LDAk LIT "? EQU ?/on-found
+	LDAk LIT "! EQU ?/on-found
+	DUP2 ;opcodes/brk str/cmp3 ?/on-found
 	,&t STR2
 	#2000
 	&>l
-		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] str/cmp3 ?&on-found
-		INC GTHk ?&>l
+		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] str/cmp3 ?/on-found
+		INC GTHk ?/>l
 	POP2 #00 JMP2r
 	&on-found POP2 #01 JMP2r
 
@@ -306,7 +312,7 @@
 	STH
 	;&runes
 	&>w
-		LDAk STHkr EQU ?{ INC2 LDAk ?&>w }
+		LDAk STHkr EQU ?{ INC2 LDAk ?/>w }
 	LDA STHr EQU JMP2r
 
 	&runes "|$!?.,;_-= $1
@@ -315,7 +321,7 @@
 	STH
 	;&runes
 	&>w
-		LDAk STHkr EQU ?{ INC2 LDAk ?&>w }
+		LDAk STHkr EQU ?{ INC2 LDAk ?/>w }
 	LDA STHr EQU JMP2r
 
 	&runes ""|{}%!?@#$%&().,;~ $1 &end
@@ -330,7 +336,7 @@
 	LDAk LIT "@ EQU ?{
 		&>w
 			LDA2k LIT2 "/+ NEQ2 ?{ POP2 #01 JMP2r }
-			INC2 LDAk ?&>w }
+			INC2 LDAk ?/>w }
 	POP2 #00 JMP2r
 
 @scmp-wild ( a* b* -- flag )
@@ -342,8 +348,8 @@
 	SWP2 ,&t STR2
 	;dictionaries/end ;dictionaries
 	&>l
-		LDA2k [ LIT2 &t $2 ] str/cmp ?&dict-match
-		#0004 ADD2 GTH2k ?&>l
+		LDA2k [ LIT2 &t $2 ] str/cmp ?/dict-match
+		#0004 ADD2 GTH2k ?/>l
 	,&t LDR2 str/<print>
 	#0a18 DEO
 	POP2 POP2 POP2 #00 JMP2r
@@ -361,11 +367,11 @@
 @scmp-star ( a* b* -- f )
 	STH2
 	&>l
-		LDAk [ LIT "* ] EQU ?&pass
-		LDAkr [ LITr "* ] EQUr STHr ?&pass
-		LDAk LDAkr STHr ANDk #00 EQU ?&e
-		NEQk ?&e
-		POP2 INC2 INC2r !&>l
+		LDAk [ LIT "* ] EQU ?/pass
+		LDAkr [ LITr "* ] EQUr STHr ?/pass
+		LDAk LDAkr STHr ANDk #00 EQU ?/e
+		NEQk ?/e
+		POP2 INC2 INC2r !/>l
 
 	&e ( -- )
 	NIP2 POP2r EQU JMP2r
@@ -381,8 +387,8 @@
 	STH2
 	,&ptr LDR2 ;&mem EQU2k ?{
 		&>l
-			STH2kr OVR2 str/cmp ?&found
-			str/cap INC2 GTH2k ?&>l }
+			STH2kr OVR2 str/cmp ?/found
+			str/cap INC2 GTH2k ?/>l }
 	POP2 POP2 POP2r #00 JMP2r
 	&found POP2 POP2 POP2r #01 JMP2r
 
@@ -391,7 +397,7 @@
 		LDAk DUP ?{ /<push>
 			POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @macros/<push> ( c -- )
 	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
@@ -409,7 +415,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @name/<push> ( c -- )
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
@@ -492,15 +498,15 @@
 	STH2
 	&>wcs
 		LDAk ?{ &ds POP2 LDAr STHr #00 EQU JMP2r }
-		LDAk LDAkr STHr NEQ ?&ds
-		INC2 INC2r !&>wcs
+		LDAk LDAkr STHr NEQ ?/ds
+		INC2 INC2r !/>wcs
 
 @str/cmp ( a* b* -- f )
 	STH2
 	&>wc
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
-		LDAk LDAkr STHr NEQ ?&d
-		INC2 INC2r !&>wc
+		LDAk LDAkr STHr NEQ ?/d
+		INC2 INC2r !/>wc
 
 @str/cap ( str* -- end* )
 	LDAk ?{ JMP2r }
@@ -522,11 +528,11 @@
 @dec/<print> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP #30 ADD #18 DEO
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
 (
@@ -538,14 +544,14 @@
 
 @<scpy> ( src* dst* -- )
 	STH2 &w LDAk #00 STH2kr STA2
-	INC2r INC2 LDAk ?&w
+	INC2r INC2 LDAk ?/w
 	POP2 POP2r JMP2r
 
 @afnd ( array* target* -- <index>* )
 	STH2
 	&>w
-		DUP2 STH2kr str/cmp ?&end
-		str/cap INC2 LDAk ?&>w
+		DUP2 STH2kr str/cmp ?/end
+		str/cap INC2 LDAk ?/>w
 	POP2 #ffff &end POP2r JMP2r
 
 
@@ -1000,6 +1006,7 @@
 	"&* $1 "!* $1 =tailjump
 	"@* $1 "!* $1 =tailjump
 	"{%} $1 "JMP* $1 =tailcall
+	"} $1 "!* $1 =tailcall
 	( redundant padding )
 	"|* $1 "|* $1 =redundance
 	( eager )
