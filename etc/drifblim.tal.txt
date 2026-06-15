@@ -98,13 +98,13 @@
 	token/<new>
 	#0000
 	&>s
-		error/get ?&end
+		error/get ?/end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
 			ORAk ?{ ;dict/invalid ;src/buf ;dict/File info/<error-generic> }
 			&end ( i* -- )
 			POP2 #0a !token/<push-byte> }
-		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
+		INC2 [ LIT &c $1 ] token/<push-byte> !/>s
 
 @rom/<put> ( byte addr* -- )
 	,&dst STR2
@@ -129,7 +129,7 @@
 		INC2 DUP2 ,&src STR2
 		;&mmu-get .System/expansion DEO2
 		;&buf .File/write DEO2
-		NEQ2k ?&>ler
+		NEQ2k ?/>ler
 	POP2 POP2
 	( | emit sym )
 	;dict/sym-ext dst/<push-str>
@@ -140,7 +140,7 @@
 		DUP2 .File/write DEO2
 		#0003 ADD2 LDAk #00 SWP STH2k .File/length DEO2
 		INC2 DUP2 .File/write DEO2
-		STH2r ADD2 GTH2k ?&>les
+		STH2r ADD2 GTH2k ?/>les
 	POP2 POP2 JMP2r
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a 00
@@ -227,7 +227,7 @@
 	#20 !/<push-byte>
 
 @macros/<push-word> ( t* -- )
-	;/<push-byte> !for-each
+	;&<push-byte> !for-each
 
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &+ptr =&mem ] INC2k
@@ -242,7 +242,7 @@
 	name/unpack STH2k ,&+ptr LDR2 ;&mem
 	&>lf
 		DUP2 STH2kr str/cmp ?{
-			str/cap str/cap GTH2k ?&>lf
+			str/cap str/cap GTH2k ?/>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -260,9 +260,8 @@
 
 @token/<push-byte> ( c -- )
 	DUP #20 GTH ?{
-		;&buf assembly/apply #0a NEQ ?{
-			[ LIT2 &line 0001 ] INC2 ,&line STR2 }
-		!/<new> }
+		;&buf assembly/apply #0a NEQ ?/<new>
+		[ LIT2 &line 0001 ] INC2 ,&line STR2 !/<new> }
 	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
@@ -288,13 +287,13 @@
 	&>w
 		LDAk [ LIT "/ ] EQU ?{
 			LDAk /<push-byte>
-			INC2 LDAk ?&>w }
+			INC2 LDAk ?/>w }
 	POP2 ,&+ptr LDR ,&+anchor STR !syms/<new>
 
 @scope/make-name ( name* -- scope/label* )
 	INC2 [ LIT2 &+anchor $1 _&+ptr ] STR
 	[ LIT "/ ] /<push-byte>
-	;&buf SWP2 ;/<push-byte> !for-each
+	;&buf SWP2 ;&<push-byte> !for-each
 
 (
 @|Runes )
@@ -304,7 +303,7 @@
 	;&lut
 	&>w
 		LDAk STHkr EQU ?{
-			#0003 ADD2 LDAk ?&>w
+			#0003 ADD2 LDAk ?/>w
 		POP2 #ffff }
 	POPr JMP2r
 
@@ -383,7 +382,7 @@
 	[ LIT2r 1f00 ] ;&lut
 	&>w1
 		SWP2k #0003 SWP2 mem/cmp ?{
-			INCr #0003 ADD2 LDAk ?&>w1
+			INCr #0003 ADD2 LDAk ?/>w1
 		POP2 POP2 POP2r #00 JMP2r }
 	POP2
 	( mask ) ANDr
@@ -392,11 +391,11 @@
 	&>w2
 		LDAk #21 LTH ?{
 			( | parse modes )
-			LDAk [ LIT "2 ] NEQ ?{ LITr 20 !&r }
-			LDAk [ LIT "r ] NEQ ?{ LITr 40 !&r }
-			LDAk [ LIT "k ] NEQ ?{ LITr 80 !&r }
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 !/r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 !/r }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 !/r }
 			POP2 POPr #00 JMP2r
-			&r ORAr INC2 !&>w2 }
+			&r ORAr INC2 !/>w2 }
 	POP2 STHr JMP2r
 
 @opcodes/lut [
@@ -439,11 +438,11 @@
 @|Name )
 
 @name/validate ( name* -- name* )
-	( not hex ) str/is-hex ?&fail
-	( not lambda ) LDAk LIT "{ EQU ?&fail
-	( not runic ) LDAk runes/find INC2 ORA ?&fail
-	( dup macros ) macros/find-name INC2 ORA ?&dup
-	( dup symbol ) syms/find-name INC2 ORA ?&dup
+	( not hex ) str/is-hex ?/fail
+	( not lambda ) LDAk LIT "{ EQU ?/fail
+	( not runic ) LDAk runes/find INC2 ORA ?/fail
+	( dup macros ) macros/find-name INC2 ORA ?/dup
+	( dup symbol ) syms/find-name INC2 ORA ?/dup
 	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
 	&fail ( -- )
 	;dict/invalid ;dict/Name !info/<error-token>
@@ -487,7 +486,7 @@
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	[ LIT2r =&ptr ] LDA2kr #00 /<push-byte>
-	name/validate ;/<push-byte> for-each SWP2r LDA2r OVR2r SUB2r SWP2r STAr
+	name/validate ;&<push-byte> for-each SWP2r LDA2r OVR2r SUB2r SWP2r STAr
 	POPr #00
 	( >> )
 
@@ -506,8 +505,8 @@
 	,&ptr LDR2 ;&mem
 	&>lfn
 		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
-			INC2k [ LIT2 &name $2 ] str/cmp ?&found }
-		POP2 /next-sym GTH2k ?&>lfn
+			INC2k [ LIT2 &name $2 ] str/cmp ?/found }
+		POP2 /next-sym GTH2k ?/>lfn
 	POP2 POP2 #ffff POPr JMP2r
 
 	&found ( to* from* . len -- sym* )
@@ -535,7 +534,7 @@
 					DUP2 info/<print>
 					#0a info/<emit> }
 				POP2 } }
-		/next-sym GTH2k ?&>ls
+		/next-sym GTH2k ?/>ls
 	POP2 POP2 !rom/<emit>
 
 @syms/byte-distance ( addr* -- addr* )
@@ -609,7 +608,7 @@
 		EQU2k ?{
 			DUP2 ;info/ref STA2
 			DUP2k #0004 ADD2 LDA2 JSR2
-			( ) #000a ADD2 !&>l }
+			( ) #000a ADD2 !/>l }
 	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
@@ -643,7 +642,7 @@
 @|Rom )
 
 @rom/<write-str> ( str* -- )
-	;/<write-byte> !for-each
+	;&<write-byte> !for-each
 
 @rom/<write-opcode> ( str* -- )
 	opcodes/parse !/<write-byte>
@@ -670,10 +669,9 @@
 @rom/<write-byte> ( byte -- )
 	head/get-inc
 	( | test zero-page )
-	OVR ?{
-		POP2 POP
-		( ! ) ;dict/zero-page ;dict/Writing !info/<error-token> }
-	!/<put>
+	OVR ?/<put>
+	POP2 POP
+	( ! ) ;dict/zero-page ;dict/Writing !info/<error-token>
 
 @head/get-inc ( -- addr* )
 	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
@@ -698,7 +696,7 @@
 	STH2
 	&>w
 		LDAk DUP ?{ POP POP2 POP2r JMP2r }
-		STH2kr JSR2 INC2 !&>w
+		STH2kr JSR2 INC2 !/>w
 
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
@@ -715,7 +713,7 @@
 	[ LIT2r 0000 ]
 	&>wh
 		[ LITr 40 ] SFT2r chex [ LITr 00 ] STH
-		ADD2r INC2 LDAk ?&>wh
+		ADD2r INC2 LDAk ?/>wh
 	POP2 STH2r JMP2r
 
 @str/len ( str* -- str* length )
@@ -725,7 +723,7 @@
 	DUP2
 	&>wih
 		chex INC ?{ LDA #00 EQU JMP2r }
-		INC2 !&>wih
+		INC2 !/>wih
 
 @str/cap1 INC2
 	( >> )
@@ -740,13 +738,13 @@
 
 @mem/cmp ( a* length* b* -- t )
 	STH2
-	OVR2 ADD2 SWP2 !&c
+	OVR2 ADD2 SWP2 !/c
 
 	&>l
 		INC2 INC2r &c
 		&r ( end* a* . b* -- t )
 		EQU2k ?{
-			LDAk LDAkr STHr EQU ?&>l }
+			LDAk LDAkr STHr EQU ?/>l }
 	POP2r EQU2 JMP2r
 
 (
@@ -783,16 +781,16 @@
 	#20 !/<emit>
 
 @info/<print> ( str* -- )
-	;/<emit> !for-each
+	;&<emit> !for-each
 
 @info/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP #30 ADD /<emit>
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
 @error/<set> ( -- )

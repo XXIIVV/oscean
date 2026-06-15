@@ -29,7 +29,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "Multiset 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "28 20 "Apr 20 "2026 $2
+	( date ) "15 20 "Jun 20 "2026 $2
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -175,7 +175,7 @@
 	&>w
 		LDZk DUP symbol/is-spacer ?/parse-sym-push
 		/<push>
-		INC !&>w
+		INC !/>w
 
 @item/<push> ( c -- )
 	[ LIT2 00 &+ptr -&+buf ] INCk
@@ -211,14 +211,14 @@
 			[ LITr 00 ]
 			&>wpf
 				OVR2 OVR2 u16/mod ORA ?{
-					INCr STH2k DIV2 STH2r !&>wpf }
+					INCr STH2k DIV2 STH2r !/>wpf }
 			primes/find-id #00 SWP #00 STHr SWP2 world/<push-count-id> }
-		INC2r !&>wpn
+		INC2r !/>wpn
 
 @item/parse-empty ( ztr -- ztr )
 	&>wpe
 		LDZk LIT "] NEQ ?{ INC JMP2r }
-		INC LDZk ?&>wpe
+		INC LDZk ?/>wpe
 	JMP2r
 
 @item/parse-prime ( ztr u16* id -- ztr )
@@ -228,15 +228,14 @@
 @item/parse-wrap-push ( ztr -- ztr )
 	( walk [ ) INC ztr/walk-ws
 	&>wwp
-		/parse-push ztr/walk-ws LDZk [ LIT "] ] NEQ ?&>wwp
+		/parse-push ztr/walk-ws LDZk [ LIT "] ] NEQ ?/>wwp
 	( walk ] ) INC JMP2r
 
 @item/walk-count ( ztr -- ztr count* )
 	LDZk LIT "^ NEQ ?{
-		INC LDZk char/is-dec ?{
-			DUP symbol/walk
-			( ref reg ) #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
-		( num reg ) !dec-ztr/walk-u16 }
+		INC LDZk char/is-dec ?dec-ztr/walk-u16
+		DUP symbol/walk
+		( ref reg ) #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
 	( def reg ) #0001 JMP2r
 
 %fraction/den-length ( fraction* -- fraction* len* ) {
@@ -266,7 +265,7 @@
 	SUB2k #0004 GTH2 ?/<print-complex>
 	&>lpb
 		DUP2 item/<print>
-		item/next GTH2k ?&>lpb
+		item/next GTH2k ?/>lpb
 	POP2 POP2 JMP2r
 
 @bag/<print-complex> ( to* from* -- )
@@ -274,7 +273,7 @@
 	&>lpbc
 		DUP2 item/<print>
 		item/next EQU2k ?{ #2019 DEO }
-		GTH2k ?&>lpbc
+		GTH2k ?/>lpbc
 	POP2 POP2 [ LIT2 "] 19 ] DEO
 	JMP2r
 
@@ -312,12 +311,12 @@
 	tote/<clear>
 	;&buf [ LIT2r 0001 ]
 	&>w
-		LDA2k ORA ?{ !&end }
+		LDA2k ORA ?{ !/end }
 		tote/<print>
 		DUP2 tote/<apply>
 		DUP2 fraction/<print>
 		#0a19 DEO
-		goto/step INC2r !&>w
+		goto/step INC2r !/>w
 
 	&end ( addr* -- )
 	POP2 tote/<print>
@@ -371,7 +370,7 @@
 	/get-register #0000 SWP2 SUB2
 	&>lpp
 		STH2kr str/<print>
-		INC2 ORAk ?&>lpp
+		INC2 ORAk ?/>lpp
 	POP2 POP2 POP2r !str/<set-debug>
 
 @tote/<put-emit> ( item* name* -- )
@@ -391,7 +390,7 @@
 	INC2 INC2 LDA2 #0000
 	&>lpl
 		STH2kr goto/<push>
-		INC2 GTH2k ?&>lpl
+		INC2 GTH2k ?/>lpl
 	POP2 POP2 POP2r JMP2r
 
 @tote/<apply> ( fraction* -- )
@@ -400,7 +399,7 @@
 	LDA2k LDA2k SWP2 /next-cell
 	&>lac
 		DUP2 queue/<take>
-		item/next GTH2k ?&>lac
+		item/next GTH2k ?/>lac
 	POP2 POP2
 	( | validate )
 	queue/can-apply ?{ POP2 JMP2r }
@@ -408,7 +407,7 @@
 	LDA2k OVR2 /next-cell
 	&>lap
 		DUP2 /<put>
-		item/next GTH2k ?&>lap
+		item/next GTH2k ?/>lap
 	POP2 POP2
 	( | multiplier )
 	fraction/is-unquoted ?{
@@ -430,7 +429,7 @@
 			OVRr STHr ?{ #2019 DEO }
 			LDA2k #00 STHkr item/<print-count-id>
 			LIT2r 00ff AND2r }
-		/next-cell INCr GTH2k ?&>lp
+		/next-cell INCr GTH2k ?/>lp
 	POP2 POP2 POP2r [ LIT2 "] 19 ] DEO
 	#2019 DEO
 	JMP2r
@@ -439,7 +438,7 @@
 	/get-range
 	&>lc
 		#0000 OVR2 STA2
-		/next-cell GTH2k ?&>lc
+		/next-cell GTH2k ?/>lc
 	POP2 POP2 JMP2r
 
 @queue/<take> ( item* -- )
@@ -479,7 +478,7 @@
 	&>l
 		EQU2k ?{
 			INC2k INC2 LDA2 STH2kr s16/mul OVR2 LDA2 tote/<mod-item>
-			item/next !&>l }
+			item/next !/>l }
 	POP2 POP2 POP2r JMP2r
 
 @queue/<push> ( value* -- )
@@ -495,7 +494,7 @@
 	,&+ptr LDR2 ;&+buf
 	&>lf
 		LDA2k STH2kr EQU2 ?{
-			item/next GTH2k ?&>lf
+			item/next GTH2k ?/>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -504,7 +503,7 @@
 	&>lca
 		EQU2k ?{
 			( item* count* ) INC2k INC2 LDA2
-			( item* count* id* ) OVR2 LDA2 tote/has-item ?{ item/next !&>lca } }
+			( item* count* id* ) OVR2 LDA2 tote/has-item ?{ item/next !/>lca } }
 	EQU2 JMP2r
 
 (
@@ -517,7 +516,7 @@
 	STH2
 	#0000
 	&>l
-		DUP2k ADD2 /get-prime STH2kr EQU2 ?{ INC DUP ?&>l }
+		DUP2k ADD2 /get-prime STH2kr EQU2 ?{ INC DUP ?/>l }
 	POP2r NIP JMP2r
 
 @symbol/is-spacer ( c -- t )
@@ -529,7 +528,7 @@
 
 @symbol/walk ( ztr -- ztr )
 	&>ww
-		LDZk /is-spacer ?{ INC2 !&>ww }
+		LDZk /is-spacer ?{ INC2 !/>ww }
 	JMP2r
 
 @symbol/new ( str* -- str* )
@@ -537,7 +536,7 @@
 	#0000 ;&+buf STA2
 	&>wn
 		LDAk /is-spacer ?{ LDAk /<push>
-			INC2 !&>wn }
+			INC2 !/>wn }
 	POP2 ;&+buf JMP2r
 
 @symbol/<push> ( c -- )
@@ -556,7 +555,7 @@
 	,&+ptr LDR2 ;&buf
 	&>lf
 		LDA2k STH2kr str/compare ?{
-			INC2 INC2 GTH2k ?&>lf
+			INC2 INC2 GTH2k ?/>lf
 		POP2r POP2 POP2 #ffff JMP2r }
 	( | found )
 	POP2r NIP2 JMP2r
@@ -582,8 +581,8 @@
 		POP2 DUP2r ADD2r STH2r primes/get-prime !u16/<print-dec> }
 	POP2r
 	( | quoted )
-	LDAk LIT "' NEQ ?{ LDA !char/<print> }
-	!str/<print>
+	LDAk LIT "' NEQ ?str/<print>
+	LDA !char/<print>
 
 @dict/alloc ( src* -- ptr* )
 	,&+ptr LDR2 SWP2
@@ -594,7 +593,7 @@
 		POP2 ,&+ptr STR2
 		STA
 		?{ POP2 JMP2r }
-		INC2 !&>w
+		INC2 !/>w
 
 @dict/identity "[] 00 &reached-a 0a "Reached 20 "in 20 00 &reached-b 20 "steps, 20 "with 20 00 &reached-c 20 "symbols. 0a00
 	&err-buffer "buffer 20 "overflow. 0a00
@@ -624,7 +623,7 @@
 		LDZk LIT "0 SUB DUP #0a LTH ?{
 			POP STH2r #7fff AND2 JMP2r }
 		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
-		ADD2r INC !&>w16
+		ADD2r INC !/>w16
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -665,8 +664,8 @@
 	STH2
 	&>wc
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
-		LDAk LDAkr STHr NEQ ?&d
-		INC2 INC2r !&>wc
+		LDAk LDAkr STHr NEQ ?/d
+		INC2 INC2r !/>wc
 
 @s16/mul ( val* mul* -- res* )
 	STH2
@@ -676,11 +675,11 @@
 @u16/<print-dec> ( u16* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP char/<print-digit>
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
 @random/<init> ( -- )

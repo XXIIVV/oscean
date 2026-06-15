@@ -23,7 +23,7 @@
 @meta 00 "HEOL! 0a
 	( details ) "A 20 "Lisp 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "May 20 "2026 $2
+	( date ) "15 20 "Jun 20 "2026 $2
 
 (
 @|Box )
@@ -67,17 +67,17 @@
 	/<clear>
 	walk
 	( | special )
-	[ LIT "( ] seeing ?&special
-	[ LIT ") ] seeing ?&special
-	[ LIT "' ] seeing ?&special
+	[ LIT "( ] seeing ?/special
+	[ LIT ") ] seeing ?/special
+	[ LIT "' ] seeing ?/special
 	( | body )
 	&>w
 		get
 		( | handlers )
-		[ LIT "( ] seeing ?{
-			[ LIT ") ] seeing ?{
-				[ LIT 20 ] seeing ?{ !&>w } } }
-	!/cap
+		[ LIT "( ] seeing ?/cap
+		[ LIT ") ] seeing ?/cap
+		[ LIT 20 ] seeing ?/cap
+		!/>w
 
 	&special ( -- c )
 	get
@@ -104,7 +104,7 @@
 	&callback ( -- c )
 	.Console/read DEI
 	( | comments )
-	DUP LIT "; EQU ?&comment
+	DUP LIT "; EQU ?/comment
 	( | normalize )
 	DUP #0a EQU ?{
 		DUP #09 EQU ?{
@@ -137,15 +137,15 @@
 @walk ( -- )
 	&>w
 		#20 seeing ?{ JMP2r }
-		get/look !&>w
+		get/look !/>w
 
 @read ( -- cell* )
 	token/scan
 	( >> )
 
 @parse ( -- cell* )
-	.token/buf LDZ LIT "( EQU ?&list
-	.token/buf LDZ LIT "' EQU ?&quote
+	.token/buf LDZ LIT "( EQU ?/list
+	.token/buf LDZ LIT "' EQU ?/quote
 	( | atomic )
 	;token/buf DUP2 str/is-dec ?str/to-dec
 	atom JMP2r
@@ -167,12 +167,12 @@
 	STH2
 	&>w
 		DUP2 tag ;types/cons NEQ2 ?{
-			DUP2 car car STH2kr EQU2 ?{ cdr !&>w } }
+			DUP2 car car STH2kr EQU2 ?{ cdr !/>w } }
 	POP2r car cdr JMP2r
 
 @bind ( env* t* v* -- res* )
 	DUP2 not ?{
-		DUP2 tag ;types/cons EQU2 ?&cons
+		DUP2 tag ;types/cons EQU2 ?/cons
 		!pair }
 	POP2 POP2 JMP2r
 
@@ -189,14 +189,14 @@
 
 @eval ( env* box* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
-	DUP2 tag ;types/cons EQU2 ?&cons
+	DUP2 tag ;types/cons EQU2 ?/cons
 	NIP2 JMP2r
 
 	&cons ( env* box* -- res* )
 	( e x.cdr ) STH2k cdr
 	( e x.car eval ) OVR2 STH2r car eval
 	( | apply )
-	DUP2 tag ;types/prim EQU2 ?&prim
+	DUP2 tag ;types/prim EQU2 ?/prim
 	DUP2 tag ;types/clos EQU2 ?reduce
 	POP2 POP2 POP2 .err LDZ2 JMP2r
 
@@ -205,7 +205,7 @@
 
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
-	DUP2 tag ;types/cons EQU2 ?&cons
+	DUP2 tag ;types/cons EQU2 ?/cons
 	POP2 POP2 ;types/nil JMP2r
 
 	&cons ( env* t* -- res* )
@@ -229,13 +229,13 @@
 	;&lutend ;&lut [ LIT2r 0000 ]
 	&>l
 		LDA2k atom .env LDZ2 STH2kr ;types/prim ORA2 ROT2 pair .env STZ2
-		INC2r #0004 ADD2 GTH2k ?&>l
+		INC2r #0004 ADD2 GTH2k ?/>l
 	POP2 POP2 POP2r
 	( | listen )
 	&>w
 		.env LDZ2 read eval <print>
 		#0a <emit>
-		.env LDZ2 ord ;cons/ptr STA2 !&>w
+		.env LDZ2 ord ;cons/ptr STA2 !/>w
 
 @f-cons ( env* t* -- res* )
 	evlis DUP2 cdr car SWP2 car !cons
@@ -278,7 +278,7 @@
 	&>w
 		cdr DUP2 not ?{
 			DUP2 car STH2
-			ADD2r !&>w }
+			ADD2r !/>w }
 	POP2 STH2r ord JMP2r
 
 @f-sub ( env* t* -- res* )
@@ -286,7 +286,7 @@
 	&>w
 		cdr DUP2 not ?{
 			DUP2 car STH2
-			SUB2r !&>w }
+			SUB2r !/>w }
 	POP2 STH2r ord JMP2r
 
 @f-mul ( env* t* -- res* )
@@ -294,35 +294,35 @@
 	&>w
 		cdr DUP2 not ?{
 			DUP2 car STH2
-			MUL2r !&>w }
+			MUL2r !/>w }
 	POP2 STH2r ord JMP2r
 
 @f-div ( env* t* -- res* )
 	evlis DUP2 car STH2
 	&>w
 		cdr DUP2 not ?{
-			DUP2 car STH2r s16/div STH2 !&>w }
+			DUP2 car STH2r s16/div STH2 !/>w }
 	POP2 STH2r ord JMP2r
 
 @f-leta ( env* t* -- res* )
 	&>w
 		DUP2 STH2k not-nil STH2r cdr not-nil AND #00 EQU ?{
 			STH2
-			DUP2 STH2kr car cdr car eval STH2kr car car pair STH2r cdr !&>w }
+			DUP2 STH2kr car cdr car eval STH2kr car car pair STH2r cdr !/>w }
 	car !eval
 
 @f-and ( env* t* -- res* )
 	[ LITr -tru ] LDZ2r
 	&>w
 		DUP2 not ?{
-			OVR2 OVR2 car eval POP2r STH2k not ?{ cdr !&>w } }
+			OVR2 OVR2 car eval POP2r STH2k not ?{ cdr !/>w } }
 	POP2 POP2 STH2r JMP2r
 
 @f-or ( env* t* -- res* )
 	[ LITr -tru ] LDZ2r
 	&>w
 		DUP2 not ?{
-			OVR2 OVR2 car eval POP2r STH2k not-nil ?{ cdr !&>w } }
+			OVR2 OVR2 car eval POP2r STH2k not-nil ?{ cdr !/>w } }
 	POP2 POP2 STH2r JMP2r
 
 @f-lambda ( env* t* -- res* )
@@ -356,7 +356,7 @@
 	STH2k ,&+ptr LDR2 ;&mem
 	&>l
 		DUP2 STH2kr str/cmp ?{
-			INC2 GTH2k ?&>l
+			INC2 GTH2k ?/>l
 		POP2 POP2 POP2r #ffff JMP2r }
 	NIP2 POP2r JMP2r
 
@@ -365,7 +365,7 @@
 		LDAk DUP ?{ /<push>
 			POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @sym/<push> ( char -- )
 	[ LIT2 &+ptr =&mem ] INC2k ,&+ptr STR2
@@ -380,7 +380,7 @@
 		DUP2 car <print>
 		cdr DUP2 not ?{
 			DUP2 tag ;types/cons EQU2 ?{ ;dict/pair str/<print> !<print> }
-			[ LIT 20 ] <emit> !&>w }
+			[ LIT 20 ] <emit> !/>w }
 	POP2 JMP2r
 
 @<print-list> ( box* -- )
@@ -419,13 +419,13 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk chr/escape }
 		<emit>
-		INC2 !&>wp
+		INC2 !/>wp
 
 @str/cmp ( a* b* -- t )
 	STH2
 	&>wc
 		LDAk LDAkr STHr NEQ ?{
-			INC2 INC2r LDAk ?&>wc
+			INC2 INC2r LDAk ?/>wc
 		LDA LDAr STHr #0000 EQU2 JMP2r }
 	POP2 POP2r #00 JMP2r
 
@@ -435,7 +435,7 @@
 	&>wid
 		LDAk DUP ?{ POP POP2 #01 JMP2r }
 		chr/is-dec ?{ POP2 #00 JMP2r }
-		INC2 !&>wid
+		INC2 !/>wid
 
 @str/to-dec ( str* -- val* )
 	( sign ) [ LITr 00 ]
@@ -443,7 +443,7 @@
 	[ LIT2r 0000 ]
 	&>wn
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
-		ADD2r INC2 LDAk #30 SUB #0a LTH ?&>wn
+		ADD2r INC2 LDAk #30 SUB #0a LTH ?/>wn
 	POP2 ROTr STHr ?{ STH2r JMP2r }
 	#0000 STH2r SUB2 #1fff AND2 JMP2r
 
@@ -469,11 +469,11 @@
 		#2000 SWP2 SUB2 }
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP #30 ADD <emit>
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
 @dict/err "ERR 00 &pair 20 ". 20 00
