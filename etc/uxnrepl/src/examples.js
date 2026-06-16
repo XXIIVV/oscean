@@ -202,7 +202,47 @@ examples.fibonacci=`( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22
 	#0001 GTH2k ?{ POP2 JMP2r }
 	SUB2k fibo STH2
 	INC2 SUB2 fibo STH2r ADD2 JMP2r`
-examples.print_time=`( Print the time in the hh:mm:ss format )
+examples.print_date=`( Print the date in the format: Day, 1 Jan 2026 )
+
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2
+
+|100
+
+@on-reset ( -> )
+	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/days ADD2 str/<print>
+	[ LIT2 ", 18 ] DEO
+	#2018 DEO
+	[ LIT2 00 -DateTime/day ] DEI dec/<print>
+	#2018 DEO
+	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months ADD2 str/<print>
+	#2018 DEO
+	.DateTime/year DEI2 dec/<print>
+	#0a18 DEO
+	BRK
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@dec/<print> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&>w
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{ 
+			DUP LIT "0 ADD #18 DEO
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
+	POP2r POP2 POP2 JMP2r
+
+@dict/months [
+	"Jan $1 "Feb $1 "Mar $1 "Apr $1
+	"May $1 "Jun $1 "Jul $1 "Aug $1
+	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
+	&days [
+	"Sun $1 "Mon $1 "Tue $1 "Wed $1
+	"Thu $1 "Fri $1 "Sat $1 ]
+`
+examples.print_time=`( Print the time in the format: hh:mm:ss )
 
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1
 
@@ -224,7 +264,34 @@ examples.print_time=`( Print the time in the hh:mm:ss format )
 
 @u8/<print-digit> ( d -- )
 	LIT "0 ADD #18 DEO
-	JMP2r`
+	JMP2r
+`
+examples.print_arvelie=`( Print the Arvelie date )
+
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2
+
+|100
+
+@on-reset ( -> )
+	.DateTime/doty DEI2 .DateTime/year DEI2 <emit-arv>
+	BRK
+
+@<emit-arv> ( doty* year* -- )
+	#07d6 SUB2 NIP
+	( y ) <emit-dec>
+	( m ) DUP2 #000e DIV2 NIP #11 ADD DUP #2a GTH #30 MUL SUB <emit-num>
+	( d ) #000e DIV2k MUL2 SUB2 NIP
+	( >> )
+
+@<emit-dec> ( byte -- )
+	DUP #0a DIV <emit-num>
+	#0a DIVk MUL SUB
+	( >> )
+
+@<emit-num> ( num -- )
+	[ LIT "0 ] ADD #18 DEO
+	JMP2r
+`
 examples.fizzbuzz=`( Print the fizzbuzz sequence )
 
 #6501
