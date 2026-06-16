@@ -32,7 +32,7 @@
 	( ) "Image 0a
 	( ) "An 20 "Image 20 "Viewer 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "13 20 "Jun 20 "2026 00
+	( ) "16 20 "Jun 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -54,7 +54,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 !/<apply> }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @src/<apply> ( -- )
 	#0000 .Console/vector DEO2
@@ -74,16 +74,15 @@
 		LDAk DUP ?{ POP POP2 /<pop> !/<load> }
 		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 		STZ2
-		INC2 !&>w
+		INC2 !/>w
 
 @path/<pop> ( -- )
 	[ LIT2 -&buf _&ptr ] LDR
 	&>wp
 		NEQk ?{ POP2 JMP2r }
-		#01 SUB LDZk LIT "/ NEQ ?{
-			#00 SWP INC STZ
-			POP JMP2r }
-		!&>wp
+		#01 SUB LDZk LIT "/ NEQ ?/>wp
+	#00 SWP INC STZ
+	POP JMP2r
 
 @path/<load> ( -- )
 	;&buf .File/name DEO2
@@ -93,7 +92,7 @@
 	DUP2
 	&>wc
 		LDAk #0a NEQ ?{ STH2k #00 STH2r STA }
-		INC2 LDAk ?&>wc
+		INC2 LDAk ?/>wc
 	POP2 !images/<scan>
 
 @imgpath/make ( name* -- path* )
@@ -107,7 +106,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 		STZ2
-		INC2 !&>w
+		INC2 !/>w
 
 (
 @|Images )
@@ -132,18 +131,18 @@
 	/<reset-count>
 	&>ws
 		#0005 ADD2 DUP2 /<push>
-		str/cap INC2 LDAk ?&>ws
+		str/cap INC2 LDAk ?/>ws
 	POP2 JMP2r
 
 @images/<select-next> ( -- )
 	.&selected LDZ INC
-	( clamp ) DUP .&count LDZ NEQ ?{ POP #00 }
-	!/<select>
+	( clamp ) DUP .&count LDZ NEQ ?/<select>
+	POP #00 !/<select>
 
 @images/<select-prev> ( -- )
-	.&selected LDZ
-	( clamp ) DUP ?{ POP .&count LDZ }
-	#01 SUB !/<select>
+	.&selected LDZ #01 SUB
+	( clamp ) INCk ?/<select>
+	POP [ LIT2 ff -&count ] LDZ ADD !/<select>
 
 @images/<select> ( id -- )
 	DUP .&selected STZ
@@ -228,10 +227,10 @@
 		&>h
 			;&mem .File/read DEO2
 			[ LIT2 00 -File/success-lb ] DEI EQU ?{ DEOkr
-				INC DUP ?&>h }
+				INC DUP ?/>h }
 		POP
 		( lb ) .Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
-		INC DUP ?&>v
+		INC DUP ?/>v
 	POP POP2r JMP2r
 
 @image/read-size ( str* -- w h )

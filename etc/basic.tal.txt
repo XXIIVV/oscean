@@ -42,7 +42,7 @@
 	[ LIT &made 01 ] ?{ ;prg/mem prg/<eval>
 		BRK }
 	( | expect path )
-	.src/buf LDZ ?&soft
+	.src/buf LDZ ?/soft
 	[ LIT2 00 -Console/type ] DEI EQU ?{
 		( override ) ;src/on-console .Console/vector DEO2 }
 	font/<draw-ready>
@@ -57,7 +57,7 @@
 	&body "Sunflower 20 "Basic 0a
 	( ) "A 20 "BASIC 20 "interpreter 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "12 20 "Jun 20 "2026 $1
+	( ) "15 20 "Jun 20 "2026 $1
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -69,7 +69,7 @@
 	walk-blank STH2k walk-text ;&lut-end ;&lut
 	&>lf
 		LDA2k LDA2 STH2kr str/seg ?{
-			INC2 INC2 GTH2k ?&>lf
+			INC2 INC2 GTH2k ?/>lf
 		POP2 POP2 POP2r #0000 JMP2r }
 	POP2r NIP2 LDA2 !prg/next-instr
 
@@ -79,7 +79,7 @@
 		STHkr #03 AND ?{ font/<draw-break> }
 		STHk2r #0003 AND2 #60 SFT2 #0020 ADD2 .Screen/x DEO2
 		LDA2k LDA2 font/<draw-str>
-		INC2 INC2 INCr GTH2k ?&>lp
+		INC2 INC2 INCr GTH2k ?/>lp
 	POP2 POP2 POP2r .Screen/x DEO2
 	font/<draw-lb>
 	font/<draw-lb>
@@ -95,20 +95,20 @@
 @walk-text ( str* -- str* )
 	&>w
 		LDAk #20 GTH ?{ JMP2r }
-		INC2 !&>w
+		INC2 !/>w
 
 @walk-blank ( str* -- str* )
 	&>w
 		LDAk ?{ JMP2r }
-		LDAk LIT ", EQU ?&skip
-		LDAk #20 GTH ?&end &skip INC2 LDAk ?&>w &end JMP2r
+		LDAk LIT ", EQU ?/skip
+		LDAk #20 GTH ?/end &skip INC2 LDAk ?/>w &end JMP2r
 
 @walk-expr ( str* -- str* number* )
 	walk-number STH2
 	&>w
 		walk-blank LDAk math/find ORAk ?{ POP2 STH2r JMP2r }
 		STH2
-		INC2 walk-number STH2r STH2r ROT2 ROT2 JSR2 STH2 !&>w
+		INC2 walk-number STH2r STH2r ROT2 ROT2 JSR2 STH2 !/>w
 
 @walk-number ( str* -- str* num* )
 	walk-blank LDAk [ LIT "$ ] EQU ?walk-hex
@@ -127,14 +127,14 @@
 	[ LIT2r 0000 ]
 	&>wn
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
-		ADD2r INC2 LDAk #30 SUB #0a LTH ?&>wn
+		ADD2r INC2 LDAk #30 SUB #0a LTH ?/>wn
 	STH2r JMP2r
 
 @walk-hex ( str* -- str* val* )
 	( walk $ ) INC2 [ LIT2r 0000 ]
 	&>wh
 		LITr 40 SFT2r LITr 00 LDAk chr/hex STH
-		ADD2r INC2 LDAk chr/hex INC ?&>wh
+		ADD2r INC2 LDAk chr/hex INC ?/>wh
 	STH2r JMP2r
 
 (
@@ -169,12 +169,12 @@
 @prg/<eval> ( addr* -- )
 	;&cap SWP2 [ LIT2r 0000 ]
 	&>l
-		( skip empty ) LDA2k ORA ?{ /next-instr !&continue }
+		( skip empty ) LDA2k ORA ?{ /next-instr !/continue }
 		( check overflow ) INC2r ORAkr STHr ?{
 			POP2 POP2 POP2r
 			( ! ) ;dict/infinite ;dict/loop !font/<draw-error> }
 		( body* ) INC2k INC2 LDA2
-		( body* fn* ) OVR2 LDA2 JSR2 &continue GTH2k ?&>l
+		( body* fn* ) OVR2 LDA2 JSR2 &continue GTH2k ?/>l
 	POP2 POP2 POP2r JMP2r
 
 @prg/<save> ( name* -- )
@@ -184,7 +184,7 @@
 	&>ls
 		LDA2k #0000 EQU2 ?{
 			DUP2k ;&mem SUB2 #02 SFT2 file/<save-line> }
-		/next-instr GTH2k ?&>ls
+		/next-instr GTH2k ?/>ls
 	POP2 POP2 JMP2r
 
 @prg/<make> ( name* -- )
@@ -221,7 +221,7 @@
 			DUP2 /<draw-line>
 			/next-instr ,&from STR2
 			POP2 BRK }
-		/next-instr GTH2k ?&>lo
+		/next-instr GTH2k ?/>lo
 	POP2 POP2 font/<draw-cursor>
 	#0000 .Screen/vector DEO2
 	BRK
@@ -250,7 +250,7 @@
 	;&lut
 	&>l
 		LDAk STHkr EQU ?{
-			INC2 INC2 INC2 LDAk ?&>l }
+			INC2 INC2 INC2 LDAk ?/>l }
 	INC2 LDA2 POPr JMP2r
 
 (
@@ -263,13 +263,13 @@
 
 @list =dict/list =dict/help-list
 	( | body )
-	walk-blank LDAk ?&single
+	walk-blank LDAk ?/single
 	POP2 prg/<draw>
 	font/<draw-cursor> !prg/next-instr
 
 	&single ( str* -- )
 	walk-expr STH2
-	walk-blank LDAk ?&range
+	walk-blank LDAk ?/range
 	POP2 STH2r prg/get-line prg/<draw-line>
 	font/<draw-cursor> !prg/next-instr
 
@@ -292,12 +292,12 @@
 	( | body )
 	&>w
 		walk-blank LDAk ?{ POP2 !prg/next-instr }
-		variables/assign !&>w
+		variables/assign !/>w
 
 @if =dict/if =dict/help-if
 	( | body )
-	walk-expr ORA ?{ POP2 !prg/next-instr }
-	!str/<eval>
+	walk-expr ORA ?str/<eval>
+	POP2 !prg/next-instr
 
 @goto =dict/goto =dict/help-goto
 	( | body )
@@ -324,9 +324,9 @@
 	[ LIT2 01 _&lb ] STR
 	&>w
 		walk-blank /<print-segment>
-		LDAk ?&>w
-	POP2 [ LIT2 00 &lb $1 ] EQU ?{ font/<draw-break> }
-	!prg/next-instr
+		LDAk ?/>w
+	POP2 [ LIT2 00 &lb $1 ] EQU ?prg/next-instr
+	font/<draw-break> !prg/next-instr
 
 	&<print-segment> ( str* -- str* )
 	LDAk LIT "; NEQ ?{
@@ -340,7 +340,7 @@
 	( | body )
 	&>w
 		walk-blank LDAk chr/islc ?{ LDAk bind/<push> }
-		INC2 LDAk ?&>w
+		INC2 LDAk ?/>w
 	POP2
 	( replace addr* ) bind/<interrupt>
 	;halt JMP2r
@@ -396,7 +396,7 @@
 	walk-expr #007f AND2 #30 SFT2 ;font/sprites ADD2 STH2
 	&>w
 		walk-blank LDAk ?{ POP2 POP2r !prg/next-instr }
-		walk-expr STH2kr INC2r INC2r STA2 !&>w
+		walk-expr STH2kr INC2r INC2r STA2 !/>w
 
 @help =dict/help =meta/body
 	( | body )
@@ -427,7 +427,7 @@
 		LDAk DUP ?{ /<push>
 			POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @dict/push-str ( str* -- ptr* )
 	LDAk ?{ POP2 #fffe JMP2r }
@@ -437,7 +437,7 @@
 			POP POP2 #00 /<push>
 			STH2r JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @dict/<push> ( byte -- )
 	[ LIT2 &ptr =&mem ] DUP2 ;&cap NEQ2 ?{
@@ -488,14 +488,14 @@
 	&>ws
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<listen>
-		INC2 !&>ws
+		INC2 !/>ws
 
 @input/<listen> ( char -- )
-	DUP #08 EQU ?&erase
-	DUP #0a EQU ?&parse
-	DUP #0d EQU ?&parse
-	#20 LTHk NIP ?&end
-	#7e GTHk NIP ?&end
+	DUP #08 EQU ?/erase
+	DUP #0a EQU ?/parse
+	DUP #0d EQU ?/parse
+	#20 LTHk NIP ?/end
+	#7e GTHk NIP ?/end
 	DUP /<push>
 	DUP /<draw> &end POP JMP2r
 
@@ -523,7 +523,7 @@
 	;&buf
 	&>wb
 		walk-blank walk-expr bind/assoc ?{ POP2 !bind/<resume> }
-		LDAk ?&>wb
+		LDAk ?/>wb
 	POP2 JMP2r
 
 @input/parse ( c -- )
@@ -557,7 +557,7 @@
 		LDAk DUP ?{ /<push>
 			POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @history/<push> ( byte -- )
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
@@ -628,7 +628,7 @@
 
 @bind/on-control ( -> )
 	( | Handle button )
-	.Controller/button DEI DUP ?&on-button
+	.Controller/button DEI DUP ?/on-button
 	POP
 	( | Handle key )
 	.Controller/key DEI input/<listen>
@@ -662,10 +662,10 @@
 		[ LIT2 &width $1 00 ]
 		&>h
 			;&mem .File/read DEO2
-			[ LIT2 00 -File/success-lb ] DEI EQU ?&ended
+			[ LIT2 00 -File/success-lb ] DEI EQU ?/ended
 			DEOkr
-			INC GTHk ?&>h &ended POP2 .Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
-		INC GTHk ?&>v
+			INC GTHk ?/>h &ended POP2 .Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
+		INC GTHk ?/>v
 	POP2 POP2r JMP2r
 
 @pict/read-size ( str* -- w h )
@@ -676,7 +676,7 @@
 	chr/hex SWP chr/hex #40 SFT ORA JMP2r
 
 @pict/read-depth ( str* -- length* mask* )
-	str/cap #0004 SUB2 LDA2 [ LIT2 "ch ] EQU2 ?&2bit
+	str/cap #0004 SUB2 LDA2 [ LIT2 "ch ] EQU2 ?/2bit
 	#0000 #0008 JMP2r
 
 	&2bit ( str* -- length* mask* )
@@ -757,14 +757,14 @@
 	&>wdq
 		LDAk [ LIT "" ] EQU ?{
 			LDAk /<draw-char>
-			INC2 LDAk ?&>wdq }
+			INC2 LDAk ?/>wdq }
 	INC2 JMP2r
 
 @font/<draw-str> ( str* -- )
 	&>wds
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<draw-char>
-		INC2 !&>wds
+		INC2 !/>wds
 
 @font/<draw-char> ( char -- )
 	DUP #0a NEQ ?{ POP !/<draw-lb> }
@@ -864,7 +864,7 @@
 	;&b .File/read
 	&>s
 		DEO2k .File/success-lb DEI ?{ POP POP2 JMP2r }
-		[ LIT &b $1 ] input/<listen> !&>s
+		[ LIT &b $1 ] input/<listen> !/>s
 
 @file/exists ( -- t )
 	.File/name DEO2
@@ -901,16 +901,16 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<save-byte>
-		INC2 !&>w
+		INC2 !/>w
 
 @file/<save-dec> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
 		NIP #30 ADD /<save-byte>
-		OVRr ADDr STHkr ?&>write
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
 (
@@ -943,8 +943,8 @@
 @str/seg ( a* b* -- bool )
 	STH2
 	&>ws
-		LDAk LDAkr STHr NEQ ?&e
-		INC2r INC2 LDAk ?&>ws &e POP2r LDA #00 EQU JMP2r
+		LDAk LDAkr STHr NEQ ?/e
+		INC2r INC2 LDAk ?/>ws &e POP2r LDA #00 EQU JMP2r
 
 @mem/<clear> ( src* len* -- )
 	,&lclr STR2
@@ -972,23 +972,23 @@
 	"= =&equ "! =&neq
 	"% =&mod $3 ]
 
-@dict/varvara "SUNFLOWER 20 "BASIC 20 $1
-	&guide "TYPE 20 ""HELP" 20 "FOR 20 "INFO 20 7f 20 $1 &bytes-free 20 "BYTES 20 "FREE 0a $1
-	&manual "TYPE 20 ""HELP 20 "PRINT" 20 "FOR 20 "PRINT 20 "DETAILS $1
-	&ready "READY. $1
-	&help "HELP $1
-	&error "ERROR $1
-	&infinite "INFINITE $1
-	&line "LINE $1
-	&path "PATH $1
-	&file "FILE $1
-	&loop "LOOP $1
-	&zdiv "DIV-BY-ZERO $1
-	&underflow "UNDERFLOW $1
-	&overflow "OVERFLOW $1
-	&number "NUMBER $1
-	&variable "VARIABLE $1
-	&command "COMMAND $1
+@dict/varvara "SUNFLOWER 20 "BASIC 20 00
+	&guide "TYPE 20 ""HELP" 20 "FOR 20 "INFO 20 7f 20 $1 &bytes-free 20 "BYTES 20 "FREE 0a 00
+	&manual "TYPE 20 ""HELP 20 "PRINT" 20 "FOR 20 "PRINT 20 "DETAILS 00
+	&ready "READY. 00
+	&help "HELP 00
+	&error "ERROR 00
+	&infinite "INFINITE 00
+	&line "LINE 00
+	&path "PATH 00
+	&file "FILE 00
+	&loop "LOOP 00
+	&zdiv "DIV-BY-ZERO 00
+	&underflow "UNDERFLOW 00
+	&overflow "OVERFLOW 00
+	&number "NUMBER 00
+	&variable "VARIABLE 00
+	&command "COMMAND 00
 	&run "RUN $1 &help-run 7f "RUN 20 "Begin 20 "evaluation 20 "from 20 "smallest 20 "line 20 "number. $1
 	&list "LIST $1 &help-list 7f "LIST 20 20 20 20 20 20 20 2020 "Print 20 "entire 20 "program. 0a
 	( > ) 7f "LIST 20 "12 20 20 20 20 2020 "Print 20 "line 20 "12 0a

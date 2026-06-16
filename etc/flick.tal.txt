@@ -168,7 +168,7 @@
 	#1000
 	&>ldr
 		DUP /<draw-masks>
-		INC GTHk ?&>ldr
+		INC GTHk ?/>ldr
 	POP2
 	( | draw selection )
 	[ LIT2 00 -&id ] LDZ #0011 MUL2 ;&x1+1 ADD2 .Screen/x DEO2
@@ -187,7 +187,7 @@
 	&>l
 		;&cell .Screen/addr DEO2
 		[ DEOkr DEOkr DEOkr ] .Screen/x DEI2k #0007 SUB2 ROT DEO2
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 POP2r JMP2r
 
 	&eye-icn [ 0007 1821 0203 0100 00e0 1884 c0c0 8000 ]
@@ -393,13 +393,13 @@
 	;tool/type-icns-end ;tool/type-icns [ LITr 00 ]
 	&>wt
 		DUP2 STHkr .tool/type LDZ EQU /<draw-button>
-		INCr #0008 ADD2 GTH2k ?&>wt
+		INCr #0008 ADD2 GTH2k ?/>wt
 	POP2 POP2 POPr
 	( | sizes )
 	;tool/size-icns-end ;tool/size-icns [ LITr 00 ]
 	&>ws
 		DUP2 STHkr .tool/size LDZ EQU /<draw-button>
-		INCr #0008 ADD2 GTH2k ?&>ws
+		INCr #0008 ADD2 GTH2k ?/>ws
 	POP2 POP2 POPr
 	( | clor )
 	#0400
@@ -410,7 +410,7 @@
 		.Screen/y DEI2k #0010 SUB2 ROT DEO2
 		;&color-icn .Screen/addr DEO2
 		DUP #05 MUL .Screen/sprite DEOk DEO
-		INC GTHk ?&>wc
+		INC GTHk ?/>wc
 	POP2
 	( | onionskin )
 	;&onion-icn .tool/onion LDZ !/<draw-button>
@@ -580,8 +580,8 @@
 		&>horw
 			DUP2 STH2kr /get-pixel [ LIT &t $1 ] NEQ ?{
 				( ) DUP2 STH2kr tool/get-color /<set-pixel> }
-			INC2 GTH2k ?&>horw
-		POP2r POP2 POP2 INC2 GTH2k ?&>verw
+			INC2 GTH2k ?/>horw
+		POP2r POP2 POP2 INC2 GTH2k ?/>verw
 	POP2 POP2 project/<write>
 	/<draw-preview> !/<draw>
 
@@ -609,12 +609,12 @@
 		#2800
 		&>h
 			DEOkr
-			INC GTHk ?&>h
+			INC GTHk ?/>h
 		POP2
 		( | down )
 		;&x1 .Screen/x DEO2
 		.Screen/y DEI2k #0008 ADD2 ROT DEO2
-		INC GTHk ?&>v
+		INC GTHk ?/>v
 	POP2 POP2r JMP2r
 
 @canvas/<draw-frame> ( -- )
@@ -644,12 +644,12 @@
 		&>hp
 			( x ) #00 OVR #0015 MUL2
 			( y ) #00 STHkr #0012 MUL2 /get-pixel .Screen/pixel DEO
-			INC GTHk ?&>hp
+			INC GTHk ?/>hp
 		POP2 POPr
 		( | down )
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
 		.Screen/y DEI2k INC2 ROT DEO2
-		INC GTHk ?&>vp
+		INC GTHk ?/>vp
 	POP2 JMP2r
 
 @canvas/<wipe> ( -- )
@@ -692,8 +692,8 @@
 			#0010 ADD2 [ LIT2 85 -Screen/sprite ] DEO
 			STH2
 			STH2
-			#0008 ADD2 GTH2k ?&>horw
-		POP2 POP2 #0008 ADD2 GTH2k ?&>verw
+			#0008 ADD2 GTH2k ?/>horw
+		POP2 POP2 #0008 ADD2 GTH2k ?/>verw
 	POP2 POP2 POP2r POP2r JMP2r
 
 @onion/halftone [ aa55 aa55 aa55 aa55 ]
@@ -720,7 +720,7 @@
 	;canvas/memcap ;canvas/mem
 	&>lp
 		DUP2 .File/read DEO2
-		#0010 ADD2 GTH2k ?&>lp
+		#0010 ADD2 GTH2k ?/>lp
 	POP2 POP2 canvas/<draw-preview>
 	project/<write> !scene/<reselect>
 
@@ -754,9 +754,9 @@
 				( x ) #00 OVR [ LIT2 &x $2 ] ADD2
 				( y ) [ LIT2 &y $2 ]
 				( c ) tool/get-color canvas/<set-pixel> }
-			INC GTHk ?&>hor
+			INC GTHk ?/>hor
 		POP2 POPr ,&y LDR2 INC2 ,&y STR2
-		INC2r INC GTHk ?&>ver
+		INC2r INC GTHk ?/>ver
 	POP2 POP2r JMP2r
 
 @rect/<draw-line> ( x1* y1* x2* y2* -- )
@@ -775,7 +775,7 @@
 	&>while
 		( x+y* . x* y* -- ) OVR2r STH2r STH2kr <draw-mask>
 		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
-			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
+			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?/end }
 		( e -> e2 ) DUP2k ADD2 DUP2
 		( y ) [ LIT2 &dy $2 ] lts2 ?{
 			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
@@ -783,7 +783,7 @@
 		( x ) [ LIT2 &dx $2 ] gts2 ?{
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
-		!&>while
+		!/>while
 	&end POP2 POP2r POP2r JMP2r
 
 @rect/<draw-corners> ( x1* y1* x2* y2* -- )
@@ -811,7 +811,7 @@
 		#d7 ;canvas/g STA
 		#b6 ;canvas/b STA
 		scene/<commit>
-		INC GTHk ?&>li
+		INC GTHk ?/>li
 	POP2
 	( >> )
 
@@ -824,7 +824,7 @@
 		;canvas/mem .File/read DEO2
 		scene/<commit>
 		canvas/<draw-preview>
-		INC GTHk ?&>lr
+		INC GTHk ?/>lr
 	POP2 #00 !scene/<select-static>
 
 @project/<write> ( -- )
@@ -836,7 +836,7 @@
 		DUP .scene/id STZ
 		scene/<pull>
 		;canvas/mem .File/write DEO2
-		INC GTHk ?&>lw
+		INC GTHk ?/>lw
 	POP2 .scene/id STZ !scene/<pull>
 
 	&filename "project.flick $1
@@ -979,8 +979,8 @@
 		&>opt
 			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
 				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
-			#0006 ADD2 GTH2k ?&>opt
-		POP2 POP2 LDA2 LDAk ?&>cat
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 POP2 LDA2 LDAk ?/>cat
 	POP2 #ffff JMP2r
 
 @<draw-times> ( color times addr* auto -- )
@@ -990,7 +990,7 @@
 	[ LITr -Screen/sprite ]
 	&>l
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 @mem/<clr> ( src* len* -- )

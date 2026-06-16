@@ -29,7 +29,7 @@
 	#1006 .Audio0/adsr DEO2
 	;tone .Audio0/addr DEO2
 	#0100 .Audio0/length DEO2
-	( toggle ) #ff .Audio0/volume DEO
+	( toggle ) [ LIT2 ff -Audio0/volume ] DEO
 	( | defaults )
 	#0001 .input/den STZ2
 	( | initial draw )
@@ -41,16 +41,16 @@
 	;on-frame .Screen/vector DEO2
 	BRK
 
-@meta $1
+@meta 00
 	( name ) "CCCC 0a
 	( details ) "A 20 "Desktop 20 "Calculator 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Jun 20 "2026 00
+	( date ) "16 20 "Jun 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
 
-%MOD2 ( a* b* -- res* ) {
+%u16/mod ( a* b* -- res* ) {
 	DIV2k MUL2 SUB2 }
 
 (
@@ -95,7 +95,7 @@
 			( decr time ) DUP2 LDAk #01 SUB ROT ROT STA
 			( release button ) LDAk ?{
 				DUP2 #0008 SUB2 #00 button/<release> } }
-		INC2 GTH2k ?&>l
+		INC2 GTH2k ?/>l
 	POP2 POP2 BRK
 
 @on-mouse ( -> )
@@ -148,8 +148,8 @@
 	STHk #00 EQU ?{
 		;keys/end ;keys
 		&>l
-			LDAk STHkr NEQ ?{ INC2k LDA2 JSR2 !&end }
-			INC2 INC2 INC2 GTH2k ?&>l &end POP2 POP2 }
+			LDAk STHkr NEQ ?{ INC2k LDA2 JSR2 !/end }
+			INC2 INC2 INC2 GTH2k ?/>l &end POP2 POP2 }
 	POPr JMP2r
 
 @button/<press> ( button* -- )
@@ -192,7 +192,7 @@
 	#00
 	&>l
 		#00 OVR #0009 MUL2 STH2kr ADD2 #00 button/<release>
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 POP2r JMP2r
 
 @draw-button-clr ( icon* state -- )
@@ -221,7 +221,7 @@
 	&>l
 		STH2kr #0030 ADD2 .Screen/addr DEO2
 		[ LIT2 81 -Screen/sprite ] DEO
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 STH2r #0060 ADD2 .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEO
 	( icon ) .Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
@@ -264,7 +264,7 @@
 		JMP2r }
 	.stack/length LDZ2 #0001 SUB2 #20 SFT2 ;memory ADD2
 	( | print fraction )
-	LDA2k SWP2 INC2 INC2 LDA2 DUP2 #0001 EQU2 ?&whole
+	LDA2k SWP2 INC2 INC2 LDA2 DUP2 #0001 EQU2 ?/whole
 	( | proper fraction )
 	SWP2 print-value [ LIT2 "/ 18 ] DEO
 	print-value #0a18 DEO
@@ -298,7 +298,7 @@
 
 @print-str ( str* -- )
 	&w LDAk #18 DEO
-	INC2 LDAk ?&w
+	INC2 LDAk ?/w
 	POP2 JMP2r
 
 (
@@ -348,7 +348,7 @@
 		.Screen/x DEI2k #0005 ADD2 ROT DEO2
 		INCk #03 AND ?{
 			.Screen/x DEI2k #0005 ADD2 ROT DEO2 }
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 JMP2r
 
 @fraction/<draw> ( addr* -- )
@@ -400,12 +400,12 @@
 	( count ) [ LIT2r 0000 ]
 	( value ) [ LIT2r 0002 ]
 	&>w
-		DUP2 STH2kr MOD2 ORA ?{
+		DUP2 STH2kr u16/mod ORA ?{
 			( count+1 ) SWP2r INC2r SWP2r
-			( apply ) STH2kr DIV2 DUP2 #0001 NEQ2 ?&>w
+			( apply ) STH2kr DIV2 DUP2 #0001 NEQ2 ?/>w
 		POP2 STH2r STH2r SWP2 !/<draw-factor> }
 	( print ) STH2r STH2r OVR2 /<draw-factor>
-	( reset ) INC2 [ LIT2r 0000 ] STH2 !&>w
+	( reset ) INC2 [ LIT2r 0000 ] STH2 !/>w
 
 @number/<draw-factor> ( count* value* -- )
 	OVR2 #0000 EQU2 ?{
@@ -546,7 +546,7 @@
 	/is-empty ?{
 		;buttons/mode button/<press>
 		( | reduce )
-		/pop OVR2 OVR2 gcd STH2k DIV2 SWP2 STH2r DIV2 SWP2 /<push> !display/<draw> }
+		/pop OVR2 OVR2 u16/gcd STH2k DIV2 SWP2 STH2r DIV2 SWP2 /<push> !display/<draw> }
 	JMP2r
 
 @stack/is-lt2 ( -- t )
@@ -562,7 +562,7 @@
 	OVR2 #0000 EQU2 ?{
 		ORAk #00 EQU ?{
 			SWP2 .&length LDZ2 #20 SFT2 ;memory ADD2 STH2k STA2
-			STH2r INC2 INC2 STA2
+			INC2r INC2r STH2r STA2
 			( inc ) .&length LDZ2k INC2 ROT STZ2
 			JMP2r } }
 	POP2 POP2 JMP2r
@@ -611,7 +611,7 @@
 			#0010 .Screen/x DEO2
 			#00 OVR #40 SFT2 #0066 SWP2 SUB2 .Screen/y DEO2
 			#00 OVR INC .&length LDZ2 SWP2 SUB2 #20 SFT2 ;memory ADD2 fraction/<draw>
-			INC GTHk ?&>l }
+			INC GTHk ?/>l }
 	POP2 JMP2r
 
 @stack/add ( -- )
@@ -793,7 +793,7 @@
 	[ LITr 00 ]
 	&>ww
 		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
-		( > ) ADDr INC2 LDAk ?&>ww
+		( > ) ADDr INC2 LDAk ?/>ww
 	POP2 #00 STHr JMP2r
 
 @chicago/<draw-center> ( text* color -- )
@@ -804,7 +804,7 @@
 	&>ws
 		LDAk #1f GTH ?{ POP2 JMP2r }
 		LDAk /<draw-char>
-		INC2 !&>ws
+		INC2 !/>ws
 
 @chicago/<draw-char> ( char -- )
 	#00 SWP #20 SUB DUP2
@@ -871,7 +871,7 @@
 	&>s
 		;&buf .File/read DEO2
 		[ LIT2 00 -File/success-lb ] DEI EQU ?{
-			[ LIT &buf 20 ] listen !&>s }
+			[ LIT &buf 20 ] listen !/>s }
 	JMP2r
 
 	&snarf-txt ".snarf $1
@@ -884,7 +884,7 @@
 	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 @<draw-times> ( color times addr* auto -- )
@@ -894,12 +894,12 @@
 	[ LITr -Screen/sprite ]
 	&>l
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
-@gcd ( num* den* -- d* )
+@u16/gcd ( num* den* -- d* )
 	ORAk ?{ POP2 JMP2r }
-	SWP2 OVR2 MOD2 !gcd
+	SWP2 OVR2 /mod !/gcd
 
 (
 @|Locals )
