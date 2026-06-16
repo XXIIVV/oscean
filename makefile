@@ -4,19 +4,17 @@ BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
-run: bin/oscean.rom bin/arvelie.rom links/img.xml links/log.xml docs/index.html etc/index.html repl
+run: bin/oscean.rom links/img.xml links/log.xml docs/index.html etc/index.html repl
 	@ mkdir -p tmp && rm -f tmp/*
 	@ mkdir -p site && rm -f site/*
 	@ echo "HTML(site)"
 	@ ${EMU} bin/oscean.rom
-	@ ${EMU} bin/arvelie.rom
 clean:
 	@ rm -f bin/* && rm -fr tmp/* && rm -f site/*
 bal:
 	@ ${BAL} src/oscean.tal
 lint:
 	@ ${LIN} src/oscean.tal
-	@ ${LIN} src/arvelie.tal
 	@ ${LIN} src/dir.tal
 	@ ${LIN} src/img.tal
 	@ ${LIN} src/log.tal
@@ -33,8 +31,6 @@ grab:
 
 bin/oscean.rom: src/oscean.tal
 	@ ${ASM} src/oscean.tal bin/oscean.rom
-bin/arvelie.rom: src/arvelie.tal
-	@ ${ASM} src/arvelie.tal bin/arvelie.rom
 bin/dir.rom: src/dir.tal
 	@ ${ASM} src/dir.tal bin/dir.rom
 bin/img.rom: src/img.tal
