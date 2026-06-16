@@ -27,7 +27,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "15 20 "June 20 "2026 $2
+	( date ) "16 20 "June 20 "2026 $2
 
 (
 @|Source )
@@ -142,79 +142,18 @@
 		str/cap INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
 		INC2 INC2 GTH2k ?/>loop3
 	POP2 POP2
-	( | unsafe runes )
+	( | tests )
 	unsafe-runes/<test>
 	mismatch-runes/<test>
 	deadzone/<test>
-	( | literal duplicates: #1234 #1234 )
-	;piece-a/buf is-static #00 EQU ?{
-		;piece-a/buf ;piece-b/buf str/cmp #00 EQU ?{ ;static-dup <print-warn2> } }
-	( | fall-through )
-	;piece-a/buf LDA [ LIT "@ ] NEQ ?{
-		;piece-b/buf is-jump #00 EQU ?{
-			;piece-a/buf+1 ;piece-b/buf+1 str/cmp #00 EQU ?{ ;fall-through <print-warn2> } } }
-	( | unnamed buffer )
-	;piece-a/buf LDA [ LIT "$ ] NEQ ?{
-		;piece-b/buf is-label ?{
-			;piece-b/buf LDA LIT "" EQU ?{ ;unnamed-buf <print-warn2> } } }
-	( | use private )
-	;piece-a/buf is-calling-local #00 EQU ?{ ;call-private <print-warn> }
-	( | use local )
-	;piece-a/buf is-local #00 EQU ?{ ;use-local <print-warn> }
+	fallthrough/<test>
+	unnamed-buf/<test>
+	private/<test>
+	local/<test>
+	litdup/<test>
+	( | cleanup )
 	;piece-b/buf ;piece-c/buf <scpy>
 	;piece-a/buf DUP2 ;piece-b/buf <scpy> !str/<clear>
-
-@unsafe-runes/<test> ( -- )
-	;piece-b/buf LDA
-	( | handlers )
-	;piece-a/buf ;dict/lda str/cmp3 ?/abs
-	;piece-a/buf ;dict/sta str/cmp3 ?/abs
-	;piece-a/buf ;dict/ldz str/cmp3 ?/zep
-	;piece-a/buf ;dict/stz str/cmp3 ?/zep
-	;piece-a/buf ;dict/ldr str/cmp3 ?/rel
-	;piece-a/buf ;dict/str str/cmp3 ?/rel
-	POP JMP2r
-
-	&abs ( c -- )
-	DUP [ LIT ". ] EQU ?/fail
-	DUP [ LIT ", ] EQU ?/fail
-	POP JMP2r
-
-	&zep ( c -- )
-	DUP [ LIT "; ] EQU ?/fail
-	DUP [ LIT ", ] EQU ?/fail
-	POP JMP2r
-
-	&rel ( c -- )
-	DUP [ LIT ". ] EQU ?/fail
-	DUP [ LIT "; ] EQU ?/fail
-	POP JMP2r
-
-	&fail ( c -- )
-	POP ;&msg !<print-warn2>
-
-	&msg "Unsafe 00
-
-@mismatch-runes/<test> ( -- )
-	;piece-a/buf LDA2
-	( | handlers )
-	DUP2 LIT2 "?& EQU2 ?/fail
-	DUP2 LIT2 "!& EQU2 ?/fail
-	DUP2 LIT2 "./ EQU2 ?/fail
-	DUP2 LIT2 ",/ EQU2 ?/fail
-	DUP2 LIT2 ";/ EQU2 ?/fail
-	POP2 JMP2r
-
-	&fail ( ab* -- )
-	POP2 ;&msg !<print-warn>
-
-	&msg "Mismatch 00
-
-@deadzone/<test> ( -- )
-	;piece-b/buf is-jump/strict ?{ JMP2r }
-	;piece-a/buf is-label ?{
-		;piece-a/buf is-macro ?{ ;dead-region <print-warn2> } }
-	JMP2r
 
 @reset ( -- )
 	;piece-a/buf str/<clear>
@@ -378,6 +317,86 @@
 
 	&pass ( a* . b* -- f )
 	POP2 POP2r #01 JMP2r
+
+(
+@|Tests )
+
+@unsafe-runes/<test> ( -- )
+	;piece-b/buf LDA
+	( | handlers )
+	;piece-a/buf ;dict/lda str/cmp3 ?/abs
+	;piece-a/buf ;dict/sta str/cmp3 ?/abs
+	;piece-a/buf ;dict/ldz str/cmp3 ?/zep
+	;piece-a/buf ;dict/stz str/cmp3 ?/zep
+	;piece-a/buf ;dict/ldr str/cmp3 ?/rel
+	;piece-a/buf ;dict/str str/cmp3 ?/rel
+	POP JMP2r
+
+	&abs ( c -- )
+	DUP [ LIT ". ] EQU ?/fail
+	DUP [ LIT ", ] EQU ?/fail
+	POP JMP2r
+
+	&zep ( c -- )
+	DUP [ LIT "; ] EQU ?/fail
+	DUP [ LIT ", ] EQU ?/fail
+	POP JMP2r
+
+	&rel ( c -- )
+	DUP [ LIT ". ] EQU ?/fail
+	DUP [ LIT "; ] EQU ?/fail
+	POP JMP2r
+
+	&fail ( c -- )
+	POP ;&msg !<print-warn2>
+
+	&msg "Unsafe 00
+
+@mismatch-runes/<test> ( -- )
+	;piece-a/buf LDA2
+	( | handlers )
+	DUP2 LIT2 "?& EQU2 ?/fail
+	DUP2 LIT2 "!& EQU2 ?/fail
+	DUP2 LIT2 "./ EQU2 ?/fail
+	DUP2 LIT2 ",/ EQU2 ?/fail
+	DUP2 LIT2 ";/ EQU2 ?/fail
+	POP2 JMP2r
+
+	&fail ( ab* -- )
+	POP2 ;&msg !<print-warn>
+
+	&msg "Mismatch 00
+
+@deadzone/<test> ( -- )
+	;piece-b/buf is-jump/strict ?{ JMP2r }
+	;piece-a/buf is-label ?{
+		;piece-a/buf is-macro ?{ ;dead-region !<print-warn2> } }
+	JMP2r
+
+@fallthrough/<test> ( -- )
+	;piece-a/buf LDA [ LIT "@ ] NEQ ?{
+		;piece-b/buf is-jump #00 EQU ?{
+			;piece-a/buf+1 ;piece-b/buf+1 str/cmp #00 EQU ?{ ;fall-through !<print-warn2> } } }
+	JMP2r
+
+@unnamed-buf/<test> ( -- )
+	;piece-a/buf LDA [ LIT "$ ] NEQ ?{
+		;piece-b/buf is-label ?{
+			;piece-b/buf LDA LIT "" EQU ?{ ;unnamed-buf !<print-warn2> } } }
+	JMP2r
+
+@private/<test> ( -- )
+	;piece-a/buf is-calling-local ?{ JMP2r }
+	;call-private !<print-warn>
+
+@local/<test> ( -- )
+	;piece-a/buf is-local ?{ JMP2r }
+	;use-local !<print-warn>
+
+@litdup/<test> ( -- )
+	;piece-a/buf is-static ?{ JMP2r }
+	;piece-a/buf ;piece-b/buf str/cmp ?{ JMP2r }
+	;static-dup !<print-warn2>
 
 (
 @|Macros )

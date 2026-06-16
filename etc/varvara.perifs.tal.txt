@@ -17,6 +17,8 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	#0180 .Screen/width DEO2
+	#0180 .Screen/height DEO2
 	( | theme )
 	#0f0f .System/r DEO2
 	#00ff .System/g DEO2
@@ -34,7 +36,7 @@
 @meta 00 "Perifs 0a
 	( details ) "A 20 "Peripherals 20 "Test 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "6 20 "Jun 20 "2026 00
+	( date ) "13 20 "Jun 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -198,16 +200,18 @@
 @smile/<next> ( -- )
 	[ LIT &ptr $1 ] INCk ,&ptr STR
 	[ LIT2 00 -Screen/auto ] DEO
-	#09 u8/mod
+	#0a u8/mod
 	( | draw )
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0018 SUB2 .Screen/y DEO2
 	DUP hex/<draw-byte>
+	/<clear>
 	#00 SWP DUP ADD ;&lut ADD2 LDA2 JMP2
 
 @smile/<draw-all> ( -- )
 	;&lut-end ;&lut
 	&>l
+		/<clear>
 		LDA2k JSR2 INC2 INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
@@ -216,7 +220,19 @@
 	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
 	JMP2r
 
-@smile/<draw-a> ( Draw 1bpp four times by moving x,y )
+@smile/<clear> ( -- )
+	[ LIT2 11 -Screen/auto ] DEO
+	( | bg )
+	/<set-pos>
+	;hash .Screen/addr DEO2
+	[ LIT2 03 -Screen/sprite ] DEOk DEO
+	( | fg )
+	/<set-pos>
+	;fill .Screen/addr DEO2
+	[ LIT2 40 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@smile/<draw-0> ( Draw 1bpp four times by moving x,y )
 	/<set-pos>
 	[ LIT2 00 -Screen/auto ] DEO
 	( a ) ;&hor-a .Screen/addr DEO2
@@ -232,21 +248,21 @@
 	[ LIT2 03 -Screen/sprite ] DEO
 	JMP2r
 
-@smile/<draw-b> ( Draw 1bpp two times using addr-y )
+@smile/<draw-1> ( Draw 1bpp two times using addr-y )
 	/<set-pos>
 	[ LIT2 16 -Screen/auto ] DEO
 	;&hor .Screen/addr DEO2
 	[ LIT2 03 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-c> ( Draw 1bpp two times using addr-x )
+@smile/<draw-2> ( Draw 1bpp two times using addr-x )
 	/<set-pos>
 	[ LIT2 15 -Screen/auto ] DEO
 	;&ver .Screen/addr DEO2
 	[ LIT2 03 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-d> ( Draw 1bpp-flipx two times using addr-y )
+@smile/<draw-3> ( Draw 1bpp-flipx two times using addr-y )
 	/<set-pos>
 	#0008 #0000 Screen/<mod>
 	[ LIT2 16 -Screen/auto ] DEO
@@ -254,7 +270,7 @@
 	[ LIT2 13 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-e> ( Draw 1bpp-flipy two times using addr-x )
+@smile/<draw-4> ( Draw 1bpp-flipy two times using addr-x )
 	/<set-pos>
 	#0000 #0008 Screen/<mod>
 	[ LIT2 15 -Screen/auto ] DEO
@@ -262,14 +278,14 @@
 	[ LIT2 23 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-f> ( Draw 2bpp two times using addr-x )
+@smile/<draw-5> ( Draw 2bpp two times using addr-x )
 	/<set-pos>
 	[ LIT2 15 -Screen/auto ] DEO
 	;&2bpp .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-g> ( Draw 1bpp, once for the outline, once for the face )
+@smile/<draw-6> ( Draw 1bpp, once for the outline, once for the face )
 	/<set-pos>
 	[ LIT2 16 -Screen/auto ] DEO
 	;&outline .Screen/addr DEO2
@@ -279,7 +295,7 @@
 	[ LIT2 0f -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-h> ( Draw 1bpp, once for the outline, once for the face in fg )
+@smile/<draw-7> ( Draw 1bpp, once for the outline, once for the face in fg )
 	/<set-pos>
 	[ LIT2 16 -Screen/auto ] DEO
 	;&outline .Screen/addr DEO2
@@ -289,7 +305,7 @@
 	[ LIT2 43 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@smile/<draw-i> ( Draw using pixels )
+@smile/<draw-8> ( Draw using pixels )
 	/<set-pos>
 	;&hor-a icn/<draw-tile>
 	#0008 #fff8 Screen/<mod>
@@ -299,10 +315,18 @@
 	#0008 #fff8 Screen/<mod>
 	;&hor-d !icn/<draw-tile>
 
+@smile/<draw-9> ( Draw offscreen origin )
+	/<set-pos>
+	.Screen/x DEI2 #0030 SUB2 .Screen/x DEO2
+	;&offscreen .Screen/addr DEO2
+	[ LIT2 76 -Screen/auto ] DEO
+	[ LIT2 03 -Screen/sprite ] DEOk DEO
+	JMP2r
+
 @smile/lut [
-	=/<draw-a> =/<draw-b> =/<draw-c> =/<draw-d>
-	=/<draw-e> =/<draw-f> =/<draw-g> =/<draw-h>
-	=/<draw-i> ] &lut-end
+	=/<draw-0> =/<draw-1> =/<draw-2> =/<draw-3>
+	=/<draw-4> =/<draw-5> =/<draw-6> =/<draw-7>
+	=/<draw-8> =/<draw-9> ] &lut-end
 
 @icn/<draw-tile> ( addr* -- )
 	[ LIT2 01 -Screen/auto ] DEO
@@ -350,6 +374,10 @@
 
 (
 @|Assets )
+
+@hash [ aa55 aa55 aa55 aa55 ]
+
+@fill [ ffff ffff ffff ffff ]
 
 @appicon [
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -511,4 +539,14 @@
 @smile/face [
 	0000 0000 0000 081c 0000 0000 0000 1028
 	0800 0403 0000 0000 1000 20c0 0000 0000 ]
+
+@smile/offscreen [
+	aa55 aa55 aa55 aa55 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	030c 1020 4040 889c c030 0804 0202 1129
+	aa55 aa55 aa55 aa55 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	8880 4443 2010 0c03 1101 22c2 0408 30c0 ]
 

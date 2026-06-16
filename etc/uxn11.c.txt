@@ -664,6 +664,15 @@ put_text(Uint8 *dest, const char *text)
 	return dest - anchor;
 }
 
+static inline unsigned int
+put_size(Uint8 *dest, unsigned int len, unsigned int size)
+{
+	unsigned int i;
+	for(i = 0, dest += len; i < len; i++, size >>= 4)
+		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+	return len;
+}
+
 static unsigned int
 put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, unsigned int dir, unsigned int capsize)
 {
@@ -674,9 +683,7 @@ put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, uns
 			len);
 		return len;
 	}
-	for(i = 0, dest += len; i < len; i++, size >>= 4)
-		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
-	return len;
+	return put_size(dest, len, size);
 }
 
 static unsigned int
@@ -693,7 +700,7 @@ put_statfile(Uint8 *dest, char *pathbuf, unsigned int prefix_len, unsigned int c
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
 	dest += put_stat(dest, 4, st.st_size, err, dir, 1);
-	dest += put_text(dest, " ");
+	dest += put_text(dest, "\t");
 	dest += put_text(dest, basename);
 	dest += put_text(dest, dir ? "/\n" : "\n");
 	return dest - anchor;
@@ -1111,15 +1118,6 @@ emu_restart(unsigned int soft)
 	uxn_eval(0x100);
 }
 
-static inline unsigned int
-put_size(Uint8 *dest, unsigned int len, unsigned int size)
-{
-	unsigned int i;
-	for(i = 0, dest += len; i < len; i++, size >>= 4)
-		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
-	return len;
-}
-
 static void
 emu_screenshot(void)
 {
@@ -1327,7 +1325,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(80K), 14 Jun 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(79K), 16 Jun 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
