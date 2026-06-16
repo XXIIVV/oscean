@@ -164,19 +164,25 @@ put_text(Uint8 *dest, const char *text)
 	return dest - anchor;
 }
 
+static inline unsigned int
+put_size(Uint8 *dest, unsigned int len, unsigned int size)
+{
+	unsigned int i;
+	for(i = 0, dest += len; i < len; i++, size >>= 4)
+		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+	return len;
+}
+
 static unsigned int
 put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, unsigned int dir, unsigned int capsize)
 {
-	unsigned int i;
 	if(err || dir || (capsize && size >= 0x10000)) {
 		memset(dest, err ? '!' : dir ? '-' :
 									   '?',
 			len);
 		return len;
 	}
-	for(i = 0, dest += len; i < len; i++, size >>= 4)
-		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
-	return len;
+	return put_size(dest, len, size);
 }
 
 static unsigned int
@@ -193,7 +199,7 @@ put_statfile(Uint8 *dest, char *pathbuf, unsigned int prefix_len, unsigned int c
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
 	dest += put_stat(dest, 4, st.st_size, err, dir, 1);
-	dest += put_text(dest, " ");
+	dest += put_text(dest, "\t");
 	dest += put_text(dest, basename);
 	dest += put_text(dest, dir ? "/\n" : "\n");
 	return dest - anchor;
@@ -491,7 +497,7 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define Lda(s,o)    Pu1(r,ram[o]) if(d) Pu1(r,ram[(s)(o+1)])
 #define Sta(s,o,u)  if(d) ram[o]=u>>8, ram[(s)(o+1)]=u; else ram[o]=u;
 #define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,dev[(x+1)&0xff])
-#define Deo         if(d) dev[x&0xff]=y>>8, emu_deo(x+1,y); else emu_deo(x,y);
+#define Deo         if(d) dev[x]=y>>8, emu_deo(x+1,y); else emu_deo(x,y);
 
 #define MUTE (void)x;(void)y;(void)z;(void)r;(void)d;
 
@@ -561,7 +567,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara Emulator(80K), 14 Jun 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 16 Jun 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

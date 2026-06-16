@@ -6,6 +6,11 @@
 |80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+(
+@|Enums )
+
+|004f @Varvara/version
 |0240 @WIDTH
 |0080 @LINES
 |0012 @header/height
@@ -42,20 +47,24 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Mar 20 "2026 $1 01
-	( - ) 0a =manifest/dat
+	( date ) "16 20 "Jun 20 "2026 00
+	( . ) 02
+	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
 
 @manifest/dat ( . )
 	={ =dict/nebu
 	( - ) 01 "n =project/<new> =dict/new
-	( - ) 01 "o =browser/<open> =dict/load
+	( - ) 01 "o =project/<load> =dict/load
+	( - ) 01 "/ =project/<load-parent> =dict/load
+	( - ) 01 0d =project/<load-selection> =dict/load
 	( - ) 01 "s =project/<save> =dict/save
 	( - ) 01 "q =project/<quit> =dict/quit }
 	={ =dict/edit
 	( - ) 01 "c =snarf/<copy> =dict/copy
 	( - ) 01 "v =snarf/<paste> =dict/paste
 	( - ) 01 "x =snarf/<cut> =dict/cut
-	( - ) 01 0d =cmd/<inject-rect> =dict/inject
+	( - ) 04 0d =cmd/<inject-rect> =dict/inject
 	( - ) 00 0d =select/<next> =dict/next
 	( - ) 00 1b =select/<reset> =dict/deselect
 	( - ) 00 08 =cmd/<erase> =dict/erase
@@ -71,6 +80,56 @@
 	( - ) 84 00 =select/<size-r> =dict/size-r }
 	( ) $1
 
+(
+@|Src )
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
+		BRK }
+	#0000 .Console/vector DEO2
+	project/<load>
+	BRK
+
+@src/<reset> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	;&default-name
+	( >> )
+
+@src/<push-str> ( str* -- )
+	&>w
+		LDAk /<push>
+		INC2 LDAk #1f GTH ?/>w
+	POP2 JMP2r
+
+@src/change ( -- )
+	.&changed LDZ ?{
+		[ LIT2 01 -&changed ] STZ !header/<draw> }
+	JMP2r
+
+@src/<unchange> ( -- )
+	.&changed LDZ ?{ JMP2r }
+	[ LIT2 00 -&changed ] STZ !header/<draw>
+
+@src/pop ( -- )
+	/nest ,&ptr STR
+	,&ptr LDR ?{ LIT ". /<push> }
+	LIT "/
+	( >> )
+
+@src/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@src/nest ( -- addr )
+	[ LIT2 -&buf _&ptr ] LDR #01 SUB
+	&>rew
+		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?/>rew }
+	NIP JMP2r
+
+@src/is-dir ( -- t )
+	,&ptr LDR #01 SUB LDZ LIT "/ EQU JMP2r
+
 @src/default-name "untitled.csv $1
 
 @on-button ( -> )
@@ -79,13 +138,31 @@
 		BRK }
 	( * ) JSR2 BRK
 
+@header/<draw-title> ( -- )
+	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	#09 ;chicago/color STA
+	[ LIT2 15 -Screen/auto ] DEO
+	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	#20 chicago/<draw-char>
+	;src/buf chicago/<draw-left>
+	[ LIT2 00 -src/changed ] LDZ EQU ?{
+		[ LIT "* ] chicago/<draw-char> }
+	#20 chicago/<draw-char>
+	( | clip )
+	.Screen/y DEI2k #0001 SUB2 ROT DEO2
+	;&bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
+	DEO2
+	DEOr
+	JMP2r
+
 @<redraw-all> ( -- )
 	header/<draw> !grid/<draw>
 
 (
-@|cmd )
+@|Cmd )
 
-%MOD2 ( a* b* -- a%b* ) {
+%u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
 
 %char-is-uc ( c -- f ) {
@@ -109,12 +186,12 @@
 	rect/create OVR2 cells/get-addr STH2
 	&>wi
 		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>wi
+		INC2r INC2 LDAk ?/>wi
 	POP2 POP2r src/change !select/<set-a-force>
 
 @cmd/<insert> ( c -- )
 	DUP #20 LTH OVR #7e GTH ORA ?{
-		.select/b LDZ2 cells/get-addr DUP2 scap
+		.select/b LDZ2 cells/get-addr DUP2 str/cap
 		( clamp ) SWP2k SUB2 NIP #1f LTH ?{ POP2 POP2 POP JMP2r }
 		NIP2
 		( save ) STA
@@ -124,7 +201,7 @@
 
 @cmd/<erase> ( -- )
 	.select/b LDZ2 .select/a LDZ2 OVR2 EQU2 ?{ ;&do-delete /<apply> }
-	cells/get-addr DUP2 scap
+	cells/get-addr DUP2 str/cap
 	( clamp ) NEQ2k ?{ POP2 POP2 JMP2r }
 	NIP2
 	( save ) #0001 SUB2 #0000 SWP2 STA2
@@ -145,8 +222,8 @@
 		OVR2
 		&>lh
 			DUP OVR2 POP [ LIT2 &fn $2 ] JSR2
-			( ) INC GTHk ?&>lh
-		POP2 INC GTHk ?&>lv
+			( ) INC GTHk ?/>lh
+		POP2 INC GTHk ?/>lv
 	POP2 POP2 !grid/<draw>
 
 @cmd/<draw> ( -- )
@@ -273,12 +350,12 @@
 @rect/<push-dec> ( short* -- )
 	#000a SWP2 [ LITr ff ]
 	&>get
-		SWP2k MOD2 STH
-		POP OVR2 DIV2 ORAk ?&>get
+		SWP2k u16/mod STH
+		POP OVR2 DIV2 ORAk ?/>get
 	POP2 POP2
 	&>put
 		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD /<push-char> !&>put
+		[ LIT "0 ] ADD /<push-char> !/>put
 
 (
 @|grid )
@@ -289,15 +366,15 @@
 @grid/on-mouse ( -> )
 	cursor/<update>
 	( | scroll )
-	.Mouse/sy-lb DEI DUP ?&on-scroll
+	.Mouse/sy-lb DEI DUP ?/on-scroll
 	POP
 	( | touch )
 	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
 	( | handlers )
-	DUP2 #0002 EQU2 ?&on-down2
-	DUP2 #0001 EQU2 ?&on-down
-	DUP2 #0101 EQU2 ?&on-drag
-	DUP2 #0100 EQU2 ?&on-up
+	DUP2 #0002 EQU2 ?/on-down2
+	DUP2 #0001 EQU2 ?/on-down
+	DUP2 #0101 EQU2 ?/on-drag
+	DUP2 #0100 EQU2 ?/on-up
 	POP2 BRK
 
 @grid/on-scroll ( v -> )
@@ -331,9 +408,9 @@
 	( y ) .Mouse/y DEI2 #0012 SUB2 #04 SFT2 NIP #01 SUB .select/scroll LDZ ADD JMP2r
 
 @grid/<scroll-to> ( change -- )
-	DUP #ff EQU ?&fail
-	DUP [ LIT2 -LINES -viewport/h ] LDZ INC SUB GTH ?&fail
-	DUP .select/scroll LDZ EQU ?&fail
+	DUP #ff EQU ?/fail
+	DUP [ LIT2 -LINES -viewport/h ] LDZ INC SUB GTH ?/fail
+	DUP .select/scroll LDZ EQU ?/fail
 	.select/scroll STZ !/<draw>
 	&fail POP JMP2r
 
@@ -351,7 +428,7 @@
 	&>rx
 		#00 OVR INC #60 SFT2 .Screen/x DEO2
 		DUP cell/<draw-hor>
-		INC GTHk ?&>rx
+		INC GTHk ?/>rx
 	POP2
 	( | body )
 	.viewport/h LDZ INC #00
@@ -364,8 +441,8 @@
 		&>x
 			#00 OVR INC #60 SFT2 .Screen/x DEO2
 			DUP [ LIT &ay $1 ] cell/<draw>
-			INC GTHk ?&>x
-		POP2 INC GTHk ?&>y
+			INC GTHk ?/>x
+		POP2 INC GTHk ?/>y
 	POP2 !cmd/<draw>
 
 @cell/<draw-hor> ( id -- )
@@ -440,7 +517,7 @@
 @cell/<draw> ( x y -- )
 	DUP2 /is-selected ?/<draw-type-selected>
 	DUP2 /is-incoming ?/<draw-type-incoming>
-	DUP2 calc/parse-rect DUP2 #ffff NEQ2 ?/<draw-rect>
+	DUP2 calc/parse-rect INC2k ORA ?/<draw-rect>
 	POP2 .Screen/x DEI2
 	( | fill )
 	#00 /<draw-fill>
@@ -485,8 +562,32 @@
 
 @cell/<draw-res> ( rect* -- )
 	[ LIT2 15 -Screen/auto ] DEO
+	;chicago/<draw-left> ;calc/fn-cat STA2
 	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?calc/run-cat
 	calc/run-num ;chicago/<draw-char> !x32-draw
+
+@cell/get-res ( rect* -- str* )
+	res/<reset>
+	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?{
+		calc/run-num ;res/<push> x32-draw ;res/buf JMP2r }
+	;res/<push-str> ;calc/fn-cat STA2
+	calc/run-cat ;res/buf JMP2r
+
+@res/<reset> ( -- )
+	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
+	JMP2r
+
+@res/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !&>w
+
+@res/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
 
 (
 @|calc )
@@ -537,11 +638,11 @@
 			( x y ) STH2r STH2r ROT2
 			( acc** x y ) /get-num
 			( acc** x y ini ) STHr ?{
-				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !&resume }
+				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !/resume }
 			STHkr /run-op [ LITr 01 STH2 STH2 ]
 			&resume ( -- )
-			INC GTHk ?&>lh
-		POP2 INC GTHk ?&>lv
+			INC GTHk ?/>lh
+		POP2 INC GTHk ?/>lv
 	POP2 POP2 STH2r STH2r POP2r JMP2r
 
 @calc/run-len ( rect* op -- res** )
@@ -550,13 +651,13 @@
 		OVR2
 		&>lhl
 			DUP OVR2 POP /get-num x32-is-zero ?{ INCr }
-			INC GTHk ?&>lhl
-		POP2 INC GTHk ?&>lvl
+			INC GTHk ?/>lhl
+		POP2 INC GTHk ?/>lvl
 	POP2 POP2 STHr !x32-from-u8
 
 @calc/get-cat ( x y -- )
 	DUP2 /parse-rect OVR2 /validate exists ?{
-		( ) POP2 cells/get-addr !chicago/<draw-left> }
+		( ) POP2 cells/get-addr [ LIT2 &fn-cat $2 ] JMP2 }
 	NIP2
 	( >> )
 
@@ -566,8 +667,8 @@
 		OVR2
 		&>lch
 			DUP OVR2 POP /get-cat
-			( ) INC GTHk ?&>lch
-		POP2 INC GTHk ?&>lcv
+			( ) INC GTHk ?/>lch
+		POP2 INC GTHk ?/>lcv
 	POP2 POP2 JMP2r
 
 @calc/is-num ( val** -- val** f )
@@ -614,8 +715,8 @@
 				( . ) SWP SWPr
 				( x ) DUP STHr GTHk [ JMP SWP ] POP STH
 				( . ) SWPr }
-			POP2 INC GTHk ?&>lfh
-		POP2 INC GTHk ?&>lfv
+			POP2 INC GTHk ?/>lfh
+		POP2 INC GTHk ?/>lfv
 	POP2 SWPr
 	( x ) STHr INC #00
 	( y ) STHr INC #00 JMP2r
@@ -631,11 +732,11 @@
 	&>lv
 		OVR2
 		&>lh
-			DUP OVR2 POP /get-addr File/<save-text>
-			DUP2 INC EQU ?{ .src/spacer LDZ File/<save-char> }
-			INC GTHk ?&>lh
-		[ LIT 0a ] File/<save-char>
-		POP2 INC GTHk ?&>lv
+			DUP OVR2 POP /get-addr file/<save-text>
+			DUP2 INC EQU ?{ .src/spacer LDZ file/<save-char> }
+			INC GTHk ?/>lh
+		[ LIT 0a ] file/<save-char>
+		POP2 INC GTHk ?/>lv
 	POP2 POP2 JMP2r
 
 @cells/<load> ( src* -- )
@@ -651,9 +752,15 @@
 		;&b .File/read DEO2
 		.File/success-lb DEI ?{ POP2 POP2 src/change !grid/<draw> }
 		[ LIT &b $1 ] /<push>
-		INC2 GTH2k ?&>sl
+		INC2 GTH2k ?/>sl
 	;dict/err-size <perr>
 	POP2 POP2 src/change !grid/<draw>
+
+@cells/<load-str> ( str* -- )
+	&>wls
+		LDAk DUP ?{ POP POP2 !grid/<draw> }
+		/<push>
+		INC2 !/>wls
 
 @cells/<push> ( c -- )
 	DUP .src/spacer LDZ EQU ?/move-x
@@ -683,7 +790,7 @@
 	JMP2r
 
 @cells/find-filetype ( str* -- )
-	scap #0002 SUB2 LDA2k [ LIT2 "sv ] NEQ2 ?{
+	str/cap #0002 SUB2 LDA2k [ LIT2 "sv ] NEQ2 ?{
 		DUP2 #0001 SUB2 LDA [ LIT "t ] NEQ ?{
 			POP2 [ LIT2 09 -src/spacer ] STZ
 			JMP2r } }
@@ -711,10 +818,29 @@
 @project/<new> ( -- )
 	src/<reset>
 	cells/<clear>
-	src/<unchange> !grid/<draw>
+	src/<unchange>
+	header/<draw> !grid/<draw>
+
+@project/<load-parent> ( -- )
+	[ LIT2 09 -src/spacer ] STZ
+	src/pop
+	( >> )
 
 @project/<load> ( -- )
-	;src/buf !cells/<load>
+	cells/<clear>
+	src/<unchange>
+	header/<draw>
+	#0000 cells/<reset>
+	src/is-dir ?{ ;src/buf !cells/<load> }
+	;src/buf .File/name DEO2
+	#0200 .File/length DEO2
+	;&buf .File/read DEO2
+	;&buf !cells/<load-str>
+
+@project/<load-selection> ( -- )
+	.select/b LDZ2 DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate exists ?{ POP2 cells/get-addr src/<push-str> !/<load> }
+	NIP2 cell/get-res src/<push-str> !/<load>
 
 @project/<save> ( -- )
 	;src/buf !cells/<save>
@@ -725,14 +851,14 @@
 (
 @|File )
 
-@File/<save-text> ( text* -- )
-	DUP2 slen .&length DEO2
-	.&write DEO2
+@file/<save-text> ( text* -- )
+	DUP2 str/len .File/length DEO2
+	.File/write DEO2
 	JMP2r
 
-@File/<save-char> ( c -- )
-	#0001 .&length DEO2
-	;&b STAk .&write DEO2
+@file/<save-char> ( c -- )
+	#0001 .File/length DEO2
+	;&b STAk .File/write DEO2
 	POP JMP2r
 	&b $1
 
@@ -746,34 +872,34 @@
 	JMP2r
 	&mmu 00 &length $2 0000 &addr $2 00
 
-@slen ( str* -- len* )
-	DUP2 scap SWP2 SUB2 JMP2r
-
-@scap ( str* -- end* )
+@str/cap ( str* -- end* )
 	LDAk ?{ JMP2r }
-	INC2 !scap
+	INC2 !/cap
+
+@str/len ( str* -- len* )
+	STH2k /cap STH2r SUB2 JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 @decs ( short* -- str* )
 	[ LIT2r =&cap ]
 	&>w
-		DUP2 #000a MOD2 [ LIT "0 ] ADD STH2kr STA2
+		DUP2 #000a u16/mod [ LIT "0 ] ADD STH2kr STA2
 		[ LIT2r 0001 SUB2r ] #000a DIV2
-		( ) ORAk ?&>w
+		( ) ORAk ?/>w
 	POP2 STH2r INC2 INC2 JMP2r
 	$5 &cap $3
 
 @sdec ( str* -- cap* hex* )
 	[ LIT2r 0000 ]
 	&>w
-		LDAk [ LIT "0 ] LTH ?&end
-		LDAk #39 GTH ?&end
+		LDAk [ LIT "0 ] LTH ?/end
+		LDAk #39 GTH ?/end
 		LDAk [ LIT "0 ] SUB #00 SWP STH2r #000a MUL2 ADD2 STH2
-		INC2 LDAk ?&>w &end STH2r JMP2r
-
-@next-glyph ( addr* -- addr* )
-	INC2 LDAk
-	( utf8 ) #06 SFT #02 EQU ?next-glyph
-	JMP2r
+		INC2 LDAk ?/>w &end STH2r JMP2r
 
 @<perr> ( str* -: )
 	LDAk #19 DEO
@@ -827,207 +953,12 @@
 
 
 
-( @|browser )
-
-@browser/on-mouse ( -> )
-	cursor/<update-trap>
-	( x ) .Mouse/x DEI2 #0010 SUB2
-	( y ) .Mouse/y DEI2 #001c SUB2
-	( test x ) OVR2 #7fff GTH2 ?/on-mouse-outside
-	( test y ) DUP2 #006f GTH2 ?/on-mouse-outside
-	#04 SFT2 STH
-	POP #07 SFT2 NIP #07 MUL STHr ADD
-	( | state )
-	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
-	( | handlers )
-	DUP2 #0001 NEQ2 ?{ POP2 /<select>
-		BRK }
-	POP2 /<hover>
-	BRK
-
-	&on-mouse-outside ( x* y* -> )
-	POP2 POP2 .Mouse/state DEI ?{ BRK }
-	/<close>
-	BRK
-
-@browser/on-button ( -> )
-	.Controller/button DEI2
-	( | key handlers )
-	DUP #1b NEQ ?{ /<close> }
-	#0d NEQ ?{ /<select-active> }
-	( | but handlers )
-	DUP #10 NEQ ?{ #ff /<hover-mod> }
-	DUP #20 NEQ ?{ #01 /<hover-mod> }
-	DUP #40 NEQ ?{ #f9 /<hover-mod> }
-	DUP #80 NEQ ?{ #07 /<hover-mod> }
-	POP BRK
-
-@browser/<close> ( -- )
-	;on-mouse .Mouse/vector DEO2
-	;on-button .Controller/vector DEO2
-	[ LIT2 00 -Mouse/state ] DEO !<redraw-all>
-
-@browser/<open> ( -- )
-	;&on-mouse .Mouse/vector DEO2
-	;&on-button .Controller/vector DEO2
-	#00 /<hover>
-	/<refresh>
-	[ LIT2 00 -Mouse/state ] DEO !/<draw>
-
-@browser/<select-active> ( -- )
-	;&selected LDA
-
-@browser/<select> ( id -- )
-	STH
-	[ LITr 00 ] ;&buf
-	&>ws ( -- )
-		STH2kr EQU ?{
-			LDAk #0a NEQ ?{ INCr }
-			INC2 LDAk ?&>ws }
-	POP2r LDAk ?{ POP2 JMP2r }
-	#0005 ADD2 src/<inject>
-	/<close> !project/<load>
-
-@browser/<refresh> ( -- )
-	;&buf #0200 <mclr>
-	;&path .File/name DEO2
-	#0200 .File/length DEO2
-	;&buf .File/read DEO2
-	( | count entries )
-	[ LITr 00 ] ;&buf
-	&>wc ( -- )
-		LDAk #0a NEQ ?{ INCr }
-		INC2 LDAk ?&>wc
-	POP2 LITr _&lines STRr
-	JMP2r
-
-	&path ". $1
-
-@browser/<hover-mod> ( mod -- )
-	;&selected LDA ADD
-
-@browser/<hover> ( id -- )
-	DUP ;&selected LDA NEQ ?{ POP JMP2r }
-	DUP [ LIT &lines $1 ] LTH ?{ POP JMP2r }
-	;&selected STA
-	( >> )
-
-@browser/<draw> ( -- )
-	.Screen/width DEI2 #03 SFT2 SUB STH
-	#0000 .Screen/x DEO2
-	#0011 .Screen/y DEO2
-	#09 STHkr ;halftone-icn #f1 <draw-times>
-	#0000 .Screen/x DEO2
-	#0012 .Screen/y DEO2
-	#02 STHkr ;fill-icn #f1 <draw-times>
-	#0000 .Screen/x DEO2
-	#0092 .Screen/y DEO2
-	#85 STHr ;&wavey-chr #01 <draw-times>
-	#001a .Screen/y DEO2
-	;&buf [ LIT2r 0000 ]
-	&>w ( -- )
-		( x ) STH2kr #07 DIV #70 SFT2 #0008 ADD2 .Screen/x DEO2
-		( y ) STH2kr #07 DIVk MUL SUB #40 SFT2 #001a ADD2 .Screen/y DEO2
-		STHkr [ LIT &selected ff ] /<draw-line>
-		.Screen/y DEI2k #0010 ADD2 ROT DEO2
-		INCr LDAk ?&>w
-	POP2 POP2r JMP2r
-
-@browser/<draw-line> ( str* id sel -- cap* )
-	[ LIT2 15 -Screen/auto ] DEO
-	EQU ?{
-		.Screen/x DEI2k #0008 ADD2 ROT DEO2
-		#0005 ADD2 /get-color !chicago/<draw-line-color> }
-	;&cap-left .Screen/addr DEO2
-	[ LIT2r 09 -Screen/sprite ] DEOkr
-	#0005 ADD2 #04 chicago/<draw-line-color>
-	;&cap-right .Screen/addr DEO2
-	DEOkr DEOr
-	JMP2r
-
-@browser/get-color ( str* -- str* f )
-	DUP2
-	&>wcap ( -- )
-		INC2k LDA #20 LTH ?{ INC2 !&>wcap }
-	LDA LIT "/ EQU ?{ #09 JMP2r }
-	#0f JMP2r
-
-(
-@|browser-assets )
-
-@browser/wavey-chr [ 0000 8344 3800 0000 ffff 7c38 0000 0000 ]
-	&cap-left [ 070f 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 0f07 ]
-	&cap-right [
-	80c0 e0f0 f8fc feff fffe fcf8 f0e0 c080
-	0000 0000 0000 0000 0000 0000 0000 0000 ]
-
-(
-@|extras )
-
-@header/<draw-title> ( -- )
-	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
-	#0001 .Screen/y DEO2
-	#09 ;chicago/color STA
-	[ LIT2 15 -Screen/auto ] DEO
-	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
-	#20 chicago/<draw-char>
-	;src/buf chicago/<draw-left>
-	[ LIT2 00 -src/changed ] LDZ EQU ?{
-		[ LIT "* ] chicago/<draw-char> }
-	#20 chicago/<draw-char>
-	( | clip )
-	.Screen/y DEI2k #0001 SUB2 ROT DEO2
-	;header/bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
-	DEO2
-	DEOr
-	JMP2r
-
-(
-@|src )
-
-@src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{
-		POP #0000 .Console/vector DEO2
-		project/<load>
-		BRK }
-	/<push>
-	BRK
-
-@src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
-
-@src/<reset> ( -- )
-	;&default-name
-	( >> )
-
-@src/<inject> ( str* -- )
-	[ LIT2 -&buf _&ptr ] STR
-	&>w ( -- )
-		LDAk /<push>
-		INC2 LDAk #1f GTH ?&>w
-	POP2 JMP2r
-
-@src/change ( -- )
-	.&changed LDZ ?{
-		[ LIT2 01 -&changed ] STZ !header/<draw> }
-	JMP2r
-
-@src/<unchange> ( -- )
-	.&changed LDZ ?{ JMP2r }
-	[ LIT2 00 -&changed ] STZ !header/<draw>
-
-
-
 ( @|utils )
 
 @header/on-mouse ( -> )
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0004 NEQ2 ?{ browser/<open> }
 	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
@@ -1070,7 +1001,6 @@
 	[ LIT2 09 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-
 (
 @|chicago )
 
@@ -1087,13 +1017,13 @@
 
 @chicago/get-str-width ( text* -- width* )
 	[ LIT2r 0000 ]
-	&>ww ( -- )
+	&>ww
 		/get-utf8-width STH2
-		( > ) ADD2r next-glyph LDAk ?&>ww
+		( > ) ADD2r /next-glyph LDAk ?/>ww
 	POP2 STH2r JMP2r
 
 @chicago/<draw-right> ( text* -- )
-	.Screen/x DEI2 OVR2 chicago/get-str-width SUB2 .Screen/x DEO2 !/<draw-left>
+	.Screen/x DEI2 OVR2 /get-str-width SUB2 .Screen/x DEO2 !/<draw-left>
 
 @chicago/<draw-left-color> ( text* color -- )
 	,&color STR
@@ -1101,10 +1031,10 @@
 
 @chicago/<draw-left> ( text* -- )
 	[ LIT2 15 -Screen/auto ] DEO
-	&>wsc ( -- )
+	&>wsc
 		LDAk ?{ POP2 JMP2r }
 		/<draw-utf8>
-		next-glyph !&>wsc
+		/next-glyph !&>wsc
 
 @chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
@@ -1125,10 +1055,16 @@
 
 @chicago/<draw-line-color> ( str* color -- str* )
 	,&color STR
-	&>wdl ( -- )
+	&>wdl
 		LDAk #1f GTH ?{ INC2 JMP2r }
-		LDAk chicago/<draw-char>
+		LDAk /<draw-char>
 		INC2 !&>wdl
+
+@chicago/next-glyph ( str* -- str* )
+	&>lng
+		INC2 LDAk
+		( utf8 ) #06 SFT #02 EQU ?&>lng
+	JMP2r
 
 (
 @|cursor )
@@ -1167,13 +1103,13 @@
 	ORAk ?{ POP2 #ffff JMP2r }
 	,&bk STR2
 	;&dat
-	&>cat ( -- )
+	&>cat
 		LDA2k OVR2 #0004 ADD2
-		&>opt ( -- )
+		&>opt
 			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
 				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
-			#0006 ADD2 GTH2k ?&>opt
-		POP2 POP2 LDA2 LDAk ?&>cat
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 POP2 LDA2 LDAk ?/>cat
 	POP2 #ffff JMP2r
 
 (
@@ -1219,10 +1155,10 @@
 	,&addr STR2
 	SWP STH
 	[ LITr -Screen/sprite ]
-	&>l ( -- )
+	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 @<draw-times> ( color times addr* auto -- )
@@ -1230,9 +1166,9 @@
 	.Screen/addr DEO2
 	SWP STH
 	[ LITr -Screen/sprite ]
-	&>l ( -- )
+	&>l
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 
@@ -1401,7 +1337,7 @@
     u32-add ROT2 STH2              ( z** [sign*] )
     OVR2 #8000 AND2 STH2kr         ( z** zs* sign* [sign*] )
     NEQ2 ?{ POP2r JMP2r }          ( z** [sign*] )
-    POP4 POPr STHr ?&negative      ( )
+    POP4 POPr STHr ?/negative      ( )
     #7fff #ffff JMP2r              ( 7fff* ffff* )
     &negative #8000 #0001 JMP2r    ( 8000* 0001* )
 
@@ -1496,36 +1432,36 @@
         #0000 #000a u32-divmod   ( q** r** )
         NIP2 NIP INCr            ( q** r^ [... count+1^] )
         LIT "0 ADD STH SWPr      ( q** [... c^ count+1^] )
-        STHkr #03 NEQ ?&next     ( q** [... c^ count+1^] )
+        STHkr #03 NEQ ?/next     ( q** [... c^ count+1^] )
         INCr LITr ". SWPr        ( q** [... c^ dot^ count+2^] )
     &next                        ( q** [... count+n^ )
         DUP4                     ( q** q** [... count+n^] )
-        u32-non-zero ?&loop POP4 ( [... count+n^] )
+        u32-non-zero ?/loop POP4 ( [... count+n^] )
     &pad                         ( [... count+n^] )
-        STHkr #04 GTH ?&unroll   ( [... count+n^] )
+        STHkr #04 GTH ?/unroll   ( [... count+n^] )
         STHkr #03 NEQ ?{ INCr LITr ". SWPr }
-        INCr LITr "0 SWPr !&pad  ( [... 0^ count+n+1^] )
+        INCr LITr "0 SWPr !/pad  ( [... 0^ count+n+1^] )
     &unroll                      ( [... x0^] )
         STHr                     ( x0^ [...] )
     &uloop                       ( x^ [... z^] )
-        STHkr LIT ". NEQ ?&udraw ( x^ [... z^] ; are we at the period yet? )
+        STHkr LIT ". NEQ ?/udraw ( x^ [... z^] ; are we at the period yet? )
     &trim                        ( x^ [c^ b^ a^ "."] ; how much to print? )
         OVR2r STHr STHr          ( x^ b^ c^ [c^ b^ a^ "."] )
-        LIT "0 NEQ ?&trim-0      ( x^ b^ [c^ b^ a^ "."] ; is c zero? )
-        LIT "0 NEQ ?&trim-1      ( x^ [c^ b^ a^ "."] ; is b zero? )
+        LIT "0 NEQ ?/trim-0      ( x^ b^ [c^ b^ a^ "."] ; is c zero? )
+        LIT "0 NEQ ?/trim-1      ( x^ [c^ b^ a^ "."] ; is b zero? )
         OVRr STHr                ( x^ a^ [c^ b^ a^ "."] )
-        LIT "0 NEQ ?&trim-2      ( x^ [c^ b^ a^ "."] ; is a zero? )
+        LIT "0 NEQ ?/trim-2      ( x^ [c^ b^ a^ "."] ; is a zero? )
         POP POP2r POP2r JMP2r    ( ; all zeros, we're done )
     &trim-2                      ( x^ [c^ b^ a^ "."] ; remove c and b )
-        #02 SUB NIP2r !&udraw    ( x-2^ [a^ "."] )
+        #02 SUB NIP2r !/udraw    ( x-2^ [a^ "."] )
     &trim-1                      ( x^ [c^ b^ a^ "."] ; remove c )
         #01 SUB STH2r NIPr STH2  ( x-1^ [b^ a^ "."] )
-        !&udraw                  ( x-1^ [b^ a^ "."] )
+        !/udraw                  ( x-1^ [b^ a^ "."] )
     &trim-0                      ( x^ b^ [c^ b^ a^ "."] ; fix stack )
         POP                      ( x^ [c^ b^ a^ "."] )
     &udraw                       ( x^ [... z^] )
         STHr LIT2 [ &f $2 ] JSR2 ( x^ [... z^] ; call f[z] )
-        #01 SUB DUP ?&uloop      ( x-1^ [...] )
+        #01 SUB DUP ?/uloop      ( x-1^ [...] )
     POP JMP2r                ( )
 
 ( returns nan [8000 0000] on error )
@@ -1533,43 +1469,43 @@
     ( negate leading - ; ignore leading + )
     LDAk LIT "- NEQ ?{ INC2 x32-parse/run !x32-negate } ( pos* )
     LDAk LIT "+ NEQ ?{ INC2 !x32-parse/run }            ( pos* )
-    LDAk #00 EQU ?&error0                               ( pos* )
+    LDAk #00 EQU ?/error0                               ( pos* )
 &run                                                    ( pos* )
     ( accumulate on rst ; reverse shorts )
     LIT2r 0000 LIT2r 0000       ( pos* [lo* hi*] )
 
     ( trim leading zeros )
-    &trim LDAk LIT "0 NEQ ?&whole INC2 !&trim ( pos* [lo* hi*] )
+    &trim LDAk LIT "0 NEQ ?/whole INC2 !/trim ( pos* [lo* hi*] )
 
     ( accumulate whole part )
     &whole                             ( pos* [wlo* whi*] )
-        LDAk #00 EQU ?&whole-done      ( pos* [wlo* whi*] )
-        LDAk #2e EQU ?&dot             ( pos* [wlo* whi*] )
-        LDAk #30 LTH ?&error1          ( pos* [wlo* whi*] )
-        LDAk #39 GTH ?&error1          ( pos* [wlo* whi*] )
+        LDAk #00 EQU ?/whole-done      ( pos* [wlo* whi*] )
+        LDAk #2e EQU ?/dot             ( pos* [wlo* whi*] )
+        LDAk #30 LTH ?/error1          ( pos* [wlo* whi*] )
+        LDAk #39 GTH ?/error1          ( pos* [wlo* whi*] )
         LDAk #30 SUB                   ( pos* digit^ [wlo* whi*] )
         #00 SWP #0000 SWP2 STH2r STH2r ( pos* digit** w** )
         #0000 #000a u32-mul            ( pos* digit** 10w** )
-        u32-add STH2 STH2 INC2 !&whole ( pos+1* [wlo2* whi2*] )
+        u32-add STH2 STH2 INC2 !/whole ( pos+1* [wlo2* whi2*] )
     &whole-done                        ( pos* [lo* hi*] )
         POP2 STH2r STH2r !x32-from-u32 ( res/** )
     &dot                               ( pos* [wlo* whi*] )
         DUP2 #0004 ADD2 SWP2           ( limit* pos* [wlo* whi*] )
         INC2 LIT2r 0000                ( limit* pos+1* [wlo* whi* s*] )
     &fraction                          ( limit* pos* [wlo* whi* s*] )
-        LDAk #00 EQU ?&dotend          ( limit* pos* [wlo* whi* s*] )
-        LDAk #30 LTH ?&error2          ( limit* pos* [wlo* whi* s*] )
-        LDAk #39 GTH ?&error2          ( limit* pos* [wlo* whi* s*] )
+        LDAk #00 EQU ?/dotend          ( limit* pos* [wlo* whi* s*] )
+        LDAk #30 LTH ?/error2          ( limit* pos* [wlo* whi* s*] )
+        LDAk #39 GTH ?/error2          ( limit* pos* [wlo* whi* s*] )
         LDAk #30 SUB #00 SWP           ( limit* pos* digit* [wlo* whi* s*] )
         LIT2r 000a MUL2r STH2 ADD2r    ( limit* pos* [wlo* whi* 10s+digit*] )
-        INC2 GTH2k ?&fraction !&round  ( limit* pos+1 [wlo* whi* 10s+digit*] )
+        INC2 GTH2k ?/fraction !/round  ( limit* pos+1 [wlo* whi* 10s+digit*] )
     &dotend                            ( limit* pos* [wlo* whi* s*] )
         LIT2r 000a MUL2r               ( limit* pos* [wlo* whi* 10s*] )
-        INC2 GTH2k ?&dotend !&finish   ( limit* pos+1* [wlo* whi* 10s*] )
+        INC2 GTH2k ?/dotend !/finish   ( limit* pos+1* [wlo* whi* 10s*] )
     &round                             ( limit* limit* [wlo* whi* s*] )
-        LDAk #00 EQU ?&finish          ( limit* limit* [wlo* whi* s*] )
-        LDAk #30 LTH ?&error2          ( limit* limit* [wlo* whi* s*] )
-        LDAk #39 GTH ?&error2          ( limit* limit* [wlo* whi* s*] )
+        LDAk #00 EQU ?/finish          ( limit* limit* [wlo* whi* s*] )
+        LDAk #30 LTH ?/error2          ( limit* limit* [wlo* whi* s*] )
+        LDAk #39 GTH ?/error2          ( limit* limit* [wlo* whi* s*] )
         LDAk #30 SUB #00 SWP           ( limit* limit* digit* [wlo* whi* s*] )
         STH2kr #0001 AND2 ADD2         ( limit* limit* digit+odd* [wlo* whi* s*] )
         #0004 ADD2 #000a DIV2          ( limit* limit* rnd* [wlo* whi* s*] )
@@ -1639,10 +1575,10 @@
 ( this is equivalent to floor[log2[x]] + 1 )
 
 @u8-bitcount ( x^ -> n^ )
-    LITr 00 &loop DUP ?{ POP STHr JMP2r } #01 SFT INCr !&loop
+    LITr 00 &loop DUP ?{ POP STHr JMP2r } #01 SFT INCr !/loop
 
 @u16-bitcount ( x* -> n^ )
-    LITr 00 &loop ORAk ?{ POP2 STHr JMP2r } #01 SFT2 INCr !&loop
+    LITr 00 &loop ORAk ?{ POP2 STHr JMP2r } #01 SFT2 INCr !/loop
 
 @u32-bitcount ( x** -> n^ )
     SWP2 u16-bitcount DUP ?{ POP !u16-bitcount } #10 NIP2 ADD JMP2r
@@ -1859,7 +1795,7 @@
       ,&div1 STR2 ,&div0 STR2              ( ; div<-div>>1 )
       ,&cur0 LDR2 ,&cur1 LDR2 #01 u32-rshift ( cur>>1** )
       OVR2 OVR2 ,&cur1 STR2 ,&cur0 STR2    ( cur>>1** ; cur<-cur>>1 )
-      u32-non-zero ?&loop JMP2r              ( ; loop if cur>0, else we're done )
+      u32-non-zero ?/loop JMP2r              ( ; loop if cur>0, else we're done )
 
 ( greatest common divisor - euclidean algorithm )
 @u32-gcd ( x** y** -> z** )
@@ -1867,7 +1803,7 @@
         OVR2 OVR2 STH2 STH2      ( x** y** [y**] )
         u32-mod                    ( r=x%y** [y**] )
         STH2r ROT2 ROT2          ( yhi* rhi* rlo* [ylo*] )
-        STH2r ROT2 ROT2 !&loop   ( y** r** )
+        STH2r ROT2 ROT2 !/loop   ( y** r** )
     } POP2 POP2 JMP2r            ( z** )
 
 
@@ -1880,7 +1816,16 @@
 @arrow-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
 @line-icn [ aa00 0000 0000 0000 0000 0000 0000 0000 ]
 @check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
-
+@appicon [
+	0000 0000 3f20 203f 0000 0000 001f 1f00
+	0000 0000 ff00 00ff 0000 0000 00ff ff00
+	0000 0000 fc3c 3cdc 0000 0000 00d8 d800
+	2020 2020 2020 2020 001d 1a00 001d 1a00
+	0000 0042 0018 0000 0000 0000 0000 0000
+	0404 0404 0404 7c88 0000 0000 0000 0000
+	2020 201f 0000 0000 001d 1a00 0000 0000
+	0000 00ff 0000 0000 0000 0000 0000 0000
+	90a0 c080 0000 0000 0000 0000 0000 0000 ]
 @header
 	&bg-chr [
 	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
@@ -2110,7 +2055,9 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0032 4c00 0000 0000 0000 0000
 
-@browser/buf $200
+@res/buf $100
+
+@project/buf $200
 
 @cells/buf ( cell[0x20] ) $3000
 
