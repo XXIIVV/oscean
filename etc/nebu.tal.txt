@@ -58,6 +58,7 @@
 	( - ) 01 "o =project/<load> =dict/load
 	( - ) 01 "/ =project/<load-parent> =dict/load
 	( - ) 01 0d =project/<load-selection> =dict/load
+	( - ) 05 0d =project/<load-in-place> =dict/load
 	( - ) 01 "s =project/<save> =dict/save
 	( - ) 01 "q =project/<quit> =dict/quit }
 	={ =dict/edit
@@ -96,6 +97,7 @@
 	( >> )
 
 @src/<push-str> ( str* -- )
+	/is-dir ?{ /pop }
 	&>w
 		LDAk /<push>
 		INC2 LDAk #1f GTH ?/>w
@@ -582,7 +584,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @res/<push> ( c -- )
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
@@ -718,8 +720,8 @@
 			POP2 INC GTHk ?/>lfh
 		POP2 INC GTHk ?/>lfv
 	POP2 SWPr
-	( x ) STHr INC #00
-	( y ) STHr INC #00 JMP2r
+	( x ) INCr STHr #00
+	( y ) INCr STHr #00 JMP2r
 
 @cells/<save> ( src* -- )
 	STH2
@@ -741,7 +743,7 @@
 
 @cells/<load> ( src* -- )
 	/<clear>
-	#0000 SWP2 cells/<load-at> !src/<unchange>
+	#0000 SWP2 /<load-at> !src/<unchange>
 
 @cells/<load-at> ( x y src* -- )
 	DUP2 /find-filetype .File/name DEO2
@@ -827,10 +829,10 @@
 	( >> )
 
 @project/<load> ( -- )
+	#0000 cells/<reset>
 	cells/<clear>
 	src/<unchange>
 	header/<draw>
-	#0000 cells/<reset>
 	src/is-dir ?{ ;src/buf !cells/<load> }
 	;src/buf .File/name DEO2
 	#0200 .File/length DEO2
@@ -841,6 +843,12 @@
 	.select/b LDZ2 DUP2 calc/parse-rect
 	( val ) OVR2 calc/validate exists ?{ POP2 cells/get-addr src/<push-str> !/<load> }
 	NIP2 cell/get-res src/<push-str> !/<load>
+
+@project/<load-in-place> ( -- )
+	.select/b LDZ2 DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate exists ?{
+		POP2 cells/get-addr .select/b LDZ2 SWP2 !cells/<load-at> }
+	NIP2 cell/get-res .select/b LDZ2 SWP2 !cells/<load-at>
 
 @project/<save> ( -- )
 	;src/buf !cells/<save>
@@ -890,8 +898,8 @@
 		DUP2 #000a u16/mod [ LIT "0 ] ADD STH2kr STA2
 		[ LIT2r 0001 SUB2r ] #000a DIV2
 		( ) ORAk ?/>w
-	POP2 STH2r INC2 INC2 JMP2r
-	$5 &cap $3
+	POP2 INC2r INC2r STH2r JMP2r
+	&buf $5 &cap $3
 
 @sdec ( str* -- cap* hex* )
 	[ LIT2r 0000 ]
@@ -924,32 +932,31 @@
 (
 @|assets )
 
-@dict
-	&nebu "Nebu $1
-	&new "New $1
-	&load "Load $1
-	&save "Save $1
-	&quit "Quit $1
-	&edit "Edit $1
-	&copy "Copy $1
-	&paste "Paste $1
-	&cut "Cut $1
-	&inject "Inject $1
-	&next "Next $1
-	&deselect "Deselect $1
-	&erase "Erase $1
-	&delete "Delete $1
-	&move "Move $1
-	&move-u "Move 20 "Up $1
-	&move-d "Move 20 "Down $1
-	&move-l "Move 20 "Left $1
-	&move-r "Move 20 "Right $1
-	&size-u "Size 20 "Up $1
-	&size-d "Size 20 "Down $1
-	&size-l "Size 20 "Left $1
-	&size-r "Size 20 "Right $1
-	&err-size "File 20 "size 20 "exceeded. 0a $1
-	&err-cell "<ERROR> $1
+@dict/nebu "Nebu 00
+	&new "New 00
+	&load "Load 00
+	&save "Save 00
+	&quit "Quit 00
+	&edit "Edit 00
+	&copy "Copy 00
+	&paste "Paste 00
+	&cut "Cut 00
+	&inject "Inject 00
+	&next "Next 00
+	&deselect "Deselect 00
+	&erase "Erase 00
+	&delete "Delete 00
+	&move "Move 00
+	&move-u "Move 20 "Up 00
+	&move-d "Move 20 "Down 00
+	&move-l "Move 20 "Left 00
+	&move-r "Move 20 "Right 00
+	&size-u "Size 20 "Up 00
+	&size-d "Size 20 "Down 00
+	&size-l "Size 20 "Left 00
+	&size-r "Size 20 "Right 00
+	&err-size "File 20 "size 20 "exceeded. 0a 00
+	&err-cell "<ERROR> 00
 
 
 
@@ -1007,12 +1014,12 @@
 @chicago/get-utf8-addr ( addr* -- addr* glyph* )
 	LDAk #20 LTH ?{
 		LDAk #7f GTH ?{
-			LDAk #20 SUB #00 SWP #50 SFT2 ;/glyphs ADD2 JMP2r } }
+			LDAk #20 SUB #00 SWP #50 SFT2 ;&glyphs ADD2 JMP2r } }
 	;check-icn JMP2r
 
 @chicago/get-utf8-width ( addr* -- addr* width* )
 	LDAk #7f GTH ?{
-		LDAk #0000 ROT ;/widths ADD2 LDA JMP2r }
+		LDAk #0000 ROT ;&widths ADD2 LDA JMP2r }
 	#0008 JMP2r
 
 @chicago/get-str-width ( text* -- width* )
@@ -1034,7 +1041,7 @@
 	&>wsc
 		LDAk ?{ POP2 JMP2r }
 		/<draw-utf8>
-		/next-glyph !&>wsc
+		/next-glyph !/>wsc
 
 @chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
@@ -1058,12 +1065,12 @@
 	&>wdl
 		LDAk #1f GTH ?{ INC2 JMP2r }
 		LDAk /<draw-char>
-		INC2 !&>wdl
+		INC2 !/>wdl
 
 @chicago/next-glyph ( str* -- str* )
 	&>lng
 		INC2 LDAk
-		( utf8 ) #06 SFT #02 EQU ?&>lng
+		( utf8 ) #06 SFT #02 EQU ?/>lng
 	JMP2r
 
 (
