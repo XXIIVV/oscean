@@ -1,9 +1,7 @@
-( 54K . Neur
-| Kirie! )
+( hey kirie! )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
@@ -23,7 +21,7 @@
 	( name ) "Neur 0a
 	( desc ) "Neural 20 "Nets 20 "Language 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "31 20 "May 20 "2025 $2
+	( date ) "18 20 "Jun 20 "2026 $2
 
 @token/on-console ( -> )
 	.Console/read DEI
@@ -70,7 +68,7 @@
 @list/<each> ( cell* func* -- )
 	STH2
 	INC2k ORA ?{ POP2 POP2r JMP2r }
-	( * ) STH2kr JSR2 list/cdr STH2r !/<each>
+	( * ) STH2kr JSR2 /cdr STH2r !/<each>
 
 @list/<cons> ( value* list* -- head* )
 	( cdr* ) [ LIT2 &ptr =&buf ] STH2k STA2
@@ -110,7 +108,7 @@
 	SUB2k #01 SFT2 EQUk ?{ DUP ,&threshold STR }
 	POP2
 	( | connect each )
-	;/do-connect arr2/<foreach>
+	;&do-connect arr2/<foreach>
 	/is-odd ?lhs/<init>
 	!rhs/<init>
 
@@ -125,7 +123,7 @@
 				( set ) SWP2 neuron/<set-state-threshold> }
 			( | bind )
 			LDA2k STH2kr /<push-connection>
-			INC2 INC2 !&>lb }
+			INC2 INC2 !/>lb }
 	POP2 POP2 POP2r JMP2r
 
 @rule/<push-neuron> ( n* -- )
@@ -174,7 +172,7 @@
 	&>lf
 		EQUk ?{
 			LDZ2k STH2kr NEQ2 ?{ POP2 POP2r JMP2r }
-			INC INC !&>lf }
+			INC INC !/>lf }
 	POP2 STH2r
 	( | push neuron )
 	[ LIT &ptr -&buf ] INCk INC ,&ptr STR
@@ -185,10 +183,10 @@
 	mind/<fire>
 	[ LIT2 00 _&limit ] STR
 	&>w
-		,&ptr LDR .&buf EQU ?{
+		[ LIT2 -&buf _&ptr ] LDR EQU ?{
 			[ LIT2 80 &limit $1 ] INCk ,&limit STR
 			/<step>
-			NEQ ?&>w }
+			NEQ ?/>w }
 	JMP2r
 
 @live/<step> ( -- )
@@ -209,7 +207,7 @@
 	JMP2r
 
 @excited/<preserve> ( -- )
-	,&ptr LDR2 ;&buf ;/do-preserve !arr2/<foreach>
+	,&ptr LDR2 ;&buf ;&do-preserve !arr2/<foreach>
 
 @excited/do-preserve ( n* -- n* )
 	LDA2k neuron/get-state .State/inhibited AND ?{
@@ -226,7 +224,7 @@
 	JMP2r
 
 @dirty/<clean> ( -- )
-	,&ptr LDR2 ;&buf ;/do-clean !arr2/<foreach>
+	,&ptr LDR2 ;&buf ;&do-clean !arr2/<foreach>
 
 @dirty/do-clean ( n* -- n* )
 	LDA2k STH2
@@ -244,18 +242,18 @@
 	JMP2r
 
 @neuron/do-wake ( n* -- n* )
-	LDA2k [ LIT2 -State/alive-fire 01 ] SWP2 !neuron/<set-state-threshold>
+	LDA2k [ LIT2 -State/alive-fire 01 ] SWP2 !/<set-state-threshold>
 
 @neuron/do-step ( n* -- n* )
 	LDA2k DUP2 /<print-name>
 	DUP2 /get-threshold ?{
 		( /0 always excited ) DUP2 excited/<push-neuron> }
-	DUP2 ;Neuron/inhi-list ADD2 LDA2 ;/do-send-inhi list/<each>
-	;Neuron/exci-list ADD2 LDA2 ;/do-send-exci !list/<each>
+	DUP2 ;Neuron/inhi-list ADD2 LDA2 ;&do-send-inhi list/<each>
+	;Neuron/exci-list ADD2 LDA2 ;&do-send-exci !list/<each>
 
 @neuron/do-send-exci ( n* -- n* )
 	LDA2k dirty/<push-neuron>
-	DUP2 neuron/<inc-saturation>
+	DUP2 /<inc-saturation>
 	?{ DUP2 excited/<push-neuron> }
 	POP2 JMP2r
 
@@ -305,7 +303,7 @@
 	&>lf
 		EQU2k ?{
 			LDA2k STH2kr SWP2 str/compare ?{ POP2r NIP2 JMP2r }
-			;Neuron/size ADD2 !&>lf }
+			;Neuron/size ADD2 !/>lf }
 	POP2 POP2
 	( | allocate neuron )
 	STH2r dict/push-word
@@ -328,16 +326,16 @@
 			( not zero ) #00 NEQ SWP
 			( not fire ) .State/alive-fire NEQ AND ?{
 				( push ) DUP2 live/<push-neuron> }
-			;Neuron/size ADD2 !&>lk }
+			;Neuron/size ADD2 !/>lk }
 	POP2 POP2 JMP2r
 
 @dict/push-word ( str* -- ptr* cap* )
 	,&ptr LDR2 SWP2
 	&>w
-		LDAk [ LIT "* ] EQU ?&end
-		LDAk [ LIT "/ ] EQU ?&end
+		LDAk [ LIT "* ] EQU ?/end
+		LDAk [ LIT "/ ] EQU ?/end
 		LDAk /<push-byte>
-		INC2 LDAk ?&>w
+		INC2 LDAk ?/>w
 	&end ( -- )
 	#00
 	( >> )
@@ -353,31 +351,23 @@
 @str/compare ( s* n* -- false )
 	STH2
 	&>w
-		LDAk LDAkr STHr NEQ ?{ INC2 INC2r LDAk ?&>w }
+		LDAk LDAkr STHr NEQ ?{ INC2 INC2r LDAk ?/>w }
 	LDA LDAr STHr ?{
 		( ) DUP #00 NEQ
 		( ) SWP [ LIT "/ ] NEQ AND JMP2r }
 	POP #01 JMP2r
 
 @str/<print> ( str* -- )
-	LDAk #19 DEO
-	INC2 LDAk ?/<print>
-	POP2 JMP2r
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !/<print>
 
 @arr2/<foreach> ( to* from* fn* -- )
 	STH2
 	&>l
 		EQU2k ?{
-			STH2kr JSR2 INC2 INC2 !&>l }
+			STH2kr JSR2 INC2 INC2 !/>l }
 	POP2 POP2 POP2r JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
 
 (
 @|assets )
@@ -396,8 +386,7 @@
 @mind/buf $4000
 
 (
-@|State
-	| State Bits: 0 . 0 . 0 . 0 . 0 . fire . inhibited . alive )
+@|State ) ( State Bits: 0 . 0 . 0 . 0 . 0 . fire . inhibited . alive )
 
 |00 @Neuron/name $2 &state $1 &threshold $1 &saturation $1
 	( lists ) &exci-list $2 &inhi-list $2 &size
