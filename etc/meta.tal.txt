@@ -3,11 +3,15 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |0050 @Varvara/version
 |0056 @Field/varvara
 |0083 @Field/icon
 |00a0 @Field/manifest
+|0038 @Window/height
+|0001 @Menu/category
+|0002 @Menu/option
 
 |000
 
@@ -26,16 +30,43 @@
 	( | start )
 	[ LIT2 03 -Console/type ] DEI AND ?{ metadata/<missing-file> }
 	;src/on-console .Console/vector DEO2
+	;on-button .Controller/vector DEO2
 	BRK
 
 @meta 00
 	( ) "Meta 0a
 	( ) "A 20 "Metadata 20 "Viewer 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "6 20 "Jun 20 "2026 $1
-	( . ) 02
+	( ) "19 20 "Jun 20 "2026 $1
+	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat ( . )
+	_{ =dict/meta
+	( - ) 00 "q =<quit> =dict/quit }
+	_{ =dict/edit
+	( - ) 10 "c =dummy =dict/copy
+	( - ) 02 "v =dummy =dict/cut
+	( - ) 44 "x =dummy =dict/paste }
+	_{ =dict/view
+	( - ) 20 00 =dummy =dict/expand
+	( - ) 08 00 =dummy =dict/fullscreen
+	( - ) 88 00 =dummy =dict/hide }
+	00
+
+@on-button ( -> )
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	( * ) JSR2 POP2 BRK
+
+@dummy ( -- ) {
+	"Dummy 20 "function 0a 00 }
+	STH2r !str/<print>
+
+@<quit> ( -- )
+	#800f DEO
+	BRK
 
 (
 @|Src )
@@ -58,37 +89,30 @@
 	;&header .File/read DEO2
 	.File/success-lb DEI ?{ !/<missing-file> }
 	#0637 ;&deo LDA2 NEQ2 ?/<missing-meta>
-	;&start LDA2 #0100 SUB2 file/<seek>
-	( | version )
-	#0001 .File/length DEO2
-	;&version .File/read DEO2
-	( | body )
-	LIT2r =&body
-	&>s
-		STH2kr DUP2 .File/read DEO2
-		INC2r LDA ?/>s
-	POP2r
-	( | fields )
-	;&length DUP2 .File/read DEO2
-	LDAk #03 MUL #00 SWP .File/length DEO2
-	INC2 .File/read DEO2
-	( | parse fields )
-	;&fields DUP2 #00 ;&length LDA #0003 MUL2 ADD2 SWP2
-	&>lp
-		LDAk .Field/varvara NEQ ?{ /<set-varvara> }
-		LDAk .Field/icon NEQ ?{ /<set-icon> }
-		LDAk .Field/manifest NEQ ?{ /<set-manifest> }
-		#0003 ADD2 GTH2k ?/>lp
-	POP2 POP2 !/<draw>
+	;&start LDA2 file/<seek>
+	( | Parse )
+	version/<scan>
+	body/<scan>
+	fields/<scan>
+	fields/<parse>
+	manifest/<parse>
+	( | Scale window )
+	body/get-lines manifest/get-lines ADD2
+	( ) #40 SFT2 ;Window/height ADD2 .Screen/height DEO2
+	( | Draw )
+	body/<draw>
+	.&icon LDZ2 icon/load /<draw-icon>
+	manifest/<draw>
+	.&varvara LDZ2 !/<draw-varvara>
 
 @metadata/<missing-meta> ( -- )
-	;dict/body-nometa /<draw-body>
+	;dict/body-nometa body/<draw-str>
 	;src/buf chicago/<draw-left>
 	;appicon/nometa /<draw-icon>
 	#0000 !/<draw-varvara>
 
 @metadata/<missing-file> ( -- )
-	;dict/body-nofile /<draw-body>
+	;dict/body-nofile body/<draw-str>
 	;src/buf LDAk ?{ POP2 ;dict/blank }
 	chicago/<draw-left>
 	;appicon/nofile !/<draw-icon>
@@ -105,44 +129,237 @@
 	INC2k LDA2 .&manifest STZ2
 	JMP2r
 
-@metadata/<draw-body> ( str* -- )
-	#0038 .Screen/x DEO2
-	#000c .Screen/y DEO2 !chicago/<draw-left>
+@metadata/get-manifest ( -- addr* )
+	.&manifest LDZ2 JMP2r
 
 @metadata/<draw-icon> ( addr* -- )
 	#0008 .Screen/x DEO2
 	#0008 .Screen/y DEO2 !icon/<draw>
 
-@metadata/<draw> ( -- )
-	;&body /<draw-body>
-	.&icon LDZ2 icon/load /<draw-icon>
-	.&varvara LDZ2 !/<draw-varvara>
-
 @metadata/<draw-varvara> ( version* -- )
 	ORAk ?{
-		#0058 .Screen/y DEO2
-		;line/wave-blank line/<draw>
+		;line/wave-blank .Screen/height DEI2 #0020 SUB2 line/<draw>
 		#000c .Screen/x DEO2
-		#0060 .Screen/y DEO2
 		POP2 ;dict/unknown-field !chicago/<draw-left> }
-	#0058 .Screen/y DEO2
-	;line/wave line/<draw>
+	;line/wave .Screen/height DEI2 #0020 SUB2 line/<draw>
 	#0000 .Screen/x DEO2
-	#0060 .Screen/y DEO2
 	[ LIT2 82 -Screen/pixel ] DEO
 	#000c .Screen/x DEO2
-	#0060 .Screen/y DEO2
 	;dict/varvara chicago/<draw-left>
 	chicago/<draw-dec>
 	LIT "K chicago/<draw-char>
 	;dict/compatible !chicago/<draw-left>
 
 (
+@|Version )
+
+@version/<scan> ( -- )
+	#0001 .File/length DEO2
+	;metadata/version .File/read DEO2
+	JMP2r
+
+(
+@|Body )
+
+@body/<scan> ( -- )
+	&>s
+		;&b .File/read DEO2
+		[ LIT &b $1 ] DUP /<push>
+		?/>s
+	JMP2r
+
+@body/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@body/<draw> ( -- )
+	;&buf
+	( >> )
+
+@body/<draw-str> ( str* -- )
+	#0038 .Screen/x DEO2
+	#000c .Screen/y DEO2 !chicago/<draw-left>
+
+@body/get-lines ( -- lines* )
+	[ LITr 00 ] ,&ptr LDR2 ;&buf
+	&>l
+		LDAk #0a NEQ ?{ INCr }
+		INC2 GTH2k ?/>l
+	POP2 POP2 #00 INCr STHr
+	( min ) #04 GTHk [ JMP SWP ] POP JMP2r
+
+(
+@|Fields )
+
+@fields/<scan> ( -- )
+	;&length DUP2 .File/read DEO2
+	LDA #03 MUL #00 SWP .File/length DEO2
+	;&buf .File/read DEO2
+	JMP2r
+
+@fields/<parse> ( -- )
+	;&buf DUP2 #00 ;&length LDA #0003 MUL2 ADD2 SWP2
+	&>lp
+		LDAk .Field/varvara NEQ ?{ metadata/<set-varvara> }
+		LDAk .Field/icon NEQ ?{ metadata/<set-icon> }
+		LDAk .Field/manifest NEQ ?{ metadata/<set-manifest> }
+		#0003 ADD2 GTH2k ?/>lp
+	POP2 POP2 JMP2r
+
+(
+@|Manifest )
+
+@manifest/<parse> ( -- )
+	metadata/get-manifest ORAk ?{ JMP2r }
+	file/<seek>
+	#0400 .File/length DEO2
+	;&buf .File/read DEO2
+	;&buf
+	&>l
+		/push-category LDAk ?/>l
+	POP2 JMP2r
+
+@manifest/push-category ( addr* -- next* )
+	( store type ) .Menu/category /<push-byte>
+	( boundaries ) DUP2 LDAk INC #00 SWP ADD2 SWP2
+	( skip next* ) INC2
+	( store name ) LDA2k file/seek-string /<push-short>
+	( walk string ) INC2 INC2
+	&>lpc
+		( store type ) .Menu/option /<push-byte>
+		( store controls ) LDA2k /<push-short>
+		#0004 ADD2
+		( store name ) LDA2k file/seek-string /<push-short>
+		INC2 INC2 GTH2k ?/>lpc
+	POP2 INC2 JMP2r
+
+@manifest/<push-short> ( s* -- )
+	SWP /<push-byte>
+	( >> )
+
+@manifest/<push-byte> ( b -- )
+	[ LIT2 &ptr =&content ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@manifest/get-lines ( -- lines* )
+	[ LITr 00 ] ,&ptr LDR2 ;&content
+	&>lg
+		LDAk .Menu/category NEQ ?{ INCr #0003 ADD2 }
+		LDAk .Menu/option NEQ ?{ INCr #0005 ADD2 }
+		GTH2k ?/>lg
+	POP2 POP2 #00 INCr STHr JMP2r
+
+@manifest/<draw> ( -- )
+	;line/dotted #0058 line/<draw>
+	,&ptr LDR2 ;&content
+	&>ld
+		LDAk .Menu/category NEQ ?{ /draw-category }
+		LDAk .Menu/option NEQ ?{ /draw-option }
+		GTH2k ?/>ld
+	POP2 POP2 JMP2r
+
+@manifest/draw-category ( addr* -- addr* )
+	#000c .Screen/x DEO2
+	INC2 LDA2k chicago/<draw-left>
+	chicago/<draw-lb>
+	INC2 INC2 JMP2r
+
+@manifest/draw-option ( addr* -- addr* )
+	INC2 LDA2k /<draw-shortcut>
+	#001c .Screen/x DEO2
+	INC2 INC2 LDA2k chicago/<draw-left>
+	chicago/<draw-lb>
+	INC2 INC2 JMP2r
+
+@manifest/<draw-shortcut> ( button key -- )
+	.Screen/width DEI2 #0010 SUB2 .Screen/x DEO2
+	/<draw-key>
+	DUP /<draw-arrow> !/<draw-button>
+
+@manifest/<draw-key> ( key -- )
+	DUP ?{ POP JMP2r }
+	DUP #08 EQU ?/bs
+	DUP #09 EQU ?/tab
+	DUP #0d EQU ?/enter
+	DUP #1b EQU ?/esc
+	DUP #7f EQU ?/del
+	,&c STR
+	;&c !chicago/<draw-right>
+	&c $1 00
+	&bs ( key -- )
+	POP ;dict/bs !chicago/<draw-right>
+
+	&tab ( key -- )
+	POP ;dict/tab !chicago/<draw-right>
+
+	&enter ( key -- )
+	POP ;dict/enter !chicago/<draw-right>
+
+	&esc ( key -- )
+	POP ;dict/esc !chicago/<draw-right>
+
+	&del ( key -- )
+	POP ;dict/del !chicago/<draw-right>
+
+@manifest/<draw-arrow> ( button -- )
+	DUP #10 AND ?/u
+	DUP #20 AND ?/d
+	DUP #40 AND ?/l
+	DUP #80 AND ?/r
+	POP JMP2r
+
+	&u ( button -- )
+	POP ;arrows/u !button/<draw>
+
+	&d ( button -- )
+	POP ;arrows/d !button/<draw>
+
+	&l ( button -- )
+	POP ;arrows/l !button/<draw>
+
+	&r ( button -- )
+	POP ;arrows/r !button/<draw>
+
+@manifest/<draw-button> ( button -- )
+	DUP #01 AND ?/a
+	DUP #02 AND ?/b
+	DUP #04 AND ?/s
+	DUP #08 AND ?/z
+	POP JMP2r
+
+	&a ( button -- )
+	POP ;buttons/a !button/<draw>
+
+	&b ( button -- )
+	POP ;buttons/b !button/<draw>
+
+	&s ( button -- )
+	POP ;buttons/s !button/<draw>
+
+	&z ( button -- )
+	POP ;buttons/z !button/<draw>
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
+(
 @|Etc )
 
 @icon/load ( addr* -- sprite* )
 	ORAk ?{ POP2 ;appicon JMP2r }
-	#0100 SUB2 file/<seek>
+	file/<seek>
 	#0090 .File/length DEO2
 	;&buf DUP2 .File/read DEO2
 	JMP2r
@@ -160,7 +377,8 @@
 	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEO
 	JMP2r
 
-@line/<draw> ( addr* -- )
+@line/<draw> ( addr* y* -- )
+	.Screen/y DEO2
 	.Screen/addr DEO2
 	[ LIT2 f2 -Screen/auto ] DEO
 	#0000 DUP2 .Screen/x DEO2
@@ -168,6 +386,13 @@
 	#0080 ADD2 .Screen/x DEO2
 	.Screen/y DEI2 #0008 SUB2 .Screen/y DEO2
 	DEOr
+	JMP2r
+
+@button/<draw> ( addr* -- )
+	.Screen/addr DEO2
+	.Screen/x DEI2 DUP2 #0008 SUB2 .Screen/x DEO2
+	[ LIT2 05 -Screen/sprite ] DEO
+	#0008 SUB2 .Screen/x DEO2
 	JMP2r
 
 (
@@ -192,6 +417,19 @@
 
 @chicago/<draw-lb> ( -- )
 	.Screen/y DEI2 #0010 ADD2 .Screen/y DEO2
+	JMP2r
+
+@chicago/get-str-width ( text* -- width* )
+	[ LIT2r 0000 ]
+	&>ww
+		/get-utf8-width STH2
+		( > ) ADD2r /next-glyph LDAk ?/>ww
+	POP2 STH2r JMP2r
+
+@chicago/<draw-right> ( text* -- )
+	.Screen/x DEI2 OVR2 /get-str-width SUB2 STH2k .Screen/x DEO2
+	/<draw-left>
+	[ LITr -Screen/x ] DEO2r
 	JMP2r
 
 @chicago/<draw-left> ( text* -- )
@@ -260,14 +498,32 @@
 (
 @|stdlib )
 
-@file/<seek> ( length* -- )
-	.File/name DEI2k ROT DEO2
+@file/<seek> ( addr* -- )
+	#0100 SUB2 .File/name DEI2k ROT DEO2
 	#0000 INC2k .File/length DEO2
 	&>l
 		;&b .File/read DEO2
 		INC2 GTH2k ?/>l
 	POP2 POP2 JMP2r
-	&b $1
+
+@file/seek-string ( addr* -- str* )
+	/<seek>
+	#0001 .File/length DEO2
+	dict/get-ptr
+	&>s
+		;&b .File/read DEO2
+		.File/success-lb DEI ?{ JMP2r }
+		[ LIT &b $1 ] DUP dict/<push>
+		?/>s
+	JMP2r
+
+@dict/get-ptr ( -- addr* )
+	,&ptr LDR2 JMP2r
+
+@dict/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -282,9 +538,35 @@
 	&body-nometa "No 20 "metadata 20 "found: 0a 00
 	&body-nofile "Invalid 20 "file: 0a 00 &compatible 20 "compatible. 00
 	&blank "<blank> 00
+	&quit "Quit 00
+	&copy "Copy 00
+	&cut "Cut 00
+	&paste "Paste 00
+	&meta "Meta 00
+	&edit "Edit 00
+	&view "View 00
+	&expand "Expand 00
+	&fullscreen "Fullscreen 00
+	&hide "Hide 00
+	&bs "backspace 00
+	&esc "esc 00
+	&tab "tab 00
+	&enter "enter 00
+	&del "delete 00
+
+@arrows/u [ 0000 0000 183c 7e3c 3c3c 3c00 0000 0000 ]
+	&d [ 0000 0000 003c 3c3c 3c7e 3c18 0000 0000 ]
+	&l [ 0000 0000 0010 3e7e 7e3e 1000 0000 0000 ]
+	&r [ 0000 0000 0008 7c7e 7e7c 0800 0000 0000 ]
+
+@buttons/a [ 0000 3c7e 7e7e 7e7e 7e7e 7e7e 7e3c 0000 ]
+	&b [ 0000 3c66 4242 4242 4242 4242 663c 0000 ]
+	&s [ 0000 3c66 4242 4266 7e7e 7e7e 7e3c 0000 ]
+	&z [ 0000 3c7e 7e7e 7e7e 6642 4242 663c 0000 ]
 
 @line/wave [ 0c33 c000 0000 0000 000c 3fff ffff ffff ]
 	&wave-blank [ 0c33 c000 0000 0000 0000 0000 0000 0000 ]
+	&dotted [ 8800 0000 0000 0000 0000 0000 0000 0000 ]
 
 @chicago/check [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 	&blank [ 0000 0000 0000 0000 0000 0000 0000 0000 ]
@@ -535,10 +817,15 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0032 4c00 0000 0000 0000 0000 ]
 
-@metadata/header $1 [
-	&start $3 &deo $2
-	&version $1 &body $100
-	&length $1 &fields $ff ]
+@metadata/header $1 &start $3 &deo $2 &version $1
+
+@body/buf $100
+
+@fields/buf $100 &length $1
 
 @icon/buf $90
+
+@manifest/buf $400 &content $1000
+
+@dict/buf
 

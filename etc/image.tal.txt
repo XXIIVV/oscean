@@ -32,10 +32,23 @@
 	( ) "Image 0a
 	( ) "An 20 "Image 20 "Viewer 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "16 20 "Jun 20 "2026 00
-	( . ) 02
+	( ) "19 20 "Jun 20 "2026 00
+	( . ) 03
 	( - ) 56 =Varvara/version
+	( - ) a0 =manifest/dat
 	( - ) 83 =appicon
+
+@manifest/dat ( . )
+	_{ =dict/image
+	( - ) 40 00 =images/<select-prev> =dict/prev
+	( - ) 80 00 =images/<select-next> =dict/next
+	( - ) 01 00 =images/<invert> =dict/invert
+	( - ) 00 "q =<quit> =dict/quit }
+	00
+
+@<quit> ( -- )
+	#800f DEO
+	BRK
 
 (
 @|vectors )
@@ -112,14 +125,8 @@
 @|Images )
 
 @images/on-control ( -> )
-	.Controller/button DEI2
-	( | key )
-	#1b NEQ ?{ #800f DEO }
-	( | button )
-	DUP #40 NEQ ?{ /<select-prev> }
-	DUP #80 NEQ ?{ /<select-next> }
-	DUP #01 NEQ ?{ /<invert> }
-	POP BRK
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	( * ) JSR2 POP2 BRK
 
 @images/<invert> ( -- )
 	.&inverted LDZ
@@ -313,8 +320,27 @@
 
 	&path ".theme $1
 
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
 (
-@|Buffers )
+@|Assets )
+
+@dict/image "Image 00
+	&next "Next 00
+	&prev "Previous 00
+	&invert "Invert 00
+	&quit "Quit 00
 
 @appicon [
 	0000 0001 030c 1010 0000 0000 0000 0000
