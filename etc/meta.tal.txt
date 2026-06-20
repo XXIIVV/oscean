@@ -9,7 +9,7 @@
 |0056 @Field/varvara
 |0083 @Field/icon
 |00a0 @Field/manifest
-|0038 @Window/height
+|0028 @Window/height
 |0001 @Menu/category
 |0002 @Menu/option
 
@@ -37,7 +37,7 @@
 	( ) "Meta 0a
 	( ) "A 20 "Metadata 20 "Viewer 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "19 20 "Jun 20 "2026 $1
+	( ) "20 20 "Jun 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -244,15 +244,17 @@
 	JMP2r
 
 @manifest/get-lines ( -- lines* )
+	metadata/get-manifest ORA ?{ #0001 JMP2r }
 	[ LITr 00 ] ,&ptr LDR2 ;&content
 	&>lg
 		LDAk .Menu/category NEQ ?{ INCr #0003 ADD2 }
 		LDAk .Menu/option NEQ ?{ INCr #0005 ADD2 }
 		GTH2k ?/>lg
-	POP2 POP2 #00 INCr STHr JMP2r
+	POP2 POP2 #00 INCr INCr STHr JMP2r
 
 @manifest/<draw> ( -- )
-	;line/dotted #0058 line/<draw>
+	metadata/get-manifest ORA ?{ JMP2r }
+	;line/dotted body/get-lines #40 SFT2 #0018 ADD2 line/<draw>
 	,&ptr LDR2 ;&content
 	&>ld
 		LDAk .Menu/category NEQ ?{ /draw-category }
@@ -429,7 +431,7 @@
 @chicago/<draw-right> ( text* -- )
 	.Screen/x DEI2 OVR2 /get-str-width SUB2 STH2k .Screen/x DEO2
 	/<draw-left>
-	[ LITr -Screen/x ] DEO2r
+	LIT2r 0001 SUB2r [ LITr -Screen/x ] DEO2r
 	JMP2r
 
 @chicago/<draw-left> ( text* -- )
