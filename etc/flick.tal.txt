@@ -53,29 +53,30 @@
 	( ) "Flick 0a
 	( ) "A 20 "Point-n-click 20 "Engine 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "10 20 "Jun 20 "2026 00
-	( . ) 02
+	( ) "19 20 "Jun 20 "2026 00
+	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
 
 @manifest/dat ( . )
-	={ =dict/flick
-	( - ) 10 00 =tool/<prev-type> 0000
-	( - ) 20 00 =tool/<next-type> 0000
-	( - ) 11 00 =tool/<prev-color> 0000
-	( - ) 21 00 =tool/<next-color> 0000
-	( - ) 00 "[ =tool/<decr-size> 0000
-	( - ) 00 "] =tool/<incr-size> 0000 }
-	={ =dict/scene
-	( - ) 40 00 =scene/<select-prev> 0000
-	( - ) 80 00 =scene/<select-next> 0000
-	( - ) 00 1b =scene/<reset> 0000
-	( - ) 00 08 =canvas/<wipe> 0000 }
-	={ =dict/snarf
-	( - ) 01 "c =snarf/<copy> 0000
-	( - ) 01 "v =snarf/<paste> 0000
-	( - ) 05 "V =snarf/<paste-icn> 0000
-	( - ) 01 "x =snarf/<cut> 0000 }
+	_{ =dict/flick
+	( - ) 10 00 =tool/<prev-type> =dict/prev-type
+	( - ) 20 00 =tool/<next-type> =dict/next-type
+	( - ) 11 00 =tool/<prev-color> =dict/prev-color
+	( - ) 21 00 =tool/<next-color> =dict/next-color
+	( - ) 00 "[ =tool/<decr-size> =dict/decr-size
+	( - ) 00 "] =tool/<incr-size> =dict/incr-size }
+	_{ =dict/scene
+	( - ) 40 00 =scene/<select-prev> =dict/prev-scene
+	( - ) 80 00 =scene/<select-next> =dict/next-scene
+	( - ) 00 1b =scene/<reset> =dict/reset
+	( - ) 00 08 =canvas/<wipe> =dict/erase }
+	_{ =dict/snarf
+	( - ) 01 "c =snarf/<copy> =dict/copy
+	( - ) 01 "v =snarf/<paste> =dict/paste
+	( - ) 05 "V =snarf/<paste-icn> =dict/paste-icn
+	( - ) 01 "x =snarf/<cut> =dict/cut }
 	( ) $1
 
 (
@@ -975,12 +976,12 @@
 	,&bk STR2
 	;&dat
 	&>cat
-		LDA2k OVR2 #0004 ADD2
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
 		&>opt
 			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
-				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
+				NIP2 INC2 INC2 LDA2 JMP2r }
 			#0006 ADD2 GTH2k ?/>opt
-		POP2 POP2 LDA2 LDAk ?/>cat
+		POP2 INC2 LDAk ?/>cat
 	POP2 #ffff JMP2r
 
 @<draw-times> ( color times addr* auto -- )
@@ -1002,6 +1003,24 @@
 
 (
 @|Assets )
+
+@dict/prev-type "Previous 20 "Type 00
+	&next-type "Next 20 "Type 00
+	&prev-color "Previous 20 "Color 00
+	&next-color "Next 20 "Color 00
+	&decr-size "Decrease 20 "Size 00
+	&incr-size "Increase 20 "Size 00
+	&prev-scene "Previous 20 "Scene 00
+	&next-scene "Next 20 "Scene 00
+	&reset "Reset 00
+	&erase "Erase 00
+	&copy "Copy 00
+	&paste "Paste 00
+	&paste-icn "Paste 20 "1-bit 00
+	&cut "Cut 00
+	&flick "Flick 00
+	&snarf "Edit 00
+	&scene "Scene 00
 
 @appicon [
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -1085,9 +1104,6 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	1010 1013 1418 0000 0f0f 0f0c 0800 0000
 	8040 20c0 0000 0000 0080 c000 0000 0000 ]
-
-@dict/flick "Flick $1 &snarf $1
-	&scene "scene $1
 
 (
 @|Assets )
