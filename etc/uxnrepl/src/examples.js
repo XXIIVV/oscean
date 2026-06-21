@@ -98,15 +98,16 @@ examples.loops=`( Basic loops are done by pushing a limit and an iterator
 #08                  ( Push limit )
 #00                  ( Push iterator )
 @loop
-  DUP print-num      ( Run function to print number )
+  DUP num/<print>    ( Run function to print number )
   INC GTHk ?loop     ( Loop while limit is larger than iterator )
 POP2                 ( Pop limit and iterator )
 BRK                  ( Halt. )
 
-@print-num ( int -- )
+@num/<print> ( int -- )
   LIT "0 ADD         ( Add number to ascii character 0 )
   #18 DEO            ( Send to Console/write )
-  JMP2r`
+  JMP2r
+`
 examples.enums=`( Programs can utilize up to ff00 of memory,
   the program location is where the program data is written in memory. )
 
@@ -131,18 +132,21 @@ examples.macros=`( A macro is an inline function, but it must be created before.
 %EMIT ( num ) { LIT "0 ADD #18 DEO }
 
 #64 #01
-&while
-    DUP DUP #0a DIV EMIT #0a MOD EMIT
-    DUP #03 MOD ?{ ;fizz print-str }
-    DUP #05 MOD ?{ ;buzz print-str }
-    #0a18 DEO INC NEQk ?&while
+@while
+	DUP DUP #0a DIV EMIT #0a MOD EMIT
+	DUP #03 MOD ?{ ;fizz str/<print> }
+	DUP #05 MOD ?{ ;buzz str/<print> }
+	#0a18 DEO INC NEQk ?while
 POP2 BRK
 
-@print-str ( str* -- )
-    LDAk DUP ?{ POP POP2 JMP2r } #18 DEO INC2 !print-str
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 @fizz 20 "fizz 00
-@buzz 20 "buzz 00`
+@buzz 20 "buzz 00
+`
 examples.objects=`( Uxntal objects are statically allocated data-structures
   with methods accessible via sublabels. )
 
@@ -187,21 +191,49 @@ examples.debugging=`( The stack states can be printed at any point during
 |100
 
 @on-reset ( -> )
-    #1234
-    #01 .System/debug DEO
-   .System/wst DEI #02 NEQ ?{       ( Check that working-stack depth is 2 )
-        LIT2 "1 -Console/write DEO  ( Print success )
-        BRK
-    }
-     LIT2 "0 -Console/write DEO     ( Print failure )`
+	#0800
+	&>l
+		( | Print each step )
+		#01 .System/debug DEO
+		INC GTHk ?&>l
+	( | Push the depth of the stack )
+	.System/wst DEI BRK
+
+`
+examples.reverse_string=`( Reverse a string and print it )
+
+	str/flip
+	str/<print>
+	BRK
+
+@str/flip ( -- str* )
+	[ LIT2r =&buf ] DUP2kr
+	( sentinel ) #ff
+	&>get
+		LDAkr STHr DUP ?{
+			POP POP2r
+			&>put
+				INCk ?{ POP POP2r STH2r JMP2r }
+				STH2kr STA
+				INC2r !/>put }
+		INC2r !/>get
+		
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@str/buf "wonderland 00
+`
 examples.fibonacci=`( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
 
-#0009 fibo BRK
+#0009 fibonacci/<print> BRK
 
-@fibo ( num* -- numfib* )
+@fibonacci/<print> ( num* -- numfib* )
 	#0001 GTH2k ?{ POP2 JMP2r }
-	SUB2k fibo STH2
-	INC2 SUB2 fibo STH2r ADD2 JMP2r`
+	SUB2k /<print> STH2
+	INC2 SUB2 /<print> STH2r ADD2 JMP2r
+`
 examples.print_date=`( Print the date in the format: Day, 1 Jan 2026 )
 
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2
@@ -273,22 +305,22 @@ examples.print_arvelie=`( Print the Arvelie date )
 |100
 
 @on-reset ( -> )
-	.DateTime/doty DEI2 .DateTime/year DEI2 <emit-arv>
+	.DateTime/doty DEI2 .DateTime/year DEI2 arvelie/<print>
 	BRK
 
-@<emit-arv> ( doty* year* -- )
+@arvelie/<print> ( doty* year* -- )
 	#07d6 SUB2 NIP
-	( y ) <emit-dec>
-	( m ) DUP2 #000e DIV2 NIP #11 ADD DUP #2a GTH #30 MUL SUB <emit-num>
+	( y ) u8/<print-dec>
+	( m ) DUP2 #000e DIV2 NIP #11 ADD DUP #2a GTH #30 MUL SUB u8/<print-digit>
 	( d ) #000e DIV2k MUL2 SUB2 NIP
 	( >> )
 
-@<emit-dec> ( byte -- )
-	DUP #0a DIV <emit-num>
+@u8/<print-dec> ( byte -- )
+	DUP #0a DIV u8/<print-digit>
 	#0a DIVk MUL SUB
 	( >> )
 
-@<emit-num> ( num -- )
+@u8/<print-digit> ( num -- )
 	[ LIT "0 ] ADD #18 DEO
 	JMP2r
 `

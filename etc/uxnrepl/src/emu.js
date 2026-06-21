@@ -5,14 +5,19 @@ function System(emu)
 	this.vector = 0
 	this.meta = 0
 
+	function print_byte(value) {
+		return `${(value >> 4).toString(16)}${(value & 0xf)}`
+	}
+
 	function print_stack(id) {
 		const ptr = emu.uxn.get_ptr(id)
 		const stk = emu.uxn.get_stk(id)
 		let res = `${id ? 'RST' : 'WST'}${ptr - 8 ? ' ' : '|'}`
 		for(let i = ptr - 8; i != ptr; i++) {
-			res += ('0' + stk[i & 0xff].toString(16)).slice(-2)
+			res += print_byte(stk[i & 0xff])
 			res += ((i + 1) & 0xff) ? ' ' : '|'
 		}
+		res += `<${print_byte(ptr)}`
 		return res
 	}
 
@@ -96,7 +101,7 @@ function Emu ()
 		case 0x01: this.system.vector = (this.uxn.dev[0x00] << 8) | this.uxn.dev[0x01]; break
 		case 0x06:
 		case 0x07: this.system.meta = (this.uxn.dev[0x06] << 8) | this.uxn.dev[0x07]; break
-		case 0x0e: this.console.write_string(`${this.system.print_wst()}\n${this.system.print_rst()}`); break
+		case 0x0e: this.console.write_string(`${this.system.print_wst()}\n${this.system.print_rst()}\n`); break
 		case 0x0f: console.log("Evaluation ended."); break
 		/* Console */
 		case 0x10:
