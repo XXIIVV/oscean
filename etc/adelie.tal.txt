@@ -47,10 +47,24 @@
 	( ) "Adelie 0a
 	( ) "A 20 "Slideshow 20 "Program 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "16 20 "Jun 20 "2026 00
-	( . ) 02
+	( ) "21 20 "Jun 20 "2026 0a0a
+	( ) "< 20 "slides.txt 00
+	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat _{ =dict/adelie
+	( - ) 40 00 =slides/<prev> =dict/prev-slide
+	( - ) 80 00 =slides/<next> =dict/next-slide
+	( - ) 00 1b =slides/<restart> =dict/restart
+	( - ) 02 00 =slides/<reload> =dict/reload
+	( - ) 01 00 =interface/<toggle> =dict/toggle-interface }
+	00
+
+@on-button ( -> )
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	( * ) JSR2 POP2 BRK
 
 (
 @|Src )
@@ -58,7 +72,7 @@
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
 		BRK }
-	slides/<restart>
+	slides/<reload>
 	BRK
 
 @src/<push> ( c -- )
@@ -69,7 +83,7 @@
 @src/<set-default> ( -- )
 	;&path
 	&>w
-		LDAk DUP ?{ POP POP2 !slides/<restart> }
+		LDAk DUP ?{ POP POP2 !slides/<reload> }
 		/<push>
 		INC2 !/>w
 
@@ -103,16 +117,6 @@
 	#01 SUB DUP ,&wait STR
 	?{ slides/<next> }
 	BRK
-
-@on-button ( -> )
-	.Controller/button DEI DUP ?{ POP BRK }
-	DUP #01 NEQ ?{ slides/<next> }
-	DUP #02 NEQ ?{ slides/<prev> }
-	DUP #04 NEQ ?{ interface/<toggle> }
-	DUP #08 NEQ ?{ slides/<restart> }
-	DUP #40 NEQ ?{ slides/<prev> }
-	DUP #80 NEQ ?{ slides/<next> }
-	POP BRK
 
 @on-mouse ( -> )
 	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;cursor-icn cursor/<update>
@@ -160,6 +164,9 @@
 
 (
 @|Slides )
+
+@slides/<restart> ( -- )
+	#0000 !/<select>
 
 @slides/<load> ( src* -- )
 	;src/buf .File/name DEO2
@@ -219,7 +226,7 @@
 			DUP2 ops/find JSR2 str/cap INC2 GTH2k ?/>we }
 	POP2 POP2 JMP2r
 
-@slides/<restart> ( -- )
+@slides/<reload> ( -- )
 	/<load>
 	/<scan>
 	watch/<start>
@@ -620,6 +627,19 @@
 (
 @|stdlib )
 
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
 @rect/is-within ( x* y* rect -- flag )
 	STH
 	( y LTH rect.y1 ) DUP2 STHkr INC2 INC2 LDZ2 LTH2 ?/skip
@@ -767,7 +787,12 @@
 (
 @|assets )
 
-@dict/usage "usage: 20 "adelie.rom 20 "slides.txt 0a 00
+@dict/adelie "Adelie 00
+	&next-slide "Next 20 "Slide 00
+	&prev-slide "Previous 20 "Slide 00
+	&toggle-interface "Toggle 20 "Interface 00
+	&restart "Restart 00
+	&reload "Reload 00
 	&null "NULL 00
 	&name "NAME 00
 	&goto "GOTO 00

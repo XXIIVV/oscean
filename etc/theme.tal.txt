@@ -36,10 +36,22 @@
 	( ) "Theme 0a
 	( ) "A 20 "Theme 20 "Editor 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "25 20 "Dec 20 "2025 $1
-	( . ) 02
+	( ) "21 20 "Jan 20 "2026 00
+	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat _{ =dict/theme
+	( - ) 00 "1 =color/<set-0> =dict/select-0
+	( - ) 00 "2 =color/<set-1> =dict/select-1
+	( - ) 00 "3 =color/<set-2> =dict/select-2
+	( - ) 00 "4 =color/<set-3> =dict/select-3 }
+	00
+
+@on-button ( -> )
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	( * ) JSR2 POP2 BRK
 
 (
 @|Vector )
@@ -57,14 +69,6 @@
 	( color ) #0028 SUB2 DUP2 #000a GTH2 ?{ POP2 color/<set-pos>
 		BRK }
 	POP2 POP BRK
-
-@on-button ( -> )
-	.Controller/button DEI2
-	( ) DUP2 [ LIT2 00 "1 ] NEQ2 ?{ #00 color/<set> }
-	( ) DUP2 [ LIT2 00 "2 ] NEQ2 ?{ #01 color/<set> }
-	( ) DUP2 [ LIT2 00 "3 ] NEQ2 ?{ #02 color/<set> }
-	( ) DUP2 [ LIT2 00 "4 ] NEQ2 ?{ #03 color/<set> }
-	POP2 BRK
 
 (
 @|Colors )
@@ -85,7 +89,7 @@
 	&>l
 		#00 OVR .Screen/x DEO2
 		[ LIT2 01 -Screen/pixel ] DEO
-		INC INC GTHk ?&>l
+		INC INC GTHk ?/>l
 	POP2
 	( | radio )
 	!color/<draw>
@@ -188,6 +192,18 @@
 	#04 SFT .blue/a STZ
 	JMP2r
 
+@color/<set-0> ( -- )
+	#00 !/<set>
+
+@color/<set-1> ( -- )
+	#01 !/<set>
+
+@color/<set-2> ( -- )
+	#02 !/<set>
+
+@color/<set-3> ( -- )
+	#03 !/<set>
+
 (
 @|GUI )
 
@@ -215,13 +231,26 @@
 	&>l
 		;&sprite-b .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP DEOkr
 	( | selector )
 	#00 SWP #30 SFT2 #0008 ADD2 .Screen/x DEO2
 	DEOkr
 	DEOr
 	JMP2r
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
 
 (
 @|Project )
@@ -237,7 +266,7 @@
 	#20 chicago/<draw-char>
 	( | clip )
 	.Screen/y DEI2k #0001 SUB2 ROT DEO2
-	;header/bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
+	;&bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
 	DEO2
 	DEOr
 	JMP2r
@@ -257,6 +286,10 @@
 	&red "Red $1
 	&green "Green $1
 	&blue "Blue $1
+	&select-0 "First 20 "Color 00
+	&select-1 "Second 20 "Color 00
+	&select-2 "Third 20 "Color 00
+	&select-3 "Fourth 20 "Color 00
 
 
 
@@ -270,7 +303,7 @@
 	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 (
@@ -280,7 +313,7 @@
 	[ LITr 00 ]
 	&>ww
 		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
-		( > ) ADDr INC2 LDAk ?&>ww
+		( > ) ADDr INC2 LDAk ?/>ww
 	POP2 #00 STHr JMP2r
 
 @chicago/<draw-left> ( text* -- )
@@ -288,7 +321,7 @@
 	&>ws
 		LDAk #1f GTH ?{ POP2 JMP2r }
 		LDAk /<draw-char>
-		INC2 !&>ws
+		INC2 !/>ws
 
 @chicago/<draw-char> ( char -- )
 	#00 SWP #20 SUB DUP2
@@ -420,8 +453,8 @@
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	.File/success-lb DEI ?{ !theme/<reset> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
 
 	&path ".theme $1
 

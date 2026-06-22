@@ -52,9 +52,28 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "15 20 "Jun 20 "2026 00
-	( . ) 01
+	( date ) "21 20 "Jun 20 "2026 00
+	( . ) 02
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat _{ =dict/m291
+	( - ) 00 0d =selection/<pick-selected> =dict/play
+	( - ) 00 20 =selection/<send-pause> =dict/pause
+	( - ) 40 00 =selection/<seek-prev> =dict/seek-prev
+	( - ) 80 00 =selection/<seek-next> =dict/seek-next }
+	_{ =dict/selection
+	( - ) 00 1b =selection/<escape> =dict/parent
+	( - ) 10 00 =selection/<move-up> =dict/move-up
+	( - ) 20 00 =selection/<move-down> =dict/move-down }
+	00
+
+@on-control ( -> )
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{
+		POP2
+		( key ) <find-any>
+		POP BRK }
+	( * ) JSR2 POP2 BRK
 
 (
 @|macros )
@@ -150,23 +169,6 @@
 	dir/<redraw>
 	BRK
 
-@on-control ( -> )
-	( | key )
-	.Controller/key DEI
-	( esc ) DUP #1b NEQ ?{ selection/<escape> }
-	( bsp ) DUP #08 NEQ ?{ selection/<escape> }
-	( brk ) DUP #0d NEQ ?{ .selection/id LDZ selection/<pick> }
-	( spc ) DUP #20 NEQ ?{ selection/<send-pause> }
-	DUP #20 SUB #5f GTH ?{ DUP <find-any> }
-	POP
-	( | button )
-	.Controller/button DEI
-	( u ) DUP #10 NEQ ?{ #ff selection/<move> }
-	( d ) DUP #20 NEQ ?{ #01 selection/<move> }
-	( l ) DUP #40 NEQ ?{ selection/<seek-prev> }
-	( r ) DUP #80 NEQ ?{ selection/<seek-next> }
-	POP BRK
-
 (
 @|message )
 
@@ -257,6 +259,13 @@
 	#0a18 DEO
 	JMP2r
 
+@selection/<move-up> ( -- )
+	#ff !/<move>
+
+@selection/<move-down> ( -- )
+	#01
+	( >> )
+
 @selection/<move> ( mod -- )
 	.&id LDZ ADD
 	( top ) INCk ?{ POP JMP2r }
@@ -276,6 +285,10 @@
 	[ LIT &last ff ] NEQk ?{ POP2 JMP2r }
 	POP DUP ,&last STR
 	.&id STZ !dir/<redraw>
+
+@selection/<pick-selected> ( -- )
+	.&id LDZ
+	( >> )
 
 @selection/<pick> ( alt id -- )
 	DUP .lines/folders LDZ LTH ?/<pick-folder>
@@ -710,6 +723,7 @@
 @|Misc )
 
 @<find-any> ( letter -- )
+	DUP ?{ POP JMP2r }
 	( case insensitive ) chr/lc STH
 	( | folders )
 	.lines/folders LDZ #00
@@ -906,6 +920,19 @@
 (
 @|stdlib )
 
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
 @chr/lc ( c -- lowercase )
 	DUP LIT "A SUB #1a GTH ?{ #20 ADD }
 	JMP2r
@@ -1017,6 +1044,15 @@
 	&no-album "Unknown 20 "Album 00
 	&ellipses "... 20 00
 	&volume "VOLUME 20 00
+	&m291 "m291 00
+	&parent "Parent 20 "Folder 00
+	&pause "Pause 00
+	&selection "Selection 00
+	&play "Play 00
+	&move-up "Move 20 "Up 00
+	&move-down "Move 20 "Down 00
+	&seek-prev "Seek 20 "Backward 00
+	&seek-next "Seek 20 "Forward 00
 
 
 

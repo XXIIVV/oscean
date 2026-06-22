@@ -1,25 +1,37 @@
-( uxncli file.rom )
+( 54K . File Test )
 
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|004f @Varvara/version
 
 |100
 
 @on-reset ( -> )
+	;meta #06 DEO2
 	#800f DEO
 	;dict/write file/test-write <test>
 	;dict/append file/test-append <test>
 	;dict/read file/test-read <test>
-	;dict/stat file/test-stat <test>
-	;dict/delete file/test-delete <test>
-	( | overflows )
-	;dict/write-of file/test-write-of <test>
 	;dict/read-of file/test-read-of <test>
+	;dict/stat file/test-stat <test>
+	;dict/stat-oversize file/test-stat-oversize <test>
 	;dict/stat-of file/test-stat-of <test>
-	( | cleanup )
+	;dict/write-of file/test-write-of <test>
+	;dict/delete file/test-delete <test>
+	( | Dir )
+	;dict/dir-spacer file/test-dir-spacer <test>
+	;dict/dir-partial file/test-dir-partial <test>
+	( ;dict/dir-nostream file/test-dir-nostream <test> ) ( | cleanup )
 	;file/name .File/name DEO2
 	#01 .File/delete DEO
 	BRK
+
+@meta 00
+	( ) "File 20 "Device(79K) 20 "Test 0a
+	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( ) "16 20 "Jun 20 "2026 00
+	( . ) 01
+	( - ) 56 =Varvara/version
 
 (
 @|Tests )
@@ -58,6 +70,33 @@
 	;&stat-buf .File/stat DEO2
 	;&stat-buf LDA2 LIT2 "!! EQU2 AND JMP2r
 
+@file/test-stat-of ( -- pass )
+	;&name .File/name DEO2
+	#0004 .File/length DEO2
+	#fffe .File/stat DEO2
+	.File/success DEI2 #0002 EQU2 JMP2r
+
+@file/test-stat-oversize ( -- pass )
+	;&name .File/name DEO2
+	#0020 .File/length DEO2
+	#00 .File/append DEO
+	#f000 .File/write DEO2
+	( | Read stat too small )
+	;&name .File/name DEO2
+	#0000 .File/length DEO2
+	;&sobuf .File/stat DEO2
+	;&sobuf LDA #00 EQU ?{ #00 JMP2r }
+	#0001 .File/length DEO2
+	;&sobuf .File/stat DEO2
+	;&sobuf LDA LIT "? EQU ?{ #00 JMP2r }
+	#0002 .File/length DEO2
+	;&sobuf .File/stat DEO2
+	;&sobuf LDA2 LIT2 "20 EQU2 ?{ #00 JMP2r }
+	#0003 .File/length DEO2
+	;&sobuf .File/stat DEO2
+	;&sobuf LDA2 LIT2 "02 EQU2 JMP2r
+	&sobuf $4
+
 @file/test-delete ( -- pass )
 	;&name .File/name DEO2
 	#01 .File/delete DEO
@@ -83,11 +122,29 @@
 	#ffff .File/read DEO2
 	.File/success DEI2 #0001 EQU2 JMP2r
 
-@file/test-stat-of ( -- pass )
-	;&name .File/name DEO2
-	#0004 .File/length DEO2
-	#fffe .File/stat DEO2
-	.File/success DEI2 #0002 EQU2 JMP2r
+@file/test-dir-spacer ( -- pass )
+	;&dirpath .File/name DEO2
+	#0200 .File/length DEO2
+	;&dirbuf .File/read DEO2
+	;&dirbuf #0004 ADD2 LDA #09 EQU JMP2r
+
+	&dirpath ". 00
+
+@file/test-dir-partial ( -- pass )
+	( a ) LIT "~ ;&dirbuf #0007 ADD2 STA
+	( b ) LIT "~ ;&dirbuf #0009 ADD2 STA
+	;&dirpath .File/name DEO2
+	#0008 .File/length DEO2
+	;&dirbuf .File/read DEO2
+	( b ) LIT "~ ;&dirbuf #0009 ADD2 LDA EQU
+	( a ) LIT "~ ;&dirbuf #0007 ADD2 LDA NEQ AND JMP2r
+
+@file/test-dir-nostream ( -- pass )
+	;&dirpath .File/name DEO2
+	#0008 .File/length DEO2
+	;&bufa .File/read DEO2
+	;&bufb .File/read DEO2
+	;&bufa ;&bufb !str/cmp
 
 (
 @|Helpers )
@@ -106,6 +163,13 @@
 	.Console/write DEO
 	INC2 !/<print>
 
+@str/cmp ( a* b* -- f )
+	STH2
+	&>wc
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>wc
+
 (
 @|Assets )
 
@@ -113,10 +177,14 @@
 	&append "File/append: 20 $1
 	&read "File/read: 20 $1
 	&stat "File/stat: 20 $1
+	&stat-oversize "File/stat(oversize): 20 $1
+	&stat-of "File/stat(overflow): 20 $1
 	&delete "File/delete: 20 $1
 	&write-of "File/write(overflow): 20 $1
 	&read-of "File/read(overflow): 20 $1
-	&stat-of "File/stat(overflow): 20 $1
+	&dir-spacer "File/dir(spacer): 20 $1
+	&dir-nostream "File/dir(nostream): 20 $1
+	&dir-partial "File/dir(partial): 20 $1
 	&fail "fail 0a $1
 	&pass "pass 0a $1
 
@@ -125,5 +193,5 @@
 	( stat buf ) &stat-buf &stat-hs $2 &stat-ls $2
 	( null buf ) &null-buf $4
 	&name "test.txt $1
-	&unknown-name "abcdefghj $1
+	&unknown-name "abcdefghj $1 &dirbuf $200 &bufa $8 &bufb $8
 

@@ -155,38 +155,55 @@ typedef struct {
 static UxnFile ufs[2];
 
 static inline unsigned int
-put_text(Uint8 *dest, const char *text)
+put_text(Uint8 *dest, unsigned int *length, const char *text)
 {
 	Uint8 *anchor = dest;
-	while(*text)
+	while(*text && *length) {
 		*dest = *text++, dest++;
+		*length = *length - 1;
+	}
 	*dest = 0;
 	return dest - anchor;
 }
 
 static inline unsigned int
-put_size(Uint8 *dest, unsigned int len, unsigned int size)
+put_size(Uint8 *dest, unsigned int *length, unsigned int len, unsigned int size)
 {
 	unsigned int i;
-	for(i = 0, dest += len; i < len; i++, size >>= 4)
+	for(i = 0, dest += len; i < len && *length; i++) {
 		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+		size >>= 4;
+		*length = *length - 1;
+	}
 	return len;
 }
 
 static unsigned int
-put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, unsigned int dir, unsigned int capsize)
+put_fill(Uint8 *dest, unsigned int *length, unsigned int len, char c)
 {
-	if(err || dir || (capsize && size >= 0x10000)) {
-		memset(dest, err ? '!' : dir ? '-' :
-									   '?',
-			len);
-		return len;
+	unsigned int i;
+	for(i = 0; i < len && *length; i++) {
+		*dest++ = c;
+		*length = *length - 1;
 	}
-	return put_size(dest, len, size);
+	return len;
 }
 
 static unsigned int
-put_statfile(Uint8 *dest, char *pathbuf, unsigned int prefix_len, unsigned int cap, const char *basename)
+put_stat(Uint8 *dest, unsigned int *length, unsigned int len, unsigned int size, unsigned int err, unsigned int dir)
+{
+	unsigned int max = 1 << (len << 2);
+	if(dir)
+		return put_fill(dest, length, len, '-');
+	else if(err)
+		return put_fill(dest, length, len, '!');
+	else if(size < max)
+		return put_size(dest, length, len, size);
+	return put_fill(dest, length, len, '?');
+}
+
+static unsigned int
+put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int prefix_len, unsigned int cap, const char *basename)
 {
 	unsigned int err, dir;
 	struct stat st;
@@ -198,17 +215,17 @@ put_statfile(Uint8 *dest, char *pathbuf, unsigned int prefix_len, unsigned int c
 	*p = 0;
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	dest += put_stat(dest, 4, st.st_size, err, dir, 1);
-	dest += put_text(dest, "\t");
-	dest += put_text(dest, basename);
-	dest += put_text(dest, dir ? "/\n" : "\n");
+	dest += put_stat(dest, length, 4, st.st_size, err, dir);
+	dest += put_text(dest, length, "\t");
+	dest += put_text(dest, length, basename);
+	dest += put_text(dest, length, dir ? "/\n" : "\n");
 	return dest - anchor;
 }
 
 static unsigned int
-put_fdir(Uint8 *dest, unsigned int len, const char *filepath, DIR *dir)
+put_fdir(Uint8 *dest, unsigned int *length, const char *filepath, DIR *dir)
 {
-	Uint8 *p = dest, *end = dest + len - 1;
+	Uint8 *p = dest, *end = dest + *length - 1;
 	struct dirent *de;
 	char pathbuf[0x200];
 	unsigned int prefix_len = 0;
@@ -222,7 +239,7 @@ put_fdir(Uint8 *dest, unsigned int len, const char *filepath, DIR *dir)
 		const char *name = de->d_name;
 		if(name[0] == '.' && (!name[1] || (name[1] == '.' && !name[2])))
 			continue;
-		p += put_statfile(p, pathbuf, prefix_len, sizeof pathbuf, name);
+		p += put_statfile(p, length, pathbuf, prefix_len, sizeof pathbuf, name);
 	}
 	*p = 0;
 	return p - dest;
@@ -313,17 +330,17 @@ static unsigned int
 file_read(unsigned int id, Uint16 addr, unsigned int len)
 {
 	void *dest = &ram[addr];
-	unsigned int n;
+	unsigned int n, length = len;
 	if(ufs[id].filepath == 0)
 		return 0;
 	if(addr + len > 0x10000)
-		len = 0x10000 - addr;
+		length = 0x10000 - addr;
 	if(!file_open(id, 0, 0))
 		return 0;
 	if(ufs[id].state == FILE_READ)
-		n = fread(dest, 1, len, ufs[id].h.f);
+		n = fread(dest, 1, length, ufs[id].h.f);
 	else
-		n = put_fdir(dest, len, ufs[id].filepath, ufs[id].h.dir);
+		n = put_fdir(dest, &length, ufs[id].filepath, ufs[id].h.dir);
 	if(n == 0) file_reset(id);
 	return n;
 }
@@ -348,6 +365,7 @@ static unsigned int
 file_stat(unsigned int id, Uint16 addr, unsigned int len)
 {
 	unsigned int err, dir;
+	unsigned int length = len;
 	struct stat st;
 	if(ufs[id].filepath == 0)
 		return 0;
@@ -355,7 +373,7 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 		len = 0x10000 - addr;
 	err = stat(ufs[id].filepath, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	return put_stat(&ram[addr], len, st.st_size, err, dir, 0);
+	return put_stat(&ram[addr], &length, len, st.st_size, err, dir);
 }
 
 static unsigned int
