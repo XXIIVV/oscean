@@ -19,6 +19,7 @@
 |0100 @path/buflen
 |0200 @bios/buflen
 |0028 @bios/anchor-y
+|ffd6 @loader/entry
 
 |000
 
@@ -48,10 +49,14 @@
 	( - ) 83 =appicon
 	( - ) a0 =manifest/dat
 
-@manifest/dat _{ =dict/m_pc
+@manifest/dat ( . )
+	_{ =dict/m_pc
 	( ) 40 00 =sel/<prev> =dict/sel-prev
 	( ) 80 00 =sel/<next> =dict/sel-next
-	( ) 01 00 =sel/<pick> =dict/sel-pick
+	( ) 01 00 =sel/<pick> =dict/sel-pick }
+	_{ =dict/input
+	( ) 00 0d =input/<eval> =dict/eval
+	( ) 04 0d =input/<eval-partial> =dict/eval-partial
 	( ) 00 1b =input/<blank> =dict/clear }
 	00
 
@@ -72,24 +77,17 @@
 	DUP ?{ POP JMP2r }
 	DUP #08 EQU ?/on-bs
 	DUP #0a EQU ?/on-enter
-	DUP #0d EQU ?/on-enter
-	DUP #1b EQU ?/on-esc
 	DUP #7f EQU ?/on-del
 	DUP #20 GTH ?{ POP #20 }
 	/<push> !/<redraw>
 
-@input/on-bs ( c -- )
+	&on-bs ( c -- )
 	POP /<pop> !/<redraw>
 
-@input/on-enter ( c -- )
-	POP ;&buf LDAk ?{ POP2 /<reset> !bios/<draw-welcome> }
-	bios/<parse>
-	/<reset> !/<redraw>
+	&on-enter ( c -- )
+	POP !/<eval>
 
-@input/on-del ( c -- )
-	( >> )
-
-@input/on-esc ( c -- )
+	&on-del ( c -- )
 	POP !/<blank>
 
 @input/<reset> ( -- )
@@ -114,6 +112,16 @@
 	#01 SUB #00 OVR STZ
 	,&ptr STR
 	JMP2r
+
+@input/<eval> ( -- )
+	;&buf LDAk ?{ POP2 /<reset> !bios/<draw-welcome> }
+	bios/<parse>
+	/<reset> !/<redraw>
+
+@input/<eval-partial> ( -- )
+	;&buf LDAk ?{ POP2 /<reset> !bios/<draw-welcome> }
+	bios/<parse-partial>
+	/<reset> !/<redraw>
 
 @input/<blank> ( -- )
 	sel/<reset>
@@ -168,8 +176,11 @@
 
 @bios/<parse> ( str* -- )
 	/<reset>
-	sel/<reset>
 	dict/<reset>
+	( >> )
+
+@bios/<parse-partial> ( str* -- )
+	sel/<reset>
 	str/walk-ws
 	&>w
 		dict/alloc /<push>
@@ -412,7 +423,7 @@
 @run/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
 	bios/pop path/make
-	( ? ) DUP2 file/exists ?file/<eval>
+	( ? ) DUP2 file/exists ?loader/<run>
 	POP2 !bios/<push-err-404>
 	&api =dict/run =&<eval> "<run> 20 "( 20 "f.rom 20 09 20 "ok 20 ") 00
 
@@ -748,6 +759,26 @@
 	&path "wallpaper [ &w "00 "x &h "00 ] ".icn 00
 
 (
+@|Loader )
+
+@loader/<run> ( path* -- )
+	,&path STR2
+	;&on-frame .Screen/vector DEO2
+	JMP2r
+
+@loader/on-frame ( -> )
+	#0000 DUP2 .Screen/vector DEO2
+	DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	[ LIT2 c0 -Screen/pixel ] DEO
+	[ LIT2 &path $2 ] .File/name DEO2
+	#fe00 .File/length DEO2
+	;&mmu .System/expansion DEO2 !/entry
+
+	&mmu [ 01 0029 0000 =loader/rom 0000 =&entry ]
+
+(
 @|Stdlib )
 
 @manifest/scan ( but key -- fn* )
@@ -794,18 +825,6 @@
 		;&b .File/read DEO2
 		.File/success-lb DEI ?{ JMP2r }
 		;&b .File2/write DEO2 !/>s
-
-@file/<eval> ( path* -- )
-	#0000 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	[ LIT2 c0 -Screen/pixel ] DEO
-	.File/name DEO2
-	#fe00 .File/length DEO2
-	;&mmu .System/expansion DEO2
-	#ffd6 JMP2
-
-	&mmu [ 01 0029 0000 =loader/rom 0000 ffd6 ]
 
 @chr/hex ( c -- val )
 	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
@@ -895,6 +914,9 @@
 	&sel-next "Selection 20 "Next 00
 	&sel-pick "Pick 20 "Selection 00
 	&clear "Clear 20 "Input 00
+	&input "Input 00
+	&eval "Run 00
+	&eval-partial "Non-Destructive 20 "Run 00
 	&out-path ".. 00
 	&dir "dir 00
 	&mov "mov 00
