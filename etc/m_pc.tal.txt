@@ -16,8 +16,9 @@
 |0200 @dir/buflen
 |0200 @dict/buflen
 |0200 @dict/tmpbuflen
+|0100 @path/buflen
 |0200 @bios/buflen
-|001c @bios/anchor-y
+|0028 @bios/anchor-y
 
 |000
 
@@ -30,30 +31,39 @@
 	theme/<load>
 	;input/on-controller .Controller/vector DEO2
 	;input/on-console .Console/vector DEO2
+	;dict/home-path path/<set>
+	wallpaper/<draw>
+	spacer/<draw>
 	input/<redraw>
 	bios/<draw-welcome>
 	BRK
 
 @meta 00
 	( name ) "M/PC 0a
-	( details ) "Monitor/Control 20 "Program 0a
+	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Jun 20 "2026 00
-	( . ) 01
+	( date ) "23 20 "Jun 20 "2026 00
+	( . ) 03
 	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat _{ =dict/m_pc
+	( ) 40 00 =sel/<prev> =dict/sel-prev
+	( ) 80 00 =sel/<next> =dict/sel-next
+	( ) 01 00 =sel/<pick> =dict/sel-pick
+	( ) 00 1b =input/<blank> =dict/clear }
+	00
 
 (
 @|Input )
 
 @input/on-controller ( -> )
-	.Controller/button DEI
-	( | handlers )
-	DUP #40 NEQ ?{ sel/<prev> }
-	DUP #80 NEQ ?{ sel/<next> }
-	DUP #01 NEQ ?{ sel/<pick> }
-	POP
-	( | key )
-	.Controller/key DEI /handle-input BRK
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{
+		POP2
+		( key ) /handle-input
+		( button ) POP BRK }
+	( * ) JSR2 POP2 BRK
 
 @input/on-console ( -> )
 	.Console/read DEI /handle-input BRK
@@ -80,9 +90,7 @@
 	( >> )
 
 @input/on-esc ( c -- )
-	POP sel/<reset>
-	/<reset>
-	bios/<draw> !/<redraw>
+	POP !/<blank>
 
 @input/<reset> ( -- )
 	#0000 .&buf STZ2
@@ -107,11 +115,18 @@
 	,&ptr STR
 	JMP2r
 
+@input/<blank> ( -- )
+	sel/<reset>
+	/<reset>
+	bios/<draw>
+	( >> )
+
 @input/<redraw> ( -- )
 	#0008 .Screen/x DEO2
 	#0018 .Screen/y DEO2
 	[ LIT2 e0 -Screen/pixel ] DEO
 	#0008 .Screen/y DEO2
+	path/<draw>
 	;&buf font/<draw-str>
 	.&buf LDZ ?{ ;&full !font/<draw-sprite> }
 	;&hash !font/<draw-sprite>
@@ -119,18 +134,26 @@
 @input/hash [ 4020 4020 4020 4020 4020 4020 4020 4020 ]
 	&full [ 6060 6060 6060 6060 6060 6060 6060 6060 ]
 
+@spacer/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	;&wave .Screen/addr DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	.Screen/width DEI2 #03 SFT2 SUB [ LIT2r 41 -Screen/sprite ]
+	&>l
+		DEOkr
+		INC DUP ?/>l
+	POP POP2r JMP2r
+
 (
 @|Bios )
 
 @bios/<draw-welcome> ( -- )
 	#0008 .Screen/x DEO2
-	#0018 .Screen/y DEO2
+	;&anchor-y .Screen/y DEO2
 	[ LIT2 c0 -Screen/pixel ] DEO
 	;&anchor-y .Screen/y DEO2
 	;dict/info font/<draw-str>
-	( >> )
-
-@bios/<draw-logo> ( -- )
 	( | logo )
 	[ LIT2 66 -Screen/auto ] DEO
 	;&logo .Screen/addr DEO2
@@ -192,9 +215,12 @@
 @bios/<push-err-404> ( -- )
 	;dict/err-404 !/<push>
 
+@bios/<push-err-bin> ( -- )
+	;dict/err-bin !/<push>
+
 @bios/<draw> ( -- )
 	#0008 .Screen/x DEO2
-	#0018 .Screen/y DEO2
+	;&anchor-y .Screen/y DEO2
 	[ LIT2 c0 -Screen/pixel ] DEO
 	;&anchor-y .Screen/y DEO2
 	,&ptr LDR2 ;&buf [ LITr 00 ]
@@ -210,6 +236,56 @@
 
 @bios/<draw-symbol> ( symbol* id -- )
 	sel/is-unselected #44 ADD !font/<draw-str-color>
+
+(
+@|Path )
+
+@path/is-folder ( -- t )
+	,&ptr LDR2 #0001 SUB2 LDA LIT "/ EQU JMP2r
+
+@path/<move> ( str* -- )
+	DUP2 ;dict/out-path str/cmp ?/<pop>
+	( | Check if file is a folder )
+	LITr _&ptr LDR2r /<push-str>
+	;&buf file/is-folder ?{
+		#00 STH2kr STA
+		LITr _&ptr STR2r
+		JMP2r }
+	POP2r
+	( | Add missing slash )
+	/is-folder ?{ LIT "/ /<push> }
+	JMP2r
+
+@path/<pop> ( str* -- )
+	POP2
+	( | find last slash )
+	;&buf ,&ptr LDR2 #0001 SUB2
+	( clamp ) DUP2 ;&buf INC2 NEQ2 ?{ POP2 POP2 JMP2r }
+	&>lp
+		#0001 SUB2 LDAk LIT "/ EQU ?{ LTH2k ?/>lp }
+	INC2 #0000 SWP2 STA2
+	POP2 JMP2r
+
+@path/<set> ( str* -- )
+	;&buf ,&ptr STR2
+	( >> )
+
+@path/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>w
+
+@path/<push> ( str* -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@path/<draw> ( -- )
+	;&buf !font/<draw-str>
+
+@path/make ( str* -- path* )
+	;&buf !dict/alloc-cat
 
 (
 @|Selection )
@@ -253,12 +329,13 @@
 
 @cmds/lut [ =cmd/api ]
 	&lut-clip [
-	=dir/api =now/api =run/api =icn/api
-	=len/api =put/api =get/api =cpy/api
-	=era/api =ren/api =dup/api =ovr/api
-	=swp/api =pop/api =dec/api =cat/api
-	=cmp/api =and/api =ora/api =hex/api
-	=hex/api =out/api =bye/api &lutend ]
+	=dir/api =mov/api =now/api =run/api
+	=icn/api =len/api =put/api =get/api
+	=cpy/api =era/api =ren/api =dup/api
+	=ovr/api =swp/api =pop/api =dec/api
+	=cat/api =cmp/api =and/api =ora/api
+	=hex/api =hex/api =out/api =bye/api
+	&lutend ]
 
 @cmd/<eval> ( -- )
 	;cmds/lutend ;cmds/lut-clip
@@ -269,17 +346,20 @@
 	&api =dict/cmd =&<eval> "<cmd> 20 "( 20 09 20 ") 00
 
 @dir/<eval> ( -- )
-	;&home-path .File/name DEO2
+	;path/buf .File/name DEO2
 	;&buflen .File/length DEO2
 	;&buf .File/read DEO2
-	( | parse files )
 	;&buf DUP2 .File/success DEI2 ADD2 SWP2
 	&>l
 		LDAk ?{ POP2 POP2 JMP2r }
 		#0005 ADD2 dict/alloc-line bios/<push-raw>
 		INC2 !/>l
 	&api =dict/dir =&<eval> "<dir> 20 "( 20 09 20 "[f] 20 ") 00
-	&home-path ". 00
+
+@mov/<eval> ( -- )
+	bios/get-depth ?{ !bios/<push-err-un1> }
+	bios/pop path/<move> !dir/<eval>
+	&api =dict/mov =&<eval> "<mov> 20 "( 20 "path 20 09 20 "[f] 20 ") 00
 
 @now/<eval> ( -- )
 	;&buf ;&ptr STA2
@@ -332,15 +412,16 @@
 
 @run/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
-	bios/pop DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
-	!file/<eval>
-	&api =dict/run =&<eval> "<run> 20 "( 20 "f.rom 20 09 20 ") 00
+	bios/pop path/make
+	( ? ) DUP2 file/exists ?file/<eval>
+	POP2 !bios/<push-err-404>
+	&api =dict/run =&<eval> "<run> 20 "( 20 "f.rom 20 09 20 "ok 20 ") 00
 
 @icn/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
-	bios/pop DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
-	#0000 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
+	bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
+	;dict/ok bios/<push>
 	( >> )
 
 @icn/<draw> ( name* -- )
@@ -353,6 +434,8 @@
 	( h ) #00 SWP SUB ,&height STR
 	( w ) #00 SWP SUB ,&width STR
 	;&buf .Screen/addr DEO2
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
 	( | draw )
 	[ LIT2 01 -Screen/auto ] DEO
 	[ LIT &height $1 ]
@@ -376,11 +459,11 @@
 
 @icn/read-byte ( a b -- byte )
 	chr/hex SWP chr/hex #40 SFT ORA JMP2r
-	&api =dict/icn =&<eval> "<icn> 20 "( 20 "f.icn 20 09 20 ") 00
+	&api =dict/icn =&<eval> "<icn> 20 "( 20 "f.icn 20 09 20 "ok 20 ") 00
 
 @put/<eval> ( -- )
 	bios/get-depth #02 LTH ?bios/<push-err-un2>
-	bios/pop .File/name DEO2
+	bios/pop path/make .File/name DEO2
 	bios/pop DUP2 str/len .File/length DEO2
 	.File/write DEO2
 	;dict/ok !bios/<push>
@@ -388,21 +471,25 @@
 
 @get/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
-	bios/pop DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
+	bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
+	( ? ) DUP2 file/is-text ?{ POP2 !bios/<push-err-bin> }
 	dict/alloc-file !bios/<push>
 	&api =dict/get =&<eval> "<get> 20 "( 20 "f 20 09 20 "body 20 ") 00
 
 @cpy/<eval> ( -- )
 	bios/get-depth #02 LTH ?bios/<push-err-un2>
-	( dst ) bios/pop
-	( src ) bios/pop DUP2 file/exists ?{ POP2 POP2 !bios/<push-err-404> }
+	( dst ) bios/pop path/make
+	( src ) bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 POP2 !bios/<push-err-404> }
 	SWP2 file/<cpy>
 	;dict/ok !bios/<push>
 	&api =dict/cpy =&<eval> "<cpy> 20 "( 20 "fsrc 20 "fdst 20 09 20 "ok 20 ") 00
 
 @era/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
-	bios/pop DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
+	bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 !bios/<push-err-404> }
 	.File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
 	;dict/ok !bios/<push>
@@ -410,8 +497,9 @@
 
 @ren/<eval> ( -- )
 	bios/get-depth #02 LTH ?bios/<push-err-un2>
-	( dst ) bios/pop
-	( src ) bios/pop DUP2 file/exists ?{ POP2 POP2 !bios/<push-err-404> }
+	( dst ) bios/pop path/make
+	( src ) bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 POP2 !bios/<push-err-404> }
 	DUP2 ROT2 file/<cpy>
 	.File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
@@ -420,7 +508,8 @@
 
 @len/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
-	bios/pop DUP2 file/exists ?{ POP2 ;dict/zero !bios/<push> }
+	bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 ;dict/zero !bios/<push> }
 	.File/name DEO2
 	#0004 .File/length DEO2
 	;&buf .File/stat DEO2
@@ -492,22 +581,28 @@
 @hex/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
 	;&buf ,&ptr STR2
-	bios/pop str/dec SWP /<push-byte>
-	/<push-byte>
-	;&buf !bios/<push>
+	bios/pop str/dec /<push-short>
+	;&buf str/walk-zero !bios/<push>
+
+@hex/<push-short> ( short* -- )
+	SWP /<push-byte>
+	( >> )
 
 @hex/<push-byte> ( byte -- )
 	DUP #04 SFT /<push-nibble>
 	( >> )
 	&<push-nibble> ( byte -- )
-	#0f AND DUP #09 GTH #27 MUL ADD
-	( >> )
-
-@hex/<push-digit> ( d -- )
-	LIT "0 ADD #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	/chr #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA2
 	JMP2r
 	&buf $6 &api =dict/hex =&<eval> "<hex> 20 "( 20 "dec 20 09 20 "hex 20 ") 00
+
+@hex/chr2 ( byte -- hn ln )
+	DUP #04 SFT /chr SWP
+	( >> )
+
+@hex/chr ( hex -- char )
+	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD JMP2r
 
 @out/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
@@ -644,14 +739,52 @@
 	;&b !font/<draw-sprite>
 
 (
+@|Wallpaper )
+
+@wallpaper/<draw> ( -- )
+	.Screen/width DEI2 #03 SFT2 hex/chr2 ,&w STR2
+	POP .Screen/height DEI2 #03 SFT2 hex/chr2 ,&h STR2
+	POP ;&path !icn/<draw>
+
+	&path "wallpaper [ &w "00 "x &h "00 ] ".icn 00
+
+(
 @|Stdlib )
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
+@file/is-folder ( path* -- t )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	;&bf .File/stat DEO2
+	[ LIT2 "- &bf $1 ] EQU JMP2r
+
+@file/is-text ( path* -- t )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	&>st
+		;&b .File/read DEO2
+		( | tests )
+		.File/success-lb DEI ?{ #01 JMP2r }
+		[ LIT &b $1 ] chr/is-ascii ?/>st
+	#00 JMP2r
 
 @file/exists ( path* -- t )
 	.File/name DEO2
 	#0001 .File/length DEO2
 	;&b .File/read DEO2
 	.File/success-lb DEI JMP2r
-	&b $1
 
 @file/<cpy> ( src* dst* -- )
 	.File2/name DEO2
@@ -680,10 +813,8 @@
 	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
 	( nil ) POP #ff JMP2r
 
-@str/<print-ln> ( str* -- )
-	/<print>
-	#0a18 DEO
-	JMP2r
+@chr/is-ascii ( c -- t )
+	DUP #1f GTH SWP #7f LTH AND JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -727,6 +858,12 @@
 		LDAk #20 GTH ?{ INC2 LDAk ?/>ww }
 	JMP2r
 
+@str/walk-zero ( str* -- str* )
+	&>wz
+		LDAk ?{ JMP2r }
+		LDAk LIT "0 NEQ ?{ INC2 LDAk ?/>wz }
+	JMP2r
+
 @theme/<reset> ( -- )
 	#f0a8 #f0ec #f0b9
 	( >> )
@@ -751,9 +888,17 @@
 (
 @|Assets )
 
-@dict/info "M/PC 20 "is 20 "ready. 0a
+@dict/m_pc "M/PC 00
+	&info "M/PC 20 "is 20 "ready. 0a
 	( ) "Type 20 "<cmd> 20 "to 20 "see 20 "options. 0a0a 00
+	&home-path "./ 00
+	&sel-prev "Selection 20 "Previous 00
+	&sel-next "Selection 20 "Next 00
+	&sel-pick "Pick 20 "Selection 00
+	&clear "Clear 20 "Input 00
+	&out-path ".. 00
 	&dir "dir 00
+	&mov "mov 00
 	&run "run 00
 	&put "put 00
 	&era "era 00
@@ -782,6 +927,7 @@
 	&ok "<ok> 00
 	&err-un "<Underflow> 00
 	&err-404 "<Not 20 "Found> 00
+	&err-bin "<binary> 00
 	&months [
 	"Jan $1 "Feb $1 "Mar $1 "Apr $1
 	"May $1 "Jun $1 "Jul $1 "Aug $1
@@ -789,6 +935,8 @@
 	&days [
 	"Sun $1 "Mon $1 "Tue $1 "Wed $1
 	"Thu $1 "Fri $1 "Sat $1 ]
+
+@spacer/wave [ 0000 0000 0070 8807 ]
 
 @font/glyphs [
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -941,6 +1089,17 @@
 	&b [ 0000 ff00 0000 0000 0000 0000 00ff 0000 ]
 	&c [ 0000 0080 4020 1008 0810 2040 8000 0000 ]
 
+@appicon [
+	0000 0000 0000 0001 0000 0000 0000 0000
+	0000 0000 0000 0080 0000 0000 0000 0000
+	0000 0000 0000 0038 0000 0000 0000 0000
+	070f 0f1f 1f0f 0f07 0000 0000 0000 0000
+	e0f0 f0f8 f8f1 f1e3 0000 0000 0000 0000
+	3870 70e0 e0c0 c080 0000 0000 0000 0000
+	0100 0000 0000 0000 0000 0000 0000 0000
+	8300 0000 0000 0000 0000 0000 0000 0000
+	8000 0000 0000 0000 0000 0000 0000 0000 ]
+
 @loader/rom [
 	8000 8000 0711 0106 20ff f702 a001 00af
 	80ac 37a0 ffd5 80a2 36ef 38af 8000 6f15
@@ -961,6 +1120,8 @@
 @icn/buf $8
 
 @now/buf $20
+
+@path/buf $&buflen
 
 @bios/buf $&buflen
 

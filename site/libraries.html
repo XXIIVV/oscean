@@ -15,7 +15,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="physical.html">physical</a></li><li><a href="photography.html">photography</a></li><li><a href="illustration.html">illustration</a></li><li><a href="software.html" class="parent">software</a></li></ul><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html">utilities</a></li><li><a href="libraries.html" class="self">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="snarf.html">snarf</a></li><li><a href="symbols.html">symbols</a></li><li><a href="metadata.html">metadata</a></li><li><a href="manifest.html">manifest</a></li><li><a href="kelvin_versioning.html">kelvin versioning</a></li></ul></nav>
+<nav><ul><li><a href="physical.html">physical</a></li><li><a href="photography.html">photography</a></li><li><a href="illustration.html">illustration</a></li><li><a href="software.html" class="parent">software</a></li></ul><ul><li><a href="roms.html">roms</a></li><li><a href="utilities.html">utilities</a></li><li><a href="libraries.html" class="self">libraries</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="bitrot.html">bitrot</a></li></ul><ul><li><a href="snarf.html">snarf</a></li><li><a href="symbols.html">symbols</a></li><li><a href="metadata.html">metadata</a></li><li><a href="manifest.html">manifest</a></li><li><a href="kelvin_versioning.html">kelvin versioning</a></li><li><a href="theme.html">theme</a></li></ul></nav>
 <main><h2>A collection of Varvara application support standards.</h2>
 
 <p>This is a collection of various libraries used in the <a href='roms.html'>Varvara roms</a>.</p>
@@ -243,6 +243,55 @@ constraints recursively.</p>
 <ul>
 	<li><a href='https://lists.sr.ht/~rabbits/uxn/%3C30f763a6-7118-4a99-84b7-8227627bcc57@xxiivv.com%3E' target='_blank'>Discussion</a> on the mailing list</li>
 </ul>
+<figure><img alt="Varvara Applications" src="../media/diary/765.jpg"><figcaption><a href="theme.html">theme</a> &mdash; Varvara Applications<span class="right">15X09</span></figcaption></figure><h2>Theme files are the interface customization standard for Varvara software.</h2>
+
+<p>A <code>.theme</code> file begins with 6 bytes equal to the RGB values of 4
+colors.</p>
+
+<pre>0a6f 05cf 0caf</pre>
+
+<p>The three shorts above correspond to the four colors below:</p>
+
+<table border='1' style='font-family:monospace'>
+	<tr><th></td><th>Red</th><th>Green</th><th>Blue</th><th>Hexadecimal</th></tr>
+	<tr><th>A</th><td>0</td><td>0</td><td>0</td><td>#000000</td></tr>
+	<tr><th>B</th><td>a</td><td>5</td><td>c</td><td>#aa55cc</td></tr>
+	<tr><th>C</th><td>6</td><td>c</td><td>a</td><td>#66ccaa</td></tr>
+	<tr><th>D</th><td>f</td><td>f</td><td>f</td><td>#ffffff</td></tr>
+</table>
+
+<p>Emulators for monochromatic screens do not support Varvara's colors, instead
+will display colors <code>0x00</code> and <code>0x02</code> as black,
+<code>0x01</code> and <code>0x03</code> as white.</p>
+
+<img src='../media/generic/theme.png' class='nodark'/>
+
+<p>You can use the following <a href='uxntal.html'>Uxntal</a> routine to
+implement theme support to your application: </p>
+
+<pre>
+@load-theme ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	[ LIT2 -System/debug -System/r ]
+	&l
+		;&buf .File/read DEO2
+		[ LIT2 00 -File/success-lb ] DEI EQU ?{
+			[ LIT2r &buf $2 ] STHk DEO2r
+			INC INC NEQk ?&l }
+	POP2 JMP2r
+	&path ".theme $1
+</pre>
+
+<q><a href='https://en.wikipedia.org/wiki/Four_color_theorem'
+target='_blank'>Four colors</a> should be more than enough for any
+interface.</q>
+
+<ul>
+	<li><a href='../etc/theme.tal.txt'>Source</a>, Latest</li>
+	<li><a href='https://git.sr.ht/~rabbits/theme' target='_blank'>Repository</a></li>
+</ul>
+
 <ul></ul></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
