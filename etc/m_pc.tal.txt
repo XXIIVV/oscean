@@ -71,7 +71,10 @@
 	( * ) JSR2 POP2 BRK
 
 @input/on-console ( -> )
-	.Console/read DEI /handle-input BRK
+	.Console/read DEI
+	( | mute arg spacers )
+	[ LIT2 03 -Console/type ] DEI NEQ ?{ POP #20 }
+	/handle-input BRK
 
 @input/handle-input ( c -- )
 	DUP ?{ POP JMP2r }
@@ -85,7 +88,8 @@
 	POP /<pop> !/<redraw>
 
 	&on-enter ( c -- )
-	POP !/<eval>
+	POP ;&buf str/<print>
+	#0a19 DEO !/<eval>
 
 	&on-del ( c -- )
 	POP !/<blank>
@@ -372,53 +376,9 @@
 	&api =dict/mov =&<eval> "<mov> 20 "( 20 "path 20 09 20 "[f] 20 ") 00
 
 @now/<eval> ( -- )
-	;&buf ;&ptr STA2
-	( | date )
-	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/days ADD2 /<push-str>
-	[ LIT ", ] /<push>
-	#20 /<push>
-	[ LIT2 00 -DateTime/day ] DEI /<push-dec2>
-	#20 /<push>
-	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months ADD2 /<push-str>
-	#20 /<push>
-	.DateTime/year DEI2 /<push-dec2>
-	#20 /<push>
-	( | time )
-	.DateTime/hour DEI /<push-dec>
-	LIT ": /<push>
-	.DateTime/minute DEI /<push-dec>
-	LIT ": /<push>
-	.DateTime/second DEI /<push-dec>
-	;&buf !bios/<push>
-	&api =dict/now =&<eval> "<now> 20 "( 20 09 20 "time 20 ") 00
-
-@now/<push-dec2> ( short* -- )
-	#2710 [ LIT2r 00fb ]
-	&>wpd
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{ DUP /<push-digit>
-			INCr }
-		POP2 #000a DIV2 SWPr INCr STHkr ?/>wpd
-	POP2r POP2 POP2 JMP2r
-
-@now/<push-dec> ( u8 -- )
-	DUP #0a DIV /<push-digit>
-	#0a DIVk MUL SUB
-	( >> )
-
-@now/<push-digit> ( d -- )
-	LIT "0 ADD
-	( >> )
-
-@now/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
-
-@now/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push>
-		INC2 !/>w
+	date/make bios/<push>
+	time/make !bios/<push>
+	&api =dict/now =&<eval> "<now> 20 "( 20 09 20 "date 20 "time 20 ") 00
 
 @run/<eval> ( -- )
 	bios/get-depth ?{ !bios/<push-err-un1> }
@@ -832,7 +792,7 @@
 	( nil ) POP #ff JMP2r
 
 @chr/is-ascii ( c -- t )
-	DUP #1f GTH SWP #7f LTH AND JMP2r
+	DUP #08 GTH SWP #7f LTH AND JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -880,6 +840,64 @@
 	&>wz
 		LDAk ?{ JMP2r }
 		LDAk LIT "0 NEQ ?{ INC2 LDAk ?/>wz }
+	JMP2r
+
+@date/make ( -- str* )
+	;&buf DUP2 ,&ptr STR2
+	( | Make string )
+	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/days ADD2 /<push-str>
+	[ LIT ", ] /<push>
+	#20 /<push>
+	[ LIT2 00 -DateTime/day ] DEI /<push-dec2>
+	#20 /<push>
+	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months ADD2 /<push-str>
+	#20 /<push>
+	.DateTime/year DEI2 !/<push-dec2>
+
+@date/<push-dec2> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&>wpd
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{ DUP /<push-digit>
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?/>wpd
+	POP2r POP2 POP2 JMP2r
+
+@date/<push-digit> ( d -- )
+	LIT "0 ADD
+	( >> )
+
+@date/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@date/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>w
+
+@time/make ( -- str* )
+	;&buf DUP2 ,&ptr STR2
+	( | Make string )
+	.DateTime/hour DEI /<push-dec>
+	LIT ": /<push>
+	.DateTime/minute DEI /<push-dec>
+	LIT ": /<push>
+	.DateTime/second DEI !/<push-dec>
+
+@time/<push-dec> ( u8 -- )
+	DUP #0a DIV /<push-digit>
+	#0a DIVk MUL SUB
+	( >> )
+
+@time/<push-digit> ( d -- )
+	LIT "0 ADD
+	( >> )
+
+@time/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
 	JMP2r
 
 @theme/<reset> ( -- )
@@ -1140,7 +1158,9 @@
 
 @icn/buf $8
 
-@now/buf $20
+@date/buf $20
+
+@time/buf $20
 
 @path/buf $&buflen
 
