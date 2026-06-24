@@ -1,0 +1,66 @@
+( 54K . Loader )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+(
+@|Enums )
+
+|ff00 @loader/entry
+|ff80 @loader/buf
+
+|000
+
+	@src/buf
+
+|100
+
+@on-reset ( -> )
+	;src/on-console .Console/vector DEO2
+	BRK
+
+(
+@|Src )
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		STZ2
+		BRK }
+	;&buf loader/<run>
+	BRK
+
+(
+@|Loader )
+
+@loader/<run> ( path* -- )
+	;&buf ,&ptr STR2
+	&>w
+		LDAk DUP ?{
+			POP POP2 ;&on-frame .Screen/vector DEO2
+			JMP2r }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !/>w
+
+@loader/on-frame ( -> )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	( | Clear screen )
+	[ LIT2 80 -Screen/pixel ] DEO
+	[ LIT2 c0 -Screen/pixel ] DEO
+	( | Blank vectors )
+	#0000 #00 &l DEO2k #10 ADD DUP [ ?&l POP POP2 ]
+	( | Load )
+	;&buf .File/name DEO2
+	#fe00 .File/length DEO2
+	;&mmu .System/expansion DEO2 !/entry
+
+	&mmu [ 01 0020 0000 =&rom 0000 =&entry ]
+
+@loader/rom [
+	c000 4ea0 0008 38a0 000b 3880 0237 a001
+	0026 80ac 372c 00fe 0000 0000 0000 0000 ]
+
