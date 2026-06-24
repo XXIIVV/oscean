@@ -30,7 +30,6 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	( | #0100 .Screen/width DEO2 #00c0 .Screen/height DEO2 )
 	;input/on-controller .Controller/vector DEO2
 	;input/on-console .Console/vector DEO2
 	;dict/home-path path/<set>
@@ -150,12 +149,16 @@
 	[ LIT2 e0 -Screen/pixel ] DEO
 	#0008 .Screen/y DEO2
 	path/<draw>
-	;&buf #45 font/<draw-str-color>
-	.&buf LDZ ?{ ;&full !font/<draw-sprite> }
-	;&hash !font/<draw-sprite>
+	/get-origin #45 font/<draw-str-color>
+	;&caret !font/<draw-sprite>
 
-@input/hash [ 4020 4020 4020 4020 4020 4020 4020 4020 ]
-	&full [ 6060 6060 6060 6060 6060 6060 6060 6060 ]
+@input/get-length ( -- length* )
+	#00 ;&ptr LDA ;&buf SUB2 JMP2r
+
+@input/get-origin ( -- buf* )
+	/get-length ;bios/margin LDA2 #03 SFT2 #0002 SUB2 LTH2k ?{
+		( follow cursor ) SUB2 ;&buf ADD2 JMP2r }
+	POP2 POP2 ;&buf JMP2r
 
 @spacer/<draw> ( -- )
 	#0000 .Screen/x DEO2
@@ -173,6 +176,7 @@
 
 @bios/<welcome> ( -- )
 	/<reset>
+	.Screen/width DEI2 #0010 SUB2 ;&margin STA2
 	;dict/ready1 /<push>
 	;dict/ready2 /<push> !/<redraw>
 
@@ -270,7 +274,7 @@
 @bios/<draw-symbol> ( symbol* id -- )
 	STHk #00 EQU ?{
 		( | wrap )
-		DUP2 font/get-width .Screen/x DEI2 ADD2 .Screen/width DEI2 #0010 SUB2 LTH2 ?{
+		DUP2 font/get-width .Screen/x DEI2 ADD2 [ LIT2 &margin $2 ] LTH2 ?{
 			( ) font/<draw-lb> } }
 	.Screen/x DEI2k #0008 ADD2 ROT DEO2
 	STHr sel/is-unselected #44 ADD !font/<draw-str-color>
@@ -1100,6 +1104,8 @@
 	"Thu $1 "Fri $1 "Sat $1 ]
 
 @spacer/wave [ 0000 0000 0070 8807 ]
+
+@input/caret [ 0020 2020 2020 2020 2020 2020 2020 0000 ]
 
 @font/glyphs [
 	0000 0000 0000 0000 0000 0000 0000 0000
