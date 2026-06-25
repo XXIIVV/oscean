@@ -13,12 +13,13 @@
 @|Enums )
 
 |0050 @Varvara/version
-|0200 @dir/buflen
-|c000 @dict/buflen
-|0100 @path/buflen
+|0080 @path/buflen
 |0200 @bios/buflen
+|0200 @dir/buflen
+|ff00 @dict/cap
+|0008 @bios/anchor-x
 |0028 @bios/anchor-y
-|ff00 @loader/entry
+|ffe0 @loader/entry
 |ff80 @loader/buf
 
 |000
@@ -30,12 +31,10 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	;input/on-controller .Controller/vector DEO2
-	;input/on-console .Console/vector DEO2
 	;dict/home-path path/<set>
 	wallpaper/<draw>
 	spacer/<draw>
-	input/<redraw>
+	input/<bind>
 	bios/<welcome>
 	BRK
 
@@ -43,7 +42,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "24 20 "Jun 20 "2026 00
+	( date ) "25 20 "Jun 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -77,6 +76,10 @@
 	[ LIT2 03 -Console/type ] DEI NEQ ?{ POP #20 }
 	/handle-input BRK
 
+@input/<bind> ( -- )
+	;&on-controller .Controller/vector DEO2
+	;&on-console .Console/vector DEO2 !/<redraw>
+
 @input/handle-input ( c -- )
 	DUP ?{ POP JMP2r }
 	DUP #08 EQU ?/on-bs
@@ -109,8 +112,7 @@
 @input/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 !/<redraw> }
-		DUP #0a NEQ ?{ POP #20 }
-		/<push>
+		str/escape /<push>
 		INC2 !/>w
 
 @input/<push> ( c -- )
@@ -143,7 +145,7 @@
 	( >> )
 
 @input/<redraw> ( -- )
-	#0008 .Screen/x DEO2
+	;bios/anchor-x .Screen/x DEO2
 	#0018 .Screen/y DEO2
 	[ LIT2 e0 -Screen/pixel ] DEO
 	#0008 .Screen/y DEO2
@@ -231,7 +233,9 @@
 
 @bios/<push-raw> ( str* -- )
 	( | put on stack )
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	[ LIT2 &ptr =&buf ]
+	( clamp ) DUP2 ;&cap NEQ2 ?{ POP2 POP2 JMP2r }
+	INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -258,26 +262,40 @@
 	;&anchor-y .Screen/y DEO2
 	,&ptr LDR2 ;&buf [ LITr 00 ]
 	&>l
-		NEQ2k ?{
-			POP2 POP2 POPr
-			( | logo )
-			#0008 .Screen/x DEO2
-			.Screen/y DEI2 #0018 ADD2 .Screen/y DEO2
-			[ LIT2 66 -Screen/auto ] DEO
-			;&logo .Screen/addr DEO2
-			[ LIT2 45 -Screen/sprite ] DEOk DEO
-			JMP2r }
-		LDA2k STHkr /<draw-symbol>
+		NEQ2k ?{ POP2 POP2 POPr !/<draw-logo> }
+		LDA2k symbol/make DUP2 /<draw-spacer>
+		STHkr sel/is-unselected #44 ADD font/<draw-str-color>
 		INCr INC2 INC2 !/>l
 
-@bios/<draw-symbol> ( symbol* id -- )
-	STH
-	DUP2 STHkr /<draw-spacer>
-	STHr sel/is-unselected #44 ADD !font/<draw-str-color>
+@bios/<draw-spacer> ( symbol* -- )
+	font/get-width .Screen/x DEI2 ADD2 [ LIT2 &margin $2 ] LTH2 ?{ !font/<draw-lb> }
+	.Screen/x DEI2k #0008 ADD2 ROT DEO2
+	JMP2r
 
-@bios/<draw-spacer> ( symbol* id -- )
-	?{ POP2 !/space }
-	font/get-width .Screen/x DEI2 ADD2 [ LIT2 &margin $2 ] LTH2 ?{ !font/<draw-lb> } &space .Screen/x DEI2k #0008 ADD2 ROT DEO2
+@bios/<draw-logo> ( -- )
+	;&anchor-x .Screen/x DEO2
+	.Screen/y DEI2 #0018 ADD2 .Screen/y DEO2
+	[ LIT2 66 -Screen/auto ] DEO
+	;&logo .Screen/addr DEO2
+	[ LIT2 45 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@symbol/make ( str* -- sym* )
+	;&buf DUP2 ,&ptr STR2
+	SWP2 [ LIT2r 1c00 ]
+	&>w
+		NEQkr STHr ?{
+			[ LIT2 ".. ] /<push>
+			/<push> !/end }
+		LDAk DUP ?{
+			POP &end POP2r POP2 #00 !/<push> }
+		DUP #0a NEQ ?{ POP #20 }
+		/<push>
+		INCr INC2 !/>w
+
+@symbol/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
 	JMP2r
 
 (
@@ -323,7 +341,9 @@
 		INC2 !/>w
 
 @path/<push> ( str* -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	#00 [ LIT2 &ptr =&buf ]
+	( clamp ) DUP2 ;&cap NEQ2 ?{ POP2 POP POP2 JMP2r }
+	INC2k ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -352,6 +372,7 @@
 	DUP2 /is-dir ?/<use-move>
 	DUP2 /is-icn ?/<use-draw>
 	DUP2 /is-rom ?/<use-load>
+	DUP2 file/is-text ?read/<bind>
 	POP2 JMP2r
 
 @sel/<use-move> ( str* -- )
@@ -403,6 +424,63 @@
 	,&id LDR /<reset>
 	,&id LDR NEQ ?bios/<redraw>
 	JMP2r
+
+(
+@|Read )
+
+@read/on-controller ( -> )
+	.Controller/button DEI
+	( | handlers )
+	DUP #01 NEQ ?{ /<leave> }
+	DUP #10 NEQ ?{ /<select-prev> }
+	DUP #20 NEQ ?{ /<select-next> }
+	POP BRK
+
+@read/<leave> ( -- )
+	input/<bind> !bios/<redraw>
+
+@read/<bind> ( str* -- )
+	.File/name DEO2
+	;&on-controller .Controller/vector DEO2
+	( col ) .Screen/width DEI2 #03 SFT2 #0002 SUB2 ,&col STR
+	POP
+	( row ) .Screen/height DEI2 #04 SFT2 #0004 SUB2 ,&row STR
+	POP #0000 !/<select-line>
+
+@read/<select-prev> ( -- )
+	,&line LDR2 ORAk ?{ POP2 JMP2r }
+	#0001 SUB2 !/<select-line>
+
+@read/<select-next> ( -- )
+	[ LIT2 &line $2 ] INC2
+	( >> )
+
+@read/<select-line> ( line* -- )
+	DUP2 ,&line STR2
+	file/<seek-line>
+	;bios/anchor-x .Screen/x DEO2
+	;bios/anchor-y .Screen/y DEO2
+	[ LIT2 c0 -Screen/pixel ] DEO
+	[ LIT2 15 -Screen/auto ] DEO
+	#0001 .File/length DEO2
+	( | Render )
+	#41 ;font/color STA
+	( | Stream )
+	[ LIT2 &row $1 00 ] [ LIT2r &col $1 00 ]
+	&>s
+		;&b .File/read DEO2
+		.File/success-lb DEI ?{
+			POP2 POP2r ;dict/eof #44 !font/<draw-str-color> }
+		( | hard-wrap )
+		GTHkr STHr ?{
+			;bios/anchor-x .Screen/x DEO2
+			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			INC POPr LITr 00 }
+		[ LIT &b $1 ] DUP #0a NEQ ?{
+			SWP INC SWP POPr LITr 00 }
+		font/<draw-glyph>
+		INCr GTHk ?/>s
+	POP2 POP2r JMP2r
 
 (
 @|Commands )
@@ -518,7 +596,7 @@
 			[ LIT2 00 -File/success-lb ] DEI EQU ?{ DEOkr
 				INC DUP ?/>h }
 		POP
-		( lb ) .Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
+		( lb ) .Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC DUP ?/>v
 	POP POP2r JMP2r
 
@@ -585,7 +663,7 @@
 	#0004 .File/length DEO2
 	;&buf .File/stat DEO2
 	;&buf dict/alloc NIP2 !bios/<push>
-	&buf $5 &api =dict/len =&<eval> "<len> 20 "( 20 "f 20 09 20 "hex 20 ") 00
+	&api =dict/len =&<eval> "<len> 20 "( 20 "f 20 09 20 "hex 20 ") 00
 
 @dup/<eval> ( -- )
 	bios/req-depth1 ?bios/<push-err-underflow>
@@ -696,9 +774,9 @@
 			&>wc2
 				LDAk DUP ?{
 					POP POP2 STH2r #00 !/<push> }
-				/<push>
+				str/escape /<push>
 				INC2 !/>wc2 }
-		/<push>
+		str/escape /<push>
 		INC2 !/>wc1
 
 @dict/alloc ( str* -- str* addr* )
@@ -706,7 +784,7 @@
 	[ LITr _&ptr ] LDR2r
 	&>w
 		LDAk DUP #20 GTH ?{ POP STH2r #00 !/<push> }
-		/<push>
+		str/escape /<push>
 		INC2 !/>w
 
 @dict/alloc-string ( str* -- str* addr* )
@@ -714,18 +792,20 @@
 	&>was
 		LDAk DUP ?{ &end POP INC2 STH2r #00 !/<push> }
 		DUP LIT "" EQU ?/end
-		/<push>
+		str/escape /<push>
 		INC2 !/>was
 
 @dict/alloc-line ( str* -- str* addr* )
 	[ LITr _&ptr ] LDR2r
 	&>wal
 		LDAk DUP #1f GTH ?{ POP STH2r #00 !/<push> }
-		/<push>
+		str/escape /<push>
 		INC2 !/>wal
 
 @dict/<push> ( c -- )
-	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	[ LIT2 &ptr =&buf ]
+	( clamp ) DUP2 ;&cap NEQ2 ?{ POP2 POP JMP2r }
+	INC2k ,&ptr STR2
 	STA
 	JMP2r
 
@@ -757,6 +837,11 @@
 		/<draw-glyph>
 		INC2 !/>w
 
+@font/get-addr ( c -- addr* )
+	DUP #09 NEQ ?{ POP ;&tab JMP2r }
+	DUP #0a NEQ ?{ POP ;&lb JMP2r }
+	#00 SWP #20 SUB #40 SFT2 ;&glyphs ADD2 JMP2r
+
 @font/<draw-glyph> ( c -- )
 	DUP #0a NEQ ?{ POP !/<draw-lb> }
 	DUP #09 NEQ ?{ POP !/<draw-tab> }
@@ -769,8 +854,8 @@
 	JMP2r
 
 @font/<draw-lb> ( -- )
-	#0008 .Screen/x DEO2
-	.Screen/y DEI2 #0010 ADD2 .Screen/y DEO2
+	;bios/anchor-x .Screen/x DEO2
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
 	JMP2r
 
 @font/<draw-tab> ( -- )
@@ -833,10 +918,12 @@
 	[ LIT2 80 -Screen/pixel ] DEO
 	[ LIT2 c0 -Screen/pixel ] DEO
 	( | Blank vectors )
-	#0000 #00 &l DEO2k #10 ADD DUP [ ?&l POP POP2 ]
+	#0000 #00 &l DEO2k #10 ADD DUP [ ?/l POP POP2 ]
+	( | Blank arguments )
+	[ LIT2 00 -Console/type ] DEO
 	( | Load )
 	;&buf .File/name DEO2
-	#fe00 .File/length DEO2
+	#fee0 .File/length DEO2
 	;&mmu .System/expansion DEO2 !/entry
 
 	&mmu [ 01 0020 0000 =&rom 0000 =&entry ]
@@ -860,6 +947,18 @@
 			#0006 ADD2 GTH2k ?/>opt
 		POP2 INC2 LDAk ?/>cat
 	POP2 #ffff JMP2r
+
+@file/<seek-line> ( line* -- )
+	.File/name DEI2k ROT DEO2
+	ORAk ?{ POP2 JMP2r }
+	#0000 INC2k .File/length DEO2
+	[ LIT2r =&bs ] [ LITr -File/read ]
+	&>l
+		DEO2kr
+		[ LIT2 -File/success-lb ] DEI EQU ?{
+			[ LIT2 &bs $1 0a ] NEQ ?{ INC2 }
+			GTH2k ?/>l }
+	POP2 POP2 POPr POP2r JMP2r
 
 @file/is-folder ( path* -- t )
 	.File/name DEO2
@@ -907,6 +1006,18 @@
 	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
 	( nil ) POP #ff JMP2r
 
+@chr/n-0 ( c -- c )
+	POP #00 JMP2r
+
+@chr/t-tab ( c -- c )
+	POP #09 JMP2r
+
+@chr/n-lb ( c -- c )
+	POP #0a JMP2r
+
+@chr/t-ws ( c -- c )
+	POP #20 JMP2r
+
 @chr/is-ascii ( c -- t )
 	DUP #08 GTH SWP #7f LTH AND JMP2r
 
@@ -914,6 +1025,16 @@
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#18 DEO
 	INC2 !/<print>
+
+@str/escape ( addr* c -- addr* c )
+	DUP [ LIT "\ ] NEQ ?{
+		POP INC2 LDAk
+		( | handlers )
+		DUP [ LIT "0 ] EQU ?chr/n-0
+		DUP [ LIT "t ] EQU ?chr/t-tab
+		DUP [ LIT "n ] EQU ?chr/n-lb
+		DUP [ LIT "s ] EQU ?chr/t-ws }
+	JMP2r
 
 @str/is-word ( str* -- t )
 	&>wiw
@@ -1053,7 +1174,6 @@
 @|Assets )
 
 @dict/m_pc "M/PC 00
-	&ready1 "Ready. 00
 	&ready2 "Type 20 "<cmd> 20 "to 20 "see 20 "options. 00
 	&home-path "./ 00
 	&sel-prev "Selection 20 "Previous 00
@@ -1063,6 +1183,7 @@
 	&directory "Directory 00
 	&input "Input 00
 	&eval "Run 00
+	&eof "eof 00
 	&eval-partial "Non-Destructive 20 "Run 00
 	&out-path "../ 00
 	&icn-ext ".icn 00
@@ -1207,7 +1328,8 @@
 	0000 1010 1020 2020 2040 4040 0000 0000
 	0030 0808 0810 100c 1020 2020 c000 0000
 	0000 0032 4c00 0000 0000 0000 0000 0000 ]
-	&tab [ 0000 0000 0010 18fc 1810 0000 0000 0000 ]
+	&tab [ 0000 0000 0008 0c7e 0c08 0000 0000 0000 ]
+	&lb [ 0000 0002 0212 327c 3010 0000 0000 0000 ]
 
 @kbd/glyphs [
 	0000 0000 0000 0000 0808 1010 1000 2000
@@ -1285,17 +1407,21 @@
 (
 @|Buffer )
 
+@len/buf $5
+
 @icn/buf $8
 
-@date/buf $20
+@date/buf $12
 
-@time/buf $20
+@time/buf $a
 
-@path/buf $&buflen
+@symbol/buf $20
 
-@bios/buf $&buflen
+@path/buf $&buflen &cap 0000
 
-@dir/buf $&buflen
+@dir/buf $&buflen 0000
 
-@dict/buf $&buflen
+@bios/buf $&buflen &cap 0000
+
+@dict/buf
 
