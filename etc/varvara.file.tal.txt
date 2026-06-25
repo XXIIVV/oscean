@@ -1,7 +1,7 @@
 ( 54K . File Test )
 
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |004f @Varvara/version
 
 |100
@@ -18,6 +18,7 @@
 	;dict/stat-of file/test-stat-of <test>
 	;dict/write-of file/test-write-of <test>
 	;dict/delete file/test-delete <test>
+	;dict/success file/test-success <test>
 	( | Dir )
 	;dict/dir-spacer file/test-dir-spacer <test>
 	;dict/dir-partial file/test-dir-partial <test>
@@ -147,6 +148,35 @@
 	;&bufb .File/read DEO2
 	;&bufa ;&bufb !str/cmp
 
+@file/test-success ( -- pass )
+	;&name .File/name DEO2
+	#01 .File/delete DEO
+	#00 .File/success-lb DEI EQU ?{ #00 JMP2r }
+	( | Make file )
+	#0003 .File/length DEO2
+	;&string .File/write DEO2
+	.File/success DEI2 #0003 EQU2 ?{ #00 JMP2r }
+	( | Zero load )
+	#0000 .File/length DEO2
+	;&sz .File/read DEO2
+	#00 .File/success-lb DEI EQU ?{ #00 JMP2r }
+	( | Each letter )
+	#0001 .File/length DEO2
+	;&sa .File/read DEO2
+	.File/success-lb DEI ?{ #00 JMP2r }
+	[ LIT2 &sa $1 "a ] EQU ?{ #00 JMP2r }
+	;&sb .File/read DEO2
+	.File/success-lb DEI ?{ #00 JMP2r }
+	[ LIT2 &sb $1 "b ] EQU ?{ #00 JMP2r }
+	;&sc .File/read DEO2
+	.File/success-lb DEI ?{ #00 JMP2r }
+	[ LIT2 &sc $1 "c ] EQU ?{ #00 JMP2r }
+	;&sz .File/read DEO2
+	.File/success-lb DEI ?{ #01 JMP2r }
+	#00 JMP2r
+
+	&string "abc 00 &sz $1
+
 (
 @|Helpers )
 
@@ -186,6 +216,7 @@
 	&dir-spacer "File/dir(spacer): 20 $1
 	&dir-nostream "File/dir(nostream): 20 $1
 	&dir-partial "File/dir(partial): 20 $1
+	&success "File/success: 20 $1
 	&fail "fail 0a $1
 	&pass "pass 0a $1
 

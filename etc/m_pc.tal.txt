@@ -83,6 +83,7 @@
 	DUP #0a EQU ?/on-enter
 	DUP #7f EQU ?/on-del
 	DUP #20 GTH ?{ POP #20 }
+	sel/<reset-draw>
 	/<push> !/<redraw>
 
 	&on-bs ( c -- )
@@ -108,9 +109,7 @@
 @input/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 !/<redraw> }
-		DUP #0a NEQ ?{
-			POP LIT "\ /<push>
-			LIT "n }
+		DUP #0a NEQ ?{ POP #20 }
 		/<push>
 		INC2 !/>w
 
@@ -177,7 +176,7 @@
 @bios/<welcome> ( -- )
 	/<reset>
 	.Screen/width DEI2 #0010 SUB2 ;&margin STA2
-	;dict/ready1 /<push>
+	now/<eval>
 	;dict/ready2 /<push> !/<redraw>
 
 @bios/<dir> ( -- )
@@ -272,12 +271,14 @@
 		INCr INC2 INC2 !/>l
 
 @bios/<draw-symbol> ( symbol* id -- )
-	STHk #00 EQU ?{
-		( | wrap )
-		DUP2 font/get-width .Screen/x DEI2 ADD2 [ LIT2 &margin $2 ] LTH2 ?{
-			( ) font/<draw-lb> } }
-	.Screen/x DEI2k #0008 ADD2 ROT DEO2
+	STH
+	DUP2 STHkr /<draw-spacer>
 	STHr sel/is-unselected #44 ADD !font/<draw-str-color>
+
+@bios/<draw-spacer> ( symbol* id -- )
+	?{ POP2 !/space }
+	font/get-width .Screen/x DEI2 ADD2 [ LIT2 &margin $2 ] LTH2 ?{ !font/<draw-lb> } &space .Screen/x DEI2k #0008 ADD2 ROT DEO2
+	JMP2r
 
 (
 @|Path )
@@ -389,7 +390,6 @@
 
 @sel/<pick> ( -- )
 	,&id LDR INCk ?{ POP JMP2r }
-	/<reset>
 	bios/get-symbol
 	( clamp ) DUP2 str/len #0040 LTH2 ?{ POP2 !input/<redraw> }
 	input/<push-str-quoted>
@@ -400,7 +400,9 @@
 	JMP2r
 
 @sel/<reset-draw> ( -- )
-	/<reset> !bios/<redraw>
+	,&id LDR /<reset>
+	,&id LDR NEQ ?bios/<redraw>
+	JMP2r
 
 (
 @|Commands )
@@ -767,7 +769,7 @@
 	JMP2r
 
 @font/<draw-lb> ( -- )
-	#0000 .Screen/x DEO2
+	#0008 .Screen/x DEO2
 	.Screen/y DEI2 #0010 ADD2 .Screen/y DEO2
 	JMP2r
 
@@ -885,8 +887,10 @@
 @file/exists ( path* -- t )
 	.File/name DEO2
 	#0001 .File/length DEO2
-	;&b .File/read DEO2
-	.File/success-lb DEI JMP2r
+	;&e .File/stat DEO2
+	[ LIT &e $1 ]
+	( not folder ) DUP LIT "- NEQ
+	( not missing ) SWP LIT "! NEQ AND JMP2r
 
 @file/<cpy> ( src* dst* -- )
 	.File2/name DEO2
@@ -1049,7 +1053,7 @@
 @|Assets )
 
 @dict/m_pc "M/PC 00
-	&ready1 "M/PC 20 "is 20 "ready. 0a 00
+	&ready1 "Ready. 00
 	&ready2 "Type 20 "<cmd> 20 "to 20 "see 20 "options. 00
 	&home-path "./ 00
 	&sel-prev "Selection 20 "Previous 00
