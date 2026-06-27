@@ -36,6 +36,8 @@
 	spacer/<draw>
 	input/<bind>
 	bios/<welcome>
+	.Console/type DEI ?{ BRK }
+	loader/<set-instant>
 	BRK
 
 @meta 00
@@ -952,10 +954,19 @@
 @loader/<bind> ( path* -- )
 	;&buf ,&+ptr STR2
 	&>w
-		LDAk DUP ?{ POP POP2 ;&callback !fade-out/<bind> }
+		LDAk DUP ?{ POP POP2 !/<launch> }
 		#00 [ LIT2 &+ptr =&buf ] INC2k ,&+ptr STR2
 		STA2
 		INC2 !/>w
+
+@loader/<set-instant> ( -- )
+	[ LIT2 01 _loader/instant ] STR
+	JMP2r
+
+@loader/<launch> ( -- )
+	[ LIT &instant $1 ] ?{ ;&callback !fade-out/<bind> }
+	;&callback .Screen/vector DEO2
+	JMP2r
 
 @loader/callback ( -> )
 	#0000 DUP2 Screen/<set-pos>

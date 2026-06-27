@@ -6,7 +6,7 @@ function System(emu)
 	this.meta = 0
 
 	function print_byte(value) {
-		return `${(value >> 4).toString(16)}${(value & 0xf)}`
+		return `${(value >> 4).toString(16)}${(value & 0xf).toString(16)}`
 	}
 
 	function print_stack(id) {
