@@ -32,7 +32,7 @@
 	;meta #06 DEO2
 	theme/<load>
 	;dict/home-path path/<set>
-	window/<init>
+	window/<update>
 	spacer/<draw>
 	input/<bind>
 	bios/<welcome>
@@ -44,7 +44,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Jun 20 "2026 00
+	( date ) "27 20 "Jun 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -561,8 +561,8 @@
 	=cpy/api =era/api =ren/api =pop/api
 	=dup/api =ovr/api =swp/api =rot/api
 	=dec/api =hex/api =cat/api =cmp/api
-	=and/api =ora/api =out/api =bye/api
-	&lutend ]
+	=and/api =ora/api =rsz/api =out/api
+	=bye/api &lutend ]
 
 @cmd/<eval> ( -- )
 	;cmds/lutend ;cmds/lut-clip
@@ -816,6 +816,13 @@
 @hex/chr ( hex -- char )
 	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD JMP2r
 
+@rsz/<eval> ( -- )
+	bios/is-thtwo ?bios/<push-err-underflow>
+	( h* ) bios/pop str/dec
+	( w* ) bios/pop str/dec SWP2k window/<set-size>
+	.Screen/width DEI2 EQU2 ROT ROT .Screen/height DEI2 EQU2 AND !bios/<push-bool>
+	&api =dict/rsz =&<eval> "<rsz> 20 "( 20 "w 20 "h 20 09 20 "bool 20 ") 00
+
 @out/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
 	bios/pop !str/<print>
@@ -1002,7 +1009,13 @@
 	( addr* ) #00 ROT #0f AND #30 SFT2 ;curtain/out-short ADD2 window/<fill>
 	BRK
 
-@window/<init> ( -- )
+@window/<set-size> ( w* h* -- )
+	.Screen/height DEO2
+	.Screen/width DEO2
+	input/<redraw>
+	/<update> !spacer/<draw>
+
+@window/<update> ( -- )
 	.Screen/width DEI2 DUP2 #01 SFT2 ,&center STR2
 	DUP2 #0010 SUB2 ,&margin STR2
 	#03 SFT2 ,&cols STR2
@@ -1382,6 +1395,7 @@
 	&out "out 00
 	&cpy "cpy 00
 	&bye "bye 00
+	&rsz "rsz 00
 	&zero "0 00
 	&t "<true> 00
 	&f "<false> 00
