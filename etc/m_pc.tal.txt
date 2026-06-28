@@ -21,7 +21,7 @@
 |ff00 @dict/cap
 |0008 @bios/anchor-x
 |0028 @bios/anchor-y
-|ffe0 @loader/entry
+|fff0 @loader/entry
 |ff80 @loader/buf
 
 |000
@@ -46,7 +46,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Jun 20 "2026 00
+	( date ) "28 20 "Jun 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -287,9 +287,6 @@
 
 @bios/<push-err-underflow> ( -- )
 	;dict/err-underflow !/<push>
-
-@bios/<push-err-oversized> ( -- )
-	;dict/err-oversized !/<push>
 
 @bios/<push-err-missing> ( -- )
 	;dict/err-missing !/<push>
@@ -1020,7 +1017,7 @@
 		;&page .File/read DEO2
 		.File/success DEI2 ORA ?{ POP2 JMP2r }
 		DUP2 /<move>
-		INC2 !&>s
+		INC2 !/>s
 
 @loader/<move> ( page* -- )
 	DUP2 #80 SFT2 ,&a STR2
@@ -1060,9 +1057,10 @@
 	( | Load )
 	;&buf .File/name DEO2
 	#fee0 .File/length DEO2
-	;&mmu-get .System/expansion DEO2 !/entry
+	;&mmu-get .System/expansion DEO2
+	#0100 #fff8 !/entry
 
-	&mmu-get [ 01 0020 0000 =&rom 0000 =&entry ]
+	&mmu-get [ 01 0010 0000 =&rom 0000 =&entry ]
 
 (
 @|Fade )
@@ -1564,7 +1562,6 @@
 	&err-underflow "<underflow> 00
 	&err-missing "<missing> 00
 	&err-binary "<binary> 00
-	&err-oversized "<oversized> 00
 	&months [
 	"Jan $1 "Feb $1 "Mar $1 "Apr $1
 	"May $1 "Jun $1 "Jul $1 "Aug $1
@@ -1577,9 +1574,7 @@
 
 @input/caret [ 0020 2020 2020 2020 2020 2020 2020 0000 ]
 
-@loader/rom [
-	c000 4ea0 0008 38a0 000b 3880 0237 a001
-	0026 80ac 372c 00fe 0000 0000 0000 0000 ]
+@loader/rom [ 8002 3726 80ac 372c 00fe 0000 0000 0000 ]
 
 @curtain/out [
 	0000 0000 0000 0000 0000 0000 0000 0000
