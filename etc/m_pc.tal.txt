@@ -14,6 +14,7 @@
 
 |0050 @Varvara/version
 |0080 @path/buflen
+|0100 @loader/pagelen
 |0200 @bios/buflen
 |0800 @dir/buflen
 |0120 @meta/buflen
@@ -664,10 +665,8 @@
 @run/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
 	bios/pop path/make
-	( ? ) DUP2 file/is-oversized ?{
-		( ? ) DUP2 file/exists ?loader/<bind>
-		POP2 !bios/<push-err-missing> }
-	POP2 !bios/<push-err-oversized>
+	( ? ) DUP2 file/exists ?loader/<bind>
+	POP2 !bios/<push-err-missing>
 	&api =dict/run =&<eval> "<run> 20 "( 20 "f.rom 20 09 20 "ok 20 ") 00
 
 @txt/<eval> ( -- )
@@ -1012,6 +1011,25 @@
 (
 @|Loader )
 
+@loader/<load-expansion> ( -- )
+	#ff00 file/<seek>
+	;&pagelen .File/length DEO2
+	;&page .File/read DEO2
+	#0000
+	&>s
+		;&page .File/read DEO2
+		.File/success DEI2 ORA ?{ POP2 JMP2r }
+		DUP2 /<move>
+		INC2 !&>s
+
+@loader/<move> ( page* -- )
+	DUP2 #80 SFT2 ,&a STR2
+	#08 SFT2 INC2 ,&p STR2
+	;&mmu-mov .System/expansion DEO2
+	JMP2r
+
+	&mmu-mov [ 01 =&pagelen 0000 =&page &p $2 &a $2 ]
+
 @loader/<bind> ( path* -- )
 	;&buf ,&+ptr STR2
 	&>w
@@ -1030,6 +1048,7 @@
 	JMP2r
 
 @loader/callback ( -> )
+	;&buf file/is-oversized #00 EQU ?{ /<load-expansion> }
 	#0000 DUP2 Screen/<set-pos>
 	( | Clear screen )
 	[ LIT2 80 -Screen/pixel ] DEO
@@ -1041,9 +1060,9 @@
 	( | Load )
 	;&buf .File/name DEO2
 	#fee0 .File/length DEO2
-	;&mmu .System/expansion DEO2 !/entry
+	;&mmu-get .System/expansion DEO2 !/entry
 
-	&mmu [ 01 0020 0000 =&rom 0000 =&entry ]
+	&mmu-get [ 01 0020 0000 =&rom 0000 =&entry ]
 
 (
 @|Fade )
@@ -1771,6 +1790,8 @@
 @time/buf $a
 
 @symbol/buf $20
+
+@loader/page $&pagelen
 
 @meta/buf $1 &body $&buflen &cap 0000 &icon $90
 
