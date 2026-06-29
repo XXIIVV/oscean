@@ -13,6 +13,8 @@
 @|Enums )
 
 |0050 @Varvara/version
+|00fd @loader/entry
+|0100 @loader/pagelen
 |0080 @path/buflen
 |0200 @bios/buflen
 |0800 @dir/buflen
@@ -20,8 +22,6 @@
 |ff00 @dict/cap
 |0008 @bios/anchor-x
 |0028 @bios/anchor-y
-|00fd @loader/entry
-|0100 @loader/pagelen
 
 |000
 
@@ -46,7 +46,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "28 20 "Jun 20 "2026 00
+	( date ) "29 20 "Jun 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -84,7 +84,16 @@
 	.Console/read DEI
 	( | mute arg spacers )
 	[ LIT2 03 -Console/type ] DEI NEQ ?{ POP #20 }
+	DUP LIT "\ NEQ ?{
+		POP ;&on-console-escape .Console/vector DEO2
+		BRK }
 	/handle-input BRK
+
+@input/on-console-escape ( -> )
+	.Console/read ] DEI DUP #0a EQU ?{
+		LIT "\ /handle-input DUP /handle-input }
+	;&on-console .Console/vector DEO2
+	BRK
 
 @input/<bind> ( -- )
 	;&on-controller .Controller/vector DEO2
@@ -204,6 +213,26 @@
 (
 @|Bios )
 
+@bios/<parse> ( str* -- )
+	/<reset>
+	dict/<reset>
+	( >> )
+
+@bios/<parse-partial> ( str* -- )
+	sel/<reset>
+	str/walk-ws banner/<request>
+	&>w
+		/parse-symbol str/walk-ws LDAk ?/>w
+	POP2 reader/is-bound ?{ !/<redraw> }
+	JMP2r
+
+@bios/parse-symbol ( addr* -- next* )
+	LDAk LIT "~ EQU ?/parse-include
+	dict/alloc !/<push>
+
+@bios/parse-include ( addr* -- next* )
+	INC2 dict/alloc path/make dir/load-temp !/<parse-partial>
+
 @bios/<welcome> ( -- )
 	/<reset>
 	banner/<request>
@@ -239,20 +268,6 @@
 
 @bios/is-ththree ( -- fail )
 	/get-depth #0003 LTH2 JMP2r
-
-@bios/<parse> ( str* -- )
-	/<reset>
-	dict/<reset>
-	( >> )
-
-@bios/<parse-partial> ( str* -- )
-	sel/<reset>
-	str/walk-ws banner/<request>
-	&>w
-		dict/alloc /<push>
-		str/walk-ws LDAk ?/>w
-	POP2 reader/is-bound ?{ !/<redraw> }
-	JMP2r
 
 @bios/<reset> ( -- )
 	;&buf ,&+ptr STR2 !scroll/<reset>
@@ -610,8 +625,9 @@
 	=get/api =cpy/api =era/api =ren/api
 	=pop/api =dup/api =ovr/api =swp/api
 	=rot/api =dec/api =hex/api =cat/api
-	=cmp/api =and/api =ora/api =rsz/api
-	=out/api =bye/api &lutend ]
+	=add/api =sub/api =cmp/api =and/api
+	=ora/api =rsz/api =out/api =bye/api
+	&lutend ]
 
 @cmd/<eval> ( -- )
 	;cmds/lutend ;cmds/lut-clip
@@ -648,6 +664,12 @@
 		str/eol INC2 GTH2k ?/>lfi
 	POP2 POP2 JMP2r
 	&api =dict/dir =&<eval> "<dir> 20 "( 20 09 20 "[f] 20 ") 00
+
+@dir/load-temp ( addr* -- buf* )
+	.File/name DEO2
+	;&buflen .File/length DEO2
+	;&buf DUP2 .File/read DEO2
+	JMP2r
 
 @mov/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
@@ -780,7 +802,7 @@
 	&api =dict/dup =&<eval> "<dup> 20 "( 20 "a 20 09 20 "a 20 "a 20 ") 00
 
 @ovr/<eval> ( -- )
-	bios/is-empty ?bios/<push-err-underflow>
+	bios/is-thtwo ?bios/<push-err-underflow>
 	( b ) bios/pop
 	( a ) bios/pop DUP2 bios/<push>
 	SWP2 bios/<push> !bios/<push>
@@ -810,19 +832,36 @@
 @cmp/<eval> ( -- )
 	bios/is-thtwo ?bios/<push-err-underflow>
 	bios/pop bios/pop str/cmp !bios/<push-bool>
-	&api =dict/cmp =&<eval> "<cmp> 20 "( 20 "a 20 "b 20 09 20 "bool 20 ") 00
+	&api =&cmd =&<eval> "<cmp> 20 "( 20 "a 20 "b 20 09 20 "bool 20 ") 00
+	&cmd "cmp 00
 
 @and/<eval> ( -- )
 	bios/is-thtwo ?bios/<push-err-underflow>
 	( a ) bios/pop ;dict/t str/cmp
 	( b ) bios/pop ;dict/t str/cmp AND !bios/<push-bool>
-	&api =dict/and =&<eval> "<and> 20 "( 20 "a 20 "b 20 09 20 "bool 20 ") 00
+	&api =&cmd =&<eval> "<and> 20 "( 20 "a 20 "b 20 09 20 "bool 20 ") 00
+	&cmd "and 00
 
 @ora/<eval> ( -- )
 	bios/is-thtwo ?bios/<push-err-underflow>
 	( a ) bios/pop ;dict/t str/cmp
 	( b ) bios/pop ;dict/t str/cmp ORA !bios/<push-bool>
-	&api =dict/ora =&<eval> "<ora> 20 "( 20 "a 20 "b 20 09 20 "bool 20 ") 00
+	&api =&cmd =&<eval> "<ora> 20 "( 20 "a 20 "b 20 09 20 "bool 20 ") 00
+	&cmd "ora 00
+
+@add/<eval> ( -- )
+	bios/is-thtwo ?bios/<push-err-underflow>
+	( a ) bios/pop str/dec
+	( b ) bios/pop str/dec ADD2 dec/make !bios/<push-raw>
+	&api =&cmd =&<eval> "<add> 20 "( 20 "a 20 "b 20 09 20 "sum 20 ") 00
+	&cmd "add 00
+
+@sub/<eval> ( -- )
+	bios/is-thtwo ?bios/<push-err-underflow>
+	( a ) bios/pop str/dec
+	( b ) bios/pop str/dec SWP2 SUB2 dec/make !bios/<push-raw>
+	&api =&cmd =&<eval> "<sub> 20 "( 20 "a 20 "b 20 09 20 "dif 20 ") 00
+	&cmd "sub 00
 
 @dec/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
@@ -832,15 +871,26 @@
 @dec/make ( value* -- str* )
 	ORAk ?{ POP2 ;dict/zero JMP2r }
 	;&buf ,&+ptr STR2
+	OVR #80 AND #00 EQU ?/make-pos
+	[ LIT "- ] /<push>
+	#7fff AND2 #8000 SWP2 SUB2
+	( >> )
+
+@dec/make-pos ( value* -- str* )
 	#2710 [ LIT2r 00fb ]
 	&>wpd
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
-			DUP LIT "0 ADD #00 [ LIT2 &+ptr =&buf ] INC2k ,&+ptr STR2
-			STA2
+			DUP LIT "0 ADD /<push>
 			INCr }
 		POP2 #000a DIV2 SWPr INCr STHkr ?/>wpd
 	POP2r POP2 POP2 ;&buf JMP2r
-	&api =dict/dec =&<eval> "<dec> 20 "( 20 "hex 20 09 20 "dec 20 ") 00
+
+@dec/<push> ( c -- )
+	#00 [ LIT2 &+ptr =&buf ] INC2k ,&+ptr STR2
+	STA2
+	JMP2r
+	&api =&cmd =&<eval> "<dec> 20 "( 20 "hex 20 09 20 "dec 20 ") 00
+	&cmd "dec 00
 
 @hex/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
@@ -859,7 +909,8 @@
 	/chr #00 [ LIT2 &+ptr =&buf ] INC2k ,&+ptr STR2
 	STA2
 	JMP2r
-	&api =dict/hex =&<eval> "<hex> 20 "( 20 "dec 20 09 20 "hex 20 ") 00
+	&api =&cmd =&<eval> "<hex> 20 "( 20 "dec 20 09 20 "hex 20 ") 00
+	&cmd "hex 00
 
 @hex/chr2 ( byte -- hn ln )
 	DUP #04 SFT /chr SWP
@@ -873,16 +924,19 @@
 	( h* ) bios/pop str/dec
 	( w* ) bios/pop str/dec SWP2k window/<set-size>
 	.Screen/width DEI2 EQU2 ROT ROT .Screen/height DEI2 EQU2 AND !bios/<push-bool>
-	&api =dict/rsz =&<eval> "<rsz> 20 "( 20 "w 20 "h 20 09 20 "bool 20 ") 00
+	&api =&cmd =&<eval> "<rsz> 20 "( 20 "w 20 "h 20 09 20 "bool 20 ") 00
+	&cmd "rsz 00
 
 @out/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
 	bios/pop !str/<print>
-	&api =dict/out =&<eval> "<out> 20 "( 20 "a 20 09 20 ") 00
+	&api =&cmd =&<eval> "<out> 20 "( 20 "a 20 09 20 ") 00
+	&cmd "out 00
 
 @bye/<eval> ( -- )
 	;&callback !fade-out/<bind>
-	&api =dict/bye =&<eval> "<bye> 20 "( 20 09 20 ") 00
+	&api =&cmd =&<eval> "<bye> 20 "( 20 09 20 ") 00
+	&cmd "bye 00
 
 @bye/callback ( -> )
 	#800f DEO
@@ -891,41 +945,13 @@
 (
 @|Dict )
 
-@dict/alloc-cat ( a* b* -- addr* )
-	[ LIT2r =&+ptr ] LDA2r
-	&>wc1
-		LDAk DUP ?{
-			POP POP2
-			&>wc2
-				LDAk DUP ?{
-					POP POP2 STH2r #00 !/<push> }
-				str/escape /<push>
-				INC2 !/>wc2 }
-		str/escape /<push>
-		INC2 !/>wc1
+@dict/<reset> ( -- )
+	;&buf ,&+ptr STR2
+	JMP2r
 
-@dict/alloc ( str* -- str* addr* )
-	LDAk LIT "" EQU ?/alloc-string
-	[ LITr _&+ptr ] LDR2r
-	&>w
-		LDAk DUP #20 GTH ?{ POP STH2r #00 !/<push> }
-		str/escape /<push>
-		INC2 !/>w
-
-@dict/alloc-string ( str* -- str* addr* )
-	INC2 [ LITr _&+ptr ] LDR2r
-	&>was
-		LDAk DUP ?{ &end POP INC2 STH2r #00 !/<push> }
-		DUP LIT "" EQU ?/end
-		str/escape /<push>
-		INC2 !/>was
-
-@dict/alloc-line ( str* -- str* addr* )
-	[ LITr _&+ptr ] LDR2r
-	&>wal
-		LDAk DUP #1f GTH ?{ POP STH2r #00 !/<push> }
-		str/escape /<push>
-		INC2 !/>wal
+@dict/<push-escaped> ( addr* -- addr* )
+	str/escape
+	( >> )
 
 @dict/<push> ( c -- )
 	[ LIT2 &+ptr =&buf ]
@@ -934,9 +960,14 @@
 	STA
 	JMP2r
 
-@dict/<reset> ( -- )
-	;&buf ,&+ptr STR2
-	JMP2r
+@dict/alloc ( str* -- str* addr* )
+	LDAk LIT "" EQU ?/alloc-string
+	LDAk LIT "( EQU ?/alloc-comment
+	[ LITr _&+ptr ] LDR2r
+	&>w
+		LDAk DUP #20 GTH ?{ POP STH2r #00 !/<push> }
+		/<push-escaped>
+		INC2 !/>w
 
 @dict/alloc-file ( name* -- addr* )
 	.File/name DEO2
@@ -946,6 +977,43 @@
 		;&b .File/read DEO2
 		.File/success-lb DEI ?{ STH2r #00 !/<push> }
 		[ LIT &b $1 ] /<push> !/>s
+
+@dict/alloc-cat ( a* b* -- addr* )
+	[ LIT2r =&+ptr ] LDA2r
+	&>wc1
+		LDAk DUP ?{
+			POP POP2
+			&>wc2
+				LDAk DUP ?{
+					POP POP2 STH2r #00 !/<push> }
+				/<push-escaped>
+				INC2 !/>wc2 }
+		/<push-escaped>
+		INC2 !/>wc1
+
+@dict/alloc-string ( str* -- str* addr* )
+	INC2 [ LIT2r =&+ptr ] LDA2r
+	&>was
+		LDAk DUP ?{ &end-s POP INC2 STH2r #00 !/<push> }
+		DUP LIT "" EQU ?/end-s
+		/<push-escaped>
+		INC2 !/>was
+
+@dict/alloc-comment ( str* -- str* addr* )
+	[ LIT2r =&+ptr ] LDA2r
+	&>wac
+		LDAk DUP ?{ &end-c /<push>
+			INC2 STH2r #00 !/<push> }
+		DUP LIT ") EQU ?/end-c
+		/<push-escaped>
+		INC2 !/>wac
+
+@dict/alloc-line ( str* -- str* addr* )
+	[ LIT2r =&+ptr ] LDA2r
+	&>wal
+		LDAk DUP #1f GTH ?{ POP STH2r #00 !/<push> }
+		/<push-escaped>
+		INC2 !/>wal
 
 (
 @|Font )
@@ -1257,11 +1325,11 @@
 @chr/t-ws ( c -- c )
 	POP #20 JMP2r
 
-@str/read-byte ( a b -- byte )
-	chr/hex SWP chr/hex #40 SFT ORA JMP2r
-
 @chr/is-ascii ( c -- t )
 	DUP #08 GTH SWP #7f LTH AND JMP2r
+
+@str/read-byte ( a b -- byte )
+	chr/hex SWP chr/hex #40 SFT ORA JMP2r
 
 @str/is-dir ( str* -- t )
 	/cap #0001 SUB2 LDA LIT "/ EQU JMP2r
@@ -1321,6 +1389,10 @@
 	POP2 STH2r JMP2r
 
 @str/dec ( str* -- val* )
+	LDAk [ LIT "- ] NEQ ?/dec-unsigned
+	INC2 /dec-unsigned #0000 SWP2 SUB2 JMP2r
+
+@str/dec-unsigned ( str* -- val* )
 	[ LIT2r 0000 ] !{
 
 	&>ldec
@@ -1331,9 +1403,9 @@
 	POP2 POP2 STH2r JMP2r
 
 @str/walk-ws ( str* -- str* )
-	&>ww
+	&>ws
 		LDAk ?{ JMP2r }
-		LDAk #20 GTH ?{ INC2 LDAk ?/>ww }
+		LDAk #20 GTH ?{ INC2 LDAk ?/>ws }
 	JMP2r
 
 @str/walk-zero ( str* -- str* )
@@ -1546,17 +1618,9 @@
 	&rot "rot 00
 	&pop "pop 00
 	&now "now 00
-	&dec "dec 00
-	&hex "hex 00
 	&cat "cat 00
-	&cmp "cmp 00
-	&and "and 00
-	&ora "ora 00
 	&icn "icn 00
-	&out "out 00
 	&cpy "cpy 00
-	&bye "bye 00
-	&rsz "rsz 00
 	&zero "0 00
 	&t "<true> 00
 	&f "<false> 00
@@ -1571,6 +1635,10 @@
 	&days [
 	"Sun $1 "Mon $1 "Tue $1 "Wed $1
 	"Thu $1 "Fri $1 "Sat $1 ]
+
+
+
+( Assets )
 
 @window/wave [ 0000 0000 0070 8807 ]
 
@@ -1713,7 +1781,7 @@
 	0006 0808 0810 6010 1020 2020 1800 0000
 	0000 1010 1020 2020 2040 4040 0000 0000
 	0030 0808 0810 100c 1020 2020 c000 0000
-	0000 0032 4c00 0000 0000 0000 0000 0000 ]
+	0000 0000 0000 0032 4c00 0000 0000 0000 ]
 	&tab [ 0000 0000 0008 0c7e 0c08 0000 0000 0000 ]
 
 @kbd/glyphs [
