@@ -329,7 +329,7 @@
 @bios/<use-icn> ( str* -- )
 	input/<push-str>
 	;&cmd-icn !input/<push-str>
-	&cmd-icn 20 "icn 00
+	&cmd-icn 20 "1 20 "icn 00
 
 @bios/<use-run> ( str* -- )
 	input/<push-str>
@@ -679,16 +679,18 @@
 
 @icn/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
-	bios/pop path/make
-	( ? ) DUP2 file/exists ?{ POP2 !bios/<push-err-missing> }
-	/<draw>
+	( color ) bios/pop str/dec NIP
+	( path ) bios/pop path/make
+	( ? ) DUP2 file/exists ?{ POP2 POP !bios/<push-err-missing> }
+	ROT /<draw>
 	;dict/ok !bios/<push>
 
-@icn/<draw> ( name* -- )
+@icn/<draw> ( name* blend -- )
+	#0f AND ,&blend STR
 	DUP2 .File/name DEO2
 	( | depth )
 	#0008 .File/length DEO2
-	[ LIT2r 03 -Screen/sprite ] ;&buf .Screen/addr DEO2
+	[ LIT2r &blend 03 -Screen/sprite ] ;&buf .Screen/addr DEO2
 	( | size )
 	/read-size
 	( h ) #00 SWP SUBk ,&height STR
@@ -715,7 +717,7 @@
 	( no size ) INC2k INC2 LDA [ LIT "x ] EQU ?{ POP2 #1010 JMP2r }
 	LDA2k str/read-byte STH
 	#0003 ADD2 LDA2 str/read-byte STHr SWP JMP2r
-	&api =dict/icn =&<eval> "<icn> 20 "( 20 "f.icn 20 09 20 "ok 20 ") 00
+	&api =dict/icn =&<eval> "<icn> 20 "( 20 "f.icn 20 "blend 20 09 20 "ok 20 ") 00
 
 @put/<eval> ( -- )
 	bios/is-thtwo ?bios/<push-err-underflow>
@@ -1106,7 +1108,7 @@
 	( | Load wallpaper )
 	/get-cols hex/chr2 ,&w STR2
 	POP /get-rows hex/chr2 ,&h STR2
-	POP ;&path !icn/<draw>
+	POP ;&path #03 !icn/<draw>
 
 	&get-center [ LIT2 &center $2 ] JMP2r
 
