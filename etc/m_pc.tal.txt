@@ -14,19 +14,19 @@
 
 |0050 @Varvara/version
 |0080 @path/buflen
-|0100 @loader/pagelen
 |0200 @bios/buflen
 |0800 @dir/buflen
 |0120 @meta/buflen
 |ff00 @dict/cap
 |0008 @bios/anchor-x
 |0028 @bios/anchor-y
-|fff0 @loader/entry
-|ff80 @loader/buf
+|00fd @loader/entry
+|0100 @loader/pagelen
 
 |000
 
-	@input/buf
+	@input/buf $80
+	@loader/buf
 
 |100
 
@@ -1016,14 +1016,10 @@
 	&>s
 		;&page .File/read DEO2
 		.File/success DEI2 ORA ?{ POP2 JMP2r }
-		DUP2 /<move>
+		DUP2k #80 SFT2 ,&a STR2
+		#08 SFT2 INC2 ,&p STR2
+		;&mmu-mov .System/expansion DEO2
 		INC2 !/>s
-
-@loader/<move> ( page* -- )
-	DUP2 #80 SFT2 ,&a STR2
-	#08 SFT2 INC2 ,&p STR2
-	;&mmu-mov .System/expansion DEO2
-	JMP2r
 
 	&mmu-mov [ 01 =&pagelen 0000 =&page &p $2 &a $2 ]
 
@@ -1054,13 +1050,17 @@
 	#0000 #00 &l DEO2k #10 ADD DUP [ ?/l POP POP2 ]
 	( | Blank arguments )
 	[ LIT2 00 -Console/type ] DEO
-	( | Load )
+	( | Setup file )
 	;&buf .File/name DEO2
-	#fee0 .File/length DEO2
-	;&mmu-get .System/expansion DEO2
-	#0100 #fff8 !/entry
+	#ff00 .File/length DEO2
+	( | Copy loader )
+	;&mmu .System/expansion DEO2
+	( 0pg ) #00f5 .System/expansion
+	( buf ) #0100 .File/read
+	( 1pg ) #00f1 .System/expansion !/entry
 
-	&mmu-get [ 01 0010 0000 =&rom 0000 =&entry ]
+	&mmu [ 01 000f 0000 =&rom 0000 00f1 ]
+	&rom [ 00ff 0000 0001 0000 0000 0000 3737 37 ]
 
 (
 @|Fade )
@@ -1573,8 +1573,6 @@
 @window/wave [ 0000 0000 0070 8807 ]
 
 @input/caret [ 0020 2020 2020 2020 2020 2020 2020 0000 ]
-
-@loader/rom [ 8002 3726 80ac 372c 00fe 0000 0000 0000 ]
 
 @curtain/out [
 	0000 0000 0000 0000 0000 0000 0000 0000

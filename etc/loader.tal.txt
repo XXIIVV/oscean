@@ -8,11 +8,11 @@
 (
 @|Enums )
 
-|fff0 @loader/entry
-|ff80 @loader/buf
+|00fd @loader/entry
 
 |000
 
+	@loader/buf
 	@src/buf
 
 |100
@@ -29,21 +29,20 @@
 		.Console/read DEI [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 		STZ2
 		BRK }
-	;&buf loader/<run>
+	loader/<run>
 	BRK
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 (
 @|Loader )
 
 @loader/<run> ( path* -- )
-	;&buf ,&ptr STR2
-	&>w
-		LDAk DUP ?{
-			POP POP2 ;&on-frame .Screen/vector DEO2
-			JMP2r }
-		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA2
-		INC2 !/>w
+	;&on-frame .Screen/vector DEO2
+	JMP2r
 
 @loader/on-frame ( -> )
 	#0000 DUP2 .Screen/x DEO2
@@ -55,12 +54,15 @@
 	#0000 #00 &l DEO2k #10 ADD DUP [ ?/l POP POP2 ]
 	( | Blank arguments )
 	[ LIT2 00 -Console/type ] DEO
-	( | Load )
+	( | Setup file )
 	;&buf .File/name DEO2
-	#fee0 .File/length DEO2
+	#ff00 .File/length DEO2
+	( | Copy loader )
 	;&mmu .System/expansion DEO2
-	#0100 #fff8 !/entry
+	( 0pg ) #00f5 .System/expansion
+	( buf ) #0100 .File/read
+	( 1pg ) #00f1 .System/expansion !/entry
 
-	&mmu [ 01 0010 0000 =&rom 0000 =&entry ]
-	&rom [ 8002 3726 80ac 372c 00fe 0000 0000 0000 ]
+	&mmu [ 01 000f 0000 =&rom 0000 00f1 ]
+	&rom [ 00ff 0000 0001 0000 0000 0000 3737 37 ]
 
