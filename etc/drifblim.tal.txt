@@ -23,7 +23,8 @@
 @bind ( vector* -> )
 	.Console/vector DEO2
 	[ LIT2 03 -Console/type ] DEI AND ?{
-		;dict/usage info/<print>
+		project/load ?assemble
+		;meta/usage info/<print>
 		[ LIT2 01 -System/state ] DEO }
 	BRK
 
@@ -31,9 +32,31 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Jun 20 "2026 00
+	( date ) "20 20 "Jun 20 "2026 0a0a
+	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
+
+(
+@|Project )
+
+@project/load ( -- t )
+	;&path .File/name DEO2
+	#0001 .File/length DEO2
+	&>src
+		;&src .File/read DEO2
+		.File/success-lb DEI ?{ #00 JMP2r }
+		[ LIT &src $1 ] DUP #0a EQU ?{ src/<push> !/>src }
+	POP #00 src/<push>
+	&>dst
+		;&dst .File/read DEO2
+		.File/success-lb DEI ?{ #0100 !dst/<push> }
+		[ LIT &dst $1 ] dst/<push> !/>dst
+
+	&path ".drifblim 00
+
+(
+@|Src )
 
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
@@ -47,14 +70,30 @@
 
 @src/<push> ( c -- )
 	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-	NEQk ?{ ;dict/exceeded ;&buf ;dict/Path info/<error-generic> }
+	NEQk ?{ ;dict/exceeded ;&buf ;dict/path info/<error-generic> }
 	NIP STZ
 	JMP2r
+
+(
+@|Dst )
+
+@dst/<push> ( c -- )
+	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+	NEQk ?{ ;dict/exceeded ;&buf ;dict/path info/<error-generic> }
+	NIP STZ
+	JMP2r
+
+@dst/<push-str> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	/<push>
+	INC2 !/<push-str>
 
 @dst/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
 		BRK }
-	( | assemble )
+	( >> )
+
+@assemble ( -> )
 	assembly/<init>
 	;src/buf assembly/<handle-file>
 	assembly/<resolve>
@@ -64,16 +103,8 @@
 	[ LIT2 01 -System/state ] DEO
 	BRK
 
-@dst/<push> ( c -- )
-	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-	NEQk ?{ ;dict/exceeded ;&buf ;dict/Path info/<error-generic> }
-	NIP STZ
-	JMP2r
-
-@dst/<push-str> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	/<push>
-	INC2 !/<push-str>
+(
+@|Fills )
 
 @info/<error-generic> ( adj* keyword* topic* -- )
 	error/<set>
@@ -101,7 +132,7 @@
 		error/get ?/end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/invalid ;src/buf ;dict/File info/<error-generic> }
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/file info/<error-generic> }
 			&end ( i* -- )
 			POP2 #0a !token/<push-byte> }
 		INC2 [ LIT &c $1 ] token/<push-byte> !/>s
@@ -143,9 +174,8 @@
 		STH2r ADD2 GTH2k ?/>les
 	POP2 POP2 JMP2r
 
-@dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a 00
-	&Path "Path 00
-	&File "File 00
+@dict/path "Path 00
+	&file "File 00
 	&sym-ext ".sym 00
 
 
