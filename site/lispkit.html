@@ -196,6 +196,158 @@ gets converted to a linebreak during printing.</p>
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/lispkit' target='_blank'>Lispkit</a>, SECD virtual machine in ANSI C.</li>
 </ul>
+<h2>Lispkit Library</h2>
+
+<p>The following is a collection of implementations for standard functions in <a
+href='lisp.html'>Lispkit</a>. Predicate functions suffixed with
+<code>?</code> are expressions that return either T or F.</p>
+
+<ul>
+	<li><code>(null? x)</code> is T if x is NIL, and is F otherwise.</li>
+	<li><code>(not? x)</code>, T if x is F, else T.</li>
+	<li><code>(or? x y)</code>, T if either arguments are T, else F.</li>
+	<li><code>(and? x y)</code>, T if both arguments are T, else F.</li>
+</ul>
+
+<pre>
+(<b>null?</b> λ (x) (EQ x (QUOTE NIL)))
+(<b>true?</b> λ (x) (IF x (QUOTE T) (QUOTE F)))
+(<b>not?</b> λ (x) (IF x (QUOTE F) (QUOTE T)))
+(<b>or?</b> λ (x y) (IF x (QUOTE T) (true? Y)))
+(<b>and?</b> λ (x y) (IF x (true? y) (QUOTE F)))
+(<b>number?</b> λ (n) (EQ n (+ n (QUOTE 0))))
+</pre>
+
+<h3>List Processing Functions</h3>
+
+<p><b>Length</b> is the number of components in the list <code>ls</code>.</p>
+
+<pre>
+(<b>length</b> λ (ls)
+	(IF (ATOM ls)
+		(QUOTE 1)
+		(+ (QUOTE 1) (<b>length</b> (CDR ls)))
+	)
+)
+</pre>
+
+<p><b>Member?</b> returns T if the atom e is present in the list <code>ls</code>.</p>
+
+<pre>
+(<b>member?</b> λ (e ls)
+	(IF (ATOM ls) (QUOTE F)
+	(IF (EQ (CAR ls) e) (QUOTE T)
+		(<b>member?</b> e (CDR ls))))
+)
+</pre>
+
+<p><b>Filter</b> is the list of those components for which the application of
+<code>fn</code> is T.</p>
+
+<pre>
+(<b>filter</b> λ (fn ls)
+	(IF (ATOM ls)
+		(QUOTE NIL)
+		(IF (fn (CAR ls))
+			(CONS (CAR ls) (<b>filter</b> fn (CDR ls)))
+			(<b>filter</b> fn (CDR ls))
+		)
+	)
+)
+</pre>
+
+<p><b>Map</b> is the list whose components are obtained from those of
+<code>ls</code> by application of <code>fn</code>.</p>
+
+<pre>
+(<b>map</b> λ (fn ls)
+	(IF (ATOM ls)
+		(QUOTE NIL)
+		(CONS (fn (CAR ls)) (<b>map</b> fn (CDR ls)))
+	)
+)
+</pre>
+
+<img src='../media/refs/sicp.jpg' style='width:200px; float:right'/>
+<q>Writing EVAL required inventing a notation representing Lisp functions as Lisp
+data, and such a notation was devised for the purposes of the paper with no
+thought that it would be used to express Lisp programs in practice. </q>
+
+<hr />
+
+<h2>Lispkit compiler</h2>
+
+<p>Lispkit compiles to <a href='secd.html'>SECD machine instructions</a>, here is the source for the lispkit compiler capable of converting lispkit <code>.lisp</code> into <code>.secd</code> files.</p>
+
+<div class='codeview'>
+	<iframe src="../etc/lispkit.lisp.txt"></iframe>
+	<pre>lispkit lispkit.secd lispkit.lisp > bin/lispkit-bootstrap.secd <a href='../etc/lispkit.lisp.txt' target='_blank'>view raw</a></pre>
+</div>
+
+<p>You can use the compiler above with this <a href='../etc/lispkit.c.txt' target='_blank'>minimal virtual machine</a>, and a SECD-compatible version of that same compiler below:</p>
+
+<div class='codeview'>
+	<iframe src="../etc/lispkit.secd.txt"></iframe>
+	<pre>lispkit lispkit.secd input.lisp > output.secd <a href='../etc/lispkit.secd.txt' target='_blank'>view raw</a></pre>
+</div>
+
+<h2>Church Numerals are a representation of the natural numbers using lambda
+notation.</h2>
+
+<p>A kind of <i>base1 arithmetic</i>, in which numbers are represented by
+function nesting over an empty list, can be constructed in <a
+href='lisp.html'>Pure Lisp</a> using only very few primtives. This document
+will present Church Numerals through the lens of Lisp, alternatively one might
+prefer to read it coming from the <a href='ornithomicon.html'>Avian
+Numerals</a> tutorial.</p>
+
+<p>The following file contains the basic building blocks as an example:</p>
+
+<pre>
+(LETREC church
+	(church LAMBDA (INPUT)
+		(greater?
+			(incr (incr (incr (incr nil))))
+			(incr (incr (incr nil))))
+	)
+	(nil QUOTE NULL)
+	(#f QUOTE F)
+	(#t QUOTE T)
+	(incr LAMBDA (x)
+		(CONS nil x))
+	(decr LAMBDA (x)
+		(CDR x))
+	(zero? LAMBDA (x)
+		(EQ x nil))
+	(not LAMBDA (x)
+		(IF x #f #t))
+	(plus LAMBDA (x y)
+		(IF (zero? x) y
+			(plus (decr x) (incr y))))
+	(minus LAMBDA (x y)
+		(IF (zero? y) x
+			(minus (decr x) (decr y))))
+	(multiply LAMBDA (x y)
+		(IF (zero? x) nil
+			(plus y (multiply (decr x) y))))
+	(equal? LAMBDA (x y)
+		(IF (zero? x) (zero? y)
+			(IF (zero? y) #f
+				(equal? (decr x) (decr y)))))
+	(greater? LAMBDA (x y)
+		(IF (zero? x) #f
+			(IF (zero? y) (not (zero? x))
+				(greater? (decr x) (decr y)))))
+	(lesser? LAMBDA (x y)
+		(greater? y x))
+)
+</pre>
+
+<article>
+	<p>"And you do Addition?" the White Queen asked. "What's one and one and one and one and one and one and one and one and one and one?"<br />
+	"I don't know," said Alice. "I lost count."<br />
+	"She can't do Addition," the Red Queen interrupted.</p>
+</article>
 <ul></ul></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 

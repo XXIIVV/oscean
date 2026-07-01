@@ -415,6 +415,9 @@
 %when-depth+1 ( name* -- name* t ) {
 	LDAk chr/hex STHkr INC NEQ }
 
+%page/is-archive ( name* -- name* ) {
+	DUP2 #0001 SUB2 LDA DUP LIT ", EQU SWP LIT "; EQU ORA }
+
 @page/build ( name* -- name* )
 	DUP2 path-site/make .File2/name DEO2
 	( | cleanup )
@@ -422,7 +425,8 @@
 	DUP2 diary/<load>
 	DUP2 incoming/<load>
 	( | verify orphans )
-	.File/success DEI2 ORA ?{ DUP2 ;warnings/orphan warning/<print> }
+	.File/success DEI2 ORA ?{
+		/is-archive ?{ DUP2 ;warnings/orphan warning/<print> } }
 	( | fill name )
 	DUP2 term/<set-name>
 	DUP2 lexicon/find-parent term/<set-parent>
