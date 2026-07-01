@@ -342,6 +342,31 @@ toffoli a b c
 	[toffoli b]/[t b]
 	[toffoli c]/[t c]
 	toffoli/t`
+examples.proquints=`( high byte ) byte1^128
+( low byte  ) byte2^30
+
+tasks^4
+
+    c^8/byte1^128 c^4/byte1^64 c^2/byte1^32  c/byte1^16 Con
+@v0 v^2/byte1^8   v/byte1^4                             Vow
+@c1 c^8/byte1^2   c^4/byte1    c^2/byte2^128 c/byte2^64 Con
+@v1 v^2/byte2^32  v/byte2^16                            Vow
+@c2 c^8/byte2^8   c^4/byte2^4  c^2/byte2^2   c/byte2    Con
+
+@Con ( c -- )
+	[Next .z]/c^15 [Next .v]/c^14 [Next .t]/c^13 [Next .s]/c^12
+	[Next .r]/c^11 [Next .p]/c^10 [Next .n]/c^9  [Next .m]/c^8
+	[Next .l]/c^7  [Next .k]/c^6  [Next .j]/c^5  [Next .h]/c^4
+	[Next .g]/c^3  [Next .f]/c^2  [Next .d]/c    [Next .b]/[]
+
+@Vow ( v -- )
+	[Next .u]/v^3  [Next .o]/v^2  [Next .i]/v    [Next .a]/[]
+
+@Next ( dest -- )
+	[v0 tasks^3]/tasks^4 [c1 tasks^2]/tasks^3
+	[v1 tasks^1]/tasks^2 [c2]/tasks
+	
+`
 examples.spirograph=`( inner cog: ) x^40
 ( outer cog  ) a^96
 
