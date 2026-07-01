@@ -181,7 +181,7 @@ runes. Valid label and macro names are unique non-numeric, non-opcode and non-ru
 </table>
 <h2>Uxntal Stacks</h2>
 
-<p>All programming in Uxntal is done by manipulating the <i>working stack</i>,
+<p>All programming in Uxntal is done by manipulating bytes on the <i>working stack</i>,
 and <i>return stack</i>, each stack contains 256 bytes. Here are some stack
 primitives assuming the initial state of the stack is <code>a b c</code> where
 <code>c</code> is the top of the stack: </p>
@@ -218,9 +218,7 @@ RST 00 00 00 00 00 00 00|56 <01
 
 <p>The program above contains 12 and 34 on the working stack, and 56 on the
 return stack. The stack content can always be printed by sending a non-null
-byte to the <a href='varvara.html#system'>System/debug</a> port.</p>
-
-
+byte to the <a href='varvara.html#system'>System/debug</a> port. To see all permutations of the stack primitives, see <a href='uxntal_stacking.html'>Stacking</a>.</p>
 <h2>Uxntal Notation</h2>
 
 <p>The stack-effect notation follows that of the <a href='forth.html'>Forth</a>
@@ -311,7 +309,7 @@ things like grouping behaviors, joining literals or indicating lookup tables.</p
 <h2>Uxntal Numbers</h2>
 
 <p>Uxntal uses <b>only</b> lowercase unsigned <a
-href='hexadecimal.html'>hexadecimal numbers</a>. There are different types of
+href='hexadecimal.html'>hexadecimal numbers</a>, for signed numbers, see <a href='uxntal_signed.html'>Uxntal Signed</a>. There are different types of
 numbers:</p>
 
 <ul>
@@ -495,16 +493,18 @@ multiple members of a struct, a value can be specified as follow:</p>
 <p>Uxntal objects are defined statically and allow for the enclosed methods to
 access encapsulated local <kbd>&members</kbd>. The example below contains an
 object with the method <kbd>set-color</kbd>, accessible from outside the scope
-as <kbd>pen/set-color</kbd>.</p>
+as <kbd>pen/set-color</kbd>. To learn more, see <a href='uxntal_doors.html'>Uxntal Doors</a>.</p>
 
 <pre>
 <b>@pen</b>
 	&position &x $2 &y $2
-	&color $1
 
-&set-color <i>( color -- )</i>
-	,/color STR
-	JMP2r
+	&set-color <i>( color -- )</i>
+		,/color STR
+		JMP2r
+
+<b>@pen/get-color</b> <i>( -- color )</i>
+	LIT &color $1 JMP2r
 </pre>
 
 <p>New methods and members can extend an existing scope from anywhere by creating
