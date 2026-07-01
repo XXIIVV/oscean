@@ -4,6 +4,7 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |0050 @Varvara/version
 
 |000
@@ -41,22 +42,22 @@
 @|Project )
 
 @project/load ( -- )
-	;&path .File/name DEO2
-	#0001 .File/length DEO2
-	[ LIT2 80 -System/state ] DEO
+	;&path .File2/name DEO2
+	#0001 .File2/length DEO2
+	#0000 .Console/vector DEO2
 	#00
 	&>w
 		src/<reset>
 		#20
 		&>src
-			;&src .File/read DEO2
-			.File/success-lb DEI ?{ POP JMP2r }
+			;&src .File2/read DEO2
+			.File2/success-lb DEI ?{ POP JMP2r }
 			[ LIT &src $1 ] GTHk ?{ src/<push> !/>src }
 		POP2 dst/<reset>
 		#20
 		&>dst
-			;&dst .File/read DEO2
-			.File/success-lb DEI ?{ POP JMP2r }
+			;&dst .File2/read DEO2
+			.File2/success-lb DEI ?{ POP JMP2r }
 			[ LIT &dst $1 ] GTHk ?{ dst/<push> !/>dst }
 		POP2 assembly/<start>
 		POP #01 !/>w
@@ -73,7 +74,7 @@
 	JMP2r
 
 @src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-generic> }
+	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
 	INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -97,7 +98,7 @@
 	JMP2r
 
 @dst/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-generic> }
+	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
 	INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -206,13 +207,9 @@
 	JMP2r
 
 @info/<error-path> ( buf* -- )
-	;dict/exceeded SWP2 ;dict/path
-	( >> )
-
-@info/<error-generic> ( adj* keyword* topic* -- )
 	error/<set>
-	/<print-ws>
-	SWP2 /<print>
+	;dict/path /<print>
+	;dict/exceeded /<print-ws>
 	;dict/spacer /<print>
 	/<print>
 	#0a
@@ -333,7 +330,7 @@
 @token/<push-byte> ( c -- )
 	DUP #20 GTH ?{
 		;&buf assembly/apply #0a NEQ ?/<new>
-		[ LIT2 &line $2 ] INC2 ,&line STR2 !/<new> }
+		[ LIT2 &line 0001 ] INC2 ,&line STR2 !/<new> }
 	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
@@ -576,9 +573,10 @@
 	str/len INC STH
 	,&ptr LDR2 ;&mem
 	&>lfn
-		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
-			INC2k [ LIT2 &name $2 ] str/cmp ?/found }
-		POP2 /next-sym GTH2k ?/>lfn
+		EQU2k ?{
+			DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
+				INC2k [ LIT2 &name $2 ] str/cmp ?/found }
+			POP2 /next-sym !/>lfn }
 	POP2 POP2 #ffff POPr JMP2r
 
 	&found ( to* from* . len -- sym* )
@@ -887,7 +885,6 @@
 	&too-far "too 20 "far 00
 	&zero-page "zero-page 00
 	&open "open 00
-	&trail ".. 00
 	&reset "Top 00
 
 (

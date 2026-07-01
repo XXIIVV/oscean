@@ -167,7 +167,7 @@
 @token/<push-byte> ( c -- )
 	DUP #20 GTH ?{
 		;&buf assembly/apply #0a NEQ ?/<new>
-		[ LIT2 &line $2 ] INC2 ,&line STR2 !/<new> }
+		[ LIT2 &line 0001 ] INC2 ,&line STR2 !/<new> }
 	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
@@ -410,9 +410,10 @@
 	str/len INC STH
 	,&ptr LDR2 ;&mem
 	&>lfn
-		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
-			INC2k [ LIT2 &name $2 ] str/cmp ?/found }
-		POP2 /next-sym GTH2k ?/>lfn
+		EQU2k ?{
+			DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
+				INC2k [ LIT2 &name $2 ] str/cmp ?/found }
+			POP2 /next-sym !/>lfn }
 	POP2 POP2 #ffff POPr JMP2r
 
 	&found ( to* from* . len -- sym* )
@@ -721,7 +722,6 @@
 	&too-far "too 20 "far 00
 	&zero-page "zero-page 00
 	&open "open 00
-	&trail ".. 00
 	&reset "Top 00
 
 (

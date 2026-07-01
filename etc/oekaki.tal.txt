@@ -47,10 +47,40 @@
 	( ) "Oekaki 0a
 	( ) "Drawing 20 "Program 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "15 20 "June 20 "2026 00
-	( . ) 02
+	( ) "30 20 "June 20 "2026 00
+	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat ( . )
+	_{ =dict/oekaki
+	( ) 01 "n =<make-file> 0000
+	( ) 01 "s =<save-file> 0000
+	( ) 01 "o =<open-file> 0000
+	( ) 01 "v =<paste-snarf> 0000
+	( ) 01 "q =<quit> 0000 }
+	_{ =dict/tool
+	( ) 00 "1 =brush/<set-color1> 0000
+	( ) 00 "2 =brush/<set-color2> 0000
+	( ) 00 "3 =brush/<set-color3> 0000
+	( ) 00 "4 =brush/<set-color4> 0000
+	( ) 00 "q =brush/<set-shape0> 0000
+	( ) 00 "w =brush/<set-shape2> 0000
+	( ) 00 "e =brush/<set-shape4> 0000
+	( ) 00 "r =brush/<set-shape6> 0000
+	( ) 00 "n =brush/<change-nature> 0000
+	( ) 00 "[ =brush/<set-shape-dec> 0000
+	( ) 00 "] =brush/<set-shape-inc> 0000
+	( ) 00 09 =menu/<toggle> 0000
+	( ) 00 08 =<make-file> 0000
+	( ) 00 "h =canvas/<flip-horizontal> 0000
+	( ) 00 1b =canvas/<center> 0000 }
+	00
+
+@<quit> ( -- )
+	#800f DEO
+	JMP2r
 
 %s16/abs ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
@@ -71,41 +101,8 @@
 @|Vectors )
 
 @on-control ( -> )
-	.Controller/button DEI
-	( ) DUP #08 NEQ ?{ menu/<toggle> }
-	#01 AND ?on-control-options
-	.Controller/key DEI
-	( | keys )
-	DUP [ LIT "1 ] NEQ ?{ #00 brush/<set-color> }
-	DUP [ LIT "2 ] NEQ ?{ #01 brush/<set-color> }
-	DUP [ LIT "3 ] NEQ ?{ #02 brush/<set-color> }
-	DUP [ LIT "4 ] NEQ ?{ #03 brush/<set-color> }
-	DUP [ LIT "q ] NEQ ?{ #00 brush/<set-shape> }
-	DUP [ LIT "w ] NEQ ?{ #02 brush/<set-shape> }
-	DUP [ LIT "e ] NEQ ?{ #04 brush/<set-shape> }
-	DUP [ LIT "r ] NEQ ?{ #06 brush/<set-shape> }
-	DUP [ LIT "s ] NEQ ?{ #00 brush/<set-tool> }
-	DUP [ LIT "d ] NEQ ?{ #01 brush/<set-tool> }
-	DUP [ LIT "f ] NEQ ?{ #02 brush/<set-tool> }
-	DUP [ LIT "h ] NEQ ?{ canvas/<flip-horizontal> }
-	DUP [ LIT "n ] NEQ ?{ brush/<change-nature> }
-	DUP #5b NEQ ?{
-		.brush/shape LDZ #01 SUB brush/<set-shape> }
-	DUP #5d NEQ ?{ .brush/shape LDZ INC brush/<set-shape> }
-	DUP #08 NEQ ?{ <make-file> }
-	DUP #09 NEQ ?{ menu/<toggle> }
-	DUP #1b NEQ ?{ canvas/<center> }
-	POP BRK
-
-@on-control-options ( -> )
-	.Controller/key DEI
-	( | handlers )
-	DUP [ LIT "n ] NEQ ?{ <make-file> }
-	DUP [ LIT "s ] NEQ ?{ <save-file> }
-	DUP [ LIT "o ] NEQ ?{ <open-file> }
-	DUP [ LIT "v ] NEQ ?{ <paste-snarf> }
-	DUP [ LIT "q ] NEQ ?{ #010f DEO }
-	POP BRK
+	.Controller/button DEI2 manifest/scan INC2k ORA ?{ POP2 BRK }
+	( * ) JSR2 BRK
 
 @on-mouse ( -> )
 	.menu/hide LDZ ?{
@@ -303,6 +300,25 @@
 	DUP .&tool LDZ NEQ ?{ POP JMP2r }
 	.&tool STZ !menu/<draw>
 
+@brush/<set-shape-dec> ( -- )
+	.&shape LDZ #01 SUB !/<set-shape>
+
+@brush/<set-shape-inc> ( -- )
+	.&shape LDZ INC !/<set-shape>
+
+@brush/<set-shape0> ( -- )
+	#00 !/<set-shape>
+
+@brush/<set-shape2> ( -- )
+	#02 !/<set-shape>
+
+@brush/<set-shape4> ( -- )
+	#04 !/<set-shape>
+
+@brush/<set-shape6> ( -- )
+	#06
+	( >> )
+
 @brush/<set-shape> ( size -- )
 	#28 u8/mod .&shape STZ
 	[ LIT2 00 -&natural ] STZ !menu/<draw>
@@ -310,6 +326,19 @@
 @brush/<set-patt> ( patt -- )
 	DUP .&patt LDZ NEQ ?{ POP JMP2r }
 	.&patt STZ !menu/<draw>
+
+@brush/<set-color1> ( -- )
+	#00 !/<set-color>
+
+@brush/<set-color2> ( -- )
+	#01 !/<set-color>
+
+@brush/<set-color3> ( -- )
+	#02 !/<set-color>
+
+@brush/<set-color4> ( -- )
+	#03
+	( >> )
 
 @brush/<set-color> ( color -- )
 	DUP .&color LDZ NEQ ?{ POP JMP2r }
@@ -959,6 +988,19 @@
 (
 @|stdlib )
 
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
 @mem/<clear> ( src* len* -- )
 	OVR2 ADD2 SWP2
 	&>l
@@ -1014,15 +1056,15 @@
 @|Assets )
 
 @appicon [
-	7bf1 c841 8e9e a4e0 0000 0000 0000 0000
-	9a80 4010 0164 3873 0000 0000 0000 0000
-	0002 0048 8000 c281 0000 0000 0000 0000
-	e2e9 a7df fdf9 ffff 0000 0000 0000 0000
-	7fb1 c2d1 4eee ffef 0000 0000 0000 0000
-	82a3 2e5b 5fff ffee 0000 0000 0000 0000
-	ffff ffff ffff ff7f 0000 0000 0000 0000
-	dffe ffff ffff ffff 0000 0000 0000 0000
-	fdff ffef ffff fffe 0000 0000 0000 0000 ]
+	0000 0007 0810 1011 0000 0000 070f 0f0e
+	0000 0080 6010 1010 0000 0000 80e0 e0e0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1008 0403 0000 0300 0f07 0300 0000 0000
+	2021 c628 3048 8708 c0c0 0000 0000 0000
+	0000 0000 0000 00e0 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0810 1010 1020 0000 0000 0000 0000 0000
+	1000 0000 0000 0000 0000 0000 0000 0000 ]
 
 @nature/icns [
 	0e1f 3b7f fefc f870 0e1f 1b3f 3e78 6080
@@ -1082,9 +1124,11 @@
 
 @state/sprite [ 183c 66c3 c366 3c18 ]
 
-@dict/default "pict40x28.chr $1
-	&chr-ext ".chr $1
-	&snarf-ext ".snarf $1
+@dict/default "pict40x28.chr 00
+	&chr-ext ".chr 00
+	&snarf-ext ".snarf 00
+	&oekaki "Oekaki 00
+	&tool "Tool 00
 
 (
 @|Buffers )
