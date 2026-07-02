@@ -411,16 +411,16 @@ examples.fahrenheit_to_celsius=`( Convert Fahrenheit to Celsius )
 .#c-hd .. .#c .°C`
 examples.gaud=`( Salv ad Gaud, lud de symbol et sac. )
 
-( Inser 1 calcul et 5 num in sac: )
+( Inser un calcul et quinqu num in sac: )
 calcul num^5
 
-( Consum 1 num, ins 1 belar: )
+( Consum un num, ins un belar: )
 belar/num
 
-( Consum 2 num pro teser, quam diu posibil: )
+( Consum du num pro teser dum posibil.. )
 @Teserar ( num -- teser )
     [Teserar teser]/num^2
 
-( Ad fin, imprim resultat: )
-.Computus: .#teser
+( Ad fin, imprim computat. )
+.#teser
 `
