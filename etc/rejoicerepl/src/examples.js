@@ -414,7 +414,7 @@ examples.gaud=`( Salv ad Gaud, lud de symbol et sac. )
 ( Inser un calcul et quinqu num in sac: )
 calcul num^5
 
-( Consum un num, ins un belar: )
+( Consum un num, inser un belar: )
 belar/num
 
 ( Consum du num pro teser dum posibil.. )
