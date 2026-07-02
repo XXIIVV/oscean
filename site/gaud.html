@@ -1,0 +1,229 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property='og:type' content='website'/>
+<meta property='og:site_name' content='XXIIVV'/>
+<meta property='og:description' content="By Devine Lu Linvega"/>
+<meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<link href="../links/main.css" type="text/css" rel="stylesheet">
+<link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<link href="../links/log.xml" type="application/rss+xml" rel="alternate" title="XXIIVV Log" />
+<link href="../links/img.xml" type="application/rss+xml" rel="alternate" title="XXIIVV Img" />
+<meta property="og:title" content="gaud"/>
+<meta property="og:url" content="https://wiki.xxiivv.com/site/gaud.html"/>
+<meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
+<title>XXIIVV &mdash; gaud</title>
+</head>
+<body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
+<nav><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html" class="parent">rejoice</a></li></ul><ul><li><a href="rejoice_devlog.html">rejoice devlog</a></li><li><a href="gaud.html" class="self">gaud</a></li></ul><ul></ul></nav>
+<main><h2>Gaud!</h2>
+
+<p><b>Gaud</b> es lingu <a href='concatenative.html'>concatenativ</a> de programation. Information es codificar ut <i>"sac"</i> de symbols et composition es per multiplication. Operation representar ut fractions ub denominator consum, numerator insert.</p>
+
+<h3>Fundamental</h3>
+
+<ul>
+	<li><b>Stat de program</b>: Sac de symbols sin ordin. <code>[cub con^3]</code> contin un cub et tres cons.</li>
+	<li><b>Symbols</b>: Element de sac, scrib ut numer decimal aut nomin pro <a href='primes.html'>numer prim</a>.<code>[8 sphaer^2]</code> val <code>[2^3 sphaer sphaer]</code>.</li>
+	<li><b>Transformation</b>: Fraction denominator indic consumption et numerator insertion. <code>strix/[fels^2]</code> consum du fels, insert un strix.</li>
+</ul>
+
+<div class='codeview'>
+	<iframe src="../etc/rejoicerepl/index.html#gaud" frameborder="0" class='frame' style='height:450px'></iframe>
+</div>
+
+<p>Evaluation es aplication de fractions in sequent, si denominator es present in sac: consum denominator et insert numerator, aut tent juxt fraction, etc..</p>
+
+<!--
+fel (cat)
+can (dog)
+ran (frog)
+urs (bear)
+-->
+
+<pre>
+[fel can ran^2]       ( Sac hab 1 fel, 1 can et 2 rans )
+[fel can^3]/ran       ( Si sac hab 1 ran, camb pro 1 fel et 3 cans )
+    []/[rana fele^2]  ( Si sac hab 1 ran et 2 fels, tol ils )
+    urso/cane^fele    ( Si sac hab tam mult can quam fel..
+                        .. me camb can in numer de fel pro 1 urs )
+[cane^4 urso]         ( Me reman cum 4 cans et 1 urs )
+</pre>
+
+<p>Program sist si nul fraction aplicabil.</p>
+
+<h3>Logic</h3>
+
+<p>Hic es implementation de logic-port <b>NON</b>.</p>
+<pre>
+fals non
+	ver/[fals non]
+	fals/[ver non]
+</pre>
+<pre style='margin-top:-29px'>
+[fals non] ver/[fals non] fals/[ver non] 
+[ver] fals/[ver non] 
+[ver]
+</pre>
+
+<p>Notar necesitat de symbol vigil <code>aut</code> in implementation de logic-port <b>AUT</b> ob deteg fals:</p>
+<pre>
+x y aut
+	ver/[x y aut]
+	ver/[x aut]
+	ver/[y aut]
+	fals/aut
+</pre>
+<pre style='margin-top:-29px'>
+[x y aut] ver/[x y aut] ver/[x aut] ver/[y aut] fals/aut 
+[ver] ver/[x aut] ver/[y aut] fals/aut 
+[ver] ver/[y aut] fals/aut 
+[ver] fals/aut 
+[ver]
+</pre>
+
+<h3>Met</h3>
+
+<!-- 
+	So, in Latin, a "meta" is the point in a chariot race 
+	where you loop around.. Circuit is for "loop"
+-->
+
+<p>Met symbolos @nomin es special cum position de <i>salt</i> in program. Quand present in sac, evaluation salt ad position. Hic es exempl de circuit simplic:</p>
+
+<pre>
+tempor^5
+
+@Circuit ( tempor -- )
+	Circuit/tempor
+fin
+</pre>
+<pre style='margin-top:-29px'>
+[tempor^5] Circuit/tempor fin
+[tempor^4] Circuit/tempor fin
+[tempor^3] Circuit/tempor fin
+[tempor^2] Circuit/tempor fin
+[tempor] Circuit/tempor fin
+[] Circuit/tempor fin
+[] fin
+[fin]
+</pre>
+
+<p>Per hoc mechanism de circuit, scriber regul que exhaur symbol. Per exempl, hic implementation de comparation major, si x>y ver alio fals:</p>
+<pre>
+x^3 y^2
+
+@Major ( x y -- x y ver|fals )
+	Major/[x y]
+	ver/x Major/x
+	fals/y Major/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^3 y^2] Major/[x y] ver/x Major/x fals/y Major/y 
+[x^2 y] Major/[x y] ver/x Major/x fals/y Major/y 
+[x] Major/[x y] ver/x Major/x fals/y Major/y 
+[x] ver/x Major/x fals/y Major/y 
+[ver] Major/x fals/y Major/y 
+[ver] fals/y Major/y 
+[ver] Major/y 
+[ver] 
+</pre>
+
+<h3>Anonym Met</h3>
+
+<p>Usu de <i>anonym met</i> es mod veloc pro scrib fraction que exhaur. Per exempl, fraction de adition <code>@Ad [x Ad]/y</code> etiam scriber ut <code>'x/y</code>, que indic interpret de crear metanonymo in suo position.</p>
+
+<pre>
+x^3 y^4 'x/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^3 y^4] 'x/y 
+[x^4 y^3] 'x/y 
+[x^5 y^2] 'x/y 
+[x^6 y] 'x/y 
+[x^7] 'x/y 
+[x^7] 
+</pre>
+
+<h3>Arithmetic</h3>
+
+<p>Pro inven diferent inter 2 numer, program consum 1 de singul usqu ad exhaustion, que relinqu <code>x</code> pro event positiv, aut <code>y</code> pro event negativ. Ultim du met exhaur numer aut <code>pos</code> aut <code>neg</code>:</p>
+
+<pre>
+x^2 y^5
+
+@Sub ( x y -- pos|neg )
+	Sub/[x y] 'pos/x 'neg/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^5] Sub/[x y] 'pos/x 'neg/y 
+[x y^4] Sub/[x y] 'pos/x 'neg/y 
+[y^3] Sub/[x y] 'pos/x 'neg/y 
+[y^3] 'pos/x 'neg/y 
+[y^3] 'neg/y 
+[y^2 neg] 'neg/y 
+[y neg^2] 'neg/y 
+[neg^3] 'neg/y 
+[neg^3] 
+</pre>
+
+<p>Hic program plus complex que inven product de 2 numer per usu de met multiplic.</p>
+<pre>
+x^2 y^3
+
+@Mul ( x y -- res )
+	[Mul z res]/y 'y/z Mul/x '1/[y res]
+</pre>
+
+<h3>Intr/Extr</h3>
+
+<p>Symbol iniciat per <kbd>.</kbd> emit ut text et consum subit ex sac. Symbol iniciat per <kbd>.#</kbd> emit numer de instant in sac de symbol specific.</p>
+
+<pre>
+porc^3
+	( vocabul ) .Computat:
+	( numer   ) .#porc
+</pre>
+<pre style='margin-top:-29px'>
+Computat:3</pre>
+
+<h3>HocusPocus</h3>
+<p>In fin, neces implementation de <i>HocusPocus</i>:</p>
+
+<pre>
+tempor^100 f b
+
+@Circuit ( tempor -- )
+	[num f b .HocusPocus\n Circuit]/[tempor f^3 b^5]
+	[num f b .Hocus\n Circuit]/[tempor f^3]
+	[num f b .Pocus\n Circuit]/[tempor b^5]
+	[num f b .#num .\n Circuit]/tempor
+</pre>
+<pre style='margin-top:-29px'>
+1, 2, Hocus, 4, Pocus, Hocus, 7, 8, Hocus, Pocus, 11, Hocus, 13, 14, HocusPocus, 16, 17, ..</pre>
+
+<ul>
+	<li><a href='../etc/rejoice.tal.txt' target='_blank'>Codice</a>, Uxntal.</li>
+	<li><a href='https://git.sr.ht/~rabbits/rejoice' target='_blank'>Repositorio</a>, Uxntal.</li>
+	<li><a href='latin_sin_flexion.html'>Latin Sin Flexion</a></li>
+	<li><a href='https://en.wikipedia.org/wiki/Giuseppe_Peano' target='_blank'>Giusepe Peano</a>, Wikipedia.</li>
+</ul>
+
+<q>[] es nihil, identitat. 
+[]/n es predecesor.<br />
+n es sucesor.</q>
+
+<img src='../media/generic/lsf.png' width='100'/>
+<ul></ul><p><b>incoming: </b><a href="rejoice.html" class="parent">rejoice</a> <a href="2026.html">2026</a> </p></main>
+<footer>
+	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
+	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
+	<a href="devine_lu_linvega.html">Devine Lu Linvega</a> <span> &bull; 2008-2026</span>
+	<div class="right"><a href="about.html#license">BY-NC-SA 4.0</a>
+		<a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.png" alt="CreativeCommons"/></a>
+		<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/rotonde.png" alt="Webring"/></a>
+		<a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.png" alt="Merveilles"/></a>
+	</div>
+	<hr/>
+</footer>
+</body></html>
