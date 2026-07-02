@@ -409,17 +409,18 @@ examples.fahrenheit_to_celsius=`( Convert Fahrenheit to Celsius )
 'c-hd/c^10
 
 .#c-hd .. .#c .°C`
-examples.gaude=`( Salve ad Gaude, ludo de symbolo et sacco. )
+examples.gaud=`( Salv ad Gaud, lud de symbol et sac. )
 
-( Insere 1 calculo et 5 nummo in sacco: )
-calculo nummo^5
+( Inser 1 calcul et 5 num in sac: )
+calcul num^5
 
-( Consume 1 nummo, inse 1 bellaria: )
-bellaria/nummo
+( Consum 1 num, ins 1 belar: )
+belar/num
 
-( Consume 2 nummo pro tessera, quam diu possibile: )
-@Tesserarum ( nummo -- tessera )
-    [Tesserarum tessera]/nummo^2
+( Consum 2 num pro teser, quam diu posibil: )
+@Teserar ( num -- teser )
+    [Teserar teser]/num^2
 
-( Ad fine, imprime resultato: )
-.Computus: .#tessera`
+( Ad fin, imprim resultat: )
+.Computus: .#teser
+`
