@@ -4,7 +4,6 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |0050 @Varvara/version
 
 |000
@@ -24,16 +23,15 @@
 @bind ( vector* -> )
 	.Console/vector DEO2
 	[ LIT2 03 -Console/type ] DEI AND ?{
-		project/load ?{
-			;meta/usage info/<print>
-			[ LIT2 01 -System/state ] DEO } }
+		;meta/usage info/<print>
+		[ LIT2 01 -System/state ] DEO }
 	BRK
 
 @meta $1
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "30 20 "Jun 20 "2026 0a0a
+	( date ) "29 20 "Jun 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -42,31 +40,32 @@
 @|Project )
 
 @project/load ( -- )
-	;&path .File2/name DEO2
-	#0001 .File2/length DEO2
-	#0000 .Console/vector DEO2
-	#00
+	;&path .File/name DEO2
+	#0001 .File/length DEO2
 	&>w
 		src/<reset>
 		#20
 		&>src
-			;&src .File2/read DEO2
-			.File2/success-lb DEI ?{ POP JMP2r }
+			;&src .File/read DEO2
+			.File/success-lb DEI ?{ POP JMP2r }
 			[ LIT &src $1 ] GTHk ?{ src/<push> !/>src }
 		POP2 dst/<reset>
 		#20
 		&>dst
-			;&dst .File2/read DEO2
-			.File2/success-lb DEI ?{ POP JMP2r }
+			;&dst .File/read DEO2
+			.File/success-lb DEI ?{ POP JMP2r }
 			[ LIT &dst $1 ] GTHk ?{ dst/<push> !/>dst }
-		POP2 assembly/<start>
-		POP #01 !/>w
+		POP2 <assemble> !/>w
 
 	&path ".drifblim 00
+
+(
+@|Src )
 
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
 		BRK }
+	( | src -> dst )
 	;dst/on-console !bind
 
 @src/<reset> ( -- )
@@ -74,33 +73,22 @@
 	JMP2r
 
 @src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
-	INCk ,&ptr STR
-	STZ2
+	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+	NEQk ?{ ;dict/exceeded ;&buf ;dict/path info/<error-generic> }
+	NIP STZ
 	JMP2r
 
-@src/<set-str> ( str* -- )
-	/<reset>
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push>
-		INC2 !/>w
-
-@dst/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
-		BRK }
-	[ LIT2 80 -System/state ] DEO
-	assembly/<start>
-	BRK
+(
+@|Dst )
 
 @dst/<reset> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
 	JMP2r
 
 @dst/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
-	INCk ,&ptr STR
-	STZ2
+	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+	NEQk ?{ ;dict/exceeded ;&buf ;dict/path info/<error-generic> }
+	NIP STZ
 	JMP2r
 
 @dst/<push-str> ( str* -- )
@@ -108,50 +96,56 @@
 	/<push>
 	INC2 !/<push-str>
 
+@dst/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
+		BRK }
+	<assemble>
+	BRK
+
 (
 @|Fills )
 
-@lambda/<reset> ( -- )
-	;&mem ;&+ptr STA2
-	#0000 ;&+count STA2
-	JMP2r
-
-@macros/<reset> ( -- )
-	;&mem ;&+ptr STA2
-	JMP2r
-
-@rom/<reset> ( -- )
-	;&mmu-wipe .System/expansion DEO2
-	#0100 ;&boundary STA2
-	#0100 !/<set-head>
-
-	&mmu-wipe [ 00 ff00 0001 0000 00 ]
-
-@refs/<reset> ( -- )
-	;&mem ;&+ptr STA2
-	JMP2r
-
-@syms/<reset> ( -- )
-	;&mem ;&ptr STA2
-	JMP2r
-
-@assembly/<start> ( -- )
-	rom/<reset>
-	refs/<reset>
-	syms/<reset>
-	lambda/<reset>
-	macros/<reset>
-	standard/<latch>
-	/<init>
-	token/<stream>
-	error/get ?/<fail>
-	/<resolve>
-	error/get ?/<fail>
-	JMP2r
-
-@assembly/<fail> ( -- )
+@<assemble> ( -- )
+	assembly/<init>
+	;src/buf assembly/<handle-file>
+	assembly/<resolve>
+	error/get ?{
+		[ LIT2 80 -System/state ] DEO
+		JMP2r }
 	[ LIT2 01 -System/state ] DEO
 	JMP2r
+
+@info/<error-generic> ( adj* keyword* topic* -- )
+	error/<set>
+	/<print-ws>
+	SWP2 /<print>
+	;dict/spacer /<print>
+	/<print>
+	#0a !/<emit>
+
+@info/<emit> ( c -- )
+	#19 DEO
+	JMP2r
+
+@runes/concat INC2
+	( >> )
+
+@assembly/<handle-file> ( f* -- )
+	DUP2 ;src/buf EQU2 ?{
+		src/<reset>
+		DUP2 ;src/<push> for-each #00 src/<push> }
+	.File/name DEO2
+	#0001 .File/length DEO2
+	token/<new>
+	#0000
+	&>s
+		error/get ?/end
+		;&c .File/read DEO2
+		.File/success-lb DEI ?{
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/file info/<error-generic> }
+			&end ( i* -- )
+			POP2 #0a !token/<push-byte> }
+		INC2 [ LIT &c $1 ] token/<push-byte> !/>s
 
 @rom/<put> ( byte addr* -- )
 	,&dst STR2
@@ -166,7 +160,7 @@
 	;dict/assembled info/<print-ws>
 	;dst/buf info/<print>
 	;dict/in info/<print>
-	;&boundary LDA2 DUP2 #00ff SUB2 info/<pdec>
+	;head/boundary LDA2 DUP2 #00ff SUB2 info/<pdec>
 	;dict/bytes info/<print>
 	( | emit rom )
 	;dst/buf .File/name DEO2
@@ -189,35 +183,6 @@
 		INC2 DUP2 .File/write DEO2
 		STH2r ADD2 GTH2k ?/>les
 	POP2 POP2 JMP2r
-
-@runes/concat ( str* -- )
-	INC2 src/<set-str>
-	( >> )
-
-@token/<stream> ( -- )
-	;src/buf .File/name DEO2
-	#0001 DUP2 .File/length DEO2
-	;&line STA2
-	/<new>
-	&>s
-		error/get ?{
-			;&c .File/read DEO2
-			.File/success-lb DEI ?{ #0a !/<push-byte> }
-			[ LIT &c $1 ] /<push-byte> !/>s }
-	JMP2r
-
-@info/<error-path> ( buf* -- )
-	error/<set>
-	;dict/path /<print>
-	;dict/exceeded /<print-ws>
-	;dict/spacer /<print>
-	/<print>
-	#0a
-	( >> )
-
-@info/<emit> ( c -- )
-	#19 DEO
-	JMP2r
 
 @dict/path "Path 00
 	&file "File 00
@@ -248,7 +213,7 @@
 	[ LIT2 &+mode =standard/assemble ] JMP2
 
 (
-@|Modes )
+@|Standard )
 
 @standard/<latch> ( -- )
 	;&assemble !assembly/<set>
@@ -263,6 +228,9 @@
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
+(
+@|Comment )
+
 @comment/<latch> ( t* -- )
 	POP2 [ LIT2 01 _&+depth ] STR
 	;&assemble !assembly/<set>
@@ -274,6 +242,9 @@
 	( . ) STHkr LITr _&+depth STRr
 	?{ !standard/<latch> }
 	JMP2r
+
+(
+@|Macros )
 
 @macros/<latch> ( t* -- )
 	name/validate /<push-word>
@@ -389,10 +360,10 @@
 	/req-name !macros/<latch>
 
 	&padabs ( t* -- )
-	/req-name syms/find-addr !rom/<set-head>
+	/req-name syms/find-addr !head/<set>
 
 	&padrel ( t* -- )
-	/req-name syms/find-addr !rom/<set-head-rel>
+	/req-name syms/find-addr !head/<set-rel>
 
 	&toplab ( t* -- )
 	/req-name !scope/<set>
@@ -478,7 +449,7 @@
 @|Lambda )
 
 @lambda/make-name ( token* -- name* )
-	POP2 [ LIT2 &+count $2 ] INC2k ,&+count STR2
+	POP2 [ LIT2 &count $2 ] INC2k ,&count STR2
 	DUP2 [ LIT2 &+ptr =&mem ] INC2k INC2 ,&+ptr STR2
 	STA2
 	( >> )
@@ -543,10 +514,10 @@
 @syms/<new> ( name* -- )
 	/find-name INC2k ORA ?{
 		POP2 ;&ptr LDA2 refs/<record-scope>
-		.SymType/declared rom/get-head !/<push-sym> }
+		.SymType/declared head/get !/<push-sym> }
 	( | name* sym* -- )
 	NIP2 DUP2 refs/<record-scope>
-	/is-declared ?{ rom/get-head OVR2 STA2 !/<declare> }
+	/is-declared ?{ head/get OVR2 STA2 !/<declare> }
 	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !info/<error-token>
 
@@ -573,10 +544,9 @@
 	str/len INC STH
 	,&ptr LDR2 ;&mem
 	&>lfn
-		EQU2k ?{
-			DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
-				INC2k [ LIT2 &name $2 ] str/cmp ?/found }
-			POP2 /next-sym !/>lfn }
+		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
+			INC2k [ LIT2 &name $2 ] str/cmp ?/found }
+		POP2 /next-sym GTH2k ?/>lfn
 	POP2 POP2 #ffff POPr JMP2r
 
 	&found ( to* from* . len -- sym* )
@@ -632,7 +602,7 @@
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
 	name/unpack syms/find-alloc syms/is-declared ?{
-		DUP2 rom/get-head
+		DUP2 head/get
 		( addr* ) /<push-short>
 		( symbol* ) /<push-short>
 		( type-fn* ) [ LIT2 &type $2 ] /<push-short>
@@ -663,10 +633,10 @@
 @refs/get-rel ( label* -- distance )
 	;&handle-rel /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head /get-distance syms/byte-distance NIP JMP2r
+	head/get /get-distance syms/byte-distance NIP JMP2r
 
 @refs/get-rel2 ( label* -- distance* )
-	;&handle-rel2 /get-type rom/get-head
+	;&handle-rel2 /get-type head/get
 	( >> )
 
 @refs/get-distance ( a* b* -- distance* )
@@ -682,7 +652,7 @@
 	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
-	LDA2k rom/<set-head>
+	LDA2k head/<set>
 	( ref* sym* ) INC2k INC2 LDA2 syms/is-defined ?{
 		( ! ) ;dict/invalid !info/<error-resolution> }
 	( ref* sym/addr* ) LDA2 JMP2r
@@ -737,22 +707,26 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	[ LIT2 &head 0100 ] INC2k ,&head STR2
-	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
+	head/get-inc
 	( | test zero-page )
 	OVR ?/<put>
 	POP2 POP
 	( ! ) ;dict/zero-page ;dict/Writing !info/<error-token>
 
-@rom/get-head ( -- addr* )
-	,&head LDR2 JMP2r
+@head/get-inc ( -- addr* )
+	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
+	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
+	JMP2r
 
-@rom/<set-head-rel> ( addr* -- )
-	/get-head ADD2
+@head/get ( -- addr* )
+	,&addr LDR2 JMP2r
+
+@head/<set-rel> ( addr* -- )
+	/get ADD2
 	( >> )
 
-@rom/<set-head> ( addr* -- )
-	,&head STR2
+@head/<set> ( addr* -- )
+	,&addr STR2
 	JMP2r
 
 (
@@ -885,6 +859,7 @@
 	&too-far "too 20 "far 00
 	&zero-page "zero-page 00
 	&open "open 00
+	&trail ".. 00
 	&reset "Top 00
 
 (

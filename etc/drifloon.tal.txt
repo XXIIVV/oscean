@@ -44,7 +44,7 @@
 @rom/<emit> ( -- )
 	;dict/assembled info/<print>
 	;dict/in info/<print>
-	;&boundary LDA2 DUP2 #00ff SUB2 info/<pdec>
+	;head/boundary LDA2 DUP2 #00ff SUB2 info/<pdec>
 	;dict/bytes info/<print>
 	( | write )
 	;&mem INC2 ADD2 ;&output
@@ -85,7 +85,7 @@
 	[ LIT2 &+mode =standard/assemble ] JMP2
 
 (
-@|Modes )
+@|Standard )
 
 @standard/<latch> ( -- )
 	;&assemble !assembly/<set>
@@ -100,6 +100,9 @@
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
+(
+@|Comment )
+
 @comment/<latch> ( t* -- )
 	POP2 [ LIT2 01 _&+depth ] STR
 	;&assemble !assembly/<set>
@@ -111,6 +114,9 @@
 	( . ) STHkr LITr _&+depth STRr
 	?{ !standard/<latch> }
 	JMP2r
+
+(
+@|Macros )
 
 @macros/<latch> ( t* -- )
 	name/validate /<push-word>
@@ -226,10 +232,10 @@
 	/req-name !macros/<latch>
 
 	&padabs ( t* -- )
-	/req-name syms/find-addr !rom/<set-head>
+	/req-name syms/find-addr !head/<set>
 
 	&padrel ( t* -- )
-	/req-name syms/find-addr !rom/<set-head-rel>
+	/req-name syms/find-addr !head/<set-rel>
 
 	&toplab ( t* -- )
 	/req-name !scope/<set>
@@ -315,7 +321,7 @@
 @|Lambda )
 
 @lambda/make-name ( token* -- name* )
-	POP2 [ LIT2 &+count $2 ] INC2k ,&+count STR2
+	POP2 [ LIT2 &count $2 ] INC2k ,&count STR2
 	DUP2 [ LIT2 &+ptr =&mem ] INC2k INC2 ,&+ptr STR2
 	STA2
 	( >> )
@@ -380,10 +386,10 @@
 @syms/<new> ( name* -- )
 	/find-name INC2k ORA ?{
 		POP2 ;&ptr LDA2 refs/<record-scope>
-		.SymType/declared rom/get-head !/<push-sym> }
+		.SymType/declared head/get !/<push-sym> }
 	( | name* sym* -- )
 	NIP2 DUP2 refs/<record-scope>
-	/is-declared ?{ rom/get-head OVR2 STA2 !/<declare> }
+	/is-declared ?{ head/get OVR2 STA2 !/<declare> }
 	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !info/<error-token>
 
@@ -410,10 +416,9 @@
 	str/len INC STH
 	,&ptr LDR2 ;&mem
 	&>lfn
-		EQU2k ?{
-			DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
-				INC2k [ LIT2 &name $2 ] str/cmp ?/found }
-			POP2 /next-sym !/>lfn }
+		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
+			INC2k [ LIT2 &name $2 ] str/cmp ?/found }
+		POP2 /next-sym GTH2k ?/>lfn
 	POP2 POP2 #ffff POPr JMP2r
 
 	&found ( to* from* . len -- sym* )
@@ -469,7 +474,7 @@
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
 	name/unpack syms/find-alloc syms/is-declared ?{
-		DUP2 rom/get-head
+		DUP2 head/get
 		( addr* ) /<push-short>
 		( symbol* ) /<push-short>
 		( type-fn* ) [ LIT2 &type $2 ] /<push-short>
@@ -500,10 +505,10 @@
 @refs/get-rel ( label* -- distance )
 	;&handle-rel /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head /get-distance syms/byte-distance NIP JMP2r
+	head/get /get-distance syms/byte-distance NIP JMP2r
 
 @refs/get-rel2 ( label* -- distance* )
-	;&handle-rel2 /get-type rom/get-head
+	;&handle-rel2 /get-type head/get
 	( >> )
 
 @refs/get-distance ( a* b* -- distance* )
@@ -519,7 +524,7 @@
 	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
-	LDA2k rom/<set-head>
+	LDA2k head/<set>
 	( ref* sym* ) INC2k INC2 LDA2 syms/is-defined ?{
 		( ! ) ;dict/invalid !info/<error-resolution> }
 	( ref* sym/addr* ) LDA2 JMP2r
@@ -574,22 +579,26 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	[ LIT2 &head 0100 ] INC2k ,&head STR2
-	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
+	head/get-inc
 	( | test zero-page )
 	OVR ?/<put>
 	POP2 POP
 	( ! ) ;dict/zero-page ;dict/Writing !info/<error-token>
 
-@rom/get-head ( -- addr* )
-	,&head LDR2 JMP2r
+@head/get-inc ( -- addr* )
+	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
+	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
+	JMP2r
 
-@rom/<set-head-rel> ( addr* -- )
-	/get-head ADD2
+@head/get ( -- addr* )
+	,&addr LDR2 JMP2r
+
+@head/<set-rel> ( addr* -- )
+	/get ADD2
 	( >> )
 
-@rom/<set-head> ( addr* -- )
-	,&head STR2
+@head/<set> ( addr* -- )
+	,&addr STR2
 	JMP2r
 
 (
@@ -722,6 +731,7 @@
 	&too-far "too 20 "far 00
 	&zero-page "zero-page 00
 	&open "open 00
+	&trail ".. 00
 	&reset "Top 00
 
 (
