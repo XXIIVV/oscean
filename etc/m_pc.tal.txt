@@ -46,7 +46,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "29 20 "Jun 20 "2026 00
+	( date ) "6 20 "Jul 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -646,6 +646,25 @@
 	( | Handlers )
 	DUP2 /<push-folders> !/<push-files>
 
+@dir/find-wallpaper ( -- size* )
+	;dict/home-path .File/name DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/read DEO2
+	/<explode>
+	;&buf
+	&>w
+		DUP2 #0009 ;dict/wallpaper mem/cmp ?{
+			str/cap INC2 LDAk ?/>w
+		POP2 #ffff }
+	JMP2r
+
+@dir/<explode> ( -- )
+	;&buf
+	&>we
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#1f GTH ?{ LITr 00 STH2k STAr }
+		INC2 !/>we
+
 @dir/<push-folders> ( length* -- )
 	;&buf ADD2 ;&buf
 	&>lfo
@@ -1174,9 +1193,10 @@
 	.Screen/height DEI2 DUP2 #01 SFT2 ,&middle STR2
 	#03 SFT2 ,&rows STR2
 	( | Load wallpaper )
-	/get-cols hex/chr2 ,&w STR2
-	POP /get-rows hex/chr2 ,&h STR2
-	POP ;&path #03 !icn/<draw>
+	dir/find-wallpaper INC2k ORA ?{ POP2 JMP2r }
+	#0009 ADD2 LDA2k ,&w STR2
+	#0003 ADD2 LDA2 ,&h STR2
+	;&path #03 !icn/<draw>
 
 	&get-center [ LIT2 &center $2 ] JMP2r
 
@@ -1593,6 +1613,7 @@
 	&sel-pick "Pick 20 "Selection 00
 	&clear "Clear 20 "Input 00
 	&directory "Directory 00
+	&wallpaper "wallpaper 00
 	&input "Input 00
 	&eval "Run 00
 	&eof "eof 00
@@ -1635,8 +1656,6 @@
 	&days [
 	"Sun $1 "Mon $1 "Tue $1 "Wed $1
 	"Thu $1 "Fri $1 "Sat $1 ]
-
-( Assets )
 
 @window/wave [ 0000 0000 0070 8807 ]
 
@@ -1863,3 +1882,4 @@
 @bios/buf $&buflen &cap 0000
 
 @dict/buf
+

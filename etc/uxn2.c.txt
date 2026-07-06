@@ -162,7 +162,7 @@ static void console_deo_lb(void) { fprintf(stderr, "%02x", dev[0x1b]); }
 @|Screen ------------------------------------------------------------ */
 
 #define screen_zoom 1
-static int emu_zoom = 1;
+static int emu_zoom = 1, emu_full = 0;
 
 static int screen_reqsize, screen_reqdraw;
 static int screen_width, screen_height, screen_wmar2, screen_hmar2;
@@ -931,7 +931,7 @@ static Uint8 datetime_dei_dst(void) { datetime_update(); return datetime_t->tm_i
 /*
 @|Core -------------------------------------------------------------- */
 
-static int fullscreen, borderless;
+static int borderless;
 static SDL_Window *emu_window;
 static SDL_Texture *emu_texture;
 static SDL_Renderer *emu_renderer;
@@ -1155,8 +1155,8 @@ static void
 set_fullscreen(int value, int win)
 {
 	Uint32 flags = 0;
-	fullscreen = value;
-	if(fullscreen)
+	emu_full = value;
+	if(emu_full)
 		flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	if(win)
 		SDL_SetWindowFullscreen(emu_window, flags);
@@ -1165,7 +1165,7 @@ set_fullscreen(int value, int win)
 static void
 set_borderless(int value)
 {
-	if(fullscreen) return;
+	if(emu_full) return;
 	borderless = value;
 	SDL_SetWindowBordered(emu_window, !value);
 }
@@ -1273,7 +1273,7 @@ emu_event(void)
 			else if(event.key.keysym.sym == SDLK_F5)
 				emu_restart(1);
 			else if(event.key.keysym.sym == SDLK_F11)
-				set_fullscreen(!fullscreen, 1);
+				set_fullscreen(!emu_full, 1);
 			else if(event.key.keysym.sym == SDLK_F12)
 				set_borderless(!borderless);
 			ksym = event.key.keysym.sym;
@@ -1342,7 +1342,7 @@ emu_init(void)
 	SDL_SetRenderDrawColor(emu_renderer, 0x00, 0x00, 0x00, 0xff);
 	/* Window */
 	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
-	if(fullscreen)
+	if(emu_full)
 		window_flags = window_flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
 	emu_window = SDL_CreateWindow("Uxn2",
 		SDL_WINDOWPOS_UNDEFINED,
@@ -1398,15 +1398,20 @@ int
 main(int argc, char **argv)
 {
 	int i = 1;
+	if(argc == 1)
+		return !fprintf(stdout, "usage: %s -v | [-f -2] file.rom [args..]\n", argv[0]);
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 26 Jun 2026.\n", argv[0]);
-	else if(argc == 1)
-		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
-	else if(!system_boot(argv[i++], argc > 2))
-		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
+		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 6 Jul 2026.\n", argv[0]);
+	/* Arguments */
+	if(i < argc && argv[i][0] == '-' && argv[i][1] == 'f')
+		emu_full = 1, i++;
+	if(i < argc && argv[i][0] == '-' && argv[i][1] == '2')
+		emu_zoom = 2, i++;
+	if(!system_boot(argv[i], argc > i))
+		return !fprintf(stdout, "Could not load %s.\n", argv[i]);
 	screen_resize(WIDTH, HEIGHT);
 	if(uxn_eval(0x100) && console_vector) {
-		for(; i < argc; i++) {
+		for(++i; i < argc; i++) {
 			char *p = argv[i];
 			while(*p)
 				console_input(*p++, CONSOLE_ARG);

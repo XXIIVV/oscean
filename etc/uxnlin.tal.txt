@@ -27,13 +27,13 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "16 20 "June 20 "2026 $2
+	( date ) "6 20 "July 20 "2026 $2
 
 (
 @|Source )
 
 @src/on-console ( -> )
-	[ LIT2 03 -Console/type ] DEI GTH ?{ <lint>
+	[ LIT2 03 -Console/type ] DEI GTH ?{ /<stream>
 		#800f DEO
 		BRK }
 	.Console/read DEI /<push>
@@ -51,6 +51,17 @@
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
+
+@src/<stream> ( -- )
+	;dict/default-scope scope/<set>
+	;&buf .File/name DEO2
+	#0001 .File/length DEO2
+	;&c .File/read
+	&>s
+		DEO2k .File/succ-lb DEI ?{ POP2 POP !<print-summary> }
+		[ LIT &c $1 ] DUP #0a NEQ ?{
+			.stats/lines LDZ2k INC2 ROT STZ2 }
+		piece-a/handle-char !/>s
 
 (
 @|Scope )
@@ -81,25 +92,18 @@
 (
 @|core )
 
-@<lint> ( -- )
-	;dict/default-scope scope/<set>
-	;src/buf .File/name DEO2
-	#0001 .File/length DEO2
-	;&c .File/read
-	&>s
-		DEO2k .File/succ-lb DEI ?{ POP2 POP !<print-summary> }
-		[ LIT &c $1 ] walk !/>s
+@piece-a/handle-char ( c -- )
+	DUP #20 GTH ?/<push>
+	POP
+	( | Parse )
+	;&buf LDAk ?{ POP2 JMP2r }
+	DUP2 parse-token ,&ptr STR2
+	#0000 ;&buf STA2
+	JMP2r
 
-@walk ( char -- )
-	DUP #0a NEQ ?{
-		.stats/lines LDZ2k INC2 ROT STZ2 }
-	DUP #20 GTH ?/append
-	POP ;piece-a/buf LDAk ?parse-token
-	POP2 JMP2r
-
-	&append ( char -- )
-	;piece-a/buf str/len NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
-	#00 ;piece-a/buf str/cap STA2
+@piece-a/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
 	JMP2r
 
 @walk-comment ( t* -- )
@@ -1134,6 +1138,8 @@
 	"STHkr $1 "{2} $1 "STA* $1 =eagerstack
 	"STH2kr $1 "{2} $1 "STA2* $1 =eagerstack
 	"STHkr $1 "{1} $1 "SWP $1 =eagerstack
+	"STH2k $1 "{1} $1 "STH2r $1 =eagerstack
+	"STHk $1 "{1} $1 "STHr $1 =eagerstack
 	( loading in wrong stack )
 	"{2} $1 "LDA $1 "STH $1 =eagerstack
 	"{1} $1 "LDZ $1 "STH $1 =eagerstack
@@ -1165,9 +1171,9 @@
 (
 @|Buffers )
 
-@piece-a/buf $1 &buf+1 $30
-@piece-b/buf $1 &buf+1 $30
-@piece-c/buf $1 &buf+1 $30
+@piece-a/buf $1 &buf+1 $50
+@piece-b/buf $1 &buf+1 $50
+@piece-c/buf $1 &buf+1 $50
 @name/buf $100
 
 @macros/mem $2000
