@@ -18,22 +18,16 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;src/on-console
-	( >> )
-
-@bind ( vector* -> )
-	.Console/vector DEO2
-	[ LIT2 03 -Console/type ] DEI AND ?{
-		project/load ?{
-			;meta/usage info/<print>
-			[ LIT2 01 -System/state ] DEO } }
+	;project/on-console .Console/vector DEO2
+	.Console/type ?{ ;meta/usage info/<print> }
+	project/<load>
 	BRK
 
 @meta $1
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "5 20 "Jul 20 "2026 0a0a
+	( date ) "6 20 "Jul 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -41,39 +35,35 @@
 (
 @|Project )
 
-@project/load ( -- )
+@project/on-console ( -> )
+	.Console/read DEI /<read-char>
+	#04 .Console/type DEI NEQ ?{
+		[ LIT2 80 -System/state ] DEO }
+	BRK
+
+@project/<read-char> ( c -- )
+	DUP #21 LTH ?{
+		[ LIT2 &fn =src/<push> ] JMP2 }
+	[ LIT2 00 &f $1 ] EQU DUP ,&f STR
+	?{
+		;src/<push> ,&fn STR2
+		assembly/<start> !src/<reset> }
+	;dst/<push> ,&fn STR2 !dst/<reset>
+
+@project/<load> ( -- )
 	;&path .File2/name DEO2
 	#0001 .File2/length DEO2
-	#0000 .Console/vector DEO2
-	#00
 	&>w
-		src/<reset>
-		#20
-		&>src
-			;&src .File2/read DEO2
-			.File2/success-lb DEI ?{ POP JMP2r }
-			[ LIT &src $1 ] GTHk ?{ src/<push> !/>src }
-		POP2 dst/<reset>
-		#20
-		&>dst
-			;&dst .File2/read DEO2
-			.File2/success-lb DEI ?{ POP JMP2r }
-			[ LIT &dst $1 ] GTHk ?{ dst/<push> !/>dst }
-		POP2 assembly/<start>
-		POP #01 !/>w
+		;&c .File2/read DEO2
+		.File2/success-lb DEI ?{ JMP2r }
+		#0000 .Console/vector DEO2
+		[ LIT &c $1 ] /<read-char> !/>w
 
 	&path ".drifblim 00
 
-(
-@|Src )
-
-@src/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
-		BRK }
-	;dst/on-console !bind
-
 @src/<reset> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
 @src/<set> ( str* -- )
@@ -81,24 +71,20 @@
 	;&<push> !for-each
 
 @src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
+	[ LIT2 00 &ptr -&buf ]
+	( clamp ) DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
 	INCk ,&ptr STR
 	STZ2
 	JMP2r
 
-@dst/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
-		BRK }
-	[ LIT2 80 -System/state ] DEO
-	assembly/<start>
-	BRK
-
 @dst/<reset> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
 @dst/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
+	[ LIT2 00 &ptr -&buf ]
+	( clamp ) DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
 	INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -116,21 +102,17 @@
 
 @macros/<reset> ( -- )
 	;&mem ;&+ptr STA2
+	#0000 ;&mem STA2
 	JMP2r
-
-@rom/<reset> ( -- )
-	;&mmu-wipe .System/expansion DEO2
-	#0100 ;&boundary STA2
-	#0100 !/<set-head>
-
-	&mmu-wipe [ 00 ff00 0001 0000 00 ]
 
 @refs/<reset> ( -- )
 	;&mem ;&+ptr STA2
+	#0000 ;&mem STA2
 	JMP2r
 
 @syms/<reset> ( -- )
 	;&mem ;&ptr STA2
+	#0000 ;&mem STA2
 	JMP2r
 
 @assembly/<start> ( -- )
@@ -141,7 +123,8 @@
 	macros/<reset>
 	standard/<latch>
 	/<init>
-	token/<stream>
+	;src/buf token/<stream>
+	;rom/boundary LDA2 #0100 NEQ2 ?{ ;src/buf info/<error-path> }
 	error/get ?/<fail>
 	/<resolve>
 	error/get ?/<fail>
@@ -150,6 +133,13 @@
 @assembly/<fail> ( -- )
 	[ LIT2 01 -System/state ] DEO
 	JMP2r
+
+@rom/<reset> ( -- )
+	;&mmu-wipe .System/expansion DEO2
+	#0100 ;&boundary STA2
+	#0100 !/<set-head>
+
+	&mmu-wipe [ 00 ff00 0001 0000 00 ]
 
 @rom/<put> ( byte addr* -- )
 	,&dst STR2
@@ -207,7 +197,7 @@
 @info/<error-path> ( buf* -- )
 	error/<set>
 	;dict/path /<print>
-	;dict/exceeded /<print-ws>
+	;dict/invalid /<print>
 	;dict/spacer /<print>
 	/<print>
 	#0a
@@ -217,7 +207,7 @@
 	#19 DEO
 	JMP2r
 
-@dict/path "Path 00
+@dict/path "Path 20 00
 	&sym-ext ".sym 00
 
 
