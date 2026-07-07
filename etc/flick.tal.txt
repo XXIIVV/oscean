@@ -53,7 +53,7 @@
 	( ) "Flick 0a
 	( ) "A 20 "Point-n-click 20 "Engine 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "19 20 "Jun 20 "2026 00
+	( ) "7 20 "Jul 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -61,6 +61,9 @@
 
 @manifest/dat ( . )
 	_{ =dict/flick
+	( - ) 01 "o =project/<read> =dict/read
+	( - ) 01 "s =project/<write> =dict/write }
+	_{ =dict/tools
 	( - ) 10 00 =tool/<prev-type> =dict/prev-type
 	( - ) 20 00 =tool/<next-type> =dict/next-type
 	( - ) 11 00 =tool/<prev-color> =dict/prev-color
@@ -346,7 +349,7 @@
 @scene/<set-mask> ( id* link* -- )
 	DUP2 #0002 LTH2 ?{ POP2 POP2 JMP2r }
 	DUP2 ADD2 ;canvas/masks ADD2 LDA2k ROT2 EOR2 SWP2 STA2
-	project/<write> !/<draw>
+	project/<change> !/<draw>
 
 @scene/<set-link> ( id* link* -- )
 	OVR2 [ LIT2 00 -&id ] LDZ EQU2 ?/<set-time>
@@ -354,16 +357,16 @@
 	;canvas/links ADD2 STH2
 	DUP LDAkr STHr NEQ ?{ POP2 #00ff }
 	STH2r STA
-	POP project/<write> !/<draw>
+	POP project/<change> !/<draw>
 
 @scene/<set-time> ( id* link* -- )
 	POP2 POP2 #00 ;canvas/time LDA EQU ;canvas/time STA
-	project/<write> !/<draw>
+	project/<change> !/<draw>
 
 @scene/<set-timelink> ( id* link* -- )
 	POP2 NIP ;canvas/time LDA ?{ !/<select-force> }
 	.&id LDZ SUB #0f AND ;canvas/time STA
-	project/<write> !/<draw>
+	project/<change> !/<draw>
 
 (
 @|Pane )
@@ -376,7 +379,7 @@
 	BRK
 
 @pane/catch ( x* y* -- x* y* )
-	DUP2 ;&y1 SUB2 #00cf GTH2 ?{
+	DUP2 ;&y1 SUB2 #00ef GTH2 ?{
 		OVR2 ;&x1 SUB2 #0010 GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
@@ -415,7 +418,10 @@
 		INC GTHk ?/>wc
 	POP2
 	( | onionskin )
-	;&onion-icn .tool/onion LDZ !/<draw-button>
+	.Screen/y DEI2k #0011 ADD2 ROT DEO2
+	;&onion-icn .tool/onion LDZ /<draw-button>
+	( | project )
+	!project/<draw>
 
 	&color-icn [
 	0000 0000 030f 0f1f 0000 0000 80e0 e0f0
@@ -445,7 +451,8 @@
 	=tool/<size3> =tool/<size4>
 	=tool/<color1> =tool/<color2>
 	=tool/<color3> =tool/<color4>
-	=tool/<onion> ]
+	=tool/<null> =tool/<onion>
+	=project/<write> =tool/<null> ]
 
 (
 @|Tool )
@@ -509,6 +516,9 @@
 	=cursor/pick-chr =cursor/pen-chr
 	=cursor/link-chr =cursor/wipe-chr ]
 
+@tool/<null> ( -- )
+	JMP2r
+
 (
 @|Canvas )
 
@@ -537,7 +547,7 @@
 		POP2 /<draw>
 		/<draw-preview>
 		BRK }
-	DUP2 #0100 NEQ2 ?{ project/<write> }
+	DUP2 #0100 NEQ2 ?{ project/<change> }
 	POP2 BRK
 
 @canvas/get-addr ( x* y* -- x* y* addr* )
@@ -584,7 +594,7 @@
 				( ) DUP2 STH2kr tool/get-color /<set-pixel> }
 			INC2 GTH2k ?/>horw
 		POP2r POP2 POP2 INC2 GTH2k ?/>verw
-	POP2 POP2 project/<write>
+	POP2 POP2 project/<change>
 	/<draw-preview> !/<draw>
 
 @canvas/<trap> ( -- )
@@ -661,7 +671,7 @@
 	#b6 ;&b STA
 	;&mem ;&memlen mem/<clr>
 	/<draw-preview>
-	project/<write> !scene/<reselect>
+	project/<change> !scene/<reselect>
 
 (
 @|onion )
@@ -714,7 +724,7 @@
 	;scene/length .File/length DEO2
 	;canvas/mem .File/read DEO2
 	canvas/<draw-preview>
-	project/<write> !scene/<reselect>
+	project/<change> !scene/<reselect>
 
 @snarf/<copy-color> ( -- )
 	;&filename .File/name DEO2
@@ -743,7 +753,7 @@
 			;&mmu-ch2 .System/expansion DEO2 }
 		#0010 ADD2 GTH2k ?/>lp
 	POP2 POP2 canvas/<draw-preview>
-	project/<write> !scene/<reselect>
+	project/<change> !scene/<reselect>
 	&buf $8
 	&mmu-ch1 [ 01 0008 0000 =&buf 0000 &ch1-addr $2 ]
 	&mmu-ch2 [ 01 0008 0000 =&buf 0000 &ch2-addr $2 ]
@@ -849,7 +859,8 @@
 		scene/<commit>
 		canvas/<draw-preview>
 		INC GTHk ?/>lr
-	POP2 #00 !scene/<select-static>
+	POP2 #00 /<set-change>
+	#00 !scene/<select-static>
 
 @project/<write> ( -- )
 	scene/<commit>
@@ -861,9 +872,24 @@
 		scene/<pull>
 		;canvas/mem .File/write DEO2
 		INC GTHk ?/>lw
-	POP2 .scene/id STZ !scene/<pull>
+	POP2 #00 /<set-change>
+	.scene/id STZ !scene/<pull>
 
 	&filename "project.flick $1
+
+@project/<change> ( -- )
+	#01
+	( >> )
+
+@project/<set-change> ( -- )
+	DUP [ LIT &changed 00 ] NEQ ?{ POP JMP2r }
+	,&changed STR
+	( >> )
+
+@project/<draw> ( -- )
+	;pane/x1 .Screen/x DEO2
+	#00ef .Screen/y DEO2
+	;&change-icn [ LIT2 00 _&changed ] LDR NEQ !pane/<draw-button>
 
 (
 @|Theme )
@@ -1035,6 +1061,9 @@
 	&incr-size "Increase 20 "Size 00
 	&prev-scene "Previous 20 "Scene 00
 	&next-scene "Next 20 "Scene 00
+	&read "Read 00
+	&write "Write 00
+	&tools "Tools 00
 	&reset "Reset 00
 	&erase "Erase 00
 	&copy "Copy 00
@@ -1074,6 +1103,8 @@
 	8080 8080 4040 300f 0202 0202 0404 18e0
 	000f 3f7f 7fff ffff 00e0 f8fc fcfe fefe
 	ffff ffff 7f7f 3f0f fefe fefe fcfc f8e0 ]
+
+@project/change-icn [ 0010 5438 fe38 5410 ]
 
 @tool/size-icns [
 	0000 0000 1000 0000 0000 0010 3810 0000
