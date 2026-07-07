@@ -74,8 +74,9 @@
 	( - ) 00 08 =canvas/<wipe> =dict/erase }
 	_{ =dict/snarf
 	( - ) 01 "c =snarf/<copy> =dict/copy
+	( - ) 05 "C =snarf/<copy-color> =dict/copy-color
 	( - ) 01 "v =snarf/<paste> =dict/paste
-	( - ) 05 "V =snarf/<paste-icn> =dict/paste-icn
+	( - ) 05 "V =snarf/<paste-color> =dict/paste-color
 	( - ) 01 "x =snarf/<cut> =dict/cut }
 	( ) $1
 
@@ -715,15 +716,37 @@
 	canvas/<draw-preview>
 	project/<write> !scene/<reselect>
 
-@snarf/<paste-icn> ( -- )
+@snarf/<copy-color> ( -- )
 	;&filename .File/name DEO2
 	#0008 .File/length DEO2
+	tool/get-color #31 SFT ,&copy-offset STR
+	;canvas/memcap ;canvas/mem
+	&>lcc
+		DUP2 [ LIT2 00 &copy-offset $1 ] ADD2 .File/write DEO2
+		#0010 ADD2 GTH2k ?/>lcc
+	POP2 POP2 JMP2r
+
+@snarf/<paste-color> ( -- )
+	;&filename .File/name DEO2
+	#0008 .File/length DEO2
+	tool/get-color #03 EOR
+	( 1 ) DUP #01 AND ,&ch1 STR
+	( 2 ) #02 AND ,&ch2 STR
 	;canvas/memcap ;canvas/mem
 	&>lp
-		DUP2 .File/read DEO2
+		;&buf .File/read DEO2
+		[ LIT &ch1 $1 ] ?{
+			DUP2 ,&ch1-addr STR2
+			;&mmu-ch1 .System/expansion DEO2 }
+		[ LIT &ch2 $1 ] ?{
+			DUP2 #0008 ADD2 ,&ch2-addr STR2
+			;&mmu-ch2 .System/expansion DEO2 }
 		#0010 ADD2 GTH2k ?/>lp
 	POP2 POP2 canvas/<draw-preview>
 	project/<write> !scene/<reselect>
+	&buf $8
+	&mmu-ch1 [ 01 0008 0000 =&buf 0000 &ch1-addr $2 ]
+	&mmu-ch2 [ 01 0008 0000 =&buf 0000 &ch2-addr $2 ]
 
 @snarf/<cut> ( -- )
 	/<copy> !canvas/<wipe>
@@ -1016,7 +1039,8 @@
 	&erase "Erase 00
 	&copy "Copy 00
 	&paste "Paste 00
-	&paste-icn "Paste 20 "1-bit 00
+	&copy-color "Copy 20 "Color 00
+	&paste-color "Paste 20 "Color 00
 	&cut "Cut 00
 	&flick "Flick 00
 	&snarf "Edit 00

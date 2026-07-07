@@ -644,7 +644,8 @@
 	path/is-home ?{ ;dict/out-path bios/<push-raw> }
 	.File/success DEI2
 	( | Handlers )
-	DUP2 /<push-folders> !/<push-files>
+	DUP2 /<push-folders>
+	DUP2 /<push-files> !/<push-dotfiles>
 
 @dir/find-wallpaper ( -- size* )
 	;dict/home-path .File/name DEO2
@@ -653,7 +654,7 @@
 	/<explode>
 	;&buf
 	&>w
-		DUP2 #0009 ;dict/wallpaper mem/cmp ?{
+		str/is-wallpaper ?{
 			str/cap INC2 LDAk ?/>w
 		POP2 #ffff }
 	JMP2r
@@ -681,6 +682,13 @@
 		#0005 ADD2 STHr ?{
 			LDAk LIT ". EQU ?{ dict/alloc-line bios/<push-raw> } }
 		str/eol INC2 GTH2k ?/>lfi
+	POP2 POP2 JMP2r
+
+@dir/<push-dotfiles> ( length* -- )
+	;&buf ADD2 ;&buf
+	&>ldf
+		#0005 ADD2 LDAk LIT ". NEQ ?{ dict/alloc-line bios/<push-raw> }
+		str/eol INC2 GTH2k ?/>ldf
 	POP2 POP2 JMP2r
 	&api =dict/dir =&<eval> "<dir> 20 "( 20 09 20 "[f] 20 ") 00
 
@@ -930,10 +938,6 @@
 	JMP2r
 	&api =&cmd =&<eval> "<hex> 20 "( 20 "dec 20 09 20 "hex 20 ") 00
 	&cmd "hex 00
-
-@hex/chr2 ( byte -- hn ln )
-	DUP #04 SFT /chr SWP
-	( >> )
 
 @hex/chr ( hex -- char )
 	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD JMP2r
@@ -1359,6 +1363,11 @@
 
 @str/is-rom ( str* -- t )
 	/cap #0004 SUB2 ;dict/rom-ext !/cmp
+
+@str/is-wallpaper ( str* -- str* t )
+	DUP2 #0009 ;dict/wallpaper mem/cmp ?{ #00 JMP2r }
+	DUP2 /is-icn ?{ #00 JMP2r }
+	#01 JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
