@@ -272,6 +272,7 @@ screen_update(void)
 		screen_redraw();
 }
 
+
 static void
 screen_deo_pixel(void)
 {
@@ -279,34 +280,33 @@ screen_deo_pixel(void)
 	const int hi = ctrl & 0x40;
 	const Uint8 mask = hi ? 0x3 : 0xc;
 	const Uint8 color = hi ? ((ctrl & 0x3) << 2) : (ctrl & 0x3);
-	/* fill mode */
-	if(ctrl & 0x80) {
-		int px;
-		const int x1 = (ctrl & 0x10) ? 8 : rX + 8;
-		const int x2 = (ctrl & 0x10) ? rX : screen_width;
-		const int y1 = (ctrl & 0x20) ? 8 : rY + 8;
-		const int y2 = (ctrl & 0x20) ? rY : screen_height;
-		const int hor = (x2 + 8) - x1;
-		const int ver = (y2 + 8) - y1;
-		Uint8 *row = &screen_layers[y1 * screen_wmar2 + x1];
-		Uint8 *end = row + ver * screen_wmar2;
-		for(; row < end; row += screen_wmar2) {
-			Uint8 *dst = row;
-			for(px = 0; px < hor; px++)
-				dst[px] = (dst[px] & mask) | color;
+	const Uint16 x = rX, y = rY;
+	if(x < screen_width && y < screen_height) {
+		/* fill mode */
+		if(ctrl & 0x80) {
+			const int x1 = (ctrl & 0x10) ? 8 : x + 8;
+			const int x2 = (ctrl & 0x10) ? x : screen_width;
+			const int y1 = (ctrl & 0x20) ? 8 : y + 8;
+			const int y2 = (ctrl & 0x20) ? y : screen_height;
+			const int hor = (x2 + 8) - x1;
+			const int ver = (y2 + 8) - y1;
+			Uint8 *row = &screen_layers[y1 * screen_wmar2 + x1];
+			Uint8 *end = row + ver * screen_wmar2;
+			for(; row < end; row += screen_wmar2) {
+				int px;
+				Uint8 *dst = row;
+				for(px = 0; px < hor; px++)
+					dst[px] = (dst[px] & mask) | color;
+			}
 		}
-		screen_reqdraw = 1;
-	}
-	/* pixel mode */
-	else {
-		const Uint16 x = rX, y = rY;
-		if(x < screen_width && y < screen_height) {
+		/* pixel mode */
+		else {
 			Uint8 *dst = &screen_layers[(y + 8) * screen_wmar2 + (x + 8)];
 			*dst = (*dst & mask) | color;
-			screen_reqdraw = 1;
+			if(rMX) rX += ctrl & 0x10 ? -1 : 1;
+			if(rMY) rY += ctrl & 0x20 ? -1 : 1;
 		}
-		if(rMX) rX += ctrl & 0x10 ? -1 : 1;
-		if(rMY) rY += ctrl & 0x20 ? -1 : 1;
+		screen_reqdraw = 1;
 	}
 }
 
@@ -1401,7 +1401,7 @@ main(int argc, char **argv)
 	if(argc == 1)
 		return !fprintf(stdout, "usage: %s -v | [-f -2] file.rom [args..]\n", argv[0]);
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 6 Jul 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 10 Jul 2026.\n", argv[0]);
 	/* Arguments */
 	if(i < argc && argv[i][0] == '-' && argv[i][1] == 'f')
 		emu_full = 1, i++;

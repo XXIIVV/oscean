@@ -21,8 +21,7 @@
 
 |000
 
-	@settings/selection $1 &mode $1
-	@timers/wash $1 &discipline $1 &slow $1
+	@sel/id $1 &mode $1
 	@ufo/hygiene $1 &happiness $1 &energy $1 &hunger $1 &toilet $1
 	( ) &age $2 &x $2 &y $2
 	( ) &asleep $1 &pooped $1 &sick $1 &death $1
@@ -45,10 +44,9 @@
 	#0100 .Audio0/adsr DEO2
 	;tri-pcm .Audio0/addr DEO2
 	#0100 .Audio0/length DEO2
-	#dd .Audio0/volume DEO
+	[ LIT2 dd -Audio0/volume ] DEO
 	ufo/<init>
 	logo/<bind>
-	debugger/<init>
 	BRK
 
 @meta 00
@@ -63,12 +61,12 @@
 
 @manifest/dat ( . )
 	_{ =dict/yufo
-	( - ) 01 00 =selection/<pick> =dict/select
-	( - ) 02 00 =selection/<right> =dict/right
-	( - ) 10 00 =selection/<up> =dict/up
-	( - ) 20 00 =selection/<down> =dict/down
-	( - ) 40 00 =selection/<left> =dict/left
-	( - ) 80 00 =selection/<right> =dict/right }
+	( - ) 01 00 =sel/<pick> =dict/select
+	( - ) 02 00 =sel/<right> =dict/right
+	( - ) 10 00 =sel/<up> =dict/up
+	( - ) 20 00 =sel/<down> =dict/down
+	( - ) 40 00 =sel/<left> =dict/left
+	( - ) 80 00 =sel/<right> =dict/right }
 	00
 
 %u8/mod { DIVk MUL SUB }
@@ -126,17 +124,14 @@
 	.&x LDZ2 #0008 ADD2 .&y LDZ2 #0008 ADD2 Screen/<set-pos>
 	;ufo-special-icns/tomb .Screen/addr DEO2
 	[ LIT2 16 -Screen/auto ] DEO
-	#85 .Screen/sprite DEOk DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@ufo/<draw-unborn> ( color -- )
-	;ufo-special-icns/egg
-	( >> )
-
-@ufo/<draw-special> ( addr* color -- )
-	.Screen/addr DEO2
-	[ LIT2 36 -Screen/auto ] DEO
-	#85 .Screen/sprite DEOk DEO
+@ufo/<draw-egg> ( hatch -- )
+	.&x LDZ2 #0008 ADD2 .&y LDZ2 #0008 ADD2 Screen/<set-pos>
+	#00 SWP #60 SFT2 ;ufo-special-icns/egg ADD2 .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEO
 	JMP2r
 
 @ufo/<draw-either> ( a* b* -- )
@@ -144,7 +139,7 @@
 	[ JMP SWP2 ] POP2 !/<draw-with-face>
 
 @ufo/<draw> ( -- )
-	/is-born ?{ !/<draw-unborn> }
+	/is-born ?{ #00 !/<draw-egg> }
 	/is-home ?{ !/<draw-saucer> }
 	/is-alive ?{ !/<draw-tomb> }
 	/get-face
@@ -177,6 +172,7 @@
 
 @ufo/get-face ( -- addr* )
 	[ LIT2 00 -&sick ] LDZ EQU ?{ ;ufo-faces/sad JMP2r }
+	[ LIT2 00 -&asleep ] LDZ EQU ?{ ;ufo-faces/sleep JMP2r }
 	.&happiness LDZ #30 GTH ?{ ;ufo-faces/sad JMP2r }
 	.&energy LDZ #20 GTH ?{ ;ufo-faces/sleep JMP2r }
 	.&hunger LDZ #30 GTH ?{ ;ufo-faces/sleep JMP2r }
@@ -187,10 +183,14 @@
 	/is-awake ?{
 		( | sleeping )
 		/<inc-energy>
+		.scene/light LDZ ?{ /<inc-happiness> }
+		/<inc-hunger>
 		[ LIT2 ff -&energy ] LDZ NEQ ?{ !/<wake-up> }
 		JMP2r }
 	( | awake )
 	/<step-move>
+	[ LIT2 00 -scene/light ] LDZ EQU ?{
+		.&energy LDZ #60 GTH ?{ /<fall-asleep> } }
 	[ LIT2 00 -&energy ] LDZ NEQ ?{ !/<collapse> }
 	JMP2r
 
@@ -225,6 +225,18 @@
 	.&happiness STZ
 	JMP2r
 
+@ufo/<inc-happiness> ( -- )
+	.&happiness LDZ INC
+	( clamp ) DUP ?{ POP JMP2r }
+	.&happiness STZ
+	JMP2r
+
+@ufo/<inc-hunger> ( -- )
+	.&hunger LDZ INC
+	( clamp ) DUP ?{ POP JMP2r }
+	.&hunger STZ
+	JMP2r
+
 @ufo/<wake-up> ( -- )
 	.&asleep LDZ ?{ JMP2r }
 	[ LIT2 00 -&asleep ] STZ
@@ -237,8 +249,7 @@
 
 @ufo/<fall-asleep> ( -- )
 	.&asleep LDZ ?{
-		[ LIT2 01 -&asleep ] STZ
-		JMP2r }
+		[ LIT2 01 -&asleep ] STZ }
 	JMP2r
 
 @ufo/<step-move> ( -- )
@@ -246,125 +257,114 @@
 	[ LIT2 00 &f 80 ] INCk ,&f STR
 	;tri-pcm ADD2 LDA #00 SWP #04 SFT2 #0014 ADD2 .&x STZ2
 	/<dec-energy>
-	.&energy LDZ ?{ !ufo/<die> }
+	.&energy LDZ ?{ !/<die> }
+	.scene/light LDZ ?/<dec-happiness>
 	JMP2r
 
 @ufo/<step-hunger> ( -- )
 	/<dec-toilet>
-	.ufo/toilet LDZ ?{
-		[ LIT2 01 -ufo/pooped ] STZ
-		[ LIT2 ff -ufo/toilet ] STZ
+	.&toilet LDZ ?{
+		[ LIT2 01 -&pooped ] STZ
+		[ LIT2 ff -&toilet ] STZ
 		[ LIT2 68 -Audio0/pitch ] DEO }
-	[ LIT2 00 -ufo/pooped ] LDZ EQU ?{ /<dec-hygiene>
+	[ LIT2 00 -&pooped ] LDZ EQU ?{ /<dec-hygiene>
 		/<dec-happiness> }
 	.&hygiene LDZ #80 GTH ?{ /<dec-happiness> }
 	/<dec-happiness>
-	.ufo/happiness LDZ ?{ ufo/<die> }
+	.&happiness LDZ ?{ /<die> }
 	/is-starving ?{ !/<dec-hunger> }
 	[ LIT2 68 -Audio0/pitch ] DEO
-	[ LIT2 00 -ufo/happiness ] STZ !/<dec-hunger>
+	[ LIT2 00 -&happiness ] STZ !/<dec-hunger>
 
 @ufo/<step-evolve> ( -- )
 	.&age LDZ2
 	( | handlers )
 	DUP2 #0200 NEQ2 ?{ /<evolve-a> }
 	DUP2 #0400 NEQ2 ?{ /<evolve-b> }
-	#0600 NEQ2 ?{ /<evolve-c> }
+	#0600 NEQ2 ?{ !/<evolve-c> }
 	JMP2r
 
 @ufo/<evolve-a> ( -- )
-	.DateTime/second DEI #03 AND INC .&evo-a STZ
+	.DateTime/second DEI .&happiness LDZ ADD #03 AND INC .&evo-a STZ
 	[ LIT2 62 -Audio0/pitch ] DEO
 	JMP2r
 
 @ufo/<evolve-b> ( -- )
-	.DateTime/second DEI #03 AND INC .&evo-b STZ
+	.DateTime/second DEI .&energy LDZ ADD #03 AND INC .&evo-b STZ
 	[ LIT2 62 -Audio0/pitch ] DEO
 	JMP2r
 
 @ufo/<evolve-c> ( -- )
-	.DateTime/second DEI #03 AND INC .&evo-c STZ
+	.DateTime/second DEI .&hunger LDZ ADD #03 AND INC .&evo-c STZ
 	[ LIT2 62 -Audio0/pitch ] DEO
 	JMP2r
 
 @ufo/<die> ( -- )
 	[ LIT2 68 -Audio0/pitch ] DEO
 	[ LIT2 01 -ufo/death ] STZ
+	[ LIT2 00 -ufo/happiness ] STZ
+	[ LIT2 00 -ufo/energy ] STZ
+	[ LIT2 00 -ufo/hygiene ] STZ
+	[ LIT2 00 -ufo/hunger ] STZ
 	JMP2r
 
-@ufo/<print-stats> ( -- )
-	.&age LIT2 "-> /<print-u16>
-	.&hygiene LIT2 "HY /<print-u8>
-	.&happiness LIT2 "HA /<print-u8>
-	.&energy LIT2 "EN /<print-u8>
-	.&hunger LIT2 "HU /<print-u8>
-	.&toilet LIT2 "TO /<print-u8>
-	.&asleep LIT2 "Sl /<print-u8>
-	.&pooped LIT2 "Po /<print-u8>
-	.&sick LIT2 "Si /<print-u8>
-	.&death LIT2 "De /<print-u8>
-	.&evo-a LIT2 "A) /<print-u8>
-	.&evo-b LIT2 "B) /<print-u8>
-	.&evo-c LIT2 "C) /<print-u8>
-	#0a19 DEO
+@hatch/<bind> ( -- )
+	;&on-frame .Screen/vector DEO2
+	scene/<lock>
 	JMP2r
 
-	&<print-u8> ( z label* -- )
-	SWP #19 DEO
-	#19 DEO
-	LDZ #1a DEO
-	#2019 DEO
-	JMP2r
+@hatch/on-frame ( -> )
+	[ LIT2 07 &f 10 ] INCk ,&f STR
+	ANDk ?{
+		scene/<draw-light>
+		DUP #03 SFT #01 AND ufo/<draw-egg> }
+	?{
+		scene/<draw-light>
+		#02 ufo/<draw-egg>
+		;&on-frame-b .Screen/vector DEO2 }
+	POP BRK
 
-	&<print-u16> ( z label* -- )
-	SWP #19 DEO
-	#19 DEO
-	LDZ2 #1a DEO2
-	#2019 DEO
-	JMP2r
+@hatch/on-frame-b ( -> )
+	[ LIT &fb c0 ] INCk ,&fb STR
+	?{ time/<eval>
+		scene/<unlock>
+		scene/<draw>
+		scene/<bind> }
+	BRK
 
 (
-@|Animations )
+@|Time )
 
 @time/<eval> ( -- )
 	ufo/is-alive ?{ JMP2r }
 	ufo/is-home ?{ JMP2r }
-	/<step> !ufo/<print-stats>
+	!/<step>
 
 @time/<step> ( -- )
 	.ufo/age LDZ2 INC2 .ufo/age STZ2
-	ufo/is-born ?{ JMP2r }
+	ufo/is-born ?{
+		.ufo/age LDZ2 ;timeout/born NEQ2 ?{ !hatch/<bind> }
+		JMP2r }
 	ufo/is-alive ?{ JMP2r }
 	ufo/<step-sleep>
 	ufo/<step-hunger> !ufo/<step-evolve>
 
-@time/<eval-times> ( times -- )
-	#00 SWP SUB
-	&>l
-		/<eval>
-		INC DUP ?/>l
-	POP JMP2r
+@sel/<right> ( -- )
+	.&id LDZ INC !/<select>
 
-@selection/<right> ( -- )
-	.settings/selection LDZ INC !selection/<select>
+@sel/<left> ( -- )
+	[ LIT2 ff -&id ] LDZ ADD !/<select>
 
-@selection/<left> ( -- )
-	#ff .settings/selection LDZ ADD !selection/<select>
+@sel/<up> ( -- )
+	[ LIT2 fc -&id ] LDZ ADD !/<select>
 
-@selection/<up> ( -- )
-	#fc .settings/selection LDZ ADD !selection/<select>
+@sel/<down> ( -- )
+	[ LIT2 04 -&id ] LDZ ADD !/<select>
 
-@selection/<down> ( -- )
-	#04 .settings/selection LDZ ADD !selection/<select>
-
-@selection/<pick> ( -- )
-	.settings/selection LDZ
-	( >> )
-
-@selection/<run> ( mode -- )
-	DUP .settings/mode STZ
+@sel/<pick> ( -- )
+	.&id LDZ DUP .&mode STZ
 	[ LIT2 40 -Audio0/pitch ] DEO
-	DUP #00 NEQ ?{ food/<run> }
+	DUP ?{ food/<run> }
 	DUP #01 NEQ ?{ scene/<toggle-light> }
 	DUP #02 NEQ ?{ rps/<run> }
 	DUP #03 NEQ ?{ medicine/<run> }
@@ -375,16 +375,12 @@
 		BRK }
 	POP !menu/<draw>
 
-@selection/<select> ( mode -- )
-	#07 AND .settings/selection STZ
-	#50 .Audio0/pitch DEO !menu/<draw>
-
-@cancel ( -- )
-	#30 .Audio0/pitch DEO
-	JMP2r
+@sel/<select> ( mode -- )
+	#07 AND .&id STZ
+	[ LIT2 50 -Audio0/pitch ] DEO !menu/<draw>
 
 @unable ( -- )
-	#20 .Audio0/pitch DEO
+	[ LIT2 20 -Audio0/pitch ] DEO
 	JMP2r
 
 (
@@ -394,6 +390,8 @@
 	ufo/is-awake ?{ !unable }
 	ufo/is-clean ?{ !unable }
 	ufo/is-born ?{ !unable }
+	ufo/is-home ?{ !unable }
+	ufo/is-alive ?{ !unable }
 	/<apply>
 	#0030 #002d Screen/<set-pos>
 	;ui-icn/food #85 icon/<draw>
@@ -422,6 +420,8 @@
 	ufo/is-awake ?{ !unable }
 	ufo/is-clean ?{ !unable }
 	ufo/is-born ?{ !unable }
+	ufo/is-home ?{ !unable }
+	ufo/is-alive ?{ !unable }
 	/<apply>
 	#0030 #002d Screen/<set-pos>
 	;ui-icn/medicine #85 icon/<draw>
@@ -452,6 +452,8 @@
 	ufo/is-awake ?{ !unable }
 	ufo/is-clean ?{ !unable }
 	ufo/is-born ?{ !unable }
+	ufo/is-home ?{ !unable }
+	ufo/is-alive ?{ !unable }
 	;&on-button-a .Controller/vector DEO2
 	;&on-frame-a .Screen/vector DEO2
 	JMP2r
@@ -460,7 +462,7 @@
 	( npc ) .&against LDZ #20 SFT
 	( plr ) .&choice LDZ #01 SUB ADD #00 SWP ;&lut ADD2 LDA
 	( | handlers )
-	DUP #00 NEQ ?{
+	DUP ?{
 		( | player win )
 		[ LIT2 c0 -ufo/happiness ] STZ
 		;ufo-faces/lose !ufo/<draw-with-face> }
@@ -521,6 +523,8 @@
 @wash/<run> ( -- )
 	ufo/is-awake ?{ !unable }
 	ufo/is-born ?{ !unable }
+	ufo/is-home ?{ !unable }
+	ufo/is-alive ?{ !unable }
 	;&on-frame .Screen/vector DEO2 !scene/<lock>
 
 @wash/on-frame ( -> )
@@ -532,7 +536,7 @@
 	#00 OVR #50 SUB DUP2 #01 SFT2 #0008 SUB2 .Screen/x DEO2
 	#0018 .Screen/y DEO2
 	#03 SFT2 ;&wave ADD2 .Screen/addr DEO2
-	#0a .Screen/sprite DEOk DEOk DEOk DEOk DEO
+	[ LIT2 0a -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
 	?{
 		[ LIT2 50 _&f ] STR
 		[ LIT2 ff -ufo/hygiene ] STZ
@@ -541,16 +545,11 @@
 		scene/<bind> }
 	POP BRK
 
-@wash/wave [
-	1010 2020 2020 1010 0808 0404 0404 0808
-	1010 2020 2020 1010 0808 0404 0404 0808
-	1010 2020 2020 1010 0808 0404 0404 0808
-	1010 2020 2020 1010 0808 0404 0404 0808 ]
-
 (
 @|Status )
 
 @status/<run> ( -- )
+	ufo/is-home ?{ !unable }
 	;&on-button .Controller/vector DEO2
 	;&on-frame .Screen/vector DEO2
 	[ LIT2 00 _&f ] STR
@@ -579,7 +578,31 @@
 @|Discipline )
 
 @discipline/<run> ( -- )
-	JMP2r
+	ufo/is-born ?{ !unable }
+	ufo/is-home ?{ !unable }
+	ufo/is-alive ?{ !unable }
+	;&on-frame .Screen/vector DEO2 !scene/<lock>
+
+@discipline/on-frame ( -> )
+	[ LIT2 07 &f a0 ] INCk ,&f STR
+	ANDk ?{
+		ufo/<dec-happiness>
+		scene/<draw>
+		;ufo-faces/sad ufo/<draw-with-face>
+		#0008 #0028 Screen/<set-pos>
+		[ LIT2 15 -Screen/auto ] DEO
+		#00 OVR #03 SFT #01 AND #40 SFT2 ;&icon ADD2 .Screen/addr DEO2
+		[ LIT2 0a -Screen/sprite ] DEO }
+	DUP ?{
+		[ LIT2 a0 _&f ] STR
+		[ LIT2 00 -ufo/asleep ] STZ
+		scene/<unlock>
+		scene/<bind> }
+	POP2 BRK
+
+@discipline/icon [
+	000c 0c0c 0c0c 1818 1818 0000 3030 0000
+	0006 0606 0c0c 0c0c 0c00 0018 1800 0000 ]
 
 (
 @|Logo )
@@ -611,13 +634,25 @@
 
 @scene/<draw> ( -- )
 	/<draw-light>
-	ufo/<draw> !/<draw-events>
+	ufo/<draw>
+	( | events )
+	[ LIT2 00 -ufo/pooped ] LDZ EQU ?{
+		#0030 #002d Screen/<set-pos>
+		;ui-icn/poop #85 icon/<draw> }
+	ufo/is-alive ?{ JMP2r }
+	[ LIT2 00 -ufo/sick ] LDZ EQU ?{
+		#0030 #001d Screen/<set-pos>
+		;ui-icn/sick #85 icon/<draw> }
+	ufo/is-awake ?{
+		#0010 #001d Screen/<set-pos>
+		;ui-icn/asleep #0a !icon/<draw> }
+	JMP2r
 
 @scene/<draw-light> ( -- )
 	#0000 #0018 Screen/<set-pos>
 	;&blank .Screen/addr DEO2
 	[ LIT2 92 -Screen/auto ] DEO
-	#0203 .&light LDZ [ JMP SWP POP ]
+	#0003 .&light LDZ [ JMP SWP POP ]
 	( 5x ) .Screen/sprite DEOk DEOk DEOk DEOk DEO
 	JMP2r
 
@@ -632,7 +667,6 @@
 	JMP2r
 
 @scene/on-button ( -> )
-	ufo/is-alive ?{ BRK }
 	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
 	( * ) JSR2 POP2 BRK
 
@@ -647,26 +681,13 @@
 @scene/<toggle-light> ( -- )
 	[ LIT2 00 -&light ] LDZ EQU .&light STZ !/<draw>
 
-@scene/<draw-events> ( -- )
-	[ LIT2 00 -ufo/pooped ] LDZ EQU ?{
-		#0030 #002d Screen/<set-pos>
-		;ui-icn/poop #85 icon/<draw> }
-	ufo/is-alive ?{ JMP2r }
-	[ LIT2 00 -ufo/sick ] LDZ EQU ?{
-		#0030 #001d Screen/<set-pos>
-		;ui-icn/sick #85 icon/<draw> }
-	ufo/is-awake ?{
-		#0010 #001d Screen/<set-pos>
-		;ui-icn/asleep #05 icon/<draw> }
-	JMP2r
-
 @menu/on-button ( -> )
 	.Controller/button DEI ?{ BRK }
 	#0000 DUP2 Screen/<set-pos>
 	[ LIT2 80 -Screen/pixel ] DEO
 	scene/<bind>
 	scene/<draw>
-	menu/<draw>
+	/<draw>
 	BRK
 
 @menu/<toggle> ( -- )
@@ -680,12 +701,12 @@
 	[ LIT2 05 -Screen/auto ] DEO
 	#0800
 	&>loop
-		DUP #00 SWP #10 SFT2 ;button-pos ADD2 LDA2 #00 SWP .Screen/y DEO2
+		#00 OVR #10 SFT2 ;button-pos ADD2 LDA2 #00 SWP .Screen/y DEO2
 		#00 SWP .Screen/x DEO2
 		( | selection )
-		DUP .settings/selection LDZ EQU #00 SWP #90 SFT2 STH2
-		DUP .settings/mode LDZ EQU #00 SWP #90 SFT2 STH2
-		ADD2r DUP #00 SWP #60 SFT2 STH2r ADD2 ;ui-icn ADD2 #81 icon/<draw>
+		DUP .sel/id LDZ EQU #00 SWP #90 SFT2 STH2
+		DUP .sel/mode LDZ EQU #00 SWP #90 SFT2 STH2
+		ADD2r #00 OVR #60 SFT2 STH2r ADD2 ;ui-icn ADD2 #81 icon/<draw>
 		INC GTHk ?/>loop
 	POP2 JMP2r
 
@@ -736,13 +757,6 @@
 		POP2 INC2 LDAk ?/>cat
 	POP2 #ffff JMP2r
 
-@debugger/<init> ( -- )
-	( | birth )
-	;timeout/hatch time/<eval-times>
-	( | hatch )
-	#0008 time/<eval-times>
-	JMP2r
-
 @dict/yufo "Yufo 00
 	&select "Select 00
 	&up "Up 00
@@ -763,6 +777,12 @@ ff73 ed6d edf3 ffff 0000 0000 0000 0000
 ffff ffff ffff ffff 0000 0000 0000 0000
 ffff ffff ffff ffff 0000 0000 0000 0000
 ffff ffff ffff ffff 0000 0000 0000 0000 ]
+
+@wash/wave [
+	1010 2020 2020 1010 0808 0404 0404 0808
+	1010 2020 2020 1010 0808 0404 0404 0808
+	1010 2020 2020 1010 0808 0404 0404 0808
+	1010 2020 2020 1010 0808 0404 0404 0808 ]
 
 @status/sprites
 	( hygiene )   0010 2854 a282 4438
@@ -793,22 +813,20 @@ ffff ffff ffff ffff 0000 0000 0000 0000 ]
 	02 ( 05 paper scissors )
 	00 ( 06 scissors scissors )
 
-@ufo-faces
-	&eating  [ 3fff ffff dff1 eef1 ffff ffff ffff ffff ]
-	&wash    3fff ffde adff f3ff ffff ffff ffff ffff
-	&discipline 3fff eef5 cefb f5f1 ffff ffff ffff fbff
-	&medicine   3fff ffff dffb f5fb ffff ffff ffff fbff
-	&sad     3fff ffff dff9 f6ff ffff ffff ffff ffff
-	&neutral 3fff ffff dfff f1ff ffff ffff ffff ffff
-	&sleep   3fff ffff d5ee fbff ffff ffff ffff ffff
-	&joy 3fff ffff dff5 fbff ffff ffff ffff ffff
-	( unused )
-	&even 3fff fff3 ddfb fdf3 ffff ffff ffff ffff
-	&lose 3fff ffff dff9 f6ff ffff ffff ffff ffff
-	&win   3fff ffff dff5 fbff ffff ffff ffff ffff
+@ufo-faces/eating  [ 3fff ffff dff1 eef1 ffff ffff ffff ffff ]
+	&wash    [ 3fff ffde adff f3ff ffff ffff ffff ffff ]
+	&discipline [ 3fff eef5 cefb f5f1 ffff ffff ffff fbff ]
+	&medicine   [ 3fff ffff dffb f5fb ffff ffff ffff fbff ]
+	&sad     [ 3fff ffff dff9 f6ff ffff ffff ffff ffff ]
+	&neutral [ 3fff ffff dfff f1ff ffff ffff ffff ffff ]
+	&sleep   [ 3fff ffff d5ee fbff ffff ffff ffff ffff ]
+	&joy [ 3fff ffff dff5 fbff ffff ffff ffff ffff ]
 
-@ufo-icns
-	&ears
+	&even [ 3fff fff3 ddfb fdf3 ffff ffff ffff ffff ]
+	&lose [ 3fff ffff dff9 f6ff ffff ffff ffff ffff ]
+	&win   [ 3fff ffff dff5 fbff ffff ffff ffff ffff ]
+
+@ufo-icns/ears
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 003f
 	0000 0000 0000 0000 0000 0000 0000 0080
@@ -869,8 +887,7 @@ ffff ffff ffff ffff 0000 0000 0000 0000 ]
 	ff3f 3f75 7b3f 0000 ffff ffff ffff 7f22
 	e000 0080 8000 0000 f0e0 fef8 d080 0000
 
-@ufo-special-icns
-	&tomb
+@ufo-special-icns/tomb
 	0000 000f 1b16 1715 0000 0f1f 3f3f 3f3f
 	0000 00e0 f0b0 f050 0000 e0f0 f8f8 f8f8
 	1716 1707 1703 102a 3f3f 3f3f 3f3f 7fff
