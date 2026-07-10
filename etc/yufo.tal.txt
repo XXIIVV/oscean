@@ -1,0 +1,1076 @@
+( 54K . Yufo )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|30 @Audio0 &vector $2 &position $2 &output $1 &pad $3 &adsr $2 &length $2 &addr $2 &volume $1 &pitch $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+(
+@|Enums )
+
+|0050 @Varvara/version
+|0040 @timeout/born
+|0038 @timeout/hatch
+|0800 @timeout/saucer
+|0000 @timeout/newage
+|00a8 @timeout/logo
+|0010 @timeout/rate
+
+|000
+
+	@settings/selection $1 &mode $1
+	@timers/wash $1 &discipline $1 &slow $1
+	@ufo/hygiene $1 &happiness $1 &energy $1 &hunger $1 &toilet $1
+	( ) &age $2 &x $2 &y $2
+	( ) &asleep $1 &pooped $1 &sick $1 &death $1
+	( ) &evo-a $1 &evo-b $1 &evo-c $1
+	@rps/choice $1 &against $1
+	@scene/light $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	( | theme )
+	#960f .System/r DEO2
+	#9e0f .System/g DEO2
+	#980f .System/b DEO2
+	( | size )
+	#0050 .Screen/width DEO2
+	#0058 .Screen/height DEO2
+	( | setup synth )
+	#0100 .Audio0/adsr DEO2
+	;tri-pcm .Audio0/addr DEO2
+	#0100 .Audio0/length DEO2
+	#dd .Audio0/volume DEO
+	ufo/<init>
+	logo/<bind>
+	debugger/<init>
+	BRK
+
+@meta 00
+	( ) "Yufo 0a
+	( ) "A 20 "Virtual 20 "Pet 0a
+	( ) "By 20 "Hundred 20 "Rabbits 0a
+	( ) "10 20 "Jul 20 "2026 00
+	( . ) 03
+	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat ( . )
+	_{ =dict/yufo
+	( - ) 01 00 =selection/<pick> =dict/select
+	( - ) 02 00 =selection/<right> =dict/right
+	( - ) 10 00 =selection/<up> =dict/up
+	( - ) 20 00 =selection/<down> =dict/down
+	( - ) 40 00 =selection/<left> =dict/left
+	( - ) 80 00 =selection/<right> =dict/right }
+	00
+
+%u8/mod { DIVk MUL SUB }
+
+%u16/mod { DIV2k MUL2 SUB2 }
+
+%Screen/<set-pos> ( x* y* -- ) {
+	.Screen/y DEO2
+	.Screen/x DEO2 }
+
+(
+@|Ufo )
+
+%ufo/is-born { .ufo/age LDZ2 ;timeout/born GTH2 }
+
+%ufo/is-awake {
+		[ LIT2 00 -ufo/asleep ] LDZ EQU }
+
+%ufo/is-clean {
+		[ LIT2 00 -ufo/pooped ] LDZ EQU }
+
+%ufo/is-sick {
+		[ LIT2 00 -ufo/sick ] LDZ NEQ }
+
+%ufo/is-alive {
+		[ LIT2 00 -ufo/death ] LDZ EQU }
+
+%ufo/is-hungry { .ufo/hunger LDZ #f0 LTH }
+
+%ufo/is-starving { .ufo/hunger LDZ #10 LTH }
+
+%ufo/is-home { .ufo/age LDZ2 ;timeout/saucer LTH2 }
+
+@ufo/<init> ( -- )
+	[ LIT2 ff -&hygiene ] STZ
+	[ LIT2 80 -&happiness ] STZ
+	[ LIT2 ff -&energy ] STZ
+	[ LIT2 80 -&hunger ] STZ
+	[ LIT2 ff -&toilet ] STZ
+	[ LIT2 00 -&pooped ] STZ
+	[ LIT2 00 -&death ] STZ
+	;timeout/newage .&age STZ2
+	#001c .&x STZ2
+	#0025 .&y STZ2
+	JMP2r
+
+@ufo/<draw-saucer> ( -- )
+	;ufo-special-icns/saucer .Screen/addr DEO2
+	.&x LDZ2 .&y LDZ2 Screen/<set-pos>
+	[ LIT2 26 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEO
+	JMP2r
+
+@ufo/<draw-tomb> ( -- )
+	.&x LDZ2 #0008 ADD2 .&y LDZ2 #0008 ADD2 Screen/<set-pos>
+	;ufo-special-icns/tomb .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	#85 .Screen/sprite DEOk DEO
+	JMP2r
+
+@ufo/<draw-unborn> ( color -- )
+	;ufo-special-icns/egg
+	( >> )
+
+@ufo/<draw-special> ( addr* color -- )
+	.Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	#85 .Screen/sprite DEOk DEO
+	JMP2r
+
+@ufo/<draw-either> ( a* b* -- )
+	[ LIT2 00 &f2 $1 ] EQU DUP ,&f2 STR
+	[ JMP SWP2 ] POP2 !/<draw-with-face>
+
+@ufo/<draw> ( -- )
+	/is-born ?{ !/<draw-unborn> }
+	/is-home ?{ !/<draw-saucer> }
+	/is-alive ?{ !/<draw-tomb> }
+	/get-face
+	( >> )
+
+@ufo/<draw-with-face> ( addr* -- )
+	[ LIT2 05 -Screen/auto ] DEO
+	.&x LDZ2 .&y LDZ2 Screen/<set-pos>
+	[ LIT2r 85 -Screen/sprite ]
+	( | .. )
+	[ LIT2 00 -&evo-a ] LDZ #30 MUL ;ufo-icns/ears ADD2 .Screen/addr DEO2
+	DEOkr
+	DEOkr
+	DEOkr
+	.&x LDZ2 .&y LDZ2 #0008 ADD2 Screen/<set-pos>
+	[ LIT2 00 -&evo-b ] LDZ #30 MUL ;ufo-icns/heads ADD2 .Screen/addr DEO2
+	DEOkr
+	DEOkr
+	DEOkr
+	.&x LDZ2 .&y LDZ2 #0010 ADD2 Screen/<set-pos>
+	[ LIT2 00 -&evo-c ] LDZ #30 MUL ;ufo-icns/legs ADD2 .Screen/addr DEO2
+	DEOkr
+	DEOkr
+	DEOkr
+	( | face )
+	.&x LDZ2 #0008 ADD2 .&y LDZ2 #0008 ADD2 Screen/<set-pos>
+	.Screen/addr DEO2
+	DEOr
+	JMP2r
+
+@ufo/get-face ( -- addr* )
+	[ LIT2 00 -&sick ] LDZ EQU ?{ ;ufo-faces/sad JMP2r }
+	.&happiness LDZ #30 GTH ?{ ;ufo-faces/sad JMP2r }
+	.&energy LDZ #20 GTH ?{ ;ufo-faces/sleep JMP2r }
+	.&hunger LDZ #30 GTH ?{ ;ufo-faces/sleep JMP2r }
+	.&happiness LDZ #80 LTH ?{ ;ufo-faces/joy JMP2r }
+	;ufo-faces/neutral JMP2r
+
+@ufo/<step-sleep> ( -- )
+	/is-awake ?{
+		( | sleeping )
+		/<inc-energy>
+		[ LIT2 ff -&energy ] LDZ NEQ ?{ !/<wake-up> }
+		JMP2r }
+	( | awake )
+	/<step-move>
+	[ LIT2 00 -&energy ] LDZ NEQ ?{ !/<collapse> }
+	JMP2r
+
+@ufo/<inc-energy> ( -- )
+	.&energy LDZ INC
+	( clamp ) DUP ?{ POP JMP2r }
+	.&energy STZ
+	JMP2r
+
+@ufo/<dec-energy> ( mod -- )
+	[ LIT2 ff -&energy ] LDZ ADD INCk ?{ POP JMP2r }
+	.&energy STZ
+	JMP2r
+
+@ufo/<dec-hunger> ( -- )
+	[ LIT2 ff -&hunger ] LDZ ADD INCk ?{ POP JMP2r }
+	.&hunger STZ
+	JMP2r
+
+@ufo/<dec-toilet> ( -- )
+	[ LIT2 ff -&toilet ] LDZ ADD INCk ?{ POP JMP2r }
+	.&toilet STZ
+	JMP2r
+
+@ufo/<dec-hygiene> ( -- )
+	[ LIT2 ff -&hygiene ] LDZ ADD INCk ?{ POP JMP2r }
+	.&hygiene STZ
+	JMP2r
+
+@ufo/<dec-happiness> ( -- )
+	[ LIT2 ff -&happiness ] LDZ ADD INCk ?{ POP JMP2r }
+	.&happiness STZ
+	JMP2r
+
+@ufo/<wake-up> ( -- )
+	.&asleep LDZ ?{ JMP2r }
+	[ LIT2 00 -&asleep ] STZ
+	JMP2r
+
+@ufo/<collapse> ( -- )
+	[ LIT2 01 -ufo/sick ] STZ
+	[ LIT2 68 -Audio0/pitch ] DEO
+	( >> )
+
+@ufo/<fall-asleep> ( -- )
+	.&asleep LDZ ?{
+		[ LIT2 01 -&asleep ] STZ
+		JMP2r }
+	JMP2r
+
+@ufo/<step-move> ( -- )
+	/is-awake ?{ JMP2r }
+	[ LIT2 00 &f 80 ] INCk ,&f STR
+	;tri-pcm ADD2 LDA #00 SWP #04 SFT2 #0014 ADD2 .&x STZ2
+	/<dec-energy>
+	.&energy LDZ ?{ !ufo/<die> }
+	JMP2r
+
+@ufo/<step-hunger> ( -- )
+	/<dec-toilet>
+	.ufo/toilet LDZ ?{
+		[ LIT2 01 -ufo/pooped ] STZ
+		[ LIT2 ff -ufo/toilet ] STZ
+		[ LIT2 68 -Audio0/pitch ] DEO }
+	[ LIT2 00 -ufo/pooped ] LDZ EQU ?{ /<dec-hygiene>
+		/<dec-happiness> }
+	.&hygiene LDZ #80 GTH ?{ /<dec-happiness> }
+	/<dec-happiness>
+	.ufo/happiness LDZ ?{ ufo/<die> }
+	/is-starving ?{ !/<dec-hunger> }
+	[ LIT2 68 -Audio0/pitch ] DEO
+	[ LIT2 00 -ufo/happiness ] STZ !/<dec-hunger>
+
+@ufo/<step-evolve> ( -- )
+	.&age LDZ2
+	( | handlers )
+	DUP2 #0200 NEQ2 ?{ /<evolve-a> }
+	DUP2 #0400 NEQ2 ?{ /<evolve-b> }
+	#0600 NEQ2 ?{ /<evolve-c> }
+	JMP2r
+
+@ufo/<evolve-a> ( -- )
+	.DateTime/second DEI #03 AND INC .&evo-a STZ
+	[ LIT2 62 -Audio0/pitch ] DEO
+	JMP2r
+
+@ufo/<evolve-b> ( -- )
+	.DateTime/second DEI #03 AND INC .&evo-b STZ
+	[ LIT2 62 -Audio0/pitch ] DEO
+	JMP2r
+
+@ufo/<evolve-c> ( -- )
+	.DateTime/second DEI #03 AND INC .&evo-c STZ
+	[ LIT2 62 -Audio0/pitch ] DEO
+	JMP2r
+
+@ufo/<die> ( -- )
+	[ LIT2 68 -Audio0/pitch ] DEO
+	[ LIT2 01 -ufo/death ] STZ
+	JMP2r
+
+@ufo/<print-stats> ( -- )
+	.&age LIT2 "-> /<print-u16>
+	.&hygiene LIT2 "HY /<print-u8>
+	.&happiness LIT2 "HA /<print-u8>
+	.&energy LIT2 "EN /<print-u8>
+	.&hunger LIT2 "HU /<print-u8>
+	.&toilet LIT2 "TO /<print-u8>
+	.&asleep LIT2 "Sl /<print-u8>
+	.&pooped LIT2 "Po /<print-u8>
+	.&sick LIT2 "Si /<print-u8>
+	.&death LIT2 "De /<print-u8>
+	.&evo-a LIT2 "A) /<print-u8>
+	.&evo-b LIT2 "B) /<print-u8>
+	.&evo-c LIT2 "C) /<print-u8>
+	#0a19 DEO
+	JMP2r
+
+	&<print-u8> ( z label* -- )
+	SWP #19 DEO
+	#19 DEO
+	LDZ #1a DEO
+	#2019 DEO
+	JMP2r
+
+	&<print-u16> ( z label* -- )
+	SWP #19 DEO
+	#19 DEO
+	LDZ2 #1a DEO2
+	#2019 DEO
+	JMP2r
+
+(
+@|Animations )
+
+@time/<eval> ( -- )
+	ufo/is-alive ?{ JMP2r }
+	ufo/is-home ?{ JMP2r }
+	/<step> !ufo/<print-stats>
+
+@time/<step> ( -- )
+	.ufo/age LDZ2 INC2 .ufo/age STZ2
+	ufo/is-born ?{ JMP2r }
+	ufo/is-alive ?{ JMP2r }
+	ufo/<step-sleep>
+	ufo/<step-hunger> !ufo/<step-evolve>
+
+@time/<eval-times> ( times -- )
+	#00 SWP SUB
+	&>l
+		/<eval>
+		INC DUP ?/>l
+	POP JMP2r
+
+@selection/<right> ( -- )
+	.settings/selection LDZ INC !selection/<select>
+
+@selection/<left> ( -- )
+	#ff .settings/selection LDZ ADD !selection/<select>
+
+@selection/<up> ( -- )
+	#fc .settings/selection LDZ ADD !selection/<select>
+
+@selection/<down> ( -- )
+	#04 .settings/selection LDZ ADD !selection/<select>
+
+@selection/<pick> ( -- )
+	.settings/selection LDZ
+	( >> )
+
+@selection/<run> ( mode -- )
+	DUP .settings/mode STZ
+	[ LIT2 40 -Audio0/pitch ] DEO
+	DUP #00 NEQ ?{ food/<run> }
+	DUP #01 NEQ ?{ scene/<toggle-light> }
+	DUP #02 NEQ ?{ rps/<run> }
+	DUP #03 NEQ ?{ medicine/<run> }
+	DUP #04 NEQ ?{ wash/<run> }
+	DUP #05 NEQ ?{ status/<run> }
+	DUP #06 NEQ ?{ discipline/<run> }
+	DUP #07 NEQ ?{ POP menu/<toggle>
+		BRK }
+	POP !menu/<draw>
+
+@selection/<select> ( mode -- )
+	#07 AND .settings/selection STZ
+	#50 .Audio0/pitch DEO !menu/<draw>
+
+@cancel ( -- )
+	#30 .Audio0/pitch DEO
+	JMP2r
+
+@unable ( -- )
+	#20 .Audio0/pitch DEO
+	JMP2r
+
+(
+@|Food )
+
+@food/<run> ( -- )
+	ufo/is-awake ?{ !unable }
+	ufo/is-clean ?{ !unable }
+	ufo/is-born ?{ !unable }
+	/<apply>
+	#0030 #002d Screen/<set-pos>
+	;ui-icn/food #85 icon/<draw>
+	;&on-frame .Screen/vector DEO2 !scene/<lock>
+
+@food/<apply> ( -- )
+	ufo/is-hungry ?{
+		[ LIT2 01 -ufo/sick ] STZ
+		JMP2r }
+	[ LIT2 ff -ufo/hunger ] STZ
+	JMP2r
+
+@food/on-frame ( -> )
+	[ LIT2 07 &f a0 ] INCk ,&f STR
+	ANDk ?{ ;ufo-faces/neutral ;ufo-faces/eating ufo/<draw-either> }
+	?{
+		[ LIT2 a0 _&f ] STR
+		scene/<unlock>
+		scene/<bind> }
+	POP BRK
+
+(
+@|Medicine )
+
+@medicine/<run> ( -- )
+	ufo/is-awake ?{ !unable }
+	ufo/is-clean ?{ !unable }
+	ufo/is-born ?{ !unable }
+	/<apply>
+	#0030 #002d Screen/<set-pos>
+	;ui-icn/medicine #85 icon/<draw>
+	;&on-frame .Screen/vector DEO2 !scene/<lock>
+
+@medicine/<apply> ( -- )
+	[ LIT2 20 -ufo/energy ] STZ
+	ufo/is-sick ?{
+		[ LIT2 40 -ufo/hunger ] STZ
+		[ LIT2 01 -ufo/sick ] STZ
+		JMP2r }
+	[ LIT2 00 -ufo/sick ] STZ
+	JMP2r
+
+@medicine/on-frame ( -> )
+	[ LIT2 07 &f a0 ] INCk ,&f STR
+	ANDk ?{ ;ufo-faces/medicine ;ufo-faces/eating ufo/<draw-either> }
+	?{
+		[ LIT2 a0 _&f ] STR
+		scene/<unlock>
+		scene/<bind> }
+	POP BRK
+
+(
+@|Rps )
+
+@rps/<run> ( -- )
+	ufo/is-awake ?{ !unable }
+	ufo/is-clean ?{ !unable }
+	ufo/is-born ?{ !unable }
+	;&on-button-a .Controller/vector DEO2
+	;&on-frame-a .Screen/vector DEO2
+	JMP2r
+
+@rps/<draw-result> ( -- )
+	( npc ) .&against LDZ #20 SFT
+	( plr ) .&choice LDZ #01 SUB ADD #00 SWP ;&lut ADD2 LDA
+	( | handlers )
+	DUP #00 NEQ ?{
+		( | player win )
+		[ LIT2 c0 -ufo/happiness ] STZ
+		;ufo-faces/lose !ufo/<draw-with-face> }
+	#01 NEQ ?{
+		( | ufo win )
+		[ LIT2 ff -ufo/happiness ] STZ
+		;ufo-faces/win !ufo/<draw-with-face> }
+	( | even )
+	;ufo-faces/even !ufo/<draw-with-face>
+
+@rps/on-button-a ( -> )
+	.Controller/button DEI ?{ BRK }
+	,&f2a LDR #03 u8/mod .&choice STZ
+	.DateTime/second DEI ;&offset STA
+	[ LIT2 f0 _&f2b ] STR
+	;&on-frame-b .Screen/vector DEO2
+	scene/<lock>
+	BRK
+
+@rps/on-frame-a ( -> )
+	[ LIT2 0f &fa $1 ] INCk ,&fa STR
+	AND ?{
+		[ LIT &f2a $1 ] INCk ,&f2a STR
+		scene/<draw>
+		( A ) #0008 #001d Screen/<set-pos>
+		#03 u8/mod #00 SWP #60 SFT2 ;&hands ADD2 #85 icon/<draw> }
+	BRK
+
+@rps/on-frame-b ( -> )
+	[ LIT2 03 &fb $1 ] INCk ,&fb STR
+	AND ?{
+		[ LIT &f2b $1 ] INCk ,&f2b STR
+		?{
+			/<draw-result>
+			[ LIT2 d0 _&delay ] STR
+			;&on-frame-c .Screen/vector DEO2
+			scene/<lock>
+			BRK }
+		scene/<draw-light>
+		;ufo-faces/even ufo/<draw-with-face>
+		( A ) #0008 #001d Screen/<set-pos>
+		.&choice LDZ #03 u8/mod #00 SWP #60 SFT2 ;&hands ADD2 #85 icon/<draw>
+		( B ) #0040 #001d Screen/<set-pos>
+		[ LIT &offset $1 ] INC #03 u8/mod DUP ,&offset STR
+		DUP .&against STZ
+		#00 SWP #60 SFT2 ;&hands ADD2 #85 icon/<draw-flipx> }
+	BRK
+
+@rps/on-frame-c ( -> )
+	[ LIT &delay $1 ] INCk ,&delay STR
+	?{ scene/<draw>
+		scene/<bind> }
+	BRK
+
+(
+@|Wash )
+
+@wash/<run> ( -- )
+	ufo/is-awake ?{ !unable }
+	ufo/is-born ?{ !unable }
+	;&on-frame .Screen/vector DEO2 !scene/<lock>
+
+@wash/on-frame ( -> )
+	[ LIT2 0f &f 50 ] INCk ,&f STR
+	ANDk ?{ ;ufo-faces/wash ;ufo-faces/win ufo/<draw-either> }
+	( | wipe )
+	scene/<draw>
+	[ LIT2 06 -Screen/auto ] DEO
+	#00 OVR #50 SUB DUP2 #01 SFT2 #0008 SUB2 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	#03 SFT2 ;&wave ADD2 .Screen/addr DEO2
+	#0a .Screen/sprite DEOk DEOk DEOk DEOk DEO
+	?{
+		[ LIT2 50 _&f ] STR
+		[ LIT2 ff -ufo/hygiene ] STZ
+		[ LIT2 00 -ufo/pooped ] STZ
+		scene/<unlock>
+		scene/<bind> }
+	POP BRK
+
+@wash/wave [
+	1010 2020 2020 1010 0808 0404 0404 0808
+	1010 2020 2020 1010 0808 0404 0404 0808
+	1010 2020 2020 1010 0808 0404 0404 0808
+	1010 2020 2020 1010 0808 0404 0404 0808 ]
+
+(
+@|Status )
+
+@status/<run> ( -- )
+	;&on-button .Controller/vector DEO2
+	;&on-frame .Screen/vector DEO2
+	[ LIT2 00 _&f ] STR
+	JMP2r
+
+@status/on-button ( -> )
+	.Controller/button DEI ?{ BRK }
+	scene/<draw>
+	scene/<bind>
+	BRK
+
+@status/on-frame ( -> )
+	[ LIT2 3f &f $1 ] INCk ,&f STR
+	AND ?{
+		time/<eval>
+		scene/<draw>
+		( | Draw stats )
+		[ LIT2 05 -Screen/auto ] DEO
+		#0010 #001c Screen/<set-pos>
+		[ LIT2 00 &id $1 ] INC #03 AND DUP ,&id STR
+		( icon ) STHk #30 SFT2 ;&sprites ADD2
+		( value ) STHr .ufo/hygiene ADD LDZ #03 SFT progress/<draw> }
+	BRK
+
+(
+@|Discipline )
+
+@discipline/<run> ( -- )
+	JMP2r
+
+(
+@|Logo )
+
+@logo/<bind> ( -- )
+	scene/<lock>
+	#0000 DUP2 Screen/<set-pos>
+	[ LIT2 80 -Screen/pixel ] DEO
+	;&on-frame .Screen/vector DEO2
+	;&sprite .Screen/addr DEO2
+	#0014 #0023 Screen/<set-pos>
+	[ LIT2 46 -Screen/auto ] DEO
+	[ LIT2 0f -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@logo/on-frame ( -> )
+	[ LIT &f -timeout/logo ] INCk ,&f STR
+	?{ scene/<bind>
+		menu/<draw> }
+	BRK
+
+(
+@|Scene )
+
+@scene/<bind> ( -- )
+	/<unlock>
+	;&on-frame .Screen/vector DEO2
+	JMP2r
+
+@scene/<draw> ( -- )
+	/<draw-light>
+	ufo/<draw> !/<draw-events>
+
+@scene/<draw-light> ( -- )
+	#0000 #0018 Screen/<set-pos>
+	;&blank .Screen/addr DEO2
+	[ LIT2 92 -Screen/auto ] DEO
+	#0203 .&light LDZ [ JMP SWP POP ]
+	( 5x ) .Screen/sprite DEOk DEOk DEOk DEOk DEO
+	JMP2r
+
+	&blank [ ffff ffff ffff ffff ]
+
+@scene/<unlock> ( -- )
+	;&on-button .Controller/vector DEO2
+	JMP2r
+
+@scene/<lock> ( -- )
+	#0000 .Controller/vector DEO2
+	JMP2r
+
+@scene/on-button ( -> )
+	ufo/is-alive ?{ BRK }
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	( * ) JSR2 POP2 BRK
+
+@scene/on-frame ( -> )
+	[ LIT2 -timeout/rate &f $1 ] INCk ,&f STR
+	EQU ?{ BRK }
+	[ LIT2 00 _&f ] STR
+	time/<eval>
+	/<draw>
+	BRK
+
+@scene/<toggle-light> ( -- )
+	[ LIT2 00 -&light ] LDZ EQU .&light STZ !/<draw>
+
+@scene/<draw-events> ( -- )
+	[ LIT2 00 -ufo/pooped ] LDZ EQU ?{
+		#0030 #002d Screen/<set-pos>
+		;ui-icn/poop #85 icon/<draw> }
+	ufo/is-alive ?{ JMP2r }
+	[ LIT2 00 -ufo/sick ] LDZ EQU ?{
+		#0030 #001d Screen/<set-pos>
+		;ui-icn/sick #85 icon/<draw> }
+	ufo/is-awake ?{
+		#0010 #001d Screen/<set-pos>
+		;ui-icn/asleep #05 icon/<draw> }
+	JMP2r
+
+@menu/on-button ( -> )
+	.Controller/button DEI ?{ BRK }
+	#0000 DUP2 Screen/<set-pos>
+	[ LIT2 80 -Screen/pixel ] DEO
+	scene/<bind>
+	scene/<draw>
+	menu/<draw>
+	BRK
+
+@menu/<toggle> ( -- )
+	#0000 DUP2 Screen/<set-pos>
+	[ LIT2 83 -Screen/pixel ] DEO
+	scene/<draw>
+	;&on-button .Controller/vector DEO2
+	JMP2r
+
+@menu/<draw> ( -- )
+	[ LIT2 05 -Screen/auto ] DEO
+	#0800
+	&>loop
+		DUP #00 SWP #10 SFT2 ;button-pos ADD2 LDA2 #00 SWP .Screen/y DEO2
+		#00 SWP .Screen/x DEO2
+		( | selection )
+		DUP .settings/selection LDZ EQU #00 SWP #90 SFT2 STH2
+		DUP .settings/mode LDZ EQU #00 SWP #90 SFT2 STH2
+		ADD2r DUP #00 SWP #60 SFT2 STH2r ADD2 ;ui-icn ADD2 #81 icon/<draw>
+		INC GTHk ?/>loop
+	POP2 JMP2r
+
+@icon/<draw> ( addr* color -- )
+	.Screen/sprite SWP2 .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	DEOk DEO
+	JMP2r
+
+@icon/<draw-flipx> ( addr* color -- )
+	#10 ORA .Screen/sprite SWP2 .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	DEOk DEO
+	JMP2r
+
+@progress/<draw> ( addr* progress -- )
+	[ LIT2r 0a -Screen/sprite ] ROT ROT
+	( | icon )
+	[ LIT2 05 -Screen/auto ] DEO
+	.Screen/addr DEO2
+	DEOkr
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	( | Background )
+	[ LIT2 36 -Screen/auto ] DEO
+	;&background .Screen/addr DEO2
+	DEOkr
+	.Screen/y DEI2 #0008 SUB2 .Screen/y DEO2
+	( | Fill )
+	[ LIT2 00 -Screen/auto ] DEO
+	;&fill .Screen/addr DEO2
+	#00
+	&>l
+		DEOkr
+		.Screen/x DEI2k INC2 ROT DEO2
+		INC GTHk ?/>l
+	POP2 POP2r JMP2r
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
+@debugger/<init> ( -- )
+	( | birth )
+	;timeout/hatch time/<eval-times>
+	( | hatch )
+	#0008 time/<eval-times>
+	JMP2r
+
+@dict/yufo "Yufo 00
+	&select "Select 00
+	&up "Up 00
+	&down "Down 00
+	&left "Left 00
+	&right "Right 00
+
+
+
+
+@appicon [
+ffff ffff ffff ffff 0000 0000 0000 0000
+ffff ffff ffff ffff 0000 0000 0000 0000
+ffff ffff ffff ffff 0000 0000 0000 0000
+ffb6 b6c6 f68f ffff 0000 0000 0000 0000
+ffdc dbd8 db3b ffff 0000 0000 0000 0000
+ff73 ed6d edf3 ffff 0000 0000 0000 0000
+ffff ffff ffff ffff 0000 0000 0000 0000
+ffff ffff ffff ffff 0000 0000 0000 0000
+ffff ffff ffff ffff 0000 0000 0000 0000 ]
+
+@status/sprites
+	( hygiene )   0010 2854 a282 4438
+	( happiness ) 3c42 81a5 8199 423c
+	( fitness )   0038 4464 949a 6502
+	( hunger )    106e 8981 8589 423c
+
+@progress/background [
+	007f 8080 8080 7f00 00ff 0000 0000 ff00
+	00ff 0000 0000 ff00 00fe 0101 0101 fe00 ]
+
+@progress/fill [ 0000 8080 8080 0000 ]
+
+@button-pos
+	0803 1803 2803 3803
+	0843 1843 2843 3843
+
+@rps/lut
+	00 ( 00 rock rock )
+	01 ( 01 paper rock )
+	02 ( 02 scissors rock )
+	$1
+	02 ( 04 rock paper )
+	00 ( 05 paper paper )
+	01 ( 06 scissors paper )
+	$1
+	01 ( 04 rock scissors )
+	02 ( 05 paper scissors )
+	00 ( 06 scissors scissors )
+
+@ufo-faces
+	&eating  [ 3fff ffff dff1 eef1 ffff ffff ffff ffff ]
+	&wash    3fff ffde adff f3ff ffff ffff ffff ffff
+	&discipline 3fff eef5 cefb f5f1 ffff ffff ffff fbff
+	&medicine   3fff ffff dffb f5fb ffff ffff ffff fbff
+	&sad     3fff ffff dff9 f6ff ffff ffff ffff ffff
+	&neutral 3fff ffff dfff f1ff ffff ffff ffff ffff
+	&sleep   3fff ffff d5ee fbff ffff ffff ffff ffff
+	&joy 3fff ffff dff5 fbff ffff ffff ffff ffff
+	( unused )
+	&even 3fff fff3 ddfb fdf3 ffff ffff ffff ffff
+	&lose 3fff ffff dff9 f6ff ffff ffff ffff ffff
+	&win   3fff ffff dff5 fbff ffff ffff ffff ffff
+
+@ufo-icns
+	&ears
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 003f
+	0000 0000 0000 0000 0000 0000 0000 0080
+	( antenna )
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1200 0000 0000 1212 0073 123f
+	0000 0000 0000 0000 0000 0000 0080 0080
+	( bug )
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2121 2121 0000 0033 5273 7333 123f
+	0000 0000 0000 0000 0000 8080 8000 0080
+	( leaf )
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3c34 3800 0000 007c 424a 463e 023f
+	0000 0000 0000 0000 0000 0000 0000 0080
+	( bunny )
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 6363 6363 6360 0063 9494 f7f7 f7ff
+	0000 0000 0000 0000 0000 8080 8080 8080
+	&heads
+	0000 0103 0303 0303 0001 0307 0707 0707
+	3fff ffff dfff f1ff ffff ffff ffff ffff
+	80c0 e0f0 70f0 f0f0 c0e0 f0f8 f8f8 f8f8
+	( wings )
+	001f 013f 211f 0103 1f3f 7f7f 7f3f 1f07
+	3fff ffff bff1 eeff ffff ffff ffff ffff
+	80e0 f6f0 7afa f8f0 e0fe ffff ffff fef8
+	( horns )
+	0010 101f 0f01 0303 1039 3f3f 1f0f 0707
+	3fff ffff bff5 e0fb ffff ffff ffff ffff
+	00c2 e2f6 74f0 f0f0 c2e7 ffff fefc f8f8
+	( 3 )
+	0006 061b 0f07 1f03 0e0f 3f3f 1f3f 3f1f
+	3fff fff3 bdfb fdf3 ffff ffff ffff ffff
+	80c6 ecf0 76f0 f6f0 c6ef fefe fffe fffe
+	( 2 )
+	000c 0f07 011f 1f03 0c1f 1f0f 1f3f 3f1f
+	3fff eef5 ceff f1ff ffff ffff ffff ffff
+	80cc ecf0 70fe f6f0 ccfe fefc feff fffe
+	&legs
+	0100 0000 0000 0000 0301 0009 0509 0500
+	ff3f 7eff dee8 ea00 ffff ffff ffff ffff
+	e000 0000 0000 0000 f0e0 0080 8000 0000
+	( fox )
+	0100 3c7e 3e01 0100 033d 4e8f 4f3f 0303
+	ff3f 7eff ff84 0400 ffff ffff ffff af24
+	e000 0000 0000 0000 f0e0 0080 8080 8080
+	( buff )
+	0136 0706 0603 0000 774f 3f0f 0f07 0301
+	ff3f fffd e377 0000 ffff ffff ffff 7724
+	e000 0080 8000 0000 f0e0 80c0 c080 0000
+	( milli )
+	0100 0001 0101 0200 0339 4543 2373 2706
+	ff3f feff ffaa 2a00 ffff ffff ffff ff2a
+	e000 0000 0000 8000 f0e0 0080 8080 c0c0
+	( bat )
+	0100 0000 0000 0000 0301 1f07 0200 0000
+	ff3f 3f75 7b3f 0000 ffff ffff ffff 7f22
+	e000 0080 8000 0000 f0e0 fef8 d080 0000
+
+@ufo-special-icns
+	&tomb
+	0000 000f 1b16 1715 0000 0f1f 3f3f 3f3f
+	0000 00e0 f0b0 f050 0000 e0f0 f8f8 f8f8
+	1716 1707 1703 102a 3f3f 3f3f 3f3f 7fff
+	f0f0 f0f0 b0e0 d408 f8f8 f8f8 f8fc feff
+	&egg
+	0000 0000 0000 0307 0000 0000 0003 070f
+	0000 0000 0000 80c0 0000 0000 0080 c0e0
+	0f0f 1a1d 1f1b 0700 1f1f 3f3f 3f3f 1f0f
+	e0e0 f0f0 50b0 e000 f0f0 f8f8 f8f8 f0e0
+	( animation )
+	0000 0000 0000 0007 0000 0000 0000 070f
+	0000 0000 0000 00c0 0000 0000 0000 c0e0
+	0f1f 353b 3f37 1f00 1f3f 7f7f 7f7f 3f1f
+	e0f0 f8f8 a8d8 f000 f0f8 fcfc fcfc f8f0
+	&hatch
+	001e 3f38 3030 1000 1e3f 7f7f 7879 3a11
+	0000 0800 0000 0000 001c 9c0c 0001 8000
+	0000 181d 1f1b 0700 8018 3d3f 3f3f 1f0f
+	0000 80d0 50b0 e000 0090 d8f8 f8f8 f0e0
+	&saucer
+	0000 0000 0000 0000 0000 0000 0000 0001
+	0000 0000 0000 007e 0024 5a24 2424 7e81
+	0000 0000 0000 0000 0000 0000 0000 0080
+	0103 1b3d 1a07 0100 021d 3d7e 7f3f 1f0f
+	ffff ffff 00f7 f700 2080 f000 ffff ffff
+	80c0 d8bc 58e0 8000 4038 3c7e fefc f8f0
+	0000 0000 0000 0000 0300 0000 0000 0000
+	0000 0000 0000 0000 ff00 0000 0000 0000
+	0000 0000 0000 0000 c000 0000 0000 0000
+
+@logo/sprite [
+	0000 0000 0080 4122
+	0000 0000 00a0 2020
+	0000 0000 0023 2428
+	0000 0000 00f8 0002
+	0000 0000 00a8 00aa
+	1408 0808 0808 0000
+	2020 2020 100f 0000
+	282f 2828 4888 0000
+	00f2 0002 0000 0000
+	00aa 00aa 00a8 0000 ]
+
+@rps/hands
+	( rock )
+	0000 0007 0f0e 1e7e 0000 0708 1011 e181
+	0000 0080 b888 b800 0000 c078 4474 44fc
+	7d7b 7f7f 0f00 0000 8284 8080 f00f 0000
+	b880 b880 b800 0000 447c 447c 44fc 0000
+	( paper )
+	0000 0007 0e0e 1e7e 0000 0708 1111 e181
+	0000 00e0 00fe 80fe 0000 f010 ff01 7f01
+	7d7b 7f7f 0f00 0000 8284 8080 f00f 0000
+	80fe 80fc c000 0000 7f01 7f02 3ec0 0000
+	( scissors )
+	0000 0007 0f0e 1e7e 0000 0708 1011 e181
+	0000 0080 beb0 a020 0000 c07f 414f 50df
+	7d7b 7f7f 0f00 0000 8284 8080 f00f 0000
+	fe80 b880 b800 0000 017f 447c 44fc 0000
+
+@ui-icn
+	( default )
+	0000 0000 0000 0000 0000 0007 0a0d 0a3d
+	0000 0000 0000 0000 0000 0080 40f0 b844
+	0000 0000 0000 0000 4a55 b5bf c055 300f
+	0000 0000 0000 0000 b454 4afa 0654 18e0
+	0000 0000 0000 0000 0000 3f48 8188 8188
+	0000 0000 0000 0000 1205 7a8c a28a 8a86
+	0000 0000 0000 0000 8088 807f 507f 2a3e
+	0000 0000 0000 0000 fa82 fe82 02fe 547c
+	0000 0000 0000 0000 003c 322f 2929 297f
+	0000 0000 0000 0000 0000 0000 0000 7884
+	0000 0000 0000 0000 605f 5057 5457 301f
+	0000 0000 0000 0000 c2c2 4252 4478 40c0
+	0000 0000 0000 0000 0003 0407 0403 020c
+	0000 0000 0000 0000 00c0 20e0 20c0 4030
+	0000 0000 0000 0000 1014 1111 1412 0807
+	0000 0000 0000 0000 08c8 e8e8 c808 10e0
+	0000 0000 0000 0000 0000 0000 1f20 4760
+	0000 0000 0000 0000 0000 0000 c020 1038
+	0000 0000 0000 0000 5f40 5840 5040 201f
+	0000 0000 0000 0000 d41a 121a 121a 26c2
+	0000 0000 0000 0000 0000 0001 0202 0236
+	0000 0000 0000 0000 0000 00dc 2202 0202
+	0000 0000 0000 0000 4941 512a 1408 0000
+	0000 0000 0000 0000 44a8 5020 0000 0000
+	0000 0000 0000 0000 0000 0000 001e 2145
+	0000 0000 0000 0000 1401 1805 3450 9020
+	0000 0000 0000 0000 4546 4447 5940 201f
+	0000 0000 0000 0000 c0e0 a030 d090 e000
+	0000 0000 0000 0000 001f 2040 5b40 514e
+	0000 0000 0000 0000 0080 4028 3020 7884
+	0000 0000 0000 0000 211e 040c 1402 0100
+	0000 0000 0000 0000 0286 4ace 3204 f800
+	( selected )
+	0000 0000 0502 0502 0000 0007 0f0f 0f3f
+	0000 0000 8000 40b8 0000 0080 c0f0 f8fc
+	352a 4a40 3f2a 0f00 7f7f ffff ff7f 3f0f
+	48a8 b404 f8a8 e000 fcfc fefe fefc f8e0
+	0000 0037 7e77 7e77 0000 3f7f ffff ffff
+	0002 0070 5c74 7478 1207 7afc fefe fefe
+	7f77 7f00 2f00 1400 ffff ff7f 7f7f 3e3e
+	047c 007c fc00 2800 fefe fefe fefe 7c7c
+	0000 0c10 1616 1600 003c 3e3f 3f3f 3f7f
+	0000 0000 0000 0078 0000 0000 0000 78fc
+	1f20 2f28 2b28 0f00 7f7f 7f7f 7f7f 3f1f
+	3c3c bcac b880 8000 fefe fefe fcf8 c0c0
+	0000 0300 0300 0103 0003 0707 0703 030f
+	0000 c000 c000 80c0 00c0 e0e0 e0c0 c0f0
+	0f0b 0e0e 0b0d 0700 1f1f 1f1f 1f1f 0f07
+	f030 1010 30f0 e000 f8f8 f8f8 f8f8 f0e0
+	0000 0000 001f 381f 0000 0000 1f3f 7f7f
+	0000 0000 00c0 e0c0 0000 0000 c0e0 f0f8
+	203f 273f 2f3f 1f00 7f7f 7f7f 7f7f 3f1f
+	28e4 ece4 ece4 c000 fcfe fefe fefe e6c2
+	0000 0000 0101 0101 0000 0001 0303 0337
+	0000 0000 dcfc fcfc 0000 00dc fefe fefe
+	363e 2e14 0800 0000 7f7f 7f3e 1c08 0000
+	b850 2000 0000 0000 fcf8 7020 0000 0000
+	0000 0000 0000 1e3a 0000 0000 001e 3f7f
+	0000 0000 0020 60c0 1401 1805 3470 f0e0
+	3a39 3b38 263f 1f00 7f7f 7f7f 7f7f 3f1f
+	0000 40c0 2060 0000 c0e0 e0f0 f0f0 e000
+	0000 1f3f 243f 2e31 001f 3f7f 7f7f 7f7f
+	0000 80c0 c0c0 8078 0080 c0e8 f0e0 f8fc
+	1e01 0303 0301 0000 3f1f 070f 1703 0100
+	fc78 b430 ccf8 0000 fefe fefe fefc f800
+	( active )
+	&food
+	0000 0000 0502 0502 0000 0007 0a0d 0a3d
+	0000 0000 8000 40b8 0000 0080 40f0 b844
+	352a 4a40 3f2a 0f00 4a55 b5bf c055 300f
+	48a8 b404 f8a8 e000 b454 4afa 0654 18e0
+	0000 0037 7e77 7e77 0000 3f48 8188 8188
+	0002 0070 5c74 7478 1205 7a8c a28a 8a86
+	7f77 7f00 2f00 1400 8088 807f 507f 2a3e
+	047c 007c fc00 2800 fa82 fe82 02fe 547c
+	0000 0c10 1616 1600 003c 322f 2929 297f
+	0000 0000 0000 0078 0000 0000 0000 7884
+	1f20 2f28 2b28 0f00 605f 5057 5457 301f
+	3c3c bcac b880 8000 c2c2 4252 4478 40c0
+	0000 0300 0300 0103 0003 0407 0403 020c
+	0000 c000 c000 80c0 00c0 20e0 20c0 4030
+	0f0b 0e0e 0b0d 0700 1014 1111 1412 0807
+	f030 1010 30f0 e000 08c8 e8e8 c808 10e0
+	0000 0000 001f 381f 0000 0000 1f20 4760
+	0000 0000 00c0 e0c0 0000 0000 c020 1038
+	203f 273f 2f3f 1f00 5f40 5840 5040 201f
+	28e4 ece4 ece4 c000 d41a 121a 121a 26c2
+	0000 0000 0101 0101 0000 0001 0202 0236
+	0000 0000 dcfc fcfc 0000 00dc 2202 0202
+	363e 2e14 0800 0000 4941 512a 1408 0000
+	b850 2000 0000 0000 44a8 5020 0000 0000
+	0000 0000 0000 1e3a 0000 0000 001e 2145
+	0000 0000 0020 60c0 1401 1805 3450 9020
+	3a39 3b38 263f 1f00 4546 4447 5940 201f
+	0000 40c0 2060 0000 c0e0 a030 d090 e000
+	0000 1f3f 243f 2e31 001f 2040 5b40 514e
+	0000 80c0 c0c0 8078 0080 4028 3020 7884
+	1e01 0303 0301 0000 211e 040c 1402 0100
+	fc78 b430 ccf8 0000 0286 4ace 3204 f800
+	&medicine
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	001e 372f 3f3f 1e00 1f21 4850 4040 211f
+	00f8 7c7c 7c7c f800 f8fc fefe fefe fcf8
+	&poop
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0003 010f 0f00 0000 0307 0f1f 1f0f
+	0000 00c0 40a0 e200 0000 c0e0 e0f2 f7e7
+	&sick
+	0000 0000 0f3d 3b63 0000 000f 3042 449c
+	0000 0000 e078 b88c 0000 00e0 1884 4472
+	7f65 4066 3f00 0000 809a bf99 403f 0000
+	fc4c 04cc f800 0000 02b2 fa32 04f8 0000
+	&asleep
+	0000 001c 0810 1c00
+	0000 0000 0000 7020
+	0000 0702 0407 0000
+	4070 0000 0000 0000
+	( frame )
+	0000 0000 0000 1c08
+	00e0 4080 e000 0000
+	101c 0000 0000 0000
+	0000 3810 2038 0000
+
+@tri-pcm
+	8082 8486 888a 8c8e 9092 9496 989a 9c9e
+	a0a2 a4a6 a8aa acae b0b2 b4b6 b8ba bcbe
+	c0c2 c4c6 c8ca ccce d0d2 d4d6 d8da dcde
+	e0e2 e4e6 e8ea ecee f0f2 f4f6 f8fa fcfe
+	fffd fbf9 f7f5 f3f1 efed ebe9 e7e5 e3e1
+	dfdd dbd9 d7d5 d3d1 cfcd cbc9 c7c5 c3c1
+	bfbd bbb9 b7b5 b3b1 afad aba9 a7a5 a3a1
+	9f9d 9b99 9795 9391 8f8d 8b89 8785 8381
+	7f7d 7b79 7775 7371 6f6d 6b69 6765 6361
+	5f5d 5b59 5755 5351 4f4d 4b49 4745 4341
+	3f3d 3b39 3735 3331 2f2d 2b29 2725 2321
+	1f1d 1b19 1715 1311 0f0d 0b09 0705 0301
+	0103 0507 090b 0d0f 1113 1517 191b 1d1f
+	2123 2527 292b 2d2f 3133 3537 393b 3d3f
+	4143 4547 494b 4d4f 5153 5557 595b 5d5f
+	6163 6567 696b 6d6f 7173 7577 797b 7d7f
