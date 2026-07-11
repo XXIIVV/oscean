@@ -20,16 +20,111 @@
 		<input type="text" id="search" placeholder="blue">
 		<input type="button" id="button" value="Search"/>
 	</div>
-	<p id='dict'></p>
+	<p id='info'></p>
 	<hr/>
 	<span id='summary'></span>
 	<ul id="result"></ul>
 	<!-- Le symbol pour une vie exempte de perdant! -->
 </body>
 <script type="text/javascript">
-	'use strict'
+'use strict'
+
+let db = {en:{}, lo:{}}
+
+dict.split('\n').forEach((value) => {
+	if(!value) return
+	let seg = value.split('[')
+	let key = seg[0].trim().toLowerCase()
+	let res = seg[1].split(']')
+	let type = res[0].trim()
+	let vals = res[1].split(';')
+	if(!type) type = '_'
+	vals.forEach((val) => {
+		let v = val.trim()
+		db.lo[v] = {}, db.lo[v][type] = key})
+	db.en[key] = {}, db.en[key][type] = vals
+})
+
+let en_keys = Object.keys(db.en)
+let lo_keys = Object.keys(db.lo)
+
+document.getElementById("info").innerHTML = `${en_keys.length}en ${+ lo_keys.length}lo`
+// Connect interface
+document.getElementById("search").addEventListener("keyup", (event) => {
+	if (event.key === "Enter") run_search(event.target.value.toLowerCase())
+});
+document.getElementById("button").onclick = (event) => {
+	run_search(document.getElementById("search").value.toLowerCase())
+}
+// Read anchor tag on start
+if (window.location.hash.substring(1))
+	run_search(window.location.hash.replaceAll("+", " ").substring(1))
+
+function print_latin(t) {
+	let res = ""
+	Object.keys(db.lo[t]).forEach((k1) => {
+		if(k1 != '_')
+			res += `<li><b>${t}</b>[${k1}]: ${db.lo[t][k1]} </li>`
+		else
+			res += `<li><b>${t}</b>: ${db.lo[t][k1]} </li>`
+	})
+	return res
+}
+function print_english(t) {
+	let res = ""
+	Object.keys(db.en[t]).forEach((k1) => {
+		db.en[t][k1].forEach((k2) => {
+			if(k1 != '_')
+				res += `<li><b>${k2}</b>[${k1}]: ${t} </li>`
+			else
+				res += `<li><b>${k2}</b>: ${t} </li>`
+		})
+	})
+	return res
+}
+
+function search_term(target) {
+	let res = ``
+	// Absolute
+	if(db.en[target])
+		res += print_english(target)
+	if(db.lo[target])
+		res += print_latin(target)
+	
+	res += `<br>`
+	res += `<ul>`
+	// Search English
+	en_keys.forEach((k) => {
+		if(k.indexOf(target) >= 0 && k != target) {
+			res += print_english(k)
+		}
+	})
+	res += `</ul>`
+	res += `<br>`
+	res += `<ul>`
+	// Search Latin
+	lo_keys.forEach((k) => {
+		if(k.indexOf(target) >= 0 && k != target) {
+			res += print_latin(k)
+		}
+	})
+	res += `<ul>`
+	document.getElementById("result").innerHTML += res
+}
+
+function run_search(target) {
+	if (!target.length)
+		return
+	window.location.hash = target.replaceAll(" ", "+")
+	document.getElementById("search").value = target
+	document.getElementById("summary").innerHTML = ""
+	document.getElementById("result").innerHTML = ""	
+	target.toLowerCase().replaceAll(",","").replaceAll("!","").replaceAll("?","").replaceAll(".","").split(" ").forEach(search_term)
+}
+
+console.log(db)
+	
 </script>
 <style>
-
 </style>
 </html>

@@ -35,7 +35,7 @@ adorn [vt] para
 adroit [adj] versuto
 Advent [n] (rel) adventu
 adverse [adj] adverso
-advertise [n] advertisement annuntio
+advertise [n] (advertisement) annuntio
 advise [vt] consilia; consule; notifica
 after [adv] deinde; post
 after [prep] (according to) secundo; secundum
@@ -56,7 +56,6 @@ alive [adj] vivo
 all [adj] toto
 almost [adv] paene; quasi
 alone [adj] solo
-along [prep]
 alongside [] apud
 already [adv] jam
 also [adv] etiam
@@ -575,7 +574,7 @@ domain [n] imperio; regno
 donate [n] donation donation
 donkey [n] asino
 door [n] ostio; porta
-doorstep limine
+doorstep [] limine
 double [adj] duplo
 doubt [n] dubio
 dowry [n] dote
@@ -1865,7 +1864,7 @@ some [] (unspecified number or quantity) aliquanto
 some amount [] aliquanto; aliquot
 someone [] aliquo
 sometime [] aliquando; interdum
-somewhat aliquid
+somewhat [] aliquid
 son [n] filio
 sorry [adj] dolente
 soul [n] anima
@@ -1905,7 +1904,7 @@ steam [n] (steamboat) pyroscapho
 steamship [] pyronave
 steel [n] aciario
 step [n] passu
-step (of stairs) scala
+step [] (of stairs) scala
 take steps to [vt] ingrede
 steward [n] (on ship, plane) dapifero
 stick [n] baculo
@@ -2233,7 +2232,7 @@ whole [adj] (of one thing) toto
 wholly [adv] toto
 whom [cor] quem
 why [cor] quare; quid
-why not quin
+why not [] quin
 wide [adj] lato
 widow [n] viduo
 wife [n] marita; muliere; sponsa; uxore
@@ -2260,7 +2259,7 @@ wolf [n] lupo
 woman [n] muliere
 wonder [adj] (wonderful) mirabile
 wood [n] (forest) silva
-wood (material) ligno
+wood [] (material) ligno
 wood-sorrel [] oxalis
 woof [n] (weaving) trama
 wool [n] lana
@@ -2298,10 +2297,9 @@ yield [vt] (give way) cede
 yoke [n] (bondage) jugo
 yore [n] of yore olim
 you [prn] vos
-you (plural) vos
+you [] (plural) vos
 young [adj] juvene
 your [pos] (plural) vestro
 yours [] de vos
 yourselves (plural) [prn] vos
-youth [n] (person) juvene
-`
+youth [n] (person) juvene`
