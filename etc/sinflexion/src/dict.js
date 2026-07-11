@@ -625,8 +625,8 @@ elapse [vi] flue; labe
 elbow [n] cubito
 elevate [vt] eleva
 elevator [n] ascensore
-eleven [card] decem-uno
-eleventh [ord] decimo-primo
+eleven [card] decem uno
+eleventh [ord] decimo primo
 else [adv] alio
 elsewhere [cor] alibi
 embarrass [vt] impedi
@@ -815,7 +815,7 @@ fourth [] quarto
 fourth [fract] uno quarto
 fox [n] vulpe
 frame [n] (body) corpore
-France [n] (Frenchman) franco
+France [n] (Frenchman) Franco
 frank [n] (Frank) franco
 free [adj] gratis; libero
 freely [adv] libenter
@@ -1369,7 +1369,6 @@ offer [vt] objice; praebe
 office [n] (place) officina
 offshoot [n] ramo
 often [adv] saepe
-oh! [inter] o!
 oil [n] oleo
 old [adj] (former) priore
 old [] (not new, of long standing) vetere
@@ -1503,7 +1502,7 @@ plus [prep] plus
 pocket [n] sacculo
 poet [n] vate
 poison [vt] venena
-Poland [n] (Pole) polono
+Poland [n] (Pole) Polono
 pole [n] (rod, etc.) palo
 police [n] (policeman) vigile
 polish [vt] terge
@@ -1703,7 +1702,7 @@ ruler [] regula
 rumor [n] rumore
 run [vi] curre
 run [n] cursu
-Russia [n] (Russian) russia
+Russia [n] (Russian) Russia
 rye [n] secale
 sad [adj] dolente; triste
 sadden [vt] contrista
@@ -1998,7 +1997,6 @@ test [vt] proba
 than [conj] quam
 thank [vt] agere gratias
 thanks [n] gratias
-thanks! [inter] gratias!
 that [cor] eo; illo
 that one [] illo
 that which [] illo
@@ -2021,8 +2019,8 @@ think [vt] cogita; pensa; puta
 third [ord] tertio
 third [fract] uno tertio
 thirst [n] siti
-thirteen [card] decem-tres
-thirteenth [ord] decimo-tertio
+thirteen [card] decem tres
+thirteenth [ord] decimo tertio
 thirty [card] triginta
 thirtieth [ord] trigesimo
 this [cor] ce; hoc; isto
@@ -2107,8 +2105,8 @@ tunic [n] tunica
 turn [vt] (change direction, facing) verte
 turn (change) [] muta
 turn (on a connected axis) [vi] gyro
-twelve [card] decem-duo
-twelfth [ord] decimo-secundo
+twelve [card] decem duo
+twelfth [ord] decimo secundo
 twenty [card] viginti
 twentieth [ord] vigesimo
 twice [adv] bis; duo vice
@@ -2123,7 +2121,7 @@ uncertain [adj] vago
 uncle [n] avunculo
 under [n] sub
 underling [n] inferiore
-underpants [n] sub-bracas
+underpants [n] sub bracas
 understand [vt] intellige; percipe
 undertake [vt] interprehende
 uneasy [adj] inquieto
@@ -2282,7 +2280,7 @@ written [adj] scripto
 yacht [n] phaselo
 yard [n] (enclosed courtyard) area (de domo)
 ye [prn] vos
-yea [inter] (hurrah!) io!
+hurrah! [inter] io!
 year [n] anno
 yellow [adj] citrino; flavo
 yes [inter] certo; etiam; ita; ita vero
