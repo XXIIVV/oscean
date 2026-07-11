@@ -11,19 +11,23 @@
 	<meta property="og:url" content="https://wiki.xxiivv.com/site/latin_sin_flexion.html"/>
 	<meta name="viewport" content="width=device-width" />
 	<link href="../../media/services/lo_icon.png" type="image/png" rel="shortcut icon">
-	<title>Latin Sin Flexion Translator</title>
+	<title>Traduction de Latin Sin Flexion</title>
 	<script src="src/dict.js"></script>
 </head>
 <body>
 	<noscript>The search requires Javascript.</noscript>
 	<div id='form'>
 		<input type="text" id="search" placeholder="blue">
-		<input type="button" id="button" value="Search"/>
+		<input type="button" id="button" value="Quaer"/>
+		<span id='info'></span>
 	</div>
-	<p id='info'></p>
-	<hr/>
+	<p>Scrib neces in capsul et tang <i>quaer</i>.</p>
 	<ul id="result"></ul>
-	<!-- Le symbol pour une vie exempte de perdant! -->
+	<hr/>
+	<footer>
+		<img src='media/services/lo_icon.png' width='30'/>
+		<p>Dictionar de <a href='../../site/latin_sin_flexion.html'>Latin Sin Flexion</a> fundat ex labor de Giuseppe Peano.</p>
+	</footer>
 </body>
 <script type="text/javascript">
 'use strict'
@@ -98,7 +102,7 @@ dict.split('\n').forEach((value) => {
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)
 
-document.getElementById("info").innerHTML = `${en_keys.length + lo_keys.length} entries`
+document.getElementById("info").innerHTML = `${en_keys.length + lo_keys.length} traductions`
 
 function print_entry(a,b,c) {
 	let res = ""
@@ -115,16 +119,14 @@ function is_vowel(letter) {
 
 function print_latin(t) {
 	let res = ""
-	db.lo[t].forEach((k) => {
-		res += `<li><b>${make_lo(t)}</b>: ${k}</li>`
-	})
+	db.lo[t].forEach((k) => { 
+		res += `<li><b>${make_lo(t)}</b>: ${k}</li>` })
 	return res
 }
 function print_english(t) {
 	let res = ""
-	db.en[t].forEach((k) => {
-		res += `<li><b>${t}</b>: ${k}</li>`
-	})
+	db.en[t].forEach((k) => { 
+		res += `<li><b>${t}</b>: ${k}</li>` })
 	return res
 }
 
@@ -134,38 +136,36 @@ function dump() {
 		let lo = make_lo(key)
 		res += lo != key ? `${lo}, ${key}\n` : `${lo}\n`
 		db.lo[key].sort().forEach((val) => {
-			res += `	${val}\n`
-		})
+			res += `	${val}\n` })
 	})
 	console.log(res)
 }
 
 function search_term(target) {
-	if(target == "__dump") dump()
-	let res = ``
-	if(res != '')
-		res += `<br>`
-	res += `<li><i>English/LsF</i></li>`
+	if(target == "__dump") return dump()
+	let res = ""
+	// English
+	let res_a = ""
 	if(db.en[target])
-		res += print_english(target)
-	res += `<ul class='en'>`
-	// Search English
+		res_a += print_english(target)
 	en_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target) 
-			res += print_english(k)
-	})
-	res += `</ul>`
-	res += `<br>`
-	res += `<li><i>Lø/English</i></li>`
+			res_a += print_english(k) })
+	if(res_a !== "")
+		res += `<li><i>Angl/Latin</i></li><ul>${res_a}</ul>`
+	// Latin
+	let res_b = ""
 	if(db.lo[target])
-		res += print_latin(target)
-	res += `<ul class='lo'>`
-	// Search Latin
+		res_b += print_latin(target)
 	lo_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target)
-			res += print_latin(k)
-	})
-	res += `<ul>`
+			res_b += print_latin(k) })
+	if(res_b !== "")
+		res += `<li><i>Lø/Angl</i></li><ul>${res_b}</ul>`
+		
+	if(!res)
+		res += "<p>Il es <b>nul respons</b> ad de vos quaer, tent un al verb.</p>"
+	res += '<br />'
 	document.getElementById("result").innerHTML += res
 }
 
@@ -184,12 +184,15 @@ document.getElementById("search").addEventListener("keyup", (event) => {
 document.getElementById("button").onclick = (event) => {
 	run_search(document.getElementById("search").value.toLowerCase())
 }
+
 // Read anchor tag on start
 if (window.location.hash.substring(1))
 	run_search(window.location.hash.replaceAll("+", " ").substring(1))
-	
 </script>
 <style>
 body { background:#ddd;color:black;padding:15px }
+body a { color: black }
+body footer { line-height:30px }
+body footer img { float:left;margin-right:5px }
 </style>
 </html>
