@@ -31,6 +31,26 @@
 
 let db = {en:{}, lo:{}}
 
+function push_word_en(key, type, val, note){
+	if(!db.en[key])
+		db.en[key] = []
+	let res = ""
+	if(type != "_") res += `[${type}] `
+	res += val
+	if(note) res += ` <i>${note}</i>`
+	db.en[key].push(res)
+}
+
+function push_word_lo(key, type, val, note){
+	if(!db.lo[key])
+		db.lo[key] = []
+	let res = ""
+	if(type != "_") res += `[${type}] `
+	res += val
+	if(note) res += ` <i>${note}</i>`
+	db.lo[key].push(res)
+}
+
 dict.split('\n').forEach((value) => {
 	if(!value) return
 	let seg = value.split('[')
@@ -41,14 +61,20 @@ dict.split('\n').forEach((value) => {
 	if(!type) type = '_'
 	vals.forEach((val) => {
 		let v = val.trim()
-		db.lo[v] = {}, db.lo[v][type] = key})
-	db.en[key] = {}, db.en[key][type] = vals
+		let note = ""
+		if(v.indexOf('(') >= 0) {
+			note = v.split('(')[1].split(')')[0]
+			v = v.replace(`(${note})`, '').trim()
+		}
+		push_word_en(key, type, v, note)
+		push_word_lo(v, type, key, note)
+	})
 })
 
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)
 
-document.getElementById("info").innerHTML = `${en_keys.length}en ${+ lo_keys.length}lo`
+document.getElementById("info").innerHTML = `${en_keys.length + lo_keys.length} entries`
 // Connect interface
 document.getElementById("search").addEventListener("keyup", (event) => {
 	if (event.key === "Enter") run_search(event.target.value.toLowerCase())
@@ -60,25 +86,26 @@ document.getElementById("button").onclick = (event) => {
 if (window.location.hash.substring(1))
 	run_search(window.location.hash.replaceAll("+", " ").substring(1))
 
+function print_entry(a,b,c) {
+	let res = ""
+	if(b != '_')
+		res += `<li><b>${a}</b>[${b}]: ${c} </li>`
+	else
+		res += `<li><b>${a}</b>: ${c} </li>`
+	return res
+}
+
 function print_latin(t) {
 	let res = ""
-	Object.keys(db.lo[t]).forEach((k1) => {
-		if(k1 != '_')
-			res += `<li><b>${t}</b>[${k1}]: ${db.lo[t][k1]} </li>`
-		else
-			res += `<li><b>${t}</b>: ${db.lo[t][k1]} </li>`
+	db.lo[t].forEach((k) => {
+		res += `<li><b>${t}</b>: ${k}</li>`
 	})
 	return res
 }
 function print_english(t) {
 	let res = ""
-	Object.keys(db.en[t]).forEach((k1) => {
-		db.en[t][k1].forEach((k2) => {
-			if(k1 != '_')
-				res += `<li><b>${k2}</b>[${k1}]: ${t} </li>`
-			else
-				res += `<li><b>${k2}</b>: ${t} </li>`
-		})
+	db.en[t].forEach((k) => {
+		res += `<li><b>${t}</b>: ${k}</li>`
 	})
 	return res
 }
@@ -90,9 +117,9 @@ function search_term(target) {
 		res += print_english(target)
 	if(db.lo[target])
 		res += print_latin(target)
-	
-	res += `<br>`
-	res += `<ul>`
+	if(res != '')
+		res += `<br>`
+	res += `<ul class='en'>`
 	// Search English
 	en_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target) {
@@ -101,7 +128,7 @@ function search_term(target) {
 	})
 	res += `</ul>`
 	res += `<br>`
-	res += `<ul>`
+	res += `<ul class='lo'>`
 	// Search Latin
 	lo_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target) {

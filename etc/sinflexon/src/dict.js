@@ -702,7 +702,7 @@ execute [vt] (perform) exseque
 exhibit [vt] expone
 expect [vt] expecta
 expedient [n] (to be expedient) expedi
-expose [vt] (set in public view; phot) expone
+expose [vt] (set in public view) expone
 expose [] (uncover, reveal) expone
 express [vt] exprime
 exterior [n] extero
@@ -1188,7 +1188,7 @@ look [vt] (look at) adspice; perspice; prospice; spece; specta
 look [vi] aspice
 look [n] vultu
 lose [vt] perde
-lost [adj] to be lost (perish) peri
+lost [adj] (to be lost, perish) peri
 love [vt] (feel deep affection for) ama
 love [n] amore
 low [adj] basso; humile
