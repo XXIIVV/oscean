@@ -40,7 +40,7 @@ function make_lo(word) {
 			res.push(letter), last = letter
 	})
 	// Unless it's a motule
-	if(res.length < 4){
+	if(res.length < 4) {
 		if(is_vowel(res[res.length-1])) {
 			if(res.length < 3)
 				return `${res.join('')}`
@@ -58,7 +58,7 @@ function make_def(type, val, note) {
 	let res = ""
 	if(type != "_") res += `[${type}] `
 	res += val
-	if(note) res += ` <i>${note}</i>`
+	if(note) res += ` (${note})`
 	return res
 }
 
@@ -86,6 +86,7 @@ dict.split('\n').forEach((value) => {
 		push_word("lo", make_lo(v), type, key, note)
 	})
 })
+
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)
 
@@ -119,7 +120,25 @@ function print_english(t) {
 	return res
 }
 
+function dump() {
+	let res = ""
+	lo_keys.sort().forEach((key) => {
+	
+		if(key.split(' ').length > 1)
+			console.log(key)
+		res += `${key}: `
+		db.lo[key].forEach((val) => {
+			res += `${val} `
+		})
+		res += `\n`
+	})
+	// console.log(res)
+}
+
 function search_term(target) {
+	if(target == "__dump")
+		dump()
+
 	let res = ``
 	if(res != '')
 		res += `<br>`

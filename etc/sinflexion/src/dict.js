@@ -9,7 +9,7 @@ about [prep] (concerning) de
 about [prep] (place, time, quantity) circa
 above [prep] (over but not in contact) super
 abroad [adv] ab; ad extero
-absent [adj] to be absent abes
+absent [adj] (to be absent) abes
 accept [vt] accipe
 accident [n] (mishap) infortunio
 accompany [vt] comita
@@ -97,7 +97,7 @@ as if [] quasi
 as long as [] dum
 as...as [] tanto...quanto; tanto...quanto tam...quam
 as...so [] ut...ita
-ash [adj] ashy cinereo
+ash [adj] (ashy) cinereo
 ask [vt] interroga; quaere
 ask for [] roga
 ass [n] (zool) asino
@@ -106,10 +106,9 @@ assent [vi] annue
 associate [n] socio
 assume [vt] (debts, responsibilities, etc.) sume
 assume [] (suppose, presume) induc
-assure [n] assurance fiducia
+assure [n] (assurance) fiducia
 at [prep] (contiguous to) ad
 at [prep] (in the house of) apud
-at [prep] )at Akane's house) apud Acane
 at [prep] (near) apud
 at [prep] (toward) ad; verso
 at [prep] (at hand) adjacente; prope
@@ -144,7 +143,7 @@ band [n] turba
 bang [vt] percute
 bang [n] rumore
 bar [n] (in a river) pulvino
-barbarian [adj] barbarous truce
+barbarian [adj] (barbarous) truce
 bard [n] vate
 bare [adj] mero
 barely [adv] vix
@@ -292,7 +291,7 @@ by [prep] (by now) jam
 by [prep] (by oneself) solo
 by [prep] (by reason of) nam
 by [prep] (by then) jam
-by [prep] (by this) time jam
+by [prep] (by thistime ) jam
 cabinet [n] armario
 cake [n] libo
 call [vt] voca
@@ -382,7 +381,7 @@ closet [n] cubiculo
 cloth [n] panno; tela; texto
 cloth [n] (any woven fabric) fabrica
 cloth [n] (tablecloth) mantele; mappa
-clothe [n] clothes habitu; veste
+clothe [n] (clothes) habitu; veste
 cloud [n] nebula
 clover [n] trifolio
 coal [n] carbone (lapideo)
@@ -415,10 +414,10 @@ compress [vt] preme
 conceal [vt] occulta
 conceive [vt] concipe
 conceivable [adj] conceptibile
-concern [adj] concerning de
+concern [adj] (concerning) de
 condone [vt] condona
 confess [vt] confite
-confide [n] confidence fiducia
+confide [n] (confidence) fiducia
 conflict [n] pugna
 conflict [vi] pugna
 connect [n] (connection) junctura
@@ -426,7 +425,7 @@ connected [adj] conjuncto
 conquer [n] (conquerer) victore
 conquered [adj] victo
 consanguineous [adj] consanguineo
-consequence [adv] consequently itaque
+consequence [adv] (consequently) itaque
 conserve [vt] respice
 consider [vt] puta
 console [n] (consolation) solacio
@@ -505,7 +504,7 @@ dare [vt] aude
 dark [adj] fusco; obscuro
 daughter [n] filia
 dauntless [adj] impavido
-day [n] (24-hour period) die
+day [n] (24 hour period) die
 death [n] decessu; morte
 debt [n] debito
 decide [n] (decision) judicio
@@ -558,7 +557,7 @@ displace [vt] amove
 display [vt] (exhibit) expone
 display [] (show) monstra
 disseminate [vt] semina
-dissolve [adj] dissolved soluto
+dissolve [adj] (dissolved) soluto
 distant [adj] distante
 district [n] pago
 ditch [n] fossa
@@ -570,7 +569,7 @@ I did write [] e scribe
 doctor [n] medico
 dog [n] cane
 domain [n] imperio; regno
-donate [n] donation donation
+donate [n] (donation) donation
 donkey [n] asino
 door [n] ostio; porta
 doorstep [] limine
@@ -650,7 +649,7 @@ endure [vi] dura
 endure (bear, undergo) [vt] pate
 engage [adj] (be engaged in) versa
 engineer [n] ingeniario
-England [adj] English anglo
+England [adj] (English) Anglo
 engrave [vt] incide
 engraved [adj] inciso
 enough [adj] (be enough) suppedito
@@ -816,8 +815,8 @@ fourth [] quarto
 fourth [fract] uno quarto
 fox [n] vulpe
 frame [n] (body) corpore
-France [n] Frenchman franco
-frank [n] Frank (hist) franco
+France [n] (Frenchman) franco
+frank [n] (Frank) franco
 free [adj] gratis; libero
 freely [adv] libenter
 frequent [adv] (frequently) saepe; subinde
@@ -880,7 +879,7 @@ goods [] merce
 goose [n] ansere
 govern [vt] guberna; impera; rege
 grace [n] (before meals) prandio
-gradual [adv] gradually paulatim
+gradual [adv] (gradually) paulatim
 graft [vt] insere
 grain [n] grano
 grape [n] uva
@@ -928,7 +927,7 @@ harrow [vt] hirpice
 harvest [vt] mete
 harvest[n] messe
 harvester [] messore
-haste [vi] hasten matura
+haste [vi] (hasten) matura
 hat [n] cappa; pileo
 hatter [] cappario
 hate [vt] odio
@@ -1403,7 +1402,7 @@ other [adj] alio
 our [pos] nostro
 ours [] de nos
 ourselves [prn] nos ipso
-out [prep] get out! apage!
+out [prep] (get out!) apage!
 out of [] ex
 outside [] extra
 outside [adv] foris
@@ -1504,7 +1503,7 @@ plus [prep] plus
 pocket [n] sacculo
 poet [n] vate
 poison [vt] venena
-Poland [n] Pole polono
+Poland [n] (Pole) polono
 pole [n] (rod, etc.) palo
 police [n] (policeman) vigile
 polish [vt] terge
@@ -1536,7 +1535,7 @@ presume [vt] suppone
 prevent [vt] obsta
 previous [adv] (previously) antea
 price [n] pretio
-prick [adj] prickly spinoso
+prick [adj] (prickly) spinoso
 principle [n] principio
 print [n] (printer) impressore
 printed [adj] impresso
@@ -1618,7 +1617,7 @@ relic [n] reliquia
 relieve [vt] (tension, strain, etc.) releva
 relinquish [vt] relinque
 relinquished [adj] relicto
-rely [n] reliance fiducia
+rely [n] (reliance) fiducia
 remain [vi] dura; mane; permane; remane; resta
 remainder [n] reliquo
 remains [] reliquia
@@ -1754,12 +1753,12 @@ sell [n] seller venditore
 semen [n] semine
 send [vt] manda; mitte
 sent [adj] misso
-sense [adj] (senseless) (foolish) stulto
+sense [adj] (senseless, foolish) stulto
 serious [adj] (earnest, sincere, not joking) grave
 serious [] (weighty, not trifling) grave
 serum [n] sero
 serve [vt] servi
-set [vt] set up erige
+set [vt] (set up) erige
 settle [vt] stabili
 seven [card] septem
 seventy [] septuaginta
@@ -1767,7 +1766,7 @@ seventh [ord] septimo
 seventieth [] septuagesimo
 several [adj] (indef amount) aliquanto
 several [] (more than one) nonnullo; plure
-sew [n] sewing sutura
+sew [n] (sewing) sutura
 shade [n] umbra
 shade [vt] umbra
 shaft [n] puteo
@@ -1823,7 +1822,7 @@ sister [n] sorore
 sit [vi] sede
 sit down [] conside
 sitting [adj] sedente
-situate [adj] situated posito
+situate [adj] (situated) posito
 six [card] sex
 sixty [] sexaginta
 sixth [ord] sexto
@@ -1850,14 +1849,14 @@ snow [vi] ninge
 so [adv] ergo; ita; sic; tam
 not so [] non ita
 so much the [] tanto
-soak [adj] soaked madido
+soak [adj] (soaked) madido
 soap [n] sapone
 sock [n] socculo
 soft [adj] molle
 soil [n] solo
 soldier [n] milite
 sole [n] (zool) solea
-solve [adj] solved soluto
+solve [adj] (solved) soluto
 some [cor] (unknown or unspecified by name) aliquo
 some [] (unspecified number or quantity) aliquanto
 some amount [] aliquanto; aliquot
@@ -1894,7 +1893,7 @@ staff [n] palo
 stake [n] palo
 stand [vi] sta
 star [n] astro; stella
-stare [vt] stare at specta
+stare [vt] (stare at) specta
 state [n] (pol) regno
 station [n] (stationer) chartario
 stay [vi] sta
@@ -1968,7 +1967,7 @@ sweat [n] sudore
 sweet [adj] dulce
 swift [adj] veloce
 swim [vi] nata
-sympathy [vi] sympathize with compate
+sympathy [vi] (sympathize with) compate
 table [n] (furniture) mensa; tabula
 table [] (list) tabella
 tablecloth [] mantele; mappa
@@ -1977,7 +1976,7 @@ tailor [n] sartore
 take [vt] prehende
 take off [] (clothes) devesti
 talent [n] ingenio
-talk [vt] talk over discute
+talk [vt] (talk over) discute
 tall [adj] alto
 tame [vt] (domesticate) domita
 task [n] opera
@@ -2064,7 +2063,7 @@ to [prep] ad
 to [] (as far as) usque
 to [] (toward) verso
 today [] hodie
-toast [adj] toasted tosto
+toast [adj] (toasted) tosto
 today [adv] hodie
 tomb [n] (tombstone) lapide
 tomorrow [adv] cras
@@ -2169,7 +2168,7 @@ view [n] vista; visu
 vigil [n] vigilia
 vile [adj] vile
 village [n] pago; vico
-vine [n] vineyard vinea
+vine [n] (vineyard) vinea
 violent [n] (violence) vi
 virtue [n] (by virtue of) ex
 visage [n] vultu
