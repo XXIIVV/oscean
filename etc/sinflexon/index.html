@@ -30,6 +30,30 @@
 
 let db = {en:{}, lo:{}}
 
+function make_lo(word) {
+	let res = []
+	let last = ""
+	let letters = word.split('')
+	// Combine repeated letters
+	letters.forEach((letter, id) => {
+		if(last != letter)
+			res.push(letter), last = letter
+	})
+	// Unless it's a motule
+	if(res.length < 4){
+		if(is_vowel(res[res.length-1])) {
+			if(res.length < 3)
+				return `${res.join('')}`
+			if(!is_vowel(res[0]))
+				return `${res.join('')}`
+		}
+	}
+	// Pop ending vowels
+	while(is_vowel(res[res.length-1])) 
+		res.pop()
+	return `${res.join('')}`
+}
+
 function make_def(type, val, note) {
 	let res = ""
 	if(type != "_") res += `[${type}] `
@@ -60,6 +84,7 @@ dict.split('\n').forEach((value) => {
 		}
 		push_word("en", key, type, v, note)
 		push_word("lo", v, type, key, note)
+		make_lo(v)
 	})
 })
 let en_keys = Object.keys(db.en)
@@ -75,28 +100,15 @@ function print_entry(a,b,c) {
 		res += `<li><b>${a}</b>: ${c} </li>`
 	return res
 }
+
 function is_vowel(letter) {
 	return letter == 'a' || letter == 'e' || letter == 'i' || letter == 'o' || letter == 'u'
-}
-
-function print_lo(word) {
-	let res = []
-	let last = ""
-	// Combine repeated letters
-	word.split('').forEach((letter, id) => {
-		if(last != letter)
-			res.push(letter), last = letter
-	})
-	// Pop ending vowels
-	while(is_vowel(res[res.length-1])) 
-		res.pop()
-	return `${res.join('')}`
 }
 
 function print_latin(t) {
 	let res = ""
 	db.lo[t].forEach((k) => {
-		res += `<li><b>${print_lo(t)}</b>: ${k}</li>`
+		res += `<li><b>${make_lo(t)}</b>: ${k}</li>`
 	})
 	return res
 }
