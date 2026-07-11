@@ -27,7 +27,7 @@
 	@autocomplete/addr $2
 	@nav/buf $60 &bufend $1 &scroll $1 &visible $1 &cat $1 &symbol $1
 	@sel/a $2 &b $2 &to $2 &from $2
-	@textarea/eof $2 &lines $1
+	@textarea/eof $2 &rows $1
 
 |100
 
@@ -62,7 +62,7 @@
 	( ) "Left 0a
 	( ) "A 20 "Text 20 "Editor 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "15 20 "May 20 "2026 $1 00
+	( ) "10 20 "Jul 20 "2026 $1 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -352,6 +352,7 @@
 	.&a LDZ2 .&b LDZ2 LTH2k [ JMP SWP2 ] .&to STZ2
 	.&from STZ2
 	autocomplete/<reset>
+	scrollbar/<req-update>
 	wrap/update !reqdraw-both
 
 @sel/<erase> ( -- )
@@ -597,7 +598,7 @@
 @scrollbar/<draw> ( -- )
 	( | bg )
 	#0004 #0028 Screen/<set-pos>
-	#0100 .textarea/lines LDZ #03 MUL STH2k SUB
+	#0100 .textarea/rows LDZ #03 MUL STH2k SUB
 	( ) ;halftone-icn #02 <draw-times>
 	( | fg )
 	.scroll/y LDZ2 .&ratio LDZ2 DIV2 #0028 ADD2 .Screen/y DEO2
@@ -605,23 +606,16 @@
 		( TODO: Fixme ) POP2 JMP2r }
 	( ) ;fill-icn #02 !<draw-times>
 
-@scrollbar/<update> ( -- )
-	#0001
-	( | count lines )
-	get-scroll-addr [ LITr -scroll/y ] LDZ2r
-	&>w
-		addr-not-lb INC2r? INC2 LDAk ?/>w
-	POP2 STH2r DUP2 ,&lines STR2
-	.&height LDZ2 DIV2 NIP #40 SFT SFT2 .&ratio STZ2
-	JMP2r
-
 @scrollbar/<mod-y> ( y* -- )
 	.scroll/y LDZ2 ADD2
 	( >> )
 
 @scrollbar/<set-y> ( line* -- )
-	/<update>
 	( unchanged ) DUP2 .scroll/y LDZ2 NEQ2 ?{ POP2 JMP2r }
+	( >> )
+
+@scrollbar/<set-y-force> ( line* -- )
+	/<update>
 	STH2k [ LIT2r 0000 ] ;textarea/buf
 	&>wsy
 		EQU2kr STHr ?{
@@ -632,6 +626,21 @@
 		#00 nav/<set-y>
 		.scroll/y LDZ2 INC2 path/<draw-line> !reqdraw-both }
 	POP2 POP2 JMP2r
+
+@scrollbar/<refresh> ( -- )
+	.scroll/y LDZ2 !/<set-y-force>
+
+@scrollbar/<update> ( -- )
+	[ LIT &req-update 01 ] ?{ JMP2r }
+	textarea/get-lines DUP2 ,&lines STR2
+	.&height LDZ2 DIV2 ORAk ?{ INC2 }
+	INC2 .&ratio STZ2
+	[ LIT2 00 _&req-update ] STR
+	JMP2r
+
+@scrollbar/<req-update> ( -- )
+	[ LIT2 01 _&req-update ] STR
+	JMP2r
 
 (
 @|textarea )
@@ -683,6 +692,14 @@
 @textarea/get-length ( -- length* )
 	/get-range INC2 SUB2 JMP2r
 
+@textarea/get-lines ( -- )
+	[ LIT2r 0000 ] /get-range
+	&>lgl
+		LDAk DUP ?{
+			POP POP2 POP2 STH2r JMP2r }
+		#0a NEQ ?{ INC2r }
+		INC2 !/>lgl
+
 @textarea/clamp-addr ( addr* -- addr* )
 	( min ) ;&buf u16/min
 	( max ) .&eof LDZ2 #0001 SUB2 u16/max JMP2r
@@ -700,7 +717,7 @@
 	highlight/<reset>
 	caret/<reset>
 	( | draw )
-	.&eof LDZ2 get-scroll-addr [ LITr -&lines ] LDZr [ LITr 01 ]
+	.&eof LDZ2 get-scroll-addr [ LITr -&rows ] LDZr [ LITr 01 ]
 	&>l
 		caret/scan highlight/<draw-runic>
 		( | during whitespace )
@@ -742,7 +759,7 @@
 	sel/button-direction
 	( | vertical )
 	addr-to-line .scroll/y LDZ2 LTH2k ?/move
-	[ LIT2 00 -&lines ] LDZ ADD2 #0001 SUB2 GTH2k ?/move
+	[ LIT2 00 -&rows ] LDZ ADD2 #0001 SUB2 GTH2k ?/move
 	POP2 POP2 JMP2r
 
 	&move ( target* scroll/y* -- )
@@ -926,7 +943,7 @@
 	[ LIT2 25 -Screen/auto ] DEO
 	sel/get-from INC2 /addr-to-id ,&sel STR
 	;&+ptr LDA .&buf EQUk ?/<draw-empty>
-	.&scroll LDZ DUP ADD ADD [ LITr -textarea/lines ] LDZr [ LITr 00 ]
+	.&scroll LDZ DUP ADD ADD [ LITr -textarea/rows ] LDZr [ LITr 00 ]
 	&>ld
 		EQUkr STHr ?{
 			[ LIT &sel $1 ] /<draw-label>
@@ -1146,7 +1163,8 @@
 
 @file/<new> ( -- )
 	( | clear )
-	#0000 scrollbar/<set-y>
+	scrollbar/<req-update>
+	#0000 scrollbar/<set-y-force>
 	textarea/<erase-all>
 	path/<reset>
 	( | reset position )
@@ -1156,7 +1174,8 @@
 	#03 path/<draw-color> !reqdraw-both
 
 @file/<open> ( -- )
-	#0000 scrollbar/<set-y>
+	scrollbar/<req-update>
+	#0000 .scroll/y STZ2
 	;textarea/buf sel/<set-a>
 	search/<reset>
 	( >> )
@@ -1166,7 +1185,8 @@
 	;path/buf textarea/<put-file>
 	path/is-tal #00 EQU ;highlight/mute STA
 	( | draw )
-	scrollbar/<update>
+	scrollbar/<req-update>
+	scrollbar/<refresh>
 	sel/<reset>
 	#03 path/<draw-color>
 	#05 path/<set-state> !reqdraw-both
@@ -1817,6 +1837,7 @@
 
 @pict/<draw> ( str* -- )
 	/<set>
+	/is-valid ?{ JMP2r }
 	/get-size INC2k ORA ?{ POP2 JMP2r }
 	/<draw-icn>
 	[ LIT2 25 -Screen/auto ] DEO
@@ -1876,6 +1897,10 @@
 		STA2
 		INC2 !/>w
 
+@pict/is-valid ( -- t )
+	,&+ptr LDR2 #0007 SUB2 LDAk LIT "x EQU ?{ POP2 #00 JMP2r }
+	INC2 INC2 INC2 #0004 ;dict/icn-ext !mem/cmp
+
 (
 @|theme )
 
@@ -1912,7 +1937,7 @@
 	.Screen/width DEO2
 	( | cache )
 	.Screen/height DEI2 #0028 SUB2
-	( ) DUP2 #0018 DIV2 .textarea/lines STZ
+	( ) DUP2 #0018 DIV2 .textarea/rows STZ
 	POP
 	( ) .scrollbar/height STZ2
 	( | responsive )
@@ -2114,6 +2139,7 @@
 	&reset-theme "Reset 20 "Theme $1 &bytes-free 20 "bytes 20 "free. $1
 	&empty "Empty $1
 	&untitled-txt "untitled.txt $1
+	&icn-ext ".icn 00
 
 @dotted-icn [
 	0000 0000 0000 00aa ]
