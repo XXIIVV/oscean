@@ -1,3122 +1,2307 @@
 let dict=`
-
-;;	Particles
-
-Do	No, not, nor
-Re	And, also
-Mi	Or
-Fa	At, to
-Sol	If, but
-La	The, then, at
-Si	Yes, ok
-
-;;	Tenses
-
-Dodo	Imperfect, definite preterite
-Rere	Pluperfect
-Mimi	Future
-Fafa	Conditional
-Solsol	Imperative
-Lala	Present participle
-Sisi	Past participle
-
-;;	Sudre
-
-Dore	I, me, myself, personally, we, ourselves
-Domi	You, yourself, (singular or plural)
-Dofa	He, she, it, him, her, them, they
-Dosol	Self, oneself
-Dola	One, someone, another person
-Dosi	Other, another, different, alternative
-Redo	My, mine
-Remi	Your, yours
-Refa	His, her, its
-Resol	Our, ours
-Rela	Your, yours (plural)
-Resi	Their, theirs
-Mido	For
-Mire	That, which, who
-Mifa	Whose
-Misol	Well, well done, good
-Mila	Voila, behold, here is
-Misi	Good evening, good night
-Fado	What?, what is this?
-Fare	That, that one, those
-Fami	This, this one, these
-Fasol	Here, here is, this is
-Fala	Good, tasty, delectable, exquisite, delicious
-Fasi	Much, very, a lot, many (augmentative)
-Soldo	Nothing, nil, naught, null
-Solre	Why? What for?
-Solmi	Wrong, evil
-Solfa	Because, for
-Solla	Always, perpetuate, perpetuately, constantly
-Solsi	thank
-Lado	Yesterday
-Lare	Today, this day
-Lami	Tomorrow
-Lafa	Bad
-Lasol	Never
-Lasi	Of
-Sido	How
-Sire	Each, every
-Simi	Good morning, good afternoon, hello
-Sifa	Little, scarcely
-Sisol	Mister
-Sila	Madame
-
-;;	Gajewski
-
-Fare	with, joinly
-Fasol	why, for what reason
-Soldo	but
-Solre	in, within
-Lado	nothing, no one
-Lare	by
-Lami	here, there
-Sido	same thing
-Sila	young man, bachelor
-
-;;	Modern
-
-Dofa	they(sing.)
-Refa	their(sing.)
-Lare	through, by, via
-Sisol	respectful title
-Sila	affectionate title
-
-;;	Sudre
-
-Doredo	Time
-Doremi	Day
-Dorefa	Week
-Doresol	Month
-Dorela	Year
-Doresi	Century
-Domido	Universe, Creation
-Domire	Infinity, unlimited, endless, undefined, immensity, unbounded, immeasurable
-Domifa	Providence, providential, welfare
-Domisol	God, the all-powerful, supreme being
-Domila	Eternize, perpetuate, eternal, eternity
-Domisi	Immortalize, immortal, indestructible, imperishable
-Dofado	Majesty, grandeur, magnitude, imposing, majestic
-Dofare	Supreme, sovreign
-Dofami	Magnificence, splendor, superb
-Dofasol	Marvel, wonder
-Dofala	Miracle, supernatural, miraculous
-Dofasi	Adore, worship
-Dosoldo	Pray
-Dosolre	Believe
-Dosolmi	Jesus Christ
-Dosolfa	Holy Virgin
-Dosolla	Religion
-Dosolsi	Sanctify
-Dolado	Charity, charitable, charitably
-Dolare	Philanthropy, philanthropist
-Dolami	Despise, contempt, contemptuous
-Dolafa	Sympathize, pity, compassion
-Dolasol	Inexcusable, unforgivable
-Dolasi	Incomparable, invaluable, unparalleled, without equal
-Dosido	Help, aid, assist, rescue
-Dosire	Support, base
-Dosimi	Unfaithfulness, infidelity
-Dosifa	Accomplish, fulfill
-Dosisol	Duty, obligation
-Dosila	Noble, ennobled, dignity, worthy, just, pride
-Redore	Philosophy, philosopher, philosophical
-Redomi	Loathe, repugnance, repulsive
-Redofa	Moral, morally, moralize
-Redosol	Customs
-Redola	Proverb, maxim
-Redosi	Honor, honorable, venerable, respectable
-Remido	Limit, confine, border, circumscribe
-Remire	Merit, be worthy of, laudable, praised
-Remifa	Benevolence, well-doing
-Remisol	Alms, charity
-Remila	Give, gift, present
-Remisi	Inexplicable, indefinable, incomprehensible, inconceiveable, enigmatic
-Refado	Notability, significant, fame
-Refare	dignities, honors, honorary
-Refami	Displease, unpleasant, uncomfortable
-Refasol	Indelible, uneraseable
-Refala	Privilege, prerogative
-Refasi	Qualify, rights
-Resoldo	Doubt, skepticism, skeptical
-Resolre	Err, mistake, error, wrong
-Resolmi	Heresy, heretic
-Resolfa	Atheism, atheist
-Resolla	Materialism, materialistic, materialize
-Resolsi	Discourage, discouragement, tedious
-Relado	Misanthropy, misanthrope
-Relare	Antagonize, thwart, inconvenience, annoying, bother
-Relami	Distrust, suspect, beware, skittish
-Relafa	Impossible, impracticable, impossibility
-Relasol	Intolerance, severity, rigorism, inflexible, rigid
-Relasi	Regret, be sorry, repent, rue
-Resido	Mistreat, bully, maltreatment, brutality, rudeness
-Resire	Toughen, hard, hardness, tough
-Resimi	Spite, bad mood/attitude, sulky, grumpiness, cantankerous, recalcitrant
-Resifa	Become
-Resisol	To be sad, sadness, gloom, melancholy, sad
-Resila	Bored, boredom
-Midore	Sympathy, inclination, sympathize, take pleasure
-Midomi	Attract, draw, appeal to
-Midofa	Prefer, like the most
-Midosol	Trinity
-Midola	Reciprocity, mutuality, respective, vice versa
-Midosi	Fond of, attached, be attached to, friend, friendly, take to
-Miredo	Love each other, agree
-Miremi	Beloved, darling, dear, dearly loved
-Mirefa	Tenderness, kindness, loving, tenderly, fondness, endearment
-Miresol	Acknowledge, gratitude, recognition, be grateful
-Mirela	Devote, focus, devote oneself, dedication
-Miresi	Link, bond, chain, fasten
-Mifado	Agreement, pleasure, enjoyment
-Mifare	Please, like, pleasant, seductive
-Mifami	Sigh
-Mifasol	Raise, elevate, uplift, high
-Mifala	Desire, wish, want, desirous
-Mifasi	Incorrigible
-Misoldo	The Holy Spirit
-Misolre	The grace of God
-Misolmi	Sweetness, pleasantness, smooth, even-tempered
-Misolfa	Benevolence, affability, goodwill
-Misolla	Equal, equality, equally
-Misolsi	Amiability, kindness, kind, pleasant
-Milado	Appraise, estimate, consider
-Milare	Confide, confidence
-Milami	Be passionate, passion, ardor, ardently
-Milafa	Idolize, dote on, idolatry
-Milasol	Love (for things)
-Milasi	Love, cherish, lover, enamored
-Misido	Fidelity, fathfulness, loyalty
-Misire	To last, durable, stability, permanent, duration
-Misimi	To get engaged, engagement, fiancé
-Misifa	Marry, marriage, husband, wife, spouse
-Misisol	To be lucky, luck, fortune, fortunate, lucky, fortunately, luckily
-Misila	Enjoy, enjoyment, pleasure, delirium, intoxicated, drunk
-Fadore	Immoral, immorality, without principles
-Fadomi	Letter (mail), missive, epistle
-Fadofa	Date, era
-Fadosol	To sign, signature
-Fadola	Stamp, seal
-Fadosi	End, complete, finish, final, finally, termination, achieve
-Faredo	Contact, address, send a letter
-Faremi	Be, exist (auxiliary)
-Farefa	Go, proceed
-Faresol	Lengthen, extend, extension, elongation
-Farela	Mail, post, post office
-Faresi	Inexactitude, inaccuracy, inexact
-Famido	Free, exempt, enfranchisement, emancipate
-Famire	Evil, wicked, malignant, harmful, maleficence
-Famifa	Stamp, postmark (verb)
-Famisol	Have (auxiliary), possess, own, get
-Famila	Postman, courier, mail
-Famisi	Carry, bring, portable
-Fasoldo	Cause, because of, due to
-Fasolre	Theism, deism, theist, belief in God
-Fasolmi	Malice, unkindness, ill will, disparaging, malignancy
-Fasolfa	Act, behave, conduct
-Fasolla	Do, make, action, doable, commit
-Fasolsi	Prepare, make ready, preparation
-Falado	Have to (auxiliary)
-Falare	Able, can, may, possible, practicability
-Falami	Means, resources, by means of, via
-Falafa	Understand, intellect
-Falasol	Disfavor, disrepute, disgrace
-Falasi	Trend, tendency, inclination to, disposition
-Fasido	Walk, step
-Fasire	Inquire, investigate
-Fasimi	Divorce, disown, repudiate, unmarry
-Fasifa	Want, wanting to do
-Fasisol	Cry, weep, sob, tears
-Fasila	Decide, determine, resolve, decision, resolution
-Soldore	Copy, transcribe, transcription
-Soldomi	Imitate, forge, mimic, emulate, counterfeit
-Soldofa	Example, model, type
-Soldosol	Translate, interpret, translation, interpreter
-Soldola	Comment, commentary, commentator
-Soldosi	Tradition, traditionally, traditional
-Solredo	Imply, implied
-Solremi	Ingratitude, disregarding, ungrateful
-Solrefa	Shorten, abbreviate, concise, terse, succinct, brief
-Solresol	Language, idiom, dialect, linguistics, philology
-Solrela	Dictionary, vocabulary, glossary
-Solresi	Irregularity, anomaly, irregular
-Solmido	Devil, Satan, Lucifer, demon, satanic
-Solmire	Verb, noun, adjective, adverb
-Solmifa	Article
-Solmisol	Pronoun
-Solmila	Remember, recollection, commemorate, memorial, souvenir
-Solmisi	Complicate, complication, make difficult
-Solfado	Neutral, neutrality
-Solfare	Delete, erase, cross out, strike out, efface
-Solfami	Lower, diminish, step down
-Solfasol	Intimidate, bully, to trouble
-Solfala	Let, allow
-Solfasi	Impatient, irritable, impatience, chafe
-Sollado	Excuse, exonerate, pardon, pardonable, excusable
-Sollare	Tolerate, bear, indulge, indulgence, tolerance
-Sollami	Forgive, pardon, amnesty, mercy, forgiveness
-Sollafa	Favor, favorite, favorable, prefer
-Sollasol	Permit, allow, authorize, permission
-Sollasi	Climb, mount, rise, climbing, ascent
-Solsido	Run, gallop, race, runner
-Solsire	To be happy, happiness, joy, playfulness, elation, happy, gay, joyful, perky, merrily, cheerfully, happily
-Solsimi	To be unlucky, misfortune, setback, calamity, disaster, unfortunate
-Solsifa	Laugh, hilarity, laughing
-Solsisol	Smile, grin, smiling
-Solsila	Skip, hop, jump, pounce, frolic
-Ladore	College, high school, institution, university, teacher, professor, headmaster
-Ladomi	School, student, pupil, disciple
-Ladofa	Read, reading, reader, readable, legibly
-Ladosol	Book, volume, tome
-Ladola	Preface, foreword, preamble, introduction
-Ladosi	Word, term
-Laredo	Alphabet, alphabetically
-Laremi	Spell, spelling
-Larefa	Syllable, syllabic, monosyllable, monosyllabic
-Laresol	Lesson, instruction
-Larela	Phrase, sentence
-Laresi	Distraction, inattention, inadvertently, inattentive, carelessness, disapplied
-Lamido	Temporary, fleeting
-Lamire	Write, writing, writer
-Lamifa	Pen
-Lamisol	Forget, overlook, neglect, forgetful, omit
-Lamila	Ink, inkwell
-Lamisi	Difficulty, trouble, hardness
-Lafado	Paper, sheet of paper, parchment
-Lafare	Page, leaf, flip/thumb through
-Lafami	Notebook, portfolio
-Lafasol	Manuscript, scroll, writing
-Lafala	Text, textual, verbatim, to the letter
-Lafasi	Subject, topic, thesis, theme
-Lasoldo	Irreligion, irreligious, impious, impiety
-Lasolre	Pencil, sketch
-Lasolmi	Inequality, unequal, uneven
-Lasolfa	Undo, undone
-Lasolla	Align, line, row
-Lasolsi	Draw, trace
-Lasido	Point, the main idea
-Lasire	Have fun, enjoy, be delighted, entertainment, amuse
-Lasimi	Penalty, displeasure, tribulation, pain, punishment
-Lasifa	Hesitate, go with uncertainty, irresolution, indecisive
-Lasisol	Punctuate, punctuation
-Lasila	Punctuation mark, question mark, exclamation point, comma
-Sidore	Dishonor, degrade, defile, humiliate
-Sidomi	Enmity, hostility, enemy, opponent, antagonist, hostile
-Sidofa	Start, begin, commence
-Sidosol	Study
-Sidola	Progress, progressive
-Sidosi	Learn, learning, education, apprenticeship
-Siredo	Grammar, syntax, grammatically
-Siremi	Spell, spelling, orthography, orthographic
-Sirefa	Accuracy, exactitude, punctuality, assiduity
-Siresol	Regular, symmetric, symmetry, correct
-Sirela	Attention, take care, contemplation, be careful
-Siresi	Apply, applied, studious, studiously
-Simido	Distinguish, differentiate, discern, difference, nuance,
-Simire	Explain, define, demonstrate, expound, definition, explanation
-Simifa	Meaning, significance
-Simisol	Simplify, make easy, simple, elementary
-Simila	Facilitate, make easy, aid, easy
-Simisi	Clarify, lighten, elucidate, explicit, clarity, conceivable
-Sifado	Dictate, dictation, read out
-Sifare	Fault, defect, failure, defective, failed
-Sifami	Correct, reform, correction, reformation
-Sifasol	Wait, patience, patient
-Sifala	Repeat, recapitulate
-Sifasi	Reiterate, renew, again
-Sisoldo	Compete, contest
-Sisolre	Encourage, embolden, stimulate
-Sisolmi	Inspect, review, inspector, inspection
-Sisolfa	Review, scrutinize, investigate
-Sisolla	Analyze, analysis, analyst, analytical
-Sisolsi	Question, interrogate, query
-Silado	Compare, comparison, similarity, similitude, comparable
-Silare	Crown, tiara, coronation, crowned
-Silami	Hate, detest, abhor, hatred, animosity, aversion
-Silafa	Unable, unfit, incapable, inept
-Silasol	Down, descent, go down
-Silasi	Medal, medallion
-Doredore	Birth, born, native born
-Doredomi	Body, the human body, physical
-Doredofa	Head, brain, skull
-Doredosol	Hair, eyebrows, mustache, beard, eyelashes
-Doredola	Face
-Doredosi	Cheeks
-Doremido	Forehead, temple, front
-Doremire	Eyes, eyelid, eye
-Doremifa	Nose, nostril, nasal
-Doremisol	Mouth, lips, tongue, palate
-Doremila	Teeth, dental, dentition
-Doremisi	Chin
-Dorefado	Lavish, wasteful, prodigality
-Dorefare	Neck, throat, larynx
-Dorefami	Chest, breast
-Dorefasol	Shoulder
-Dorefala	Arm, elbow, wrist
-Dorefasi	Hand, palm
-Doresoldo	Disrupt, disturb, upset, upheaval, disturbance
-Doresolre	Servant, maid, valet, chambermaid
-Doresolmi	Stomach
-Doresolfa	Abdomen, belly
-Doresolla	Intestines, entrails, guts, intestinal
-Doresolsi	Liver, spleen
-Dorelado	Back, backbone, spine, vertebral column
-Dorelare	Kidneys
-Dorelami	Hips, side
-Dorelafa	Unapproachable, inaccessible
-Dorelasol	Buttocks, bottom, behind, anus
-Dorelasi	Skin, flesh, epidermis
-Doresido	Bone, ossification
-Doresire	Marrow
-Doresimi	Artery, vein
-Doresifa	Chyle
-Doresisol	Blood, bloody
-Doresila	Circulate, circulation
-Domidore	Members
-Domidomi	Thigh, knee
-Domidofa	Leg, calf
-Domidosol	Foot, heel
-Domidola	Finger, index finger, thumb
-Domidosi	Fingernail, nail
-Domiredo	The five senses
-Domiremi	See, vision, visual
-Domirefa	Touch, feel, handle
-Domiresol	Taste
-Domirela	Smell
-Domiresi	Hear, hearing, auditory, audible
-Domifado	Humanity, mankind, man, woman, male, female
-Domifare	Live, exist, be, life, existence
-Domifami	Breathe, breath, breathing
-Domifasol	Child, children, jouvenile, adolescent
-Domifala	Grow, increase, growth, stature, size
-Domifasi	Strength, force, vigour, virility, strong, manly
-Domisoldo	Superiority, supreme, elite, first order
-Domisolre	Power, authority, preeminence, rule
-Domisolmi	Grandeur, magnitude, magnanimity, great
-Domisolfa	Intelligence, capacity, smart, intellect
-Domisolla	Spirit, spiritual, have spirit
-Domisolsi	Soul
-Domilado	Talk, utter, speak, speech, speaking, verbal, speaker, verbally, orally
-Domilare	Pronounce, articulate, pronunciation, articulation
-Domilami	Argue, reason, confer
-Domilafa	Rationality, reason, sense, reasonable
-Domilasol	Discern, discernment, judgement, good sense, dialectic, logic, sensible, wisely, logician, judicious
-Domilasi	Insight, perspicacity, sagacity, clairvoyance, discerning, sharpness
-Domisido	Skill, ability, know-how, competence, clever, adroit, expert, skillful
-Domisire	Pretend, claim, pretense
-Domisimi	Liberate, release, free, freedom, independence
-Domisifa	Energy, energetic, force
-Domisisol	Firmness, stoicism, strong, unshakeable, fortitude, hardiness
-Domisila	To face, confront, courage, bravery, courageous, valiant, intrepid
-Dofadore	Wait, pending, expectation, until
-Dofadomi	Hope
-Dofadofa	Know, knowledge, cognizable
-Dofadosol	Be related, related, relationships
-Dofadola	Social, sociability, sociably, sociable
-Dofadosi	Educate, rear (raise), education, educated, well brought up
-Dofaredo	Stinginess, parsimony, miser, sordid, squalor, scant, avarice
-Dofaremi	Save, economy, savings, economic, economically
-Dofarefa	Prosper, prosperity, prosperous, flourishing
-Dofaresol	Be at ease, comfortable, ease, wellbeing, comfortably
-Dofarela	Enrich, wealth, rich, fortune, opulence, opulent
-Dofaresi	Luxury, deluxe, magnificence, sumptuous, pompous, luxurious, prosperous
-Dofamido	Feelings, principles
-Dofamire	Qualify, qualification, quality, attribute, qualifier
-Dofamifa	Have virtue, virtue, virtuous, virtuously
-Dofamisol	Wisdom, wise, sage, wisely
-Dofamila	Modesty, chastity, modest, chaste
-Dofamisi	Be purified, purity, sweetness, pure, sweet, intact, irreproachable, blameless
-Dofasoldo	Innocence, innocent, innocently
-Dofasolre	Naivety, candor, simplicity, candid, naïve, simply
-Dofasolmi	To become beautiful, make oneself beautiful, beauty, lovely, pretty, beautiful
-Dofasolfa	Grace, graceful, graciously
-Dofasolla	Charm, enchant, attractions, charms, charming, attractive, enchanting, delightful
-Dofasolsi	Truth, reality, true, veracity, truthful, real, effective, really, actually
-Dofalado	Frankness, honesty, sincerity, frank, sincere, truly
-Dofalare	Goodness, meekness, benignity
-Dofalami	Sensitivity, impressionability, sensitive, impressionable
-Dofalafa	Heartfelt, warmth, effusion, profusely
-Dofalasol	Generosity, liberality, munificence, liberal, generous
-Dofalasi	Humanity, helpful, humanitarian, humanly
-Dofasido	Prudence, caution, carefully, circumspection
-Dofasire	Predict, forecast, foresee, anticipate, foresight
-Dofasimi	Discretion, discrete, reserved
-Dofasifa	Consiousness, awareness, conscientous
-Dofasisol	Honesty, integrity, righteousness, integrity, rectitude, incorruptibility
-Dofasila	Delicacy, tact, delicate, gently
-Dosoldore	Appeal, evoke
-Dosoldomi	Ask, request, demand
-Dosoldofa	Open, opening, ajar, gaping, opener
-Dosoldosol	Enter, penetrate, entry
-Dosoldola	Inside, in, internal, internally
-Dosoldosi	Essence, innate, fundamentally, intrinsically, inherently
-Dosolredo	Arrange, arrangement, order, ordered
-Dosolremi	Experience, experienced
-Dosolrefa	Regulate, regularize, rule, discipline, regularity, statute
-Dosolresol	Occupy, deal with, get involved, occupation, absorbed, occupied
-Dosolrela	Attribute to, attribution, attributive
-Dosolresi	Accidental, by chance, fortuitous
-Dosolmido	Inferiority, lower, secondary, subordinate
-Dosolmire	Watch, look after, standby, vigil, watchfulness, vigilance
-Dosolmifa	Light (verb), turn/switch on, match, igniter, lighter
-Dosolmisol	Candle, wax
-Dosolmila	Gas, gasometer
-Dosolmisi	Illuminate, light up, lighting, illumination, clear, well lit
-Dosolfado	Guilt, culpability, guilty, culprit, reprehensible, blameworthy, reproachable, punishable
-Dosolfare	Awaken, arouse, awake, wake up, alarm clock
-Dosolfami	Rise, stand, get up, stand up, standing, raised, lifted, on foot
-Dosolfasol	Appear, appearance
-Dosolfala	Come, approach, hasten, coming
-Dosolfasi	Salute, bow, greet, hello, greetings
-Dosollado	Listen, hearken, lend an ear, listener, earpiece, earphone
-Dosollare	Rid, unload, riddance, discharge, unloading
-Dosollami	Compliment, commend, praise, congratulation, compliment, laud,  laudatory
-Dosollafa	Exaggerate, amplify, magnify, exaggeration, amplification
-Dosollasol	Flatter, adulate, fawn, flattery, adulation, sycophancy, flattering
-Dosollasi	Complacent, condescend, complacency, condescension, patronizing
-Dosolsido	Advise, urge, council, exhortation, advice
-Dosolsire	Remonstrate, remonstrance
-Dosolsimi	Suggest, insinuate, insinuation, innuendo, allusion
-Dosolsifa	Lead, guide, conduct, drive, mentor, cicerone
-Dosolsisol	Take, carry, bring
-Dosolsila	Hasten, rush, willingness, enthusiasm, readiness, eager
-Doladore	Invite, summon, call, invitation
-Doladomi	Accept, acquiesce, adhere, consent, aggree, acceptance
-Doladofa	Put, lay, affix, put, set, place, apposition
-Doladosol	Cover (noun)
-Doladola	Table
-Doladosi	Tablecloth, napkin
-Dolaredo	Tableware, dishes, plate, dish, cup, vase
-Dolaremi	Fork
-Dolarefa	Spoon, scoop, spoonful
-Dolaresol	Cup, glass, goblet, mug, beaker
-Dolarela	Bottle, jar, carafe, flask
-Dolaresi	Wine, champagne, &c.
-Dolamido	Silence, shut up, hush, taciturn, silently
-Dolamire	Water, wet
-Dolamifa	Thirsty, thirst, parched
-Dolamisol	Drink, drinker
-Dolamila	Hunger, appetite, starvation
-Dolamisi	Eat, eating, eater, eatable
-Dolafado	Hide, conceal, dissimulate, sneaky
-Dolafare	Feed, nourish, food, substantial, nourishing, feeder, nurse
-Dolafami	Soup, broth
-Dolafasol	Pasta, macaroni, vermicelli, &c.
-Dolafala	Bread, loaf, crumb, crust
-Dolafasi	Fish, oysters, eels, salmon
-Dolasoldo	Meat, steak, beef
-Dolasolre	Roast, roasting, toast, grill, broil
-Dolasolmi	Poultry, pigeon, chicken, duck, turkey
-Dolasolfa	Game (food), partridge, hare, roe
-Dolasolla	Pastry, cake, meringue, pie
-Dolasolsi	Pork, ham
-Dolasido	Salt, salted, salting, salt shaker
-Dolasire	Pepper, spice, pepper shaker
-Dolasimi	Vinegar, add vinegar, vinaigrette
-Dolasifa	North, northern, northward
-Dolasisol	Oil, oily, oil dispenser, lubricate
-Dolasila	Mustard
-Dosidore	Suffice, sufficiency, sufficient, enough, necessary
-Dosidomi	Vegetables, peas, asparagus, spinach, artichokes
-Dosidofa	Salad, lettuce
-Dosidosol	Season, flavor, dress, seasoning, dressing
-Dosidola	Juice, sauce, juicy
-Dosidosi	Eggs, egg shell, omelette
-Dosiredo	Dairy, milk, cream, creamy, dairyman
-Dosiremi	Butter
-Dosirefa	Cheese
-Dosiresol	Dessert, hazelnuts, nuts, almonds, chestnuts, walnuts
-Dosirela	Fruit, strawberries, raspberries, currants, cherries
-Dosiresi	Fruit, grapes, peaches, pears, apples, plums
-Dosimido	Inability, awkwardness, clumsiness, incompetence, clumsy
-Dosimire	Pour, spill
-Dosimifa	Liquors
-Dosimisol	Spirits, alcohol, brandy, rum, absinthe
-Dosimila	Withdraw, disengage, retract, withdrawal
-Dosimisi	Drunk, get drunk, drunkenness, drunkard
-Dosifado	Imprudence, temerity, recklessness, rashness, indiscretion
-Dosifare	Beer, wing, wear
-Dosifami	Refresh, refreshing
-Dosifasol	Café, coffee shop
-Dosifala	Tea, teapot
-Dosifasi	Sweeten, sugar, candy
-Dosisoldo	Chocolate, cocoa
-Dosisolre	Uselessness, redundancy, superfluous, useless, in vain
-Dosisolmi	Meal, feast, banquet, lunch, dinner, supper
-Dosisolfa	Cook, cooking, kitchen, of the kitchen
-Dosisolla	Provide, supply, fill, supplies, provisions, provider
-Dosisolsi	Food, edible
-Dosilado	Fragment, cutting, piece, bit, slice
-Dosilare	Empty, void, dry, blank
-Dosilami	Appetizer, hors d'oeuvres
-Dosilafa	Reserve, keep, book, conserve, reserved, conservative
-Dosilasol	Buffet
-Dosilasi	Pantry
-Redoredo	Clothes, outfit, effects
-Redoremi	Generalize, universalize, make common, generality, universality, general, universal, generally, in general
-Redorefa	Shirt
-Redoresol	Sock, stocking
-Redorela	Shoes, boots, slippers
-Redoresi	Pants, knickers, breeches
-Redomido	Wash oneself, clean, lather, ablution, soap
-Redomire	Shave, razor
-Redomifa	Mirror, to be reflected, to look at oneself
-Redomisol	Comb oneself, comb
-Redomila	Decrease, subtract, deduct, mitigate, reduce, discounts, reduction
-Redomisi	Style hair, coif, hairdresser, wigmaker, wig
-Redofado	Unexpected, surprising, unlooked for, unforeseen, unexpectedly
-Redofare	Move, dislodge, displace, moving
-Redofami	Tie, necktie, scarf
-Redofasol	Vest, camisole
-Redofala	Button, buttonhole
-Redofasi	Clothe, dress, dress up, clothing, apparel, costume, suit
-Redosoldo	Coat, overcoat, cloak, jacket
-Redosolre	Garnish, trim, trimmed, lined
-Redosolmi	Fur
-Redosolfa	Glove, gloves, mittens
-Redosolla	Cane, rod, stick, baton
-Redosolsi	Umbrella, parasol
-Redolado	Toilet, toiletries, personal grooming, wash
-Redolare	Corset, bodice
-Redolami	Lace
-Redolafa	Skirt, underskirt
-Redolasol	Dress, robe
-Redolasi	Inevitable, unavoidable, immenent, inevitably
-Redosido	Insufficiency, inadequacy, inufficient, not enough
-Redosire	Adorn, decorate, embelish, prettify, ornament, embellishment
-Redosimi	Invisibility, imperceptibility, invisible, imperceptible, unseen
-Redosifa	Ring, marriage ring
-Redosisol	Bracelet, wristband
-Redosila	Glasses, eyeglasses, spectacles
-Remidore	Shawl, scarf
-Remidomi	Depositary, bank, lockbox
-Remidofa	Brooch, clasp, pin
-Remidosol	Hat, cap, hood, bonnet
-Remidola	Mask, veil, veiled
-Remidosi	Elegance, elegant, elegantly
-Remiredo	Walk, trot, march, hike, walker, hiker
-Remiremi	Walk, stroll, wander, promenade
-Remirefa	Car, carriage, coupe, bus
-Remiresol	Visit, tour, visitor, guest
-Remirela	Ticket, entry card
-Remiresi	The world, society, worldly, mundane
-Remifado	Defect, defective, fault
-Remifare	Property, domain, owner
-Remifami	Concierge, porter, janitor, caretaker, doorman, gatekeeper
-Remifasol	Rent, rental, lease, renter
-Remifala	Home, house, hut, cottage, hotel
-Remifasi	Live, reside, housing, residence, inhabitant, resident, at home, residential
-Remisoldo	Sleep, fall asleep, doze, drowsiness, sleeper, asleep, dormant
-Remisolre	Vestibule, lobby, hall, threshold
-Remisolmi	Door, gate
-Remisolfa	Antechamber
-Remisolla	Room, lounge, dining room
-Remisolsi	Office
-Remilado	Bedroom, sleeping room
-Remilare	Fireplace, chimney, hearth, flue
-Remilami	Lamp, torch, chandelier, lamppost, candlestick, light, beacon
-Remilafa	Window
-Remilasol	Shutters, blinds, lattice
-Remilasi	Balcony, balustrade, railing
-Remisido	Cellar, vault
-Remisire	Cask, barrel
-Remisimi	Ground floor, first floor
-Remisifa	Slow, stragglers, slowpoke, slowly, dally, dawdle, linger
-Remisisol	Staircase, stairs, steps, step
-Remisila	Floor, floor number
-Refadore	Move in, install
-Refadomi	Furniture, furnishings
-Refadofa	Household
-Refadosol	Furniture, chest of drawers, wardrobe
-Refadola	Drawer
-Refadosi	Library, librarian
-Refaredo	Closet, wardrobe, cabinet, cupboard
-Refaremi	Seat, bench, chair, sofa
-Refarefa	Sit, seated, sitting
-Refaresol	Bed, cradle, hammock
-Refarela	Bedding, mattress, featherbed, pillow
-Refaresi	Curtains, drapes
-Refamido	Die, pass away, death, mortality, fatally
-Refamire	Stove, radiator, furnace, oven
-Refamifa	Fire tongs, utensiles for a fire, andiron
-Refamisol	Breathe, blow, puff
-Refamila	Fuel, heating, wood, log, pyre
-Refamisi	Coal, embers
-Refasoldo	Fire, furnace, incendiary
-Refasolre	Burn, kindle, consume, burning
-Refasolmi	Twinkle, sparkle, scintillate, blaze, flame, flamboyant, blazing
-Refasolfa	Pacify, calme, peace, amity, peacemaker, peaceful, peacefully
-Refasolla	Chauffeur, driver
-Refasolsi	Hearth, fireplace, firebox
-Refalado	Rag, dishtowel, apron, pillowcase, sheet
-Refalare	Tear, snag, torn, ragged, sparce, in pieces, tattered
-Refalami	Mend, patch, mending, mender
-Refalafa	Sew, sewing, seamstress
-Refalasol	Border, edge
-Refalasi	Embroider, embroidery, embroiderer
-Refasido	Thimble
-Refasire	Case, cover, sheath, box
-Refasimi	Needles, pins
-Refasifa	Chisel, cut, carving, scissors
-Refasisol	Cut, knife, cutter, cutting, sharp
-Refasila	Work, worker
-Resoldore	Pouch, backpack, knapsack, bag
-Resoldomi	Convenience, ease, convenient, conveniently
-Resoldofa	Hide, bury, stash, cache, hidden, occult, stealthy, secretly
-Resoldosol	Wallet, purse
-Resoldola	Contain, include, containing, capacity
-Resoldosi	Spend, expenditure, fees, disburse, liabilities, state of spending
-Resolredo	Master, boss
-Resolremi	Order, command, precept
-Resolrefa	Send, dispatch, sending, to ship, shipment
-Resolresol	Dismiss, leave, vacant, dismissal
-Resolrela	Develop, improve, development
-Resolresi	Remove, dismiss, removal, dismissal, resignation
-Resolmido	Impotence, powerlessness, helplessness, impotent, without authority, without influence
-Resolmire	Sweep, broom, sweeper, sweeping
-Resolmifa	Wax, waxing
-Resolmisol	Brush, dust off
-Resolmila	Continue, continuation, continuer, continual, continuously
-Resolmisi	Clean, scrub, degrease, make clean, detach, scour, cleaning, cleanliness
-Resolfado	Cunning, do tricks, ruse, subterfuge, stratagem, crafty, artful, sly
-Resolfare	Bathe, bath, bather
-Resolfami	Timidity, shy, apprehensive, fearful, tentative, timidly
-Resolfasol	Nudity, naked, bare, strip
-Resolfala	Mop, wipe, sponge
-Resolfasi	Rub, massage
-Resollado	To get tired, grow weary, fatigue, weariness, dejection, tired, overwhelmed, tiring
-Resollare	Undress
-Resollami	Lie down, stretch, lying down
-Resollafa	To cover, shelter, coverage, cover, sheltered, covered
-Resollasol	Rest, relax, repose
-Resollasi	Dream, dreaming, dreamy, reverie
-Resolsido	Need, require, necessary, useful, indispensable, utile
-Resolsire	Work, task, worker, travail, laborious, laboriously
-Resolsimi	Practice, exercise, practicability, practitioner, practicable, executable
-Resolsifa	Business, occupation, profession, career, worker, craftsman
-Resolsisol	Book, work
-Resolsila	Become accustomed, accustom, familiarize, habit, usage, custom, routine, familiar, habitual
-Reladore	Wash, launder, bleach, laundry, launderer
-Reladomi	Starch, stiffen, starched, stiffness
-Reladofa	Iron (v), ironing, ironer
-Reladosol	Wrinkle, crease, pleate, fold
-Reladola	Chains, shackles, irons
-Reladosi	Sharpen, whet, hone,
-Relaredo	Crack, split, slot, crevasse, cracked
-Relaremi	Break, brittle, fragile, fragility
-Relarefa	Break, smash, brokenness, breaker, broken
-Relaresol	Nail, pin, point, sharp, piercing, acute
-Relarela	Drill, bore, awl, perforate
-Relaresi	Dig, make holes, excavate, hole, cavity, hollow
-Relamido	Stutter, mumble, stammer
-Relamire	Neighborhood, vicinity, close, neighborly, neighbor
-Relamifa	Strike, hit, impact, blow
-Relamisol	Agitate, shake, give motion, agitation, jerk, concussion
-Relamila	Cheap, inexpensive, a good deal
-Relamisi	Ring, tinkle, peal, chime, bell, tintinnabulation, doorbell
-Relafado	Malignancy, wickedness, darkness, mischievous, wicked, maliciously, nastily
-Relafare	Bend, stoop, curvature, curve, bent
-Relafami	Tilt, lean, leaning, slope, inclination, penchant, tendency
-Relafasol	Turn, turn away
-Relafala	Disproportionate, disproportion, disproportionately
-Relafasi	To hold, to have in hand
-Relasoldo	Embarrass, embarrassment, embarrassing, discomfort
-Relasolre	Throw, launch
-Relasolmi	Find
-Relasolfa	Pick up, raise, lift, elevator
-Relasolla	Object (n)
-Relasolsi	Trifel, bagatelle, peccadillo, meticulous, minutiae
-Relasido	Fill, complete, filling, fullness, filled, full, packed, fully
-Relasire	Load, burden, cargo, loading
-Relasimi	Overflow, irruption, invasion
-Relasifa	West, western
-Relasisol	To block, to constrict, bottled, cork
-Relasila	Enclose, confine, contain, inclusion, confined, withdrawn, included, inclusive, enclosed
-Residore	Race , lineage, strain, breed
-Residomi	Genealogy, genealogist, genealogical
-Residofa	Ancestors, predecessors, sires
-Residosol	Family, consanguinity, kinship, relative
-Residola	Grandparent, grandfather, grandmother
-Residosi	Father, mother, paternity, maternity, paternal, maternal
-Resiredo	Cause, engender, give rise to, generate, procreate, generative, genital
-Resiremi	Conceive, conception, pregnant, big with child
-Resirefa	Birth, childbirth
-Resiresol	Son, daughter, filial
-Resirela	Kiss
-Resiresi	Caress, caresses, caressing
-Resimido	Renounce, abandon, abjure, denunciation, renunciation, abdication, detachment
-Resimire	Brother, sister, fraternal, fraternally
-Resimifa	Grandson, granddaughter
-Resimisol	Uncle, aunt
-Resimila	Nephew, niece
-Resimisi	Cousin
-Resifado	Improvidence, lack of foresight, improvident
-Resifare	Stepfather, stepmother
-Resifami	Son-in-law, daughter-in-law
-Resifasol	Stepbrother, stepsister
-Resifala	Tutelage, tutor
-Resifasi	Pupil
-Resisoldo	Godfather, godmother
-Resisolre	Name, nominal, nominative, denominative, by name
-Resisolmi	Godson, goddaughter
-Resisolfa	Intimacy, intimate, intimately
-Resisolla	Familiarity, familiar, familiarly
-Resisolsi	Camaraderie, fellowship, companion, comrade, peer
-Resilado	Promise, vow, solemn promise, promised
-Resilare	Oblige, to be useful, helpfulness, helpful
-Resilami	Loan, lend
-Resilafa	Host, hospitality
-Resilasol	Ignore, ignorance, illiterate
-Resilasi	location, place, locality, local
-Midoredo	Moral, immateriality, spirituality, intangible, spiritualist, spiritualism
-Midoremi	Origin, source, original, primitive, basic, originally
-Midorefa	Precede, anteriority, priority, primacy, predecessor, previous, before, antecedent
-Midoresol	Posterity, descendants, future generation
-Midorela	Clear
-Midoresi	Disperse, scatter, disseminate, strew, sprinkle, dispersion
-Midomido	Equip, endow, provide
-Midomire	Deposit, drop off
-Midomifa	Bequeath, to leave something behind, testament
-Midomisol	Inherit, heritage, heir, heiress, recipient
-Midomila	Lack, miss, destitution, shortage, gap, famine, dearth, devoid, lacking, without
-Midomisi	Have, possess, possession, property, asset
-Midofado	Despair, desolation, desperate, despairing
-Midofare	Mourn, mourning, bereavement
-Midofami	Widowhood, widower, widow
-Midofasol	Orphanage, orphan
-Midofala	Abandon, leave, abandonment, abandoned, forasaken
-Midofasi	Suffer, be distressed, be tested, suffering, affliction, grief, pain, anguish, distress
-Midosoldo	Fear, apprehend, apprehension, fearful, apprehensive
-Midosolre	Inconvenience, inconvenient, inconveniently
-Midosolmi	Worry, concern, anxiety, alarm, anxious
-Midosolfa	Complain, groan, whine, murmur, complaint, lamentation
-Midosolla	Destiny, fate, predestination, destined
-Midosolsi	Fatalism, fatalist, inevitably
-Midolado	Refuse, reject, repel, exclude, dismiss, rejection, refusal, exclusion, rejectable, unacceptable
-Midolare	Intervene, intercede, mediate, intervention, intercession, mediation, mediator, intercessor
-Midolami	Influence, influential
-Midolafa	Reconcile, conciliation, conciliator, conciliatory, reconcilable, accommodative
-Midolasol	Console, comfort, consolation, comforter, consolable
-Midolasi	Content, satisfied, contentment, satisfaction, joy of the heart, glad
-Midosido	Sacrifice, immolate, offering, consecration
-Midosire	Refrain, deprive oneself, be restricted, do without, abstinence, deprivation
-Midosimi	Improbability, unlikely, incredible, implausible
-Midosifa	To return, come back
-Midosisol	Try, endeavor, strive
-Midosila	Get, obtain
-Miredore	Particularize, specialize, particularity, speciality, particular, special, especially, particularly
-Miredomi	Rarity, rare, rarely, almost never
-Miredofa	Take the initiative, initiative
-Miredosol	Attempt, try, test
-Miredola	Undertake, undertaking, enterprise, entrepreneur
-Miredosi	Venture, hazard, risk, adventure, expose oneself to risk, risky
-Miremido	Blind, blindness, blind, blindly
-Miremire	Enroll, register, registration, enrollment
-Miremifa	Document, title, written evidence
-Miremisol	Official, formal, officially
-Miremila	Dedicate, dedication, dedicatory
-Miremisi	Stanza, verse
-Mirefado	Say, diction, elocution, speech, speaker
-Mirefare	Thing, object, stuff
-Mirefami	The main, the essential, main, essential, mainly, essentially
-Mirefasol	Seriousness, gravity, serious, grave, seriously
-Mirefala	Precious, preciously
-Mirefasi	A curiosity, curious to see
-Miresoldo	Inexperience, inexperienced, unskilled
-Miresolre	Participate, contribute, cooperate, be part of, participation, cooperation, participant
-Miresolmi	Propose, plan, aim at, premeditate, project, intent, design, designer, intentioned
-Miresolfa	Goal, aim, final cause
-Miresolla	To thin, diminish, thinning, thin, slender
-Miresolsi	Destine, destination, destinator
-Mirelado	Be wrong, wrong
-Mirelare	Reproach, blame, find fault
-Mirelami	Scold, reprimand, admonish, admonition, scolding
-Mirelafa	Quarrel, fight, dispute, quibble, altercation
-Mirelasol	Insult, dishonor, revile, affront, snub, insolence, insulting, impertinent
-Mirelasi	Incident, occurance, event, incidentally
-Miresido	Provoke, defy, provocation, defiance, provoker
-Miresire	Threaten, threat, menace, threatening, formidable
-Miresimi	Slap, kick, punch
-Miresifa	Hurt, wound, bruise
-Miresisol	To get angry, angry, upset
-Miresila	Sulk, hold a grudge, resentment, sulky, spiteful
-Mifadore	Character, nature, characteristic, characterized
-Mifadomi	Require, requirement
-Mifadofa	Envy, envious
-Mifadosol	Aspire, ambition, ambitious, ambitiously
-Mifadola	Solicit, solicitation, solicitor, insistant
-Mifadosi	Intrigue, cunning, stratagems, crafty
-Mifaredo	Personality, personal
-Mifaremi	Incidental, incidentally
-Mifarefa	Self-esteem, pride
-Mifaresol	Vanity, ostentation, vainglory, conceited, vain
-Mifarela	Become arrogant, arrogance, pride, haughtiness, arrogant, proud, imperious, haughty
-Mifaresi	Pride oneself, boast, presumption, pride, proud, presumptuous
-Mifamido	Susceptibility, susceptible
-Mifamire	Mediocrity, mediocre, poor, common, regular
-Mifamifa	Laze, loiter, idle, laziness, dawdling, indolence, idleness, inactivity, lazy, loafer, nonchalant, inactive
-Mifamisol	Neglect, omit, negligence, omission, negligent, negligently
-Mifamila	Sensuality, intemperance, sensual, voluptuous, carnal
-Mifamisi	Gluttony, greedy, glutton, "pig", greedily
-Mifasoldo	Libertine, prostitute, wantonness, prostitution, vagrant, debauchery
-Mifasolre	Effrontery, impudence, insolence, cheeky, impudent
-Mifasolmi	Corrupt, pervert, debauch, corruption, perversity, depravity, warped, perverted, perverse
-Mifasolfa	Be disarmed, succumb, disarmed, defeated
-Mifasolla	To make blunt, blunt, blasé
-Mifasolsi	Awful, horrible, odious, hateable, detestable, execrable, abominable, horribly, dreadfully, badly
-Mifalado	Debase, degradation, abjection, ignominy, low, abject
-Mifalare	Betray, treason, traitor, treacherous, traitorously
-Mifalami	Steal, rob, swindle, theft, spoils, thief
-Mifalafa	Deceive, fool, cheat, guile, deceitful, deception, cheating, imposter, duplicity, misleading
-Mifalasol	Falsify, forgery, forged
-Mifalasi	Violate, transgress, infringe, offense, contravention, offense, offender, transgressor, violator
-Mifasido	Adultery, adulterer
-Mifasire	To be jealous, jealous, jealousy
-Mifasimi	To irritate, anger, exasperate, indignate, irritation, exasperation, irritated, outraged, exasperated
-Mifasifa	To get angry, to lose one's temper, fulminate, enraged, fit of anger, ardor, anger, frenzy,  fury, rage, furious
-Mifasisol	Fickleness, lightness, frovolity, inconstant, volatile
-Mifasila	Revenge, avenge, avenger, vindictive
-Misoldore	Tease, harass, teasing
-Misoldomi	Reassure, calm, appease, calming, tranquility, serenity, serene, quiet, reassuring
-Misoldofa	Annoy, tease, teasing, playfulness, harassing
-Misoldosol	Thoughtlessness, ill-conceived, poorly considered, thoughtlessly
-Misoldola	Change, vary, variation, mutation, variability, instability, variable
-Misoldosi	Diversify, diversity, variant, variety, variations
-Misolredo	Person, a being, individual, human creature, people, personal, individually, personally
-Misolremi	Recommend, recommendation
-Misolrefa	To present, presentation
-Misolresol	Accept, receive, admit, admission, reception, admissible, receivable
-Misolrela	Meet, get together, meeting, group, assemble, assembled, grouped
-Misolresi	Society, corporation, company, member of a society
-Misolmido	Smallness, pettiness, petty
-Misolmire	Attend, to frequent, attendance
-Misolmifa	To note, to observe, point out, remark, observation
-Misolmisol	Watch, look, glance
-Misolmila	Converse, gossip, chat, conversation, dialogue, conversationalist
-Misolmisi	Answer, reply, respond, refute, response, refutation
-Misolfado	To become ugly, ugliness, hideous, unattractive
-Misolfare	Attitude, poise, posture
-Misolfami	Turn (v.), pace (v.)
-Misolfasol	Propriety, appropriateness, decency, proper, seemly, presentable
-Misolfala	In good taste, good manners, distinction, distinguished
-Misolfasi	Politeness, courtesy, civility, good manners, polite
-Misollado	To become singular, unique, eccentric, quirky, original, bizarre, strange
-Misollare	Capricious, whimsical, moody
-Misollami	Mania, maniac
-Misollafa	Simper, pedantry, prudery, affected, prudish, pretentious
-Misollasol	Coquet, dainty, pretty, to pose oneself, coquettishly
-Misollasi	To woo, to court, courtship
-Misolsido	Inaugurate, inaguration, inaugural
-Misolsire	Celebrate, celebration, ceremony, ceremonial
-Misolsimi	Holiday, anniversary
-Misolsifa	Indirect, indirectly
-Misolsisol	Ball (dance), ballet
-Misolsila	Dance, dancer, dancing
-Miladore	Waltz, waltzer
-Miladomi	Simultaneity, simultaneous, collective, all, with each other, all together, simultaneously, collectively
-Miladofa	Times (n.), sometimes, several times
-Miladosol	Entertainment, recreation, relaxation, hobby, time-passer
-Miladola	Joke, banter, farce, comic, bantering, facetious, funny
-Miladosi	Parody, mimic, ape, caricature
-Milaredo	Mock, laugh at, ridicule, jeer, sneer, satirize, mockery, satire, scoffer, mocker
-Milaremi	Ridiculous, ludicrous, preposterous
-Milarefa	Criticize, find fault with, criticism
-Milaresol	To speak ill of, decry, depreciate, disparage, slander, detraction, disparagement, slanderous
-Milarela	Slander, slanderer, slanderously
-Milaresi	Compromise, compromising
-Milamido	Talk nonsense, ramble, rave, unreason, rambling, extravagance, illogical, unreasonable
-Milamire	Secret, mystery, mysterious, secretly, in secret, mysteriously
-Milamifa	Confidential, confidence, confidant, confidentially
-Milamisol	Snoop around, curiosity, curious, curiously
-Milamila	Guess, to divine, diviner, guessable
-Milamisi	Disclose, divulge, reveal, disclosure, unveiling, revelation, discloser, revealer
-Milafado	Insensitivity, apathy, insensitive, apathetic
-Milafare	Indifference, indifferent, carefree, unconcerned, indifferently
-Milafami	Coldness, impassivity, cold, impassive
-Milafasol	Composure, presence of mind, self-control
-Milafala	Prejudge, bias, prejudice, partiality, prejudiced, biased
-Milafasi	Coterie, clique, fellowship
-Milasoldo	Blame, disapprove, reproach, disapproval, reproachful, disapprobation
-Milasolre	Disdain, disrespect, think nothing of, lack of respect, irreverence
-Milasolmi	Defame, lampoon, libel, diatribe, slanderer
-Milasolfa	Challenge, discuss, debate, object, controvert, obejection, controversy, conflict, questionable
-Milasolla	Insolvency, insolvent
-Milasolsi	Oppose, contradict, contrast, opposition, contradiciton, unlike, opposite
-Milasido	Congress
-Milasire	Note, annotate, annotation, remark
-Milasimi	Review, report, extract, essence of
-Milasifa	Deliberate, deliberation, deliberative
-Milasisol	Report, relate, reporter, minutes (of a meeting), reporter
-Milasila	Conclude, infer, conclusion, solution, conclusive, final, definitely
-Misidore	Appearance, aspect, visibility, apparent, ostensible, visible, apparently
-Misidomi	Likelihood, probability, likely, probable, presumable, believable
-Misidofa	Seem, seeming, semblance, "to have an air of"
-Misidosol	Pretext, excuse, allege, allegation, answer evasively, subterfuge
-Misidola	Dare, aplomb, boldness, audacity, dared, bold, boldly
-Misidosi	Imbibe, identify with, relate
-Misiredo	Remain, stay, hold oneself in
-Misiremi	Anxious to have, look forward to, can't wait for
-Misirefa	Anticipate, anticipation
-Misiresol	Assume, suppose, presume, surmise, supposition, conjecture, hypothesis, supposed
-Misirela	Sense, augur, foresee, omen, prescience, inner vision, second sight, ominous
-Misiresi	Predict, prophesy, tell fortunes, prediction, prognosis, prophet, divination, oracle, soothsayer, prophetic, divinatory
-Misimido	Slavery, yoke, subjugation, servility, servitude, slave, serf, servile, at the mercy of
-Misimire	Depend, dependence, dependent
-Misimifa	Responsibility, responsible
-Misimisol	Submit, submit to
-Misimila	Obey, submit oneself, resign oneself, obedience, submission, resignation, obedient
-Misimisi	Circumstance, case, circumstantial
-Misifado	Indiscretion, indiscreet, obtrusive, indiscretely
-Misifare	Sleepwalking, somnambulism, sleepwalker
-Misifami	Magnetize, magnetism, magnet, magnetic
-Misifasol	Fluid, fluidity
-Misifala	Light (weight), aerial, vaporous
-Misifasi	Spiritism, spiritist
-Misisoldo	Experiment, test, experimenter, experimental
-Misisolre	Prove, demonstrate, evidence, demonstration, proven, obvious, demonstrated
-Misisolmi	Observe, note, finding, observation, found, observed
-Misisolfa	Persuade, convince, persuation, persuasive, persuaded, convinced
-Misisolla	Believe, imagine, credulity, credulous
-Misisolsi	Certainty, surety, infallibility, authenticity, sure, infallible, indubitable, irrifutable, positive, certain, undoubtedly, surely, positively
-Misilado	Sleight of hand, prestidigitation, conjure, conjuror, magician
-Misilare	Phantasmagoria, ghost, spectrum, specter, phantom,
-Misilami	Transform, transmute, transformation, transfigure, transmutation, transmutable
-Misilafa	Bewitch, cast a spell on someone, sorcery, witchcraft, sorcerer, magician, enchanting, magic
-Misilasol	Partner, accomplice
-Misilasi	Colusion, accomplice, accessory
-Fadoredo	Nature, naturalist, natural, naturally
-Fadoremi	Countryside, country, countryman, villager, peasant, shepherd
-Fadorefa	Landscape, scenery, site, landscape
-Fadoresol	Picturesque, rugged
-Fadorela	Surround, gird, area, vicinity, surrounded, around, girded
-Fadoresi	Farm, farmer
-Fadomido	Mountain, mount, hill, mountainous, hilly
-Fadomire	Volcano, volcanic
-Fadomifa	To be engulfed, pit, chasm, abyss, precipice
-Fadomisol	Rock, rocky
-Fadomila	Dry, arid, drought, sterile, infertile, unsuccessful
-Fadomisi	Desert, deserted, uninhabited
-Fadofado	Isolate, put away, seclude, isolation, loneliness, isolated, lonely, solitary, alone
-Fadofare	Take refuge, withdraw, retire, refuge, asylum, reclusion, recluse
-Fadofami	Park, grove, the woods, forest, forestry
-Fadofasol	Tree, shrub, bush
-Fadofala	Foliage, leaves
-Fadofasi	Shade, shadowing, shadowy, shady
-Fadosoldo	Close (v.), closing, closed
-Fadosolre	Clear, cultivate, clear the land, prepare the ground
-Fadosolmi	Mow, reap, trim
-Fadosolfa	Rake, harrow
-Fadosolla	Dig, spade, pickaxe
-Fadosolsi	Graft, grafter
-Fadolado	Take off, delete, remove, subtract, prune, extract, deletion, removal
-Fadolare	Plant, planting, planter, plant
-Fadolami	To take root, root
-Fadolafa	Stem, stalk, trunk, stump
-Fadolasol	Branch, limb, bough
-Fadolasi	Hedge, bush, undergrowth
-Fadosido	Garden (v.), gardening, horticulture, gardener, horticulturist
-Fadosire	Garden (n.), grove
-Fadosimi	Bloom, flower (v.), blossom, florist, floral
-Fadosifa	Bouquet, flower-seller
-Fadosisol	Classic, classical, standard, traditional
-Fadosila	Perfume, embalm, balm, smell, scent, aroma, perfumer, fragrant, odorous, embalmed
-Faredore	Cultivate, culture, agriculture, cultivator, farmer, agricultural
-Faredomi	Succeed, come after, successor, after
-Faredofa	Plow, furrow, till, tillage, husbandman, ploughable
-Faredosol	Sow, sowing, seed
-Faredola	Grain, oats, millet, corn
-Faredosi	Wheat, rye
-Faremido	Ripen, mature, maturity, ripe, maturely
-Faremire	Pick, pluck, collect, picking
-Faremifa	Harvest, reap, collect, reaper, harvester
-Faremisol	Glean, gleaner
-Faremila	Ear of wheat/corn
-Faremisi	Field, meadow, prairie, plain, pastoral
-Farefado	Vegetate, grow, vegetation, growth, plant
-Farefare	Greening, greenery, herbage, turf, grass
-Farefami	Valley, dale
-Farefasol	Hunt, hunting, hunter
-Farefala	Pursue, pursuit, pursuer
-Farefasi	Savagery, savage, wild
-Faresoldo	Horse, steed
-Faresolre	Bridle, reins, bit
-Faresolmi	Saddle, saddler
-Faresolfa	Stirrup
-Faresolla	Whip, crop
-Faresolsi	Harness
-Farelado	Animal, quadroped
-Farelare	Sheep, lamb
-Farelami	Cattle, cow, bull, beef
-Farelafa	Pig, pork, sow, boar
-Farelasol	Goat, kid
-Farelasi	Donkey, ass
-Faresido	Camel
-Faresire	Dog, bitch
-Faresimi	Cat
-Faresifa	Bird
-Faresisol	Wings, plumage, feathers
-Faresila	Fly, flit, fly away, take flight, flight
-Famidore	Conscription, recruitment, (drafting
-Famidomi	Soldier, corporal, brigadier, sergeant, sergeant major, warrant officer, noncommissioned officer
-Famidofa	Uniform
-Famidosol	Equipment, pouch, belt, shoulder strap, harness, knapsack, backpack
-Famidola	To arm, arms, weapons, weapon maker, armor
-Famidosi	graduate, grade, degree, rank, gradual, gradually
-Famiredo	Staff, employees
-Famiremi	Officer, lieutenant, captain, major, battalion chief
-Famirefa	Colonel
-Famiresol	Aide-de-camp, Camp assistant
-Famirela	General, generalship, brigadier general, division general, generalissimo
-Famiresi	Marshal
-Famifado	Vice, vicious, viciously
-Famifare	Army, troops
-Famifami	Activity, vigilance, active, vigilant, alert, actively
-Famifasol	Brigade, division
-Famifala	Regiment, legion, battalion, squadron, company
-Famifasi	Zouaves, Spahis
-Famisoldo	To kill, to "off", killed
-Famisolre	Infantry, rifleman, infantryman, grenadier, "outfielder"
-Famisolmi	Cavalry, cavalryman
-Famisolfa	Artillery, gunner
-Famisolla	Reverse, inverse, in reverse, in the opposite way
-Famisolsi	Engineer, engineering
-Familado	Camp, encampment
-Familare	Tent
-Familami	Bivouac
-Familafa	Itinerant, travelling
-Familasol	Material (n.), equipment
-Familasi	Flag, banner
-Famisido	Firearms, musketry (musketeer)
-Famisire	Bomb, cannon, mortar
-Famisimi	Percussion, drums
-Famisifa	Shoot, rifle, shooting, discharge
-Famisisol	--
-Famisila	Pistol, handgun
-Fasoldore	Gunpowder
-Fasoldomi	Cartrige, (capsule)
-Fasoldofa	Bullet, bullet shells
-Fasoldosol	To begin, initiate, prime, boot up, wick, fuse, (also to light a wick)
-Fasoldola	Sword, saber
-Fasoldosi	Dagger, poniard, stilleto
-Fasolredo	Covet, lust, greed, insatiability, rapacious, greedy, insatiable
-Fasolremi	Besiege, take over, siege, besieging
-Fasolrefa	Attack, assail, offensive, assault, aggression, attacker, assailant, aggressor, aggressive
-Fasolresol	Fight, combat, battle, melee, battlefield
-Fasolrela	Fire, unload, release, shooting, rifleman
-Fasolresi	"Grapeshot", hail of bullets, machine gun (v.)
-Fasolmido	Stupidity, inability, unable, limited, unintelligent, unintelligently
-Fasolmire	Strategy, tactic, tactical, strategic
-Fasolmifa	Serve, service, servant
-Fasolmisol	Resist, defend, hold out, resistance, resistant, unbeaten
-Fasolmila	Inflexibility, invulnerability, invinciblility, indomitable, unshakable, irresistibly, unswervingly
-Fasolmisi	Stubborn, obstinate, stubbornness, obstinately
-Fasolfado	Unsightly, awkward, ugly, ungraceful, unpleasing, clumsy
-Fasolfare	Warring, war, "military art", warrior, military, martial, warlike
-Fasolfami	Conquer, overcome, disarm, tame, surmount, victory, winner
-Fasolfasol	Conquer, conquest, feat, conqueror
-Fasolfala	Heroism, heroes, hero, heroin, heroic
-Fasolfasi	Triumph, victory, victor, triumphant, triumphal
-Fasollado	Sea, ocean, gulf, bay
-Fasollare	Drift, fluctuate, undulate, flow, wave, vague, ripple, floating, rolling, undulating
-Fasollami	Marine, maritime
-Fasollafa	Fleet, squadron
-Fasollasol	Ship, brig
-Fasollasi	Boat, skiff
-Fasolsido	Mast, foremast
-Fasolsire	Sail (n.)
-Fasolsimi	Rudder
-Fasolsifa	To pilot, mariner, pilot, boatman
-Fasolsisol	Marine crew, sailor
-Fasolsila	Admirality, admiral, vice-admiral, contre-admiral
-Faladore	To navigate, navigation, navigator, navigable
-Faladomi	Space, expanse, area, spacious, expansive
-Faladofa	Kilometer
-Faladosol	Row (v), oar, rowing, rower, oarsman
-Faladola	To sail (v.)
-Faladosi	Maneuver, one who maneuvers
-Falaredo	To board, access, dock, boardable, accessible
-Falaremi	To anchor, to moor, anchor, mooring
-Falarefa	Seaport, harbor
-Falaresol	Beach, shore, bank
-Falarela	Coast, seashore, sea-cliff
-Falaresi	Strait, peninsula, isthmus
-Falamido	Madness, insanity, dementia, crazy, insane
-Falamire	Lake, lagoon, pond
-Falamifa	Depth, deep, deeply
-Falamisol	To fish, fishing, fisherman
-Falamila	Fishing line
-Falamisi	Bait, lure, fishhook
-Falafado	Swim, swimmer, by swimming
-Falafare	To flood, inundate, swamp (v.), submerge, overwhelm
-Falafami	To fool, dupe, fooled, duped
-Falafasol	To shipwreck, shipwreck, shipwrecked, castaway
-Falafala	To drown, drowned, a drowned person
-Falafasi	Torrent, surge, torrentuous, billowing
-Falasoldo	Creek, stream, brook
-Falasolre	Channel, canal, conduit
-Falasolmi	Well (n.), sump, water well
-Falasolfa	Pump (v.), draw (liquid), pump (n.), pumper
-Falasolla	To flow, gush, gushing, cascade, waterfall
-Falasolsi	Unite, rally, band together, gang up, union, rally, federalism, confederation, coalition, league, federal, united, rallied, ligated
-Falasido	Continent, mainland, continental
-Falasire	Europe, European, a European person
-Falasimi	Asia, Asian, an Asian person
-Falasifa	Africa, African, an African person
-Falasisol	America, the New World, American, an American person
-Falasila	Oceania, Australia, Oceanian, an Oceanian person, (Australian, an Australian person)
-Fasidore	Travel, tour, peregrination, pilgrimage, traveler, tourist, pilgrim
-Fasidomi	Leave, go from, depart
-Fasidofa	Route, road map
-Fasidosol	To separate oneself, to part, separation, separable
-Fasidola	To go away, to retire, remoteness, distance, distant, remote, far away
-Fasidosi	To absent oneself, absence, absent
-Fasiredo	Railway, railroad
-Fasiremi	Locomotive
-Fasirefa	Transport, transfer, transportation, transferable, transportable
-Fasiresol	Baggage, luggage, case, trunk, suitcase
-Fasirela	Duty, debt, debtor, indebted
-Fasiresi	Roll, wheel, bearing, cog
-Fasimido	To dash/rush, élan, spontaneity, suddenness, spontaneous, suddenly, all at once, immediately, instantly, spontaneously
-Fasimire	Speed, haste, velocity, promptness, quickly, fast
-Fasimifa	Vivacity, exuberance, impetuosity, dashing, lively, expeditious, strongly, impetuously
-Fasimisol	Move, movement, oscillation, locomotion, fluctuation, engine, moving
-Fasimila	To hurry, hasten, accelerate, acceleration, accelerator
-Fasimisi	Advance, move, thrust, forward (motion)
-Fasifado	To catch sight of, to glimpse, to see, view, point of view
-Fasifare	Perspective, in perspective
-Fasifami	Moderate, to temper, repress, moderation, restraint, moderate, withheld, reserve, tempered, temperate, moderator, moderately
-Fasifasol	Accident, incident, event
-Fasifala	Scare, frighten, terrify, scary, frightening, frightful, terrible, dreadful
-Fasifasi	To be scared, shudder, terror, fright, fear, dread, trembling, terrified, scared
-Fasisoldo	Train, "following cars", wagon
-Fasisolre	To run through, route
-Fasisolmi	Direct, express, directly, in a straight line
-Fasisolfa	Road, trail, way
-Fasisolla	Stop, to park, station, respite, truce, stationary
-Fasisolsi	Bifurcate, fork, branch, bifurcation
-Fasilado	South, southern, meridian
-Fasilare	East, eastern, Orient, the East, Oriental
-Fasilami	The four cardinal points, points of the compass
-Fasilafa	To join together, to meet, to rejoin, to get together
-Fasilasol	Arrive, reach, achieve, arrival, finish
-Fasilasi	Station (railway/bus), landing dock, wharf, pier, unloading dock
-Soldoredo	Art, artist, artistic, artistically
-Soldoremi	Theater, theatre, theatrical, theatrically
-Soldorefa	Represent, representation
-Soldoresol	Work of theater, a theatrical piece
-Soldorela	Negro, a black person
-Soldoresi	Décor, decorator
-Soldomido	Opera, musical
-Soldomire	Comedy, comedian
-Soldomifa	Tragedy, tragedian, tragic
-Soldomisol	Drama, dramatist, dramatic, dramatically
-Soldomila	Author, writer
-Soldomisi	Actor, actress
-Soldofado	Recite, recitation, reciter, reciting
-Soldofare	Declaim, recite, declamation, recitative, declamatory
-Soldofami	Gesticulate, mime, mimic, gesture, gesticulation, pantomime, language of action, mimicry
-Soldofasol	Tell, recount, describe, narrate, narration, description, raconteur, descriptive
-Soldofala	Accent, inflection, tone of voice, accentuated
-Soldofasi	Express, to mean, enunciate, emit, expression, significant, expressive, expressible
-Soldosoldo	Exit, come out, exit (n.)
-Soldosolre	Repertoire, list of pieces
-Soldosolmi	Role, character, person whom one represents
-Soldosolfa	Masterpiece, master stroke
-Soldosolla	Effect, sensation
-Soldosolsi	Succeed, success, good luck, successful
-Soldolado	Dilettantism, dilettante, amateur
-Soldolare	Place (v.), situate, place, spot, position
-Soldolami	Audience of theater
-Soldolafa	Theater box
-Soldolasol	Theater gallery
-Soldolasi	Amphitheater
-Soldosido	Orchestrate, instrumentation, orchestra
-Soldosire	Instrument, instrumentalist, instrumental
-Soldosimi	Violin, viola, violinist
-Soldosifa	Cello, bass, cellist, contra-bass
-Soldosisol	Bow of a violin
-Soldosila	Strings
-Solredore	Harp, harpist
-Solredomi	Flute, flutist
-Solredofa	High woodwinds, clarinet, bassoon
-Solredosol	Saxophone, trombone
-Solredola	Trumpet, bugle, horn
-Solredosi	Fanfare, sounding (of trumpets &c.)
-Solremido	Perform, performance, performer, performing
-Solremire	Accompany, accompaniment, accompanist
-Solremifa	Sing, song, singer, singing
-Solremisol	Voice, tone of voice, vocal
-Solremila	Tenor, counter-tenor, baritone
-Solremisi	Soprano, Mezzo-soprano, mezzo-contralto, contralto
-Solrefado	Vocalize, vocalization, vocalized
-Solrefare	Agility, quickness, dexterity, nimbleness, agile, nimble, quickly, nimbly, swiftly, lightly
-Solrefami	To make flexible, flexible, flexibility, versatility, maneuverability, supple
-Solrefasol	To get to know, taste, sense of beauty, refinement, aesthetics, connoisseur, refined, tasteful, tastefully
-Solrefala	Talent
-Solrefasi	Perfect (v.), improve, develop, enhance, improvement, development, improved, perfected, perfectible, perfectibility
-Solresoldo	Idleness, leisure, unoccupied, idle, aimless, at leisure
-Solresolre	Sentimentality, feeling (of), sentimental, romantic
-Solresolmi	To interest, interest, concern
-Solresolfa	To move (emotionally), to touch, to shake up, touching, moving, pathetic (pathos)
-Solresolla	Delude, illusion, delusion, chimera (metaphorical), utopia, illusory, chimerical, imaginary, fantastic, misleading, captious
-Solresolsi	Symbolize, figure, symbol, allegory, symbolism, emblem, figurative, symbolic, allegorical, figuratively, symbolically
-Solrelado	Surprise, amaze, astonish, astound, marvel, amazing, surprising, unimaginable, striking, stunning, extraordinary, exceptional, surprisingly, extraordinarily, exceptionally
-Solrelare	Wonder, marvel, be struck by, stupefaction, surprised, amazed, stunned, struck, shocked
-Solrelami	Fascinate, mesmerize, enchant, delight, excite, inspire, fascination, prestige, fascinating
-Solrelafa	Feel, experience, to start with surprise, impression, feeling, emotion, stir, thrill, impressed, moved, affected, shuddering, trembling
-Solrelasol	To get excited, get enthusiastic, enthusiasm, excitement, enthusiastic, excited
-Solrelasi	Irresistible, irresistibly
-Solresido	Captivate, enthrall, fascinate, subjugate, submit
-Solresire	Attend, be present, audience, listener, spectator, the public
-Solresimi	Applaud, cheer, applause, cheers, clapping, bravos, cheering, applauders
-Solresifa	Interrupt, suspend, pause, interruption, suspension, interrupter, suspended, stopped, discontinued, pending
-Solresisol	Approve, endorse, sanction, ratify, approval, endorsement, vote, sanction, ratification, approving, approvingly
-Solresila	Unanimous, by all, universal, unianimously
-Solmidore	Compete, Rivalry, competition, rival, competitor
-Solmidomi	Emulate, try to imitate, emulator
-Solmidofa	Become animated, come to life, get worked up, be filled with enthusiasm, animation, verve, spirit, nerve, animated, inflamed, excited
-Solmidosol	Excel, excellence, excellent, most excellent, for excellence, excellently
-Solmidola	Shine, dazzle, sparkle, burst, flash, glitter, brilliant, bright, dazzling, blinding, stunning, brilliantly, stunningly, brightly, superbly
-Solmidosi	Surpass, eclipse, overshadow, outweigh, prevail, take precedence over, dominate, exceed
-Solmiredo	Acoustic
-Solmiremi	Tuning fork
-Solmirefa	Tone, tonality, tonic
-Solmiresol	Sharp (as in music, "C Sharp")
-Solmirela	Flat (as in music, "B Flat")
-Solmiresi	Natural (as in music), diatonic
-Solmifado	Misconduct, immorality
-Solmifare	Half step (Leading tone)
-Solmifami	Interval, gap
-Solmifasol	Interval of a tone, semitone, half step
-Solmifala	Major key, major mode
-Solmifasi	Dominant, sub-dominant
-Solmisoldo	To compose, composition, composer, maestro
-Solmisolre	Music, musician, musical, musically
-Solmisolmi	Note, whole note, half note, quarter note
-Solmisolfa	Sound, intonation
-Solmisolla	Melody, melodist, melodious, melodiously
-Solmisolsi	Harmony, harmonist, harmonious, harmoniously, in harmony
-Solmilado	Organize, organization, organizer
-Solmilare	Concert (of music)
-Solmilami	Program, brochure, flyer, bulletin
-Solmilafa	Piano, pianist
-Solmilasol	Organ (musical instrument), harmonium, harmonicorde, organist
-Solmilasi	Keyboard (on a piano), key, pedal
-Solmisido	Lecture, course
-Solmisire	Teach, instruct, educate, profess, professorship, teaching, didactic, teacher, tutor, professor, didactics
-Solmisimi	Method, system, methodist, methodical, systematic, methodically, systematically
-Solmisifa	Immobility, immobile
-Solmisisol	Theory, theorist, theoretician theoretical
-Solmisila	Problem, issue, challenge, touble, problematic
-Solfadore	Philotechnic
-Solfadomi	Philharmonic, philharmonic society
-Solfadofa	Choirmaster
-Solfadosol	Choir, singer, choir member, chorus, in chorus
-Solfadola	Choral society, a choral society member
-Solfadosi	Cantata
-Solfaredo	Concerto
-Solfaremi	Cavatina
-Solfarefa	Solo, duo, trio, quartet, quintet
-Solfaresol	Portamento
-Solfarela	Trill, cadence
-Solfaresi	Fermata, pause
-Solfamido	To grow old, decline, be on the decline, old age, decay, decrepitude, old man, old person, old age, decrepit
-Solfamire	Scale, musical scale
-Solfamifa	solfège, vocal music
-Solfamisol	Quaver, eighth note, sixteenth note, thirty-second note, sixty-fourth note
-Solfamila	Syncopate, syncopation
-Solfamisi	Rhythm, measure, rhythmic, rhythmical
-Solfasoldo	Disappear, vanish, disappearance, gone, missing, vanished
-Solfasolre	Musical part/score, sheet of music
-Solfasolmi	Prelude
-Solfasolfa	Modulate, modulation
-Solfasolla	Transpose, transposition, transposer
-Solfasolsi	Fugue
-Solfalado	Arpeggiate, arpeggio
-Solfalare	Chord
-Solfalami	Base, foundation, basis, fundamental, fundamentally
-Solfalafa	Concern, pertain to, related
-Solfalasol	Symphony, symphonist, symphonic composer
-Solfalasi	Counterpoint
-Solfasido	Rests (in music notation), Whole rest, half rest, quarter rest, eighth rest, sixteenth rest
-Solfasire	Drum, drumming, bass drum
-Solfasimi	Resonate, resound, vibrate, sound, resonance, echo, resounding
-Solfasifa	Whistle
-Solfasisol	Castanets, tambourine, cymbal
-Solfasila	Barrel organ
-Solladore	Museum, gallery
-Solladomi	Picture, painting, print, engraving, frame
-Solladofa	Sketch, outline, draft
-Solladosol	Draw, drawing, line (of a pen/pencil), drawer, cartoonist
-Solladola	Paint, painting, painter, color, shade
-Solladosi	Miniature
-Sollaredo	Watercolor
-Sollaremi	Pastel
-Sollarefa	Gouache, guache, thick paint
-Sollaresol	Fresco, watercolor on plaster, wallpainting
-Sollarela	Palette
-Sollaresi	Brush, paintbrush
-Sollamido	To create a model, to shape, modelling, model, preliminary sculpture
-Sollamire	To mold, to cast in a mold, moulder, molder
-Sollamifa	Sculpt, carve, sculpture, carving, sculptor, carver
-Sollamisol	Statue, bust, torso, statuary
-Sollamila	Pedestal, base
-Sollamisi	Relief, carving
-Sollafado	Daguerreotype, Daguerre
-Sollafare	Photograph, photograph, photographic
-Sollafami	Reproduce, reflect, reproduction, reflection, reflectivity, reflexivity, reflector
-Sollafasol	Portrait, image, picture, likeness, portrait painter
-Sollafala	Resemble, like, similarity, resemblance, likeness, analogy, relation, homogeneity, similar, homogeneous
-Sollafasi	Conformity, identity, conforms, similar, same, identical, in accordance, the same as, such as, similarly, likewise
-Sollasoldo	Stenography, shorthand, stenographer, stenographic, calligraphy
-Sollasolre	Lithography, lithographer, lithographical
-Sollasolmi	Engrave, engraving, engraver
-Sollasolfa	To chisel, engrave, chisel
-Sollasolla	Compass
-Sollasolsi	Adjust, specify, to tune (an instrument), accuracy, precision, consonance, agreement, tuner, precise, accurate, consonant, exactly, precisely, accurately
-Sollasido	Academy, academician, academic
-Sollasire	To know, knowledge, science, education, instruction, scholarship, savant, educated, enlightened, erudite, scholar, literate, learned, wisely, knowingly, learnedly, eruditely
-Sollasimi	Institute, institution, school
-Sollasifa	Baccalaureat
-Sollasisol	Encyclopedia, encyclopedist, encyclopedic
-Sollasila	Mathematics, mathematician, mathematical, mathematically
-Solsidore	Literature, belles lettres, writer, literary person, literary
-Solsidomi	Prose writer, prose, prosaic
-Solsidofa	Novel, story, tale, fiction, novelist, romantic, fictitious, fictitiously
-Solsidosol	Fable, parable, writer of fables, fabulous, mythical
-Solsidola	To write verse, rhyme, versification, rhymer, versifier
-Solsidosi	Poeticize, idealize, poetry, ideality, poet, bard, poetic, perfect, ideal, poetically
-Solsiredo	Speaker, orator, oratory
-Solsiremi	To be inspired, to draw inspiration from, inspiration, inspiring
-Solsirefa	Discourse, harangue, speech, address, speaker, talker, orator
-Solsiresol	Eloquence, eloquent, eloquently
-Solsirela	Remarkable, notable, outstanding, remarkably, notably
-Solsiresi	The peak, pinnacle, zenith, climax, culmination, perfect beauty, virtuoso, phoenix, eminent, transcendent, sublime, eminently, the highest degree, superlative, the ultimate
-Solsimido	To soften, to become effeminate, softening, softeness, weakness, enervation, soft, weakens, effeminate
-Solsimire	Idea, notion, concept
-Solsimifa	Metaphysics, ideology, metaphysician, ideologist, idealogical, ideographic
-Solsimisol	Think, meditate, reflect, thought, meditation, reflection, thinker, thoughtful, meditative, musingly
-Solsimila	Imagine, imagination, imaginative, imaginatively, imaginable
-Solsimisi	Abstraction, abstract (n & adj)
-Solsifado	Dishonesty, disloyalty, bad faith, dishonest, unfair, dishonestly, unfairly
-Solsifare	Genius, divine fire, creative fire, ingenuity, ingenious, clever, ingeniously
-Solsifami	Persevere, persist, perseverance, persistence, constancy, persevering, persistent, constant, steady, constantly
-Solsifasol	Invent, create, invention, creation, inventor, creator, inventive
-Solsifala	Discover, discovery
-Solsifasi	Innovate, innovation, newness, novelty, innovative, innovator, new, modern, recent, newly, recently, modernly, lately
-Solsisoldo	Fight against, fight, enter the fray, fight (n), moral combat, fighter, wrestler
-Solsisolre	Propagate, popularize, disseminate, spread, propaganda, popularization, propagator, popularizer
-Solsisolmi	Popularity, popular, accredited, popularly
-Solsisolfa	Reputation, fame, repute, reputation, famous, renowned, reputed, famed
-Solsisolla	To distinguish oneself, demonstration, celebrity, illustrious, famous, famous people
-Solsisolsi	Glory, glorious, gloriously, with glory
-Solsilado	Telegraph, telegraphic, telegraphically
-Solsilare	Electricity, electric
-Solsilami	Telephony, telephone, telephonic, by telephone
-Solsilafa	Indicate, sign, evidence, signal
-Solsilasol	Correspond, communicate, correspondence, communication, telegram, corresponding
-Solsilasi	Inform, warn, announce, notify, share, notice, advertisement
-Ladoredo	Industry, industral, an industrial person, industrious, industriously
-Ladoremi	Manufacture, make, manufacturing, making, manufacturer, factory
-Ladorefa	Material, substance, materiality, materials, materially
-Ladoresol	Produce, production, product, producer
-Ladorela	To sell, sale, seller
-Ladoresi	Wholesale, in bulk
-Ladomido	Establish, institute, erect, found, establishment, foundation, erection, institution, founder
-Ladomire	Shop, store, boutique, shopkeeper
-Ladomifa	Workshop, studio, foreman, workshop leader
-Ladomisol	Tarnish, become dull, dull, dim, matte
-Ladomila	Agree, stipulate, make a pact, compromise, convention, stipulation, pact, market, clause, conventional, conventionally
-Ladomisi	Deal, to deal with, negotiate, compromise, capitulate, give in, treaty, transaction, capitulation, transactional
-Ladofado	Trade, traffic (of goods), merchant, trading, trafficker, dealer, commercial, commercially
-Ladofare	Associate, partner with, association, common funds, copartner, partner, jointly, shared
-Ladofami	Condition, conditional, conditionally
-Ladofasol	To fulfil, achieve, carry out, accomplish, realize (a goal), to effect, execute, achievement, feasible
-Ladofala	Indivisibility, indissolubility, indivisible, indissoluble, indivisibly
-Ladofasi	Linen, flax
-Ladosoldo	Outside, exterior, external, outwardly, outdoors, in open air
-Ladosolre	Spin (yarn/thread etc), thread, yarn, wire, spinner, weaver, spindle, coil, reel, bobbin, distaff
-Ladosolmi	Unwind, unravel, spool
-Ladosolfa	Spinning, spinner
-Ladosolla	Canvas, cretonne, chintz, batiste, cambric
-Ladosolsi	Cotton, calico, percale, jaconet
-Ladolado	Muslin, organdy, tarlatan, gauze, Pancake, Crêpe
-Ladolare	Wool, flannel, merino, cashmere
-Ladolami	Sheet, draper, clothmaker
-Ladolafa	Silk, silk industry, silky
-Ladolasol	Satin, like satin
-Ladolasi	Velvet, velvety
-Ladosido	Fabric, cloth, material
-Ladosire	Damask, Damascus
-Ladosimi	Indian, persian
-Ladosifa	Getting closer, come closer, approach
-Ladosisol	Prepare, making, confection
-Ladosila	Fashion, style, form, way
-Laredore	To color, color, hue, colorist, colored, coloring, dye
-Laredomi	Dark, brown, tanned, brunet
-Laredofa	Chestnut, blonde, red
-Laredosol	Brightness, white, whitish
-Laredola	Buy, purchase, acquire, perchasing department, acquisition, buyer, customer
-Laredosi	Clarify, make clear, transparency, clarity, diaphaneity, clear, transparent, translucent
-Laremido	Grey, gray, greyish, grayish
-Laremire	Violet, violetish, purple, purplish, lilac
-Laremifa	Green, greenish, olive
-Laremisol	Yellow, yellowish, yellowing
-Laremila	Blue, bluish, azure
-Laremisi	To redden, blush, crimson, reddish, scarlet
-Larefado	Become poor, poor, impoverished
-Larefare	Offer, propose, proposal, offer, motion (not "movement"), offering, offerer, supplier, nominator
-Larefami	Opportunity, windfall, good fortune, chance
-Larefasol	Series, following, filiation
-Larefala	Sort, kind, genre, manner
-Larefasi	Choose, elect, choice, option
-Laresoldo	Fold, bend, ply
-Laresolre	Wrap, package (v.), encase, enclose, envelope
-Laresolmi	Tie, bind, tie up, link, string, belt, cordon, rope
-Laresolfa	Package (n.), bundle, bouquet
-Laresolla	Take, seize, grab, taking, seizure, capture, catch, booty, loot, spoil (n.), prey
-Laresolsi	Take, remove, monopolize, buy up, hoard, hoarding, monopolist, abductor
-Larelado	Accounting, bookkeeping, cashier, teller, counter, box, office
-Larelare	Count, counting, enumerate, list, account, enumeration, counter
-Larelami	Calculate, calculation, arithmetic, algebra, calculator, arithmetician, algebraic, arithmetically, algrebraically
-Larelafa	Quantify, number, numbering, figure, numerical, numeral
-Larelasol	Combine, coordinate, combination, coordination, combined, coordinated
-Larelasi	Nomenclature, list, collection, catalog, nomenclator
-Laresido	Assess, appraise, esteem, evaluation, estimate, price
-Laresire	Worth, cost, value, valuable, valuably
-Laresimi	Sum
-Laresifa	Pay, settle, break free (from debt), payment, payer, payable
-Laresisol	Bill, invoice, check
-Laresila	Receipt, payed for, acquitted, received
-Lamidore	Augment, increase, enlarge, add to, magnify, magnification, extra, added, increased, additional
-Lamidomi	Abound, to flow, plenty, abundance, exuberance, abundant, copious, exuberant, abundantly, copiously, profusely
-Lamidofa	Fructify, be productive, yield a profit, fertilize, fertility, fertile, fertile, productive
-Lamidosol	Mix, jumble, muddle, scramble, mixed, jumbled, scrambled, chaos, confused, confusion
-Lamidola	Tread, set foot on, trample, knead, stomping, pressing, kneading, trampling
-Lamidosi	Crush, grind, pulverize, crushing, grinding, mashing, pulverization, crushed, ground, in powder
-Lamiredo	Borrowing, loan, borrower
-Lamiremi	Make credit, credit, creditor, lender, a credit account
-Lamirefa	Pawnshop, pawnbrokers
-Lamiresol	Trade, barter, swap, exchange, swapping, in exchange
-Lamirela	Guarantee, deposit, bail, bond, pledge
-Lamiresi	Delay, procrastinate, adjourn, prolong, postpone, extension, delayed, belated
-Lamifado	Indecency, immodesty, impurity, licentiousness, obscenity, conscupiescence, lust, indecent, immodest, lewd, immoral, lascivious
-Lamifare	Search, browse, research, searchers, researchers
-Lamifami	Verify, authenticate, verification, evaluation, verifier, expert
-Lamifasol	Inventory, survey
-Lamifala	Dividend
-Lamifasi	Sort, class, rank, categorize, ranking, classification, classifier
-Lamisoldo	Become due, expire, deadline, expiration, term
-Lamisolre	Cease, discontinue, termination, cessation, discontinuation, discontinued
-Lamisolmi	Liquidate, liquidation, liquidator, asset to cash
-Lamisolfa	The rest, remaining, residue
-Lamisolla	To shrink, tighten, narrow, shrinking
-Lamisolsi	Totality, total, entire, all, the amount, full, complete, totally, in total
-Lamilado	Sate, satiate, satisfy, quench, gorge, satiation, fullness, satiety, satiating, satisfying
-Lamilare	To bid, to outbid, bid more than, make a higher bid, bidding, higher prices, auction, bidder, expensive, costly, wasteful, exorbitant
-Lamilami	To double, double, duplicate, doubly
-Lamilafa	Commodity, merchandise, goods
-Lamilasol	Number, quantity, amount, numerous, many, multiplicity, large number, the largest number, most, in number
-Lamilasi	Employ, apply, use, utilise, consume, adapt, make use of, application, consumer, applicable, adaptable
-Lamisido	Engage, enlist, engagement, commitment, enrollment, enroller
-Lamisire	Register, record, recording, recorder
-Lamisimi	Disobey, disobedience, insubordination, rebellion, disobedient, rebellious, insubordinate, unruly, indirigible
-Lamisifa	Result, occur, arise, result, consequence, consequently, as a result, accordingly, in consequence, therefore, because of this
-Lamisisol	Balance sheet, toll, assessment, report
-Lamisila	Budget, statistical, budget of things
-Lafadore	Counting, Bankrupt, settlement
-Lafadomi	Add, addition, additional
-Lafadofa	Subtract, subtraction
-Lafadosol	Multiply, multiplier, multiplication, multiple, multipliable
-Lafadola	Divide, separate, divider, division, section, divisible
-Lafadosi	Share, distribute, dispense, sharing, distribution, allocation, distributor, dispenser, distributive
-Lafaredo	Tarif, tax, rate, tax rates, normal price, fixed, unchanging, invariable, a fair price, a fixed price
-Lafaremi	Mark, label, tag, price, index
-Lafarefa	Quarter, fourth, quart
-Lafaresol	Third
-Lafarela	Half
-Lafaresi	Complete, supplement, supplementary, entire, whole, completely, entirely, fully, thoroughly, from top to bottom, in whole, in entire
-Lafamido	Decline, shrinking, diminish, to go down, to lessen, smallness
-Lafamire	Monetize, paper money, paper values
-Lafamifa	Bill, debt, bill of exchange
-Lafamisol	Minor key
-Lafamila	Discount, discounted, discounter
-Lafamisi	Endorse, endorsement, endorser
-Lafasoldo	Currency, money, cash, monetary
-Lafasolre	Gold, gold coin
-Lafasolmi	Bad manners, vulgarity, common, banal, trivial, improper, inappropriate, trivially
-Lafasolfa	Silver, silver coin, silver piece, piece of silver, argentiferous, silvermade
-Lafasolla	Franc
-Lafasolsi	Centime
-Lafalado	Measure, gauge, measurement, measurable, measurer, gauger
-Lafalare	Proportion, calibrate, size, proportion, calibration, proportionate, proportional, proportionally
-Lafalami	Geometry, geometric, geometrical, geometrically
-Lafalafa	Liter
-Lafalasol	Unit of measurement, 100 square meters
-Lafalasi	Survey, acre, surveyor
-Lafasido	Balance, counterbalance
-Lafasire	Weigh, weight, weighing
-Lafasimi	Gravity, heaviness, heavy, solid, heavily, massively
-Lafasifa	Gram
-Lafasisol	One cubic meter
-Lafasila	Cube, block, cubic, cubical
-Lasoldore	Deca
-Lasoldomi	Hecto
-Lasoldofa	Kilo
-Lasoldosol	Milli
-Lasoldola	Centi
-Lasoldosi	Deci
-Lasolredo	Piece of cloth/fabric/material
-Lasolremi	Grow, size, big, huge, excess
-Lasolrefa	Meter, metric
-Lasolresol	Disillusioned, disillusion, disenchantment, disappointment, disillusionment, disenchanted, disappointing
-Lasolrela	Render, restore, restitution
-Lasolresi	Consolidate, solidify, strengthen, make firm, strong, solid, durable, solidly
-Lasolmido	Stupefy, make stupid, stupidity, foolishness, silliness, stupidity, brute, stupid, stultifying, stupefying
-Lasolmire	Sample, coupon, cloth
-Lasolmifa	The location of something, place
-Lasolmisol	Bias, skew, oblique, slanting, transverse, awry, askew, aside, across, obliquely
-Lasolmila	Broaden, width, magnitude, extent, scope, scale, wide, full, spacious, widely
-Lasolmisi	Length, long, longitudinal, longitudinally
-Lasolfado	Show, display, spread out, showman
-Lasolfare	Expose, flaunt, exhibit, exposition, exhibition, exhibitor, display
-Lasolfami	Match, set
-Lasolfasol	Importance, important, significant, considerable
-Lasolfala	Patent, certificate of competency, certificate of invention
-Lasolfasi	Patent, patented
-Lasollado	Business, businessman, business woman, business agent
-Lasollare	Except (v.), exception, exceptional, exceptionally, except, except for, besides
-Lasollami	Solvency, solvent, able to pay one's debts
-Lasollafa	Guarantee, insure, guarantee, insurance
-Lasollasol	Pack, packaging, packer
-Lasollasi	Export, exportation, exporter
-Lasolsido	Negotiate, parley, negotiation, negotiator
-Lasolsire	Go back, take again, reclaim, reprise, resume, recapture
-Lasolsimi	Doubt, disbelief, incredulous
-Lasolsifa	Put back, return
-Lasolsisol	Equivalent, equal
-Lasolsila	Advantage, advantageous, advantageously
-Lasidore	Fashion, the style of the day, desired, run, of fashion, fashionable, vogue
-Lasidomi	Lingerie
-Lasidofa	Flange, collar, stiff collar, false collar
-Lasidosol	Cuffs, sleeves
-Lasidola	Lace, from the Malines, from England
-Lasidosi	Ribbon, cord, band
-Lasiredo	Display, placard, poster, sign
-Lasiremi	Hosiery, hosier
-Lasirefa	Couple, pair, pair of, coupled with
-Lasiresol	Knit, knitting
-Lasirela	Net, mesh, network, fishnet
-Lasiresi	Crochet, crochet hook
-Lasimido	Cowardice, coward, without courage, cowardly
-Lasimire	Amass, accumulate, pile, stack, heap, accumulation, mass
-Lasimifa	Encumber, congest, congestion, hinder, hindrance
-Lasimisol	Haberdashery, sewing materials vendor
-Lasimila	Ball of thread, Pincushion
-Lasimisi	Skein
-Lasifado	Indelicacy, indelicate, incelicately
-Lasifare	Fair, showman
-Lasifami	Toys, toy, rattles
-Lasifasol	Doll, dolls
-Lasifala	Puppets, marionettes, puppet
-Lasifasi	Lottery
-Lasisoldo	Roam, wander, go here and there, adventurer, vagabond
-Lasisolre	Charlatan, boast, brag, boasting, bragging, charlatanry, boastful, braggart, imposter
-Lasisolmi	Bribe, venal, mercenary
-Lasisolfa	Make a fake, false, forger
-Lasisolla	Have prejudice, be detrimental to, injure, damage, wrong, detriment, disadvantage, detrimental, damaging, disadvantageous
-Lasisolsi	Go bankrupt, bankruptcy, bankrupt
-Lasilado	Doorkeeper, usher
-Lasilare	Assigne, allocate, assignment
-Lasilami	Call, summon, interpellation, question, summons, questioner
-Lasilafa	Protest
-Lasilasol	Trial, case, lawsuit
-Lasilasi	Gain, benefit, profit, gainer, beneficiaries, fruitful, profitable, lucrative, fruitfully, successfully
-Sidoredo	City, village, town, hamlet
-Sidoremi	Fence, border, gate, barrier
-Sidorefa	District
-Sidoresol	Neighborhood, area, quarter
-Sidorela	Opacity, opaque
-Sidoresi	Street, sidewalk, roadway, road, pavement
-Sidomido	Square (of a city)
-Sidomire	Monument, triumphal arch, obelisk, column, pyramid
-Sidomifa	Building, edifice, castle, manor, palace
-Sidomisol	Prefecture, town hall, prefect, sub-prefect
-Sidomila	Town hall, mayor, deputy mayor
-Sidomisi	Municipality, town council, city council, municipal
-Sidofado	Convent, monastery, abbey, monastic
-Sidofare	Hospital, hospice, infirmary
-Sidofami	Inn, hotel, pension, boarding house, hostel, innkeeper
-Sidofasol	Cabaret, nightclub, tavern, restaurant, restaurateur
-Sidofala	Café, café owner
-Sidofasi	Market, bazaar, marketplace
-Sidosoldo	Boulevard, avenue, promenade
-Sidosolre	Receive money, repay, reimburse, receipt, reimbursement, repayment, refundable
-Sidosolmi	Monotony, uniformity, monotonous, uniform
-Sidosolfa	Alley, avenue, aisle
-Sidosolla	Passage
-Sidosolsi	Corridor, hallway, maze, labyrinth
-Sidolado	Suburb, suburban
-Sidolare	Dock, lifting, dyke, dam
-Sidolami	River, fluvial
-Sidolafa	Bridge, pontoon
-Sidolasol	Arch, archway, arc
-Sidolasi	Fountain
-Sidosido	Centralize, centralization, center, middle, central, in the midst, centrally
-Sidosire	Average, mean, the average of
-Sidosimi	Angle, corner, wedge, angular, angularly
-Sidosifa	Presence, present
-Sidosisol	Realism, positivism, realist, positivist, realistic
-Sidosila	Triangle, triangulation, triangular, triangularly
-Siredore	Govern, government, governor, governing, governmental
-Siredomi	Force, force to, oblige, require, subdue, compel, constrain, constrained, forced, mandatory, coercive, necessarily, willingly, despite (in spite of)
-Siredofa	Vote, voting, voter
-Siredosol	Elect, election, elected, electoral
-Siredola	Detail, give details, detailing, in detail
-Siredosi	Representative, deputy, delegate
-Siremido	Deafness, deaf, deafly
-Siremire	Dynasty, dynastic
-Siremifa	Empire, emperor, empress, imperial, imperially
-Siremisol	Royalty, sovereignty, the king, queen, sovereign, monarch, dictator, royal
-Siremila	Rule, reign, reigning, throne
-Siremisi	The Court, courtier, man of the court
-Sirefado	Principality, prince, princess, highness, princely
-Sirefare	Ennoble, confer a title on, nobility, aristocracy, noble, titled, aristocrat, gentleman, aristocratic, aristocracy, aristocrat
-Sirefami	Modesty, humility, modest, humble, modestly, humbly
-Sirefasol	Duke, duchess, marquis, marquise, count, countess, viscount, viscountess, baron, baroness
-Sirefala	Chivalry, knighthood, knight
-Sirefasi	Coat of arms, blazon, escutcheon
-Siresoldo	Entitle, entitled, titled, title (honorific), qualification
-Siresolre	Sire, your majesty
-Siresolmi	My Lord, You Lordship, Lord, etc. (as an address)
-Siresolfa	Your Excellence (as an address)
-Siresolla	Your Eminence (as an address)
-Siresolsi	Your Greatness (as an address)
-Sirelado	Senate, House of Peers, senator, peer
-Sirelare	Legislative body, House of Representatives, the Constituent
-Sirelami	Council of State, State Councilor
-Sirelafa	Session, meeting, sitting
-Sirelasol	Consulate, embassy, consul, ambassador, vice-consul
-Sirelasi	Constitute, establish, form, constitution, formation, constituent, constitutional, constitutionally
-Siresido	Diplomacy, diplomat, statesman, diplomatic, diplomatically
-Siresire	Politics
-Siresimi	Spirit of the Party, partisanship, sect, partisan, proselyte, sectarian, follower
-Siresifa	Imperialism, royalism, monarchy, legitimacy (lawfulness), imperial, royal, monarchist, royalist, monarchical, monarchically
-Siresisol	Liberalism, liberal
-Siresila	Republic, republicanism, republican
-Simidore	Ministry, minister, ministerial, ministerially
-Simidomi	Bureaucracy, bureaucrat, bureaucratic, bureaucratically
-Simidofa	Supernumerary, assistant, second-in-command, chief, boss
-Simidosol	Secretary, secretarial work
-Simidola	Preside, presidency, president, vice-president
-Simidosi	Commission, comittee, committe member
-Simiredo	Adopt, adoption, adoptive, for adoption, adoptable
-Simiremi	Indemnify, indemnity, (compensate)
-Simirefa	Compensate, compensation, make up for
-Simiresol	Reward, recompense, remunerate, remuneration, payment, remunerative, rewarding
-Simirela	Pension, pensioned
-Simiresi	Retire, retirement, retired
-Simifado	Manage, administer, direct, administration, management, direction, leadership, administrator, director, manager, administrative, administratively
-Simifare	Stewardship, superintendence, steward, superintendent
-Simifami	Moderate, moderation, temperance, sobriety, frugality, temperate, sober, frugal, soberly
-Simifasol	Manage, govern, management, governance, manager
-Simifala	Receive, collection, revenue, collector, receiver
-Simifasi	Pay a salary to, reward, salary, compensation, pay
-Simisoldo	Darkness, obscurity, dark, shadowy, darkly
-Simisolre	Soil (v.), tarnish, stain, dirt, spot, dirtiness, spotted, messy, dirty, unclean, dirtily
-Simisolmi	Position, location
-Simisolfa	Employment, job, function, responsibility, mission, employed, employee, staff, agent
-Simisolla	Short, shortened, cut short, cropped, curtailed
-Simisolsi	Add to, supplement, attach to, assistant
-Similado	Journalism, journal, gazette, journalist
-Similare	Write, put into words, writing, expression, writer
-Similami	Insert, interpose, insertion, intercalation, intercalary
-Similafa	Article, report, statement, exposé
-Similasol	News, news writer
-Similasi	Publish, promulgate, proclaim, publication, promulgation, proclamation, publicist, public, publicly
-Simisido	History, chronicle, record, hsitorian, chronicler, annalist, historic, historically
-Simisire	Middle Ages
-Simisimi	Opinion, sentiment, feeling
-Simisifa	To move back, retrograde, return, recede, decline, degenerate, reflux, decay, degeneration, retrograde, retrospective, looking back, backward
-Simisisol	Contemporaneity, modern, contemporary (n. and adj.)
-Simisila	Brotherhood, brother, colleague, fellow member
-Sifadore	Dominate, master, enslave, domination, dominator, dominant
-Sifadomi	Usurp, appropriate, seize, invade, usurpation, invasion, appropriation, usurper, invader
-Sifadofa	Oppress, tyrannize, oppression, tyranny, absolutism, despotism, arbitrary power, autocracy, discretionary power, oppressor, tyrant, despot, autocrat, oppressive, tyrannical, absolute, despotic, autocratic
-Sifadosol	Inexpressible, indescribable, ineffable
-Sifadola	Revoke, abolish, annul, repeal, dethrone, revocation, abolishment, annulation, dethronement, retraction
-Sifadosi	Exile, banish, outlaw, expatriation, exile (n.), banishment, proscription, expatriation, exiled, banished, proscribed, expatriate
-Sifaredo	Nationalize, naturalize, nationality, nation, kingdom, state, territory, national, nationally
-Sifaremi	Fatherland, homeland, motherland, country, compatriot, countryman, fellow citizen
-Sifarefa	Civilize, humanize, civilization, civilizing, civilized, of civilization
-Sifaresol	Department, departmental
-Sifarela	Province, provincial
-Sifaresi	The Foreign, foreigner, foreign, from abroad
-Sifamido	To get weaker, weakness, debility, feebleness, weak, frail, sickly, thin, puny, feebly
-Sifamire	International
-Sifamifa	The Unknown, unknown
-Sifamisol	Bourgeoisie, middle class, commoners, beurgeois, common, not noble, vulgar
-Sifamila	Charge, commission, delegation
-Sifamisi	Be responsible for, have commission of, proxy, charge d'affaires
-Sifasoldo	Indicate, designate, indication, designation, indicator, indicative, designative
-Sifasolre	Traverse, cross, traversal, across
-Sifasolmi	Rudeness, discourtesy, incivility, rusticity, boorish, rude, discourteous, uncivil, uncouth, impolite, grossly
-Sifasolfa	Follow, following, next
-Sifasolla	Escort, accompany, escort (n.), procession
-Sifasolsi	Gather, assemble, bunch up, rally, crowd, multitude, crowds
-Sifalado	Pass, passing
-Sifalare	Meet, come across, meeting, consultation
-Sifalami	Recognize someone, aknowledge, show gratitude, recognizable
-Sifalafa	Rendezvous, a meeting place, a meeting time
-Sifalasol	Difference, dissimilarity, disparity, different, dissimilar, diverse, heterogeneous, differently, diversely, in a different way, otherwise
-Sifalasi	Club, circle, club members
-Sifasido	Casino
-Sifasire	Play, play a game, game
-Sifasimi	Billiards, pool, ball, pool ball, bowling
-Sifasifa	Cards, playing cards
-Sifasisol	Age, antiquity, antiques, old antique, gothic, ancient, anciently, formerly, once, long ago
-Sifasila	Chess, checkers, dominos, lotto, chip (poker), card
-Sisoldore	Scholarship, scholar
-Sisoldomi	Bank, banker
-Sisoldofa	Place (values), investment
-Sisoldosol	Fail, to not have success, failure, bad luck, defeat, disappointment
-Sisoldola	Stockbroker
-Sisoldosi	Exchange, money changer, change machine
-Sisolredo	Lower, drop, decrease, low
-Sisolremi	Annuity, income, revenue, annuitant
-Sisolrefa	Coupons
-Sisolresol	Shares, shareholder
-Sisolrela	Bonds
-Sisolresi	Increase, bull, high, top
-Sisolmido	Treasury, the finances
-Sisolmire	Finance, financial
-Sisolmifa	Speculate, speculation, speculator, speculative
-Sisolmisol	Capitalize, capital funds, capital, capitalist
-Sisolmila	Interest, the interest of
-Sisolmisi	Usury, usurer, stockbroker
-Sisolfado	Lie, falsehood, hypocrisy, liar, false, hypocritical, falsely, hypocritically
-Sisolfare	Dressing up, disguise, masquerade, mask, carnival
-Sisolfami	Scream, yell, shout one's lungs out, cry,  shouting, crier
-Sisolfasol	To stun, daze, astound, noise, tumult, explosion, hubbub, noisy, tumultuous, deafening, tumultuously, loud, loudly
-Sisolfala	Shock, offend, scandal, bad example, shocking, offensive, scandalous
-Sisolfasi	Abuse, misuse, encroach upon, abuse, excess, abusive, abusively
-Sisollado	Populate, people, population, people, the vulgar, plebeian, proletarian
-Sisollare	Democracy, democrat, democratic
-Sisollami	Conspire, plot, hatch, intrigue, weave (a plot), conspiracy, plot, cabal, conspirator, plotter
-Sisollafa	Disunity, misunderstanding, trouble, dissension, discord, anarchy, lawlessness, disruptor, anarchist, anarchic
-Sisollasol	Detune, distort, disagreement, dissonance, dissonant, wrong
-Sisollasi	Insurge, rise up, revolutionize, uprising, insurrection, riot, rebellion, revolution, seditious, factious, insurgent, revolutionary, insurgency
-Sisolsido	Damage, harm, spoil, plunder, vandalize, destroy, squander, ravage, looting, pillaging, devastation, pillard, devastating, villain, scoundrel, pirate
-Sisolsire	Ruin, destitution, fall into ruin, ruin, rubble, debris, remnants, remains
-Sisolsimi	Uncertainty, uncertain, unreliable, vague, ambiguous
-Sisolsifa	Destroy, kill, annihilate, slaughter, massacre, murder, destruction, killing, extermination, carnage, destroyer, killer, murderer
-Sisolsisol	Demolish, destroy, demolition, reversal
-Sisolsila	Fall, collapse, crumble, capsize, subsidence, landslide, collapse
-Siladore	To avoid, dodge, evade, circumvent, elude, escape, avoidable
-Siladomi	Discontent, dissatisfied, discontentment
-Siladofa	Flee, escape, run away, desert, fugitives, deserter
-Siladosol	Watch, spy, ambush, lookout, watcher, emissary, spy, alert, watchful
-Siladola	Catch, trap, snare, net
-Siladosi	Arrest, arresting
-Silaredo	Customs, customs officer
-Silaremi	Grant admission, right of entry
-Silarefa	Storehouse, warehouse
-Silaresol	Monopolize, monopoly, taxation, tax, tribute, contribution, taxpayer, contributory, tributary
-Silarela	Forbid, prohibit, interdiction, prohibition, forbidden, illegal, prohibited
-Silaresi	Poach, defraud, cheat (on), poaching, smuggling, fraud, poacher, smuggler, fraudulent, fraudulently
-Silamido	Police, police officer, policeman, police sergeant
-Silamire	Police station, police superintendent
-Silamifa	"Gendarme", armed police, constabulary
-Silamisol	National Guard
-Silamila	Guardhouse, post
-Silamisi	Monitor, watch, faction, supervisor, guard, sentinel, sentry, patrol, safe, secure
-Silafado	Inhumanity, cruelty, barbarism, savagery, inhuman, cruel, barbaric, savage, bloodthirsty, tormentor
-Silafare	Ministry/Minister of State
-Silafami	Ministry/Minister of Justice
-Silafasol	Ministry/Minister of Foreign Affairs
-Silafala	Ministry/Minister of the Interior
-Silafasi	Ministry/Minister of Finance
-Silasoldo	Ministry/Minister of War
-Silasolre	Ministry/Minister of the Marine and Colonies
-Silasolmi	Ministry/Minister of Education and Religious Affairs
-Silasolfa	Ministry/Minister of Agriculture, Trade, and Public Works
-Silasolla	Import, importation, importer
-Silasolsi	Ministry/Minister of Fine Arts or of the House of the Emperor
-Silasido	Order of the Legion of Honor, Legionnaire, a member of the Legion of Honor
-Silasire	Decorate, decoration
-Silasimi	Grand Officer
-Silasifa	Rank of Commander
-Silasisol	Grand Cross
-Silasila	Lose, loss, deficit, loser, lost, irremediable, irreparable
-
-;;	Extensions
-
-Dodore	Earth, world, globe, land
-Dodomi	Seasons
-Dodofa	Winter
-Dodosol	Spring
-Dodola	Summer
-Dodosi	Autumn, fall
-Dorere	January
-Domimi	February
-Dofafa	March
-Dosolsol	April
-Dolala	May
-Dosisi	June
-Reredo	July
-Reremi	August
-Rerefa	September
-Reresol	October
-Rerela	November
-Reresi	December
-Redodo	One, first, single, unit, only
-Remimi	Two, second, secondly, interval of a second
-Refafa	Three, third, thirdly, interval of a third
-Resolsol	Four, fourth, fourthly, interval of a fourth
-Relala	Five, fifth, fifthly, interval of a fifth
-Resisi	Six, sixth, sixthly, interval of a sixth
-Mimido	Seven, seventh
-Mimire	Eight, eighth, octave
-Mimifa	Nine, ninth
-Mimisol	Ten, tenth
-Mimila	Eleven, eleventh
-Mimisi	Twelve, twelfth
-Midodo	Thirteen, thirteenth
-Mirere	Fourteen, fourteenth
-Mifafa	Fifteenth, fifteenth
-Misolsol	Sixteen, sixteenth
-Milala	Seventeen, seventeenth
-Misisi	Eighteen, eighteenth
-Fafado	Nineteen, nineteenth
-Fafare	Twenty, twentieth
-Fafami	Thirty, thirtieth
-Fafasol	Fourty, fourtieth
-Fafala	Fifty, fiftieth
-Fafasi	Sixty, sixtieth
-Fadodo	Eighty, eightieth
-Farere	Hundred, hundredth
-Famimi	Thousand, thousandth
-Fasolsol	Million, millionth
-Falala	Billion, billionth
-Fasisi	Trillion, trillionth
-Solsoldo	Monday
-Solsolre	Tuesday
-Solsolmi	Wednesday
-Solsolfa	Thursday
-Solsolla	Friday
-Solsolsi	Saturday
-Soldodo	Sunday
-Solrere	The past, former, past, yesterday
-Solmimi	The present, today, now
-Solfafa	The future, tomorrow
-Sollala	Hour
-Solsisi	Minute, second, moment, instant
-Lalado	Dawn, twilight
-Lalare	Day, daylight, light
-Lalami	Meteorology, phenomenon, meteor
-Lalafa	Morning
-Lalasol	Evening, twilight
-Lalasi	Night, by night
-Ladodo	Temperature, climate
-Larere	Fog, mist, foggy, misty
-Lamimi	Humidity, wet, moisten, soak, humid
-Lafafa	Snow, hail, sleet
-Lasolsol	Freeze, frost, ice, icy
-Lasisi	Cold, chilly, frigid
-Sisido	Rain, shower, downpour, rainy
-Sisire	Wind, breeze, zephyr, gust, hurricane
-Sisimi	Cloud, cloudy
-Sisifa	Lightning, flash
-Sisisol	Thunder, storm, stormy
-Sisila	Heat, warmth, warm, caloric, with heat, warmly
-Sidodo	Atmosphere, air
-Sirere	Star, planet, comet
-Simimi	Moon, lunar
-Sifafa	Sun, solar
-Sisolsol	Shine, radiate, radiance, radiation
-Silala	Sky, firmament, Milky Way, celestial dome, heavenly
-Dodoredo	Clergy, priesthood, sacred order, Ecclesiastic, priest, abbot, "father", priestly
-Dodoremi	Vicariate, vicar
-Dodorefa	Pastor, presbytery, presbyterian
-Dodoresol	Bishop, Episcopal (of a bishop)
-Dodorela	Archbishop, Metropolitan
-Dodoresi	Cardinal
-Dodomido	Crucifix, cross
-Dodomire	Redeem, redemption
-Dodomifa	Resurrect, resurrection
-Dodomisol	Paradise, residence of the blessed, Eden
-Dodomila	Angel, cherub, archangel, seraphim, angelic, seraphic
-Dodomisi	Perfection, completeness, fulfillment, perfect, completed, in perfection, flawless
-Dodofado	Papacy, pontificate, the Pope, the holy father, his Holiness, Papal, pontifically
-Dodofare	Consecrate, dedicate, sacred, dedicated, inviolable, inviolably
-Dodofami	Bless, blessing
-Dodofasol	Regenerate, regeneration, regenerated
-Dodofala	Apostolate, apostleship, apostle, disciple
-Dodofasi	Mission
-Dodosoldo	Seek to convert, proselytism
-Dodosolre	Loosen, relax, release, relaxation, releasing
-Dodosolmi	Evangelize, gospel, Bible, New Testament, Evangelist, evangelical, evangelically
-Dodosolfa	Catechize, catechism, catechist
-Dodosolla	Christianity, Christian, Christianly, like a Christian
-Dodosolsi	Dogma, doctrine, dogmatic, dogmatically
-Dodolado	Theology, theological, theologian, theoglogically
-Dodolare	Catholicism, Catholicity, Catholic (n.), Catholic (adj.)
-Dodolami	Protestantism, Calvinism, Lutheranism, Protestant, Calvinist, Lutheran
-Dodolafa	Muhammedanism, Mohammed, Mohammedan
-Dodolasol	Judaize, Judaism, Jewish, Israelite, Judaic
-Dodolasi	Paganism, Pagan, Gentile, Heathen
-Dodosido	Church, temple, cathedral
-Dodosire	Steeple, tower of a church
-Dodosimi	Chapel, Chaplain
-Dodosifa	Altar, sanctuary, tabernacle
-Dodosisol	Pulpit, platform
-Dodosila	Preach, preaching, sermon, preacher
-Doreredo	Diocese, diocesan
-Doreremi	Parish, parishioner
-Dorerefa	Churchwarden
-Doreresol	Sacristy, sacristan
-Dorerela	Begging, collection, seeker, beggar
-Doreresi	Contribute, contribution
-Domimido	Divine office, religious cerimoney, rite, ritual
-Domimire	Procession
-Domimifa	Mass, Grand mass
-Domimisol	Vesper, vespers, compline (evening prayer)
-Domimila	The Salvation
-Domimisi	Angelus
-Dofafado	Easter
-Dofafare	Ascension, the Feast of Ascension
-Dofafami	Pentecost
-Dofafasol	Assumption Day
-Dofafala	All Saints' Day
-Dofafasi	Christmas
-Dosolsoldo	Sacrament, sacramental
-Dosolsolre	Baptize, baptismal font, baptism, baptismal
-Dosolsolmi	Take Communion, approach the Holy Table, the Holy Sacrament, the Eucharist, Communion, sacrament, Last Supper, Eucharistique
-Dosolsolfa	Wafer, the bread of Communion
-Dosolsolla	Confirm beliefs, confirmation rite
-Dosolsolsi	Extreme Unction, the Holy Oils
-Dolalado	Litany, litanies
-Dolalare	To say Psalms, to chant Psalms, psalmody, psalmist, psalm, canticle
-Dolalami	Plainchant, plainsong
-Dolalafa	Lectern, "easel"
-Dolalasol	Master, Choirboy
-Dolalasi	Cense, incense, censer
-Dosisido	Seminar, seminarian
-Dosisire	Novitiate, novice
-Dosisimi	Be converted, convert, catechumen, neophyte
-Dosisifa	Devote oneself, indulge in, zeal, fervor, zealous, fervent
-Dosisisol	Rosary, chaplet
-Dosisila	Parishioner, Book of Hours, breviary, missal
-Doredodo	Jesuitism, Jesuit, Jesuitical
-Doremimi	Congregation, congregational
-Dorefafa	Canon, canonical
-Doresolsol	Carthusian, Carthusian Monk
-Dorelala	A religious person, monk, capuchin, trappist
-Doresisi	Beg, begging, mendicity, beggar, mendicant
-Domidodo	Mortify oneself, macerate oneself, torment oneself, martyr oneself, mortification, maceration, austerity, austere, austerely
-Domirere	Cilice, hairshirt, haircloth, discipline
-Domifafa	Fast, fasting, faster, of a fast
-Domisolsol	Jubilee
-Domilala	Lent
-Domisisi	Superstition, superstitious, superstitiously
-Dofadodo	Bigotry, hypocrisy, bigot, hypocrite
-Dofarere	Fanaticism, fanatic
-Dofamimi	Behind, back, rear, backward
-Dofasolsol	Persecute, persecution, perecutor, persecutory
-Dofalala	Curse, damn, excommunicate, anathematize, curse, damnation, excommunication, anathema, imprecation
-Dofasisi	Flog, torment, torture, flagellation, martyrdom, torture
-Dosoldodo	Punish, chastise, punishment, chastisement, correctional, corrections
-Dosolrere	Be damned, damned, excommunicated, damnable, damnably
-Dosolmimi	Tempt, try, temptation, tempter, trying, tempting
-Dosolfafa	Sin, sinner, sinful
-Dosollala	Repent, repentance, contrition, remorse, repentant, contrite
-Dosolsisi	Kneel, bow down, genuflection, prostration, kneeling, prostrate
-Doladodo	Admit, admission
-Dolarere	Confess, confession, penitent
-Dolamimi	To hear a confession, confessional, the confessional, tribune of penitence, confessor
-Dolafafa	Reconcile, patch up, mend, repatriate, reconciliation, reconciling
-Dolasolsol	Deliver, save, rescue, deliverer, saviour
-Dolasisi	Protect, patronize, protection, patronage, protectorate, auspices, protector, patron, patroness
-Dosidodo	Glorify, give glory, glorification
-Dosirere	Edify, set a good example, edification, edifying, exemplary, exemplarily
-Dosimimi	After, later, at a later time
-Dosifafa	Beatify, beatification, beatitude, beatific
-Dosisolsol	Admire, be ecstatic about, rave, marvel at, admiration, ecstasy, admirer, fan, ecstatic, amazed, appreciative, admirative
-Dosilala	Respect, revere, venerate, respect, honor, reverence, veneration, respectful, reverential, respectfully, reverently
-Reredore	Build, construct, construction, architecture, builder, architect, architectural
-Reredomi	Plan, perspective, floor plan
-Reredofa	Scaffold, scaffolding
-Reredosol	Stilts, stake, picket, pole, cane, spear
-Reredola	Build, masonry, building, mason
-Reredosi	To build a wall, wall, partition
-Reremido	Plaster, plasterer
-Reremire	Limestone, quicklime, slaked lime, hydraulic lime
-Reremifa	Stone, rock, stoney, rocky
-Reremisol	Sand, sandblast, sand, sandy
-Reremila	Asphalt, bitumen, bituminous
-Reremisi	Petrol, petroleum, oil, naphtha
-Rerefado	Pave, macadamize, paving, macadam, paver, paved
-Rerefare	To tile, tile, brick
-Rerefami	Courtyard, court
-Rerefasol	Vault, tunnel, long vault
-Rerefala	Post, pillar
-Rerefasi	Fortify, fortification, rampart, parapet
-Reresoldo	Fortress, citadel, fort, bastion
-Reresolre	Barrack, barracks
-Reresolmi	Be garrisoned, be stationed, garrison
-Reresolfa	Terrace, plateau, estrade, esplanade
-Reresolla	Tower, turret, minaret, donjon, kiosk
-Reresolsi	Crenellate, notch, slot, window, battlements, slit, gap
-Rerelado	Dome, cupola
-Rerelare	Top, summit, peak, apex
-Rerelami	Attic, garret, mansard, attic room
-Rerelafa	To put a ceiling on, ceiling
-Rerelasol	Roof, roofing
-Rerelasi	Slate
-Reresido	Lightning rod, spire, pole, bar
-Reresire	Gutter
-Reresimi	Trench, ditch, moat, basin, tank
-Reresifa	Marsh, swamp, wetland, marshy, muddy, boggy
-Reresisol	Mud, sludge, mire, silt, slime, dung, muddy, miry, slimy
-Reresila	Sewer, drain, cesspit, sink
-Redodore	Cave, grotto, cavern, lair, quarry, catacomb
-Redodomi	Palisade, espalier, fence
-Redodofa	Arbor, grove, copse
-Redodosol	Nursery (of trees), nurseryman
-Redodola	Vineyard, winemaker, vintner
-Redodosi	Greenhouse
-Remimido	Glaze, glazing, glazier, glass, windows
-Remimire	Grill, lattice, trellis, grating, mesh, grille
-Remimifa	Mill, miller
-Remimisol	Barn, stable, shed, cowshed
-Remimila	Forage, grazing, fodder, hay, grass, straw, thatch, clover, alfalfa
-Remimisi	Manure, fertilizer, dung
-Refafado	Gear, meshed, gears
-Refafare	Pulley
-Refafami	Lock, locksmith, padlock
-Refafasol	Antidote, counter-poison
-Refafala	Clef, key
-Refafasi	Bolt, safety lock
-Resolsoldo	Woodwork, woodworker, woodman
-Resolsolre	Wood, timber, woodwork
-Resolsolmi	Plane, shave, level, flatten, buff, smooth, equalize, even, flattening, polished, sleek
-Resolsolfa	Flatten, flattening, flat
-Resolsolla	Horizontality, horizon, horizontal, horizontally
-Resolsolsi	Verticality, perpendicularity, vertical, perpendicular, vertically, perpendicularly
-Relalado	Cabinetmaking, cabinetmaker
-Relalare	Inlay, marquetry, inlaid
-Relalami	Surface, top, superficial, superficially
-Relalafa	Ebony, rosewood, mahogany, walnut
-Relalasol	Carpentry, carpenter
-Relalasi	Plank, flooring, board, floor
-Resisido	Mechanics, machine, device, mechanic, machinist, mechanical, mechanically
-Resisire	Lever
-Resisimi	Cylinder, roller, cylindrical
-Resisifa	Tube, pipe, conduit, piping
-Resisisol	Bar, block, line
-Resisila	Rails, tracks, railway line
-Redorere	Tank, reservoir, pool, container
-Redomimi	Valve
-Redofafa	To be healthy, health, disposed, healthy
-Redosolsol	Nut (of a screw)
-Redolala	Screw
-Redosisi	Injustice, preferential treatment, favor, iniquity, unfair, unjust, iniquitous, unfairly, unjustly
-Remidodo	Turning, lathe, turner
-Remirere	To make something round, ball, round
-Remifafa	Encircle, surrounding wall, circle, contour, outline, circumference, around, circular, round, circularly
-Remisolsol	To bulge out, prominence, prominent, salient
-Remilala	Oval, oblong
-Remisisi	To make square, square
-Refadodo	Profane, desecrate, profanity, desecration, sacrilege, defiler, profane
-Refarere	Forge, forging, blacksmith
-Refamimi	Farrier, shoer, shoeing
-Refasolsol	Horseshoe
-Refalala	Anvil
-Refasisi	Clamp, vise
-Resoldodo	Tighten, press, clench, condense, squeezing, pressure, squeeze, condensation, compactness, density, tight, pressed, squeezed, solid, compact, dense
-Resolrere	Pliers
-Resolmimi	Pinch, pinching
-Resolfafa	Hammer (v.), hammer (n.), mallet, hammerman
-Resollala	Push, press, pressure, force, thrust, pushing
-Resolsisi	Push in, drive in, hammer in, imbed, press down, screw in, thrust in, sink, sinking, driving in
-Reladodo	Balance (v. & n.), equilibrium, balancer,  upright, balanced
-Relarere	Spring, elasticity, stretch, elastic
-Relamimi	Side, edge, on this side, around here, in the area, in this way
-Relafafa	Right (direction), on the right
-Relasolsol	Hang, hook, hang on, hook on, hooked, hanged
-Relasisi	Hook (n.), butcher's hook, stud
-Residodo	Equip, tool, equipped
-Resirere	Handle, grip
-Resimimi	Blade
-Resifafa	Ax, hatchet
-Resisolsol	Saw, sawyer, sawdust
-Resilala	To file (down), a file (e.g. nail file)
-Mimidore	But (conjunction), although, only
-Mimidomi	However, yet, nevertheless
-Mimidofa	Given that, considering that, whereas
-Mimidosol	If, on the condition that, provided that, provided
-Mimidola	While, whilst, when, as, at the same time, during the time that
-Mimidosi	Up till, until, till, up to, down to, to the point of, even
-Mimiredo	Under, beneath, below, underneath
-Mimiremi	As, like, alike, such as
-Mimirefa	Join, junction, adherence, adhesion, joint, adherent, contiguous, joining, connecting, adjoining, close to, beside, near, against
-Mimiresol	Between, among, amid, amongst, amidst, in the middle of
-Mimirela	Through
-Mimiresi	On, upon, over, on top of, above
-Mimifado	The front, front, in front of, before, in the front, at the front
-Mimifare	Face to face, vis-a-vis, facing, opposite, across, in the presence of
-Mimifami	Frontal, front of, in line, abreast
-Mimifasol	Everywhere, throughout, anywhere, all over, in any place whatsoever, wherever
-Mimifala	Beyond, further, farther
-Mimifasi	Elsewhere, on the other hand, moreover, on the other side, in another place
-Mimisoldo	Where, in what place
-Mimisolre	In, among, amongst
-Mimisolmi	Here, hence, from here, from this place, of this place
-Mimisolfa	There, thence, from that place, from there
-Mimisolla	On the other side, on the opposite side
-Mimisolsi	End, extremity, the tip of, at the end of
-Mimilado	Frequency, frequent, frequently, often, most of the time, almost always
-Mimilare	For a long time, in the long run, lengthily
-Mimilami	Some time before
-Mimilafa	Some time after
-Mimilasol	Occasionally, from time to time, sometimes, every now and then, once in a while, at times
-Mimilasi	At each moment, from one moment to another
-Mimisido	Early, earlier
-Mimisire	Very soon, instantly
-Mimisimi	Now
-Mimisifa	Soon, in a little, shortly, in the near future
-Mimisisol	Immediately, as soon as
-Mimisila	Sooner or later
-Midodore	How many, how much, what amount
-Midodomi	As much as possible, as many as possible
-Midodofa	As much, no less, just as much, no more no less, equally
-Midodosol	More, further, again, greater, increased, plus
-Midodola	Exceed, overstep, excess, surplus, excessive, too much, too many, immoderate, unrestrained, immoderately, excessively
-Midodosi	With
-Mireredo	Any, anything, everything, whatever, doesn't matter
-Mireremi	No matter, nevermind, it doesn't matter, it is irrelevant
-Mirerefa	Only, not only
-Mireresol	Little by little, gradually, imperceptibly, gradual, by degrees
-Mirerela	Too bad, what a shame
-Mireresi	How good, good (as an expression)
-Mifafado	About, apropos
-Mifafare	So that, to ensure that, such that, with the result that, ensuring that
-Mifafami	Instead of, in place of, rather than, in lieu of
-Mifafasol	In short, in summary, in brief
-Mifafala	So to speak, as it were, so to say, in a manner of speaking
-Mifafasi	Finally, at last
-Misolsoldo	Therefore, thus, consequently, so, and so, hence
-Misolsolre	Asperity, harshness, roughness, rough, gnarled, rugged
-Misolsolmi	So, like this, thus
-Misolsolfa	In contrast to, by contrast, however, on the other hand
-Misolsolla	Mainly, mostly, especially, above all, particularly, most of all
-Misolsolsi	Then
-Milalado	Since, because
-Milalare	Regarding, as to, with regard to, with respect to
-Milalami	When, what time
-Milalafa	A few, some, many, several, plurality, plural
-Milalasol	Despite, in spite of
-Milalasi	Although, albeit, while, even though
-Misisido	Already
-Misisire	Without
-Misisimi	In
-Misisifa	According to, in accordance with, following, next
-Misisisol	Toward, towards
-Misisila	Since, since then (since a time)
-Midorere	Approximation, approximate, approximately, almost, about, nearly so, virtually
-Midomimi	About to, on the point of, on the verge of, just before
-Midofafa	Much, so much
-Midosolsol	Also, too
-Midolala	Same, the same
-Midosisi	In it's own way, as it pleases, in it's manner, it's own way
-Miredodo	More, in addition, moreover, also, further
-Miremimi	So, so much so that, to the point that, such an extent that
-Mirefafa	For, because
-Miresolsol	So that, in order that
-Mirelala	Perhaps, possibly, maybe
-Miresisi	Moreover, besides
-Mifadodo	One before the other
-Mifarere	Alternate, alternative, alternatviely, one after the other
-Mifamimi	Neither one nor the other
-Mifasolsol	In no respect, no way
-Mifalala	Anyone, anybody, everyone, whoever
-Mifasisi	Not related
-Misoldodo	That is to say, for example, in other words, for instance
-Misolrere	Early, ahead of time, early hour
-Misolmimi	In all respects, in every respect, by every measure
-Misolfafa	On the occasion of, about, concerning
-Misollala	In consideration of, in comparison, given that, considering that
-Misolsisi	In the meantime
-Miladodo	To what extent?, To what degree?
-Milarere	Well?
-Milamimi	When to take place?, When was that?
-Milafafa	When did this happen?
-Milasolsol	What do you say?
-Milasisi	What has happened?, What happened?, What's new?
-Misidodo	First, firstly, primarily, first of all
-Misirere	Who is it? Who goes there?
-Misimimi	More (such as cessation of action)
-Misifafa	Alas!
-Misisolsol	Extreme, the last point, the final point
-Misilala	Last, finally
-Fafadore	To have pain, hurt, ache, indisposition, illness, malady, ill, indisposed, unwell, sick, in bad health, sickly
-Fafadomi	Consult (a professional), consultation, consultant, consultative, advisory
-Fafadofa	Medicine (the art of), doctor, medic, medical
-Fafadosol	Surgery, sergeon, sergical, for surgery
-Fafadola	Dentistry, dentist
-Fafadosi	Oculist, eye doctor
-Fafaredo	Prescribe, prescription
-Fafaremi	Measure out, dose, portion of, part of, lot
-Fafarefa	Pill
-Fafaresol	Pharmacie, drugstore, pharmacist, apothecary, druggist, pharmaceutical
-Fafarela	Allopathy, allopathic
-Fafaresi	Homeopathy, homeopath, homeopathic
-Fafamido	Herbalism, herbalist, herbs
-Fafamire	Medicate, drug (v.), medicine, drug (n.), medicinal
-Fafamifa	Remedy (v.), correct, obviate, remedy (n.), remediable
-Fafamisol	React, reaction, reactionary, reactive
-Fafamila	Plaster, cauterize, blister
-Fafamisi	Ointment
-Fafasoldo	Pomade
-Fafasolre	Lard
-Fafasolmi	To grease, to oil, grease, oil, oiliness, greasy, oily, unctuous
-Fafasolfa	Poultice, cataplasm, compress, a cloth pad
-Fafasolla	Flaxseed, linseed
-Fafasolsi	Thicken (of a liquid), clot, coagulate, congeal, curdle, thickening, coagulation, congealing, curdled, thick, coagulated, congealed
-Fafalado	Water down, add water to, dilute, diluting
-Fafalare	Left, to the left
-Fafalami	Cook, bake, cooking, cooked
-Fafalafa	Boil, bubble, ferment, boiling, fermentation, effervescence, bubbling, effervescent
-Fafalasol	Melt, dissolve, liquefy, melting of, melting, dissolvent, melted, molten, dissolved, liquefied, dissolvable, soluble
-Fafalasi	Aromatize, aromatization, aromatic
-Fafasido	Evaporate, exhale, vaporize, evaporation, exhalation, volatility, vaporisation, volatilisation, vapor, evaporation, volatile, vaporous
-Fafasire	Distill, distillation, distiller, distillery
-Fafasimi	Refine, quintessence, quintessential
-Fafasifa	Oil (of something), aromatic oil
-Fafasisol	Lemonade
-Fafasila	Fizz, froth, effervescence, foam, bubbly, fizzy, foamy, frothy
-Fadodore	Retain, to keep, to maintain, to continue
-Fadodomi	Divert, deter, dissuade
-Fadodofa	Prevent, stop, impediment, interference, hindering, obstacle, barrier, obstruction
-Fadodosol	Look after, care for, maintain, keep in a good condition, care, maintenance, careful, carefully
-Fadodola	Repair, restore, repair, reparation, rapairer, reparable
-Fadodosi	Take precautions, protect oneself, caution, delicately
-Fareredo	Preserve, safeguard, preservative
-Fareremi	Vaccinate, vaccine
-Farerefa	Breastfeed, lactate, breastfeeding, lactation
-Fareresol	Regime, diet, plan, scheme, treatment, therapy, treating
-Farerela	Heal, cure, healing, curable, remedial
-Fareresi	be reborn, rebirth, renewal, renaissance, revival
-Famimido	Convalescence, convalescent
-Famimire	Temperament, complexion
-Famimifa	Body, organism, physical structure, organs, organic
-Famimisol	Health, healthy, healthily
-Famimila	Clean, make clean, sanitize, sanitation, hygiene, sanitary, safe, hygenic
-Famimisi	Effectiveness, effective, wholesome, effectively
-Fasolsoldo	Fatten, become fat, overweight, fat, chubby, plump, pudgy, rotund
-Fasolsolre	Freshness, fresh, new, freshly, newly
-Fasolsolmi	Digest, digestion, digestive
-Fasolsolfa	Sneeze, sneezing, sternutatory, causing sneezing
-Fasolsolla	Blow one's nose, handkerchief
-Fasolsolsi	Yawn, yawning
-Falalado	Make hoarse, hoarseness, loss of voice, aphonia, hoarse
-Falalare	Catch a cold, cold, flu, whooping cough
-Falalami	To cough, cough, coughing
-Falalafa	Salivate, drool, spit, expectorate, saliva, sputum, expectoration, expectorant
-Falalasol	Asthma, asthmatic
-Falalasi	Phthisis, tuberculosis, consumption, hectic, consumptive, tubercular, pulmonary
-Fasisido	Become lukewarm, lukewarm, cool down, tepidity, cooling
-Fasisire	Pleurisy, inflammation of the lungs, pleuritic
-Fasisimi	Laryngitis, bronchitis, larynx, bronchi
-Fasisifa	Tonsilitis, tonsils, angina, membranous angina
-Fasisisol	Gland, glandular
-Fasisila	Goiter, goitrous
-Fadorere	Infuse, macerate, infusion, maceration
-Fadomimi	Gargle
-Fadofafa	Swallow, gulp
-Fadosolsol	A drop, drip, drop by drop
-Fadolala	Syrup, syrupy
-Fadosisi	Soften, softening, alleviation, mitigation, softener
-Faredodo	Gum, gummy
-Faremimi	Disjoin, separate, disjunction
-Farefafa	To make dull (tasteless), insipid, fading, blandness, insignificance, insipidity, bland, tasteless, insignificant, vapid
-Faresolsol	Pungency, acrid, corrosive
-Farelala	Harshness, bitterness, harsh, bitter, harshly, bitterly
-Faresisi	Acidify, acidity, acid
-Famidodo	Embitter, sourness, acrimony, tart, sour
-Famirere	Camphor
-Famifafa	Narcotic, drug, soporific, opium, henbane, belladonna
-Famisolsol	Chloroform
-Familala	Etherize, etherisation, ether, sulferic ether, nitric or phosphoric ether, mineral or fossil ether, ethereal
-Famisisi	Deny, negate, negation, denial
-Fasoldodo	Slide, slider, sliding
-Fasolrere	Sprain
-Fasolmimi	Twist, strain, contusion, lesion, bruise
-Fasolfafa	Injury, wound, wounded
-Fasollala	Dress, bandage, dressing (of a wound), plaster
-Fasolsisi	Minority, the few, minor, minimum
-Faladodo	Operate, operation, operator
-Falarere	Scar, cicatrize, scar, cicatrix, cicatrizing
-Falamimi	Bandage, ligature, headband
-Falafafa	Strap, sling, garter
-Falasolsol	Cripple, maim, disable, handicap, disability, invalid, disabled, crippled
-Falasisi	Deformity, deformed
-Fasidodo	Limp, lameness, wobbly, limping
-Fasirere	A person who has had both legs amputated
-Fasimimi	Hunchback, humpback
-Fasifafa	Rickets, rachitis, rickety, rachitic
-Fasisolsol	Orthopedics, orthopedist, orthopedic
-Fasilala	Anatomize, anatomy, anatomist, anatomical, anatomically
-Solsoldore	Joints, articulations, articular
-Solsoldomi	Nerves, nervous
-Solsoldofa	Muscle, fiber, filament, ligament, muscular, brawny, fibrous, filamentous, ligamentous
-Solsoldosol	Bile, humor, bilious
-Solsoldola	Mucus, of mucus
-Solsoldosi	Lymph, phlegm, lymphatic, phlegmatic
-Solsolredo	Migraine, headache, neuralgia, neuralgic
-Solsolremi	Vomit, vomiting, vomitive, emetic
-Solsolrefa	Sweat, transpire, transpiration
-Solsolresol	Dropsy, edema, hydrops, dropsical, edematous, hydropic
-Solsolrela	Swell, swell up, inflate, swelling, inflation, swollen
-Solsolresi	Tighten, distend, tension, distension
-Solsolmido	Fever, feverish
-Solsolmire	Tremble, shiver, shaking, chills, shivering, trembling
-Solsolmifa	Pulse, pulsation, beat, beating, throbbing
-Solsolmisol	Aneurysm, aneurism
-Solsolmila	Palpitate, palpitation, palpitating
-Solsolmisi	The heart
-Solsolfado	Gout, sciatica, amaurosis
-Solsolfare	Pain, ache, throbbing, twinges
-Solsolfami	Rheumatism, rheumatic
-Solsolfasol	Paralysis, paralytic
-Solsolfala	Catalepsy, cataleptic
-Solsolfasi	Epilepsy, lockjaw, epileptic
-Solsollado	Stone
-Solsollare	Bladder
-Solsollami	Genitals, urethra
-Solsollafa	Probe, sensor, prober
-Solsollasol	Matrix
-Solsollasi	Menses, menstrual flow, period, menstrual
-Solsolsido	Periodicity, period, periodical, periodically
-Solsolsire	Bleed, bleeding, hemorrhage
-Solsolsimi	Apoplexy, stroke, apoplectic
-Solsolsifa	Hemorrhoids, hemorrhoidal
-Solsolsisol	Flow, "run", creep, stream, flowed, discharge, loss, flowing, streaming, liquid, liquidity
-Solsolsila	Leucorrhoea, leukorrhea
-Soldodore	Whitlow, fingernail abscess, toenail abscess
-Soldodomi	Lesser, lower, minor, less, least, less than that
-Soldodofa	Chilblain, frostbite
-Soldodosol	Chapping, chap, crack
-Soldodola	Prick, sting, pierce, injection, shot, jab, piquant, biting, stinging
-Soldodosi	Scratch, grate on, a scratch, abrasion, rawness
-Solreredo	Buttons
-Solreremi	Inoculate, vaccinate, inoculation, vaccination, inoculator
-Solrerefa	Irreparable, irreparably
-Solreresol	Smallpox
-Solrerela	Scabies, mange, ringworm, mangy
-Solreresi	Leprosy, leprous
-Solmimido	Scab, scabby
-Solmimire	Itch, pruritus, itching, prurigo
-Solmimifa	Scrape, scraper
-Solmimisol	Inflame, inflammation, inflammable
-Solmimila	Gangrene, become corrupt, gangrene, gangrenous
-Solmimisi	Decompose, decomposition
-Solfafado	Tumor, abscess, filling of the humours
-Solfafare	Scrofula, scrofulous
-Solfafami	Scurvy, scorbutic
-Solfafasol	Cancer, cancerous
-Solfafala	Ulcer, fistula, canker, chancroid
-Solfafasi	Become ingrained, inveterate, chronic, rooted
-Sollalado	Inject, syringe, injection, enema, syringe
-Sollalare	Purge, purify, purgation, purgative, cathartic, depurative
-Sollalami	Castor oil, Seidlitz water, senna
-Sollalafa	Evacuate, expel, push out/off, evacuation, expulsion
-Sollalasol	Excrement, poop, poo, diarrhea, diarrheic, excremental
-Sollalasi	Urinate, pee, piss, urine, pee
-Solsisido	Latrines, toilet, loo, restroom, bathroom
-Solsisire	Sewage, emptier
-Solsisimi	Infect, stink, infection, stench, reek, fetidness, foul, disgusting, repulsive, apalling, stinking, fetid, rank
-Solsisifa	Rot, rotten, corrupt, stale
-Solsisisol	Worm, maggot, verminous
-Solsisila	To disgust, to be repugnant, put off, sicken, gross out, disgusting
-Soldorere	Fluxion, defluxion, inflammation, ophthalmia
-Soldomimi	Erysipelas
-Soldofafa	Measles
-Soldosolsol	Scarlet fever
-Soldolala	Typhoid
-Soldosisi	Virus, pox
-Solredodo	Contagion, contagious
-Solremimi	Epidemic
-Solrefafa	Plague, cholera, plague victim, choleraic
-Solresolsol	Colic, tenesmus, pangs
-Solrelala	Spasm, convulsion, spastic, convulsive, cramp
-Solresisi	Poison, poisoning, poisoner, poison, venom, poisonous, venomous
-Solmidodo	Hell, eternal fire, infernal
-Solmirere	Pale, fade, discolor, pallor, discoloration, pale, faded, wasted, pallid
-Solmifafa	Faint, stagger, fainting, staggering, unconscious, unaware
-Solmisolsol	Weaken, languish, wither, wilt, overexertion, worn out, weakening, languor, etiolation, depletion, languishing, perishing, etiolated, withered, exhausted, used up
-Solmilala	Become thin, slim, thinning, weight loss, emaciation, thinness, consumption, lean, emaciated, gaunt, bony, scrawny
-Solmisisi	Drag one's feet, loiter, mope, drag (n), dragging, loitering
-Solfadodo	Asphyxiate, asphyxia
-Solfarere	Weigh down, burden, benumb, heaviness, numbness, weighed down, heavy, burdened
-Solfamimi	Nowhere, at no place
-Solfasolsol	Lethargy, lethargic
-Solfalala	Danger, peril, pitfall, stumbling block, dangerous, perilous
-Solfasisi	Victim
-Solladodo	Choke, strangle, strangulation, strangler, choker
-Sollarere	Oppress, stifle, oppression, suffocation, choking, stifling
-Sollamimi	Crisis
-Sollafafa	Death throes, dying
-Sollasolsol	Bury, entombment, buryer
-Sollasisi	Shroud (burial garment)
-Solsidodo	Coffin, bier
-Solsirere	Funeral, obsequies, funerary
-Solsimimi	Bury, burial
-Solsifafa	Tomb, sepulcher, mausoleum, sepulchral
-Solsisolsol	Gravedigger
-Solsilala	Cemetary, field of rest
-Laladore	Tabacco, snuffbox
-Laladomi	Snuff, snort, to take snuff, person who takes snuff
-Laladofa	To smoke, smoke, fumes, smoker
-Laladosol	Cigar
-Laladola	Pipe
-Laladosi	Smoke den, tavern, bar, estaminet
-Lalaredo	Literary Cabinet
-Lalaremi	Subscribe, subscription, subscriber
-Lalarefa	Subscribe, subscription, subscriber
-Lalaresol	Count on, rely on, depend on
-Lalarela	Bookstore, bookshop, bookseller
-Lalaresi	Edit, edition, editor
-Lalamido	Print, press, printing, printer
-Lalamire	To draw a card, choose at random
-Lalamifa	Printing plate
-Lalamisol	To bind (a book), binding, bookbinding, bookbinder
-Lalamila	Format, size, folio format
-Lalamisi	To package, cardboard, cardboard manufacturer, box, carton
-Lalafado	Watchmaking, clock, watch, watchmaker
-Lalafare	Gild, gilding, gilder
-Lalafami	Silverplate, silverware, silversmith, silvery
-Lalafasol	Absence of danger, safety, security, safe, secure
-Lalafala	Goldsmithing, goldsmith
-Lalafasi	Hardware, hardware store
-Lalasoldo	Jewelry, jewellery, jewels, jeweler
-Lalasolre	Gather, assemble, group, assembly, collection
-Lalasolmi	Chain, necklace
-Lalasolfa	Ring, covenant, band
-Lalasolla	Pearl, pearls
-Lalasolsi	Jet (mineral), lignite
-Lalasido	Gems, precious stones, diamond, red diamond, ruby, diamond dealer
-Lalasire	Emerald
-Lalasimi	Topaz
-Lalasifa	Garnet, coral (stone), cornelian, coralline
-Lalasisol	Amethyst
-Lalasila	Opal
-Ladodore	Agate
-Ladodomi	Onyx
-Ladodofa	Sardonyx
-Ladodosol	Turquoise
-Ladodola	Sapphire
-Ladodosi	Lapis lazuli
-Lareredo	Metallurgy, metal, metallurgist, metallurgical
-Lareremi	Iron, ferruginous
-Larerefa	Incurability, incurable, untreatable, terminal, unhealable
-Lareresol	Steel, marcasite
-Larerela	Copper
-Lareresi	Bronze, brass, brazen
-Lamimido	Tin, pewter, tinplate, tinsmith
-Lamimire	Zinc
-Lamimifa	Bismuth
-Lamimisol	Lead
-Lamimila	Mercury, quicksilver
-Lamimisi	Platinum
-Lafafado	Enamel, enameller
-Lafafare	Faience, earthenware, potter
-Lafafami	Porcelain, fine china
-Lafafasol	Mosaic
-Lafafala	Varnish, lacquer
-Lafafasi	Paste, glue, adhesive, sticky, viscous, glutinous
-Lasolsoldo	Scale (of a fish etc.), scaly
-Lasolsolre	Nacre, mother-of-pearl
-Lasolsolmi	Shell, hull
-Lasolsolfa	Horn, antler, horny, horned
-Lasolsolla	Ivory
-Lasolsolsi	Cork
-Lasisido	Curry, tanned leather, tan, currier, tanner
-Lasisire	Animal hide, leather, coriaceous, leathery
-Lasisimi	Sheepskin, hide
-Lasisifa	Fur, pelt, mink, squirrel, astrakhan, marten
-Lasisisol	Rubber, elastic
-Lasisila	Whale, whalebone
-Ladorere	Broker
-Ladomimi	Exploit, exploitation, exploitable
-Ladofafa	Profit from, benefit from
-Ladosolsol	Opportunity, opportune, timely
-Ladolala	Urge, insist, stress, persistance, pressing, insistent
-Ladosisi	Replace, substitute, replacement, substitution, replacing, substituting
-Laredodo	Cover (with a carpet, wallpaper, etc.), tapestry, upholstery, upholsterer, carpet, rug, mat, canvas
-Laremimi	Stuff (v.), pad, fill, wad, stuffing, wadding, filling
-Larefafa	Hanging, curtains, drapery
-Laresolsol	Slipcover, cover, dust cover
-Larelala	Fringe
-Laresisi	Tassel
-Lamidodo	Lace-making, trimmings, lace-maker
-Lamirere	Braid, plait, twine, weave, enlace
-Lamifafa	To curl, to "ring", rings, curls, ringed, curled
-Lamisolsol	Garland
-Lamilala	Tie, knot, bow
-Lamisisi	To cross, crossing, crosses, crosswise
-Lafadodo	Dye, dyeing, dyer
-Lafarere	Moire fabric, moire pattern
-Lafamimi	Shimmer, glisten, glitter, gleam, sparkle, variegation, variegated, multi-colored
-Lafasolsol	To felt, felt, felted
-Lafalala	To make fluffy, plush
-Lafasisi	To sand, to pumice, rub down
-Lasoldodo	grocery, grocer
-Lasolrere	Allspice, clove, cinnamon, ginger
-Lasolmimi	Honey, honeyed, sweet
-Lasolfafa	Rice
-Lasollala	Barley, gruel, grits
-Lasolsisi	Flour, cereal (grain), cornstarch, potato flour, starch flour
-Lasidodo	Bake, bakery, baker
-Lasirere	Dough, paste, batter, doughy, mushy, pasty
-Lasimimi	Leaven, yeast, ferment, leavening
-Lasifafa	Basketry, basket
-Lasisolsol	Filter, sift, filtration, filter, sieve, strainer, screen, colander
-Lasilala	Utensils, kitchenware, cookware, pots, pans, saucepan, cauldron, tub, vat, boiler
-Sisidore	Justicy, equity, fairness, impartiality, fair, equitable, impartial, just, judiciary, legal, justly, fairly, impartially
-Sisidomi	Decree, law, code, legislator, jurist, legislation, legal
-Sisidofa	Jurisprudence, law, legislation, public law, legal adviser, lawyer
-Sisidosol	Magistracy, magistrate
-Sisidola	Chancellor
-Sisidosi	Public prosecutor, deputy prosecutor
-Sisiredo	Tribunal court
-Sisiremi	Supreme court, court of cassation
-Sisirefa	Court of appeals
-Sisiresol	Courts of first instance/proceeding
-Sisirela	Assize court (Crown courts)
-Sisiresi	Criminal Court
-Sisimido	Testify, demonstrate, testimony, evidence, demonstration, witness
-Sisimire	Declare, denounce, declaration, statement, denunciation, declarer, denouncer, informer
-Sisimifa	Affirm, attest, certify, affirmation, attestation, certificate, affirmative, certified, authentic, attested
-Sisimisol	Protest, swear, oath, swearing
-Sisimila	Accuse, indict, charge, inculpate, accusation, inculpation, accuser, accusatory
-Sisimisi	The accused, the charged, the defendant
-Sisifado	Lawyer, advocate, counsel
-Sisifare	Plead, pleading, plea
-Sisifami	The cause of, the reason for
-Sisifasol	Justify, exculpate, exonerate, defend, stand up for, justification, apologia, defender, supporting
-Sisifala	Supporting documents, supporting evidence
-Sisifasi	Mitigating pieces, extenuating documents
-Sisisoldo	Judge
-Sisisolre	Jury
-Sisisolmi	Judge (v.), judgement, sentence, verdict, judge (n.), arbitrator, referee, jurisdictional
-Sisisolfa	Majority, the largest number, maximu, major
-Sisisolla	Absolve, absolution
-Sisisolsi	Condemn, condemnation
-Sisilado	Murder, assassinate, kill, assassination, killing, homicide, assassin, murderer, murderous
-Sisilare	Crime, misdemeanor, criminal, evildoer, criminally
-Sisilami	Infamy, turpitude, enormity, atrocity, abomination, villainy, monstrosity, monster, infamous, atrocious, monstrous, horribly, monstrously
-Sisilafa	Imprison, incarcerate, imprisonment, incarceration, captiviy, prisoner, detainee, captive, prison, detention, jail
-Sisilasol	Labor camp, galley, galley slave
-Sisilasi	Scaffold, gallows, gibbet
-Sidodore	Commercial court
-Sidodomi	Proceed, procedure, process
-Sidodofa	To fine, fine, finable
-Sidodosol	Justice of the Peace, Judge of the Peace
-Sidodola	Registry, registrar
-Sidodosi	To auction, auction, sale by auction
-Sireredo	Auctioneer
-Sireremi	Judicial branch, judicial officer
-Sirerefa	Agency of Public Teasury, Treasury Agency, Treasurer, Agent of the Treasury
-Sireresol	Accounting Agency, Accountant
-Sirerela	Belong to, membership, dependency, belonging
-Sireresi	Be suitable for, suit
-Simimido	Notary profession, profession of notary, notary, notarial
-Simimire	Prosecute, prosecution, prosecutor, attorney, representative
-Simimifa	Mortgage
-Simimisol	Contract, contractor, contractual
-Simimila	Deed of birth, birth certificate
-Simimisi	Deed of death, death certificate
-Sifafado	Record, folder, file
-Sifafare	Archives, archivist
-Sifafami	Attribution, attributive
-Sifafasol	Control, montitor, registry, controller
-Sifafala	Expropriate, expropriation
-Sifafasi	Possession, property
-Sisolsoldo	Petition (v. & n.), petitioner
-Sisolsolre	Claim, demand
-Sisolsolmi	Address (speaking), memoir, brief
-Sisolsolfa	Apply, application, candidate, applicant
-Sisolsolla	Annoy, disturb, bother, obsess, irritate, obsession, unwelcome, boring, annoying, tedious, provoke, unbearable, intolerable, insufferable, annoyingly, intolerably
-Sisolsolsi	Transfer, transmit, cession, handover, pass on, transmission, transferor, transmitted, transferable
-Silalado	Bailiff
-Silalare	Chamberlain
-Silalami	Butler, majordomo
-Silalafa	Huntsman, master of the hunt, grand huntsman
-Silalasol	Esquire, page
-Silalasi	Hundred guards, Gardes du Corps
-Sidorere	Government schools, free schools, public schools, monitorial system, mutual instruction, communal school, municipal school, preschool
-Sidomimi	Conservatory of Arts and Trades
-Sidofafa	Conservatory of Music
-Sidosolsol	School of Saint-Cyr, Polytechnic School
-Sidolala	Normal School
-Sidosisi	Central School
-Siredodo	Cadastre, cadaster
-Siremimi	Physics, physicist
-Sirefafa	Collaboration, joint effort, cooperation, collaborator, associate, partner
-Siresolsol	Chemistry, chemist
-Sirelala	Botany, botanist
-Siresisi	Astronomy, astronomer, astronomical
-Simidodo	Imperfection, imperfect, imperfectly
-Simirere	Geography, geographer, geographic
-Simifafa	Geographic map, world map, map of the world, globe
-Simisolsol	Colony, tribe, settler, colonist, colonial
-Similala	Naturalize, naturalization
-Simisisi	Repress, repression, repressive
-Sifadodo	Optics, optician, optical
-Sifarere	Telescope
-Sifamimi	Thermometer
-Sifasolsol	Barometer
-Sifalala	Balloon, aerostat, aeronaut
-Sifasisi	Parachute
-Sisoldodo	Arsenal
-Sisolrere	Sword, cutlass, scimitar
-Sisolmimi	Fence, fencing, fencer
-Sisolfafa	To guard against, ward off, protect, deal with
-Sisollala	Gymnasium, gym, gymnastics
-Sisolsisi	Manège, cirque, hippodrome, racecourse, racetrack
-Siladodo	Equitation, riding, horse riding, rider, horseman, horsewoman, equestrian
-Silarere	Horse race, cavalcade, horse jockey
-Silamimi	Joust, jouster
-Silafafa	Wager, bet, better, gambler
-Silasolsol	Pyrotechnics, pyrotechnic
-Silasisi	Fireworks, firecracker, rocket, roman candle
-Doredoredo	Gazelle
-Doredoremi	Roe
-Doredorefa	Fallow deer
-Doredoresol	Deer (stag, hart)
-Doredorela	Hare
-Doredoresi	Rabbit
-Doredomido	Squirrel
-Doredomire	Guinea pig
-Doredomifa	Marmot
-Doredomisol	Mole
-Doredomila	Weasel
-Doredomisi	Badger
-Doredofado	Fox
-Doredofare	Wolf
-Doredofami	Sable
-Doredofasol	Marten
-Doredofala	Polecat
-Doredofasi	Ermine
-Doredosoldo	Weasel
-Doredosolre	Rat, water rat
-Doredosolmi	Mouse
-Doredosolfa	Fieldmouse
-Doredosolla	Bat
-Doredosolsi	Taguan, flying squirrel
-Doredolado	Hedgehog
-Doredolare	Porcupine
-Doredolami	Caracal
-Doredolafa	Lynx
-Doredolasol	Jackal
-Doredolasi	Hyena
-Doredosido	Zebra
-Doredosire	Chamois
-Doredosimi	Bear
-Doredosifa	Rhino, rhinoceros
-Doredosisol	Giraffe
-Doredosila	Elephant
-Doremidore	Lion, lioness
-Doremidomi	Mane, hair, coat
-Doremidofa	Tail
-Doremidosol	Tiger, tigress
-Doremidola	Panther
-Doremidosi	Leopard
-Doremiredo	Amphibian animals, amphibians
-Doremiremi	Hippo, hippopotamus
-Doremirefa	Beaver
-Doremiresol	Crocodile
-Doremirela	Turtle
-Doremiresi	Seal
-Dorefadore	Cricket
-Dorefadomi	Earwig
-Dorefadofa	Ant, anthill
-Dorefadosol	Fly, midge
-Dorefadola	Wasp, hornet, bumblebee, drone
-Dorefadosi	Bee
-Dorefaredo	Butterfly
-Dorefaremi	Chafer, beetle
-Dorefarefa	Cicada, dragonfly
-Dorefaresol	Grasshopper
-Dorefarela	Aphid, cochineal
-Dorefaresi	Spider
-Dorefamido	Silkworm
-Dorefamire	Caterpillar
-Dorefamifa	Lizard
-Dorefamisol	Snake, serpent, reptile, asp, viper
-Dorefamila	Crawl, creep, crawling
-Dorefamisi	Squirm, twist, wiggle, kinking, twisting, twisted, squirming, winding
-Dorefasoldo	Bite
-Doresoldore	Lark
-Doresoldomi	Warbler
-Doresoldofa	Tarin
-Doresoldosol	Goldfinch
-Doresoldola	Canary
-Doresoldosi	Nightingale
-Doresolredo	Chaffinch
-Doresolremi	Linnet
-Doresolrefa	Bullfinch
-Doresolresol	Ortolan
-Doresolrela	Thrush
-Doresolresi	Blackbird
-Doresolmido	Starling
-Doresolmire	Sparrow
-Doresolmifa	Wren
-Doresolmisol	Tit
-Doresolmila	Wagtail
-Doresolmisi	Hummingbird
-Doresolfado	Hummingbird
-Doresolfare	Bird of Paradise
-Doresolfami	Swallow
-Doresolfasol	Swift
-Doresolfala	Twitter, chirp, warble, twittering
-Doresolfasi	Parrot, parakeet
-Doresollado	Rooster, hen
-Doresollare	Turkey
-Doresollami	Pheasant
-Doresollafa	Guinea fowl
-Doresollasol	Pigeon
-Doresollasi	Peacock
-Doresolsido	Dove
-Doresolsire	Grey partridge, red partridge
-Doresolsimi	Quail
-Doresolsifa	Magpie
-Doresolsisol	Jay
-Doresolsila	Cuckoo
-Doreladore	Goose
-Doreladomi	Swan
-Doreladofa	Duck
-Doreladosol	Stork
-Doreladola	Heron
-Doreladosi	Crane, Ibis
-Dorelaredo	Teal
-Dorelaremi	Woodcock
-Dorelarefa	Pelican
-Dorelaresol	Gull
-Dorelarela	Seagull
-Dorelaresi	Penguin
-Dorelamido	Raven
-Dorelamire	Falcon
-Dorelamifa	Owl
-Dorelamisol	Vulture
-Dorelamila	Kite (bird)
-Dorelamisi	Eagle
-Dorelafado	Perch, roost, hutch
-Dorelafare	Brood, nest (v. and n.)
-Dorelafami	Down
-Dorelafasol	Feather, feathered, plumage
-Dorelafala	Hoopoe, egret
-Dorelafasi	Paw, leg of an animal
-Dorelasoldo	Male, female
-Doresidore	Anchovy
-Doresidomi	Smelt
-Doresidofa	Sardine
-Doresidosol	Herring
-Doresidola	Whiting
-Doresidosi	Mackerel
-Doresiredo	Shrimp
-Doresiremi	Crab
-Doresirefa	Lobster
-Doresiresol	Mussel
-Doresirela	Oyster
-Doresiresi	Brill
-Doresimido	Sole (fish), flounder, plaice
-Doresimire	Ray
-Doresimifa	Mullet
-Doresimisol	Salmon, Trout Salmon
-Doresimila	Turbot
-Doresimisi	Tuna
-Doresifado	Sea monster, dolphin
-Doresifare	Sea horse
-Doresifami	Porpoise
-Doresifasol	Shark
-Doresifala	Orca, killer whale
-Doresifasi	Whale
-Doresisoldo	Gudgeon (fish)
-Doresisolre	Tench
-Doresisolmi	Pike
-Doresisolfa	Carp
-Doresisolla	Shad
-Doresisolsi	Eel
-Doresilado	Leech
-Doresilare	Crayfish, crawfish
-Doresilami	Snail
-Doresilafa	Frog
-Doresilasol	Toad
-Domidoredo	Mushroom, agaric
-Domidoremi	Truffle, truffles
-Domidorefa	Potatoes
-Domidoresol	Pumpkin
-Domidorela	Melon, cantaloupe
-Domidoresi	Cucumber
-Domidomido	Gherkin
-Domidomire	Radish
-Domidomifa	Turnip
-Domidomisol	Carrot
-Domidomila	Parsnip
-Domidomisi	Beet
-Domidofado	Artichoke
-Domidofare	Bean
-Domidofami	Lentil
-Domidofasol	Peas
-Domidofala	Fava bean, broad bean
-Domidofasi	Asparagus
-Domidosoldo	Celery
-Domidosolre	Spinach
-Domidosolmi	Sorrel
-Domidosolfa	Chicory
-Domidosolla	Lettuce, romain lettuce
-Domidosolsi	Bearded Capuchin
-Domidolado	Escarole
-Domidolare	Chervil
-Domidolami	Parsley
-Domidolafa	Mache, Bourset
-Domidolasol	Tarragon
-Domidolasi	Burnet
-Domidosido	Cabbage, Kale
-Domidosire	Cauliflower
-Domidosimi	Salsify
-Domidosifa	Bay tree
-Domisoldore	Sureau
-Domisoldomi	Aulne
-Domisoldofa	Osier
-Domisoldosol	Coudrier
-Domisoldola	Bouleau
-Domisoldosi	Hetre
-Domisolredo	Frêne
-Domisolremi	Orme, Ormeau
-Domisolrefa	Saule, Saule pleureur
-Domisolresol	Tremble
-Domisolrela	Peuplier
-Domisolresi	Sycomore
-Domisolmido	Platane
-Domisolmire	Sapin
-Domisolmifa	Résine, résineux
-Domisolmisol	Pin
-Domisolmila	Santale
-Domisolmisi	Acajou
-Domisolfado	Ébénier, Ébene
-Domisolfare	Cerisier, Cerise
-Domisolfami	Mérisier, Merise
-Domisolfasol	Murier, Murier blanc, Mure
-Domisolfala	Pommier, Pomme, Reinette, Canada
-Domisolfasi	Poirier, Poire
-Domisollado	Marronnier, châtaignier, Marron, châtaigne
-Domisollare	Marronnier d'Inde, Marron d'Inde
-Domisollami	Prunier, Prune violette, Reine-Claude, Mirabelle
-Domisollafa	Pêcher, Pêche, Brugnon
-Domisollasol	Abricotier, Abricot
-Domisollasi	Amandier, Amande
-Domisolsido	Noyer, Noix
-Domisolsire	Noisetier, Noisette
-Domisolsimi	Cormier, Corme
-Domisolsifa	Coignassier, Coing
-Domisolsisol	Oranger, Fleur d'oranger, Orange
-Domisolsila	Citronnier, Citron
-Domiladore	Grenadier, Grenade
-Domiladomi	Dattier, palmier, Latanier, Datte, Palme
-Domiladofa	Ananas
-Domiladosol	Cocotier, Coco
-Domiladola	Bananier, Banane
-Domiladosi	Jujubier, Jujube
-Domilaredo	Olivier, Olive
-Domilaremi	Noyau
-Domilarefa	Pistachier, Pistache
-Domilaresol	Térébinthe, Térébenthine
-Domilarela	Mucilage, Mucilagineux
-Domilaresi	Glu
-Domilamido	Groseillier, Groseille
-Domilamire	Framboisier, Framboise
-Domilamifa	Fraisier, Fraise
-Domisidore	Laurier, Laurier blanc, Laurier rose
-Domisidomi	Myrthe, Buis
-Domisidofa	Bruyere
-Domisidosol	Genêt
-Domisidola	Lilas
-Domisidosi	Chévrefeuille
-Domisiredo	Rosier, Rose, Rose blanche, Rose rousse, Rose jaune, thé
-Domisiremi	Églantier, Eglantine
-Domisirefa	Dalhia, Dalhia blanc, Dalhia rouge, Dalhia jaune, Dalhia panaché
-Domisiresol	Jasmin
-Domisirela	Narcisse
-Domisiresi	Lys
-Domisimido	Oeillet, Oeillet blanc, Oeillet rose, Oeillet panaché
-Domisimire	Jonquille
-Domisimifa	Tulipe
-Domisimisol	Tubéreuse
-Domisimila	Marguerite
-Domisimisi	Paquerette
-Domisifado	Hyacinthe
-Domisifare	Giroflée
-Domisifami	Iris
-Domisifasol	Renoncule
-Domisifala	Anemone
-Domisifasi	Souci
-Domisisoldo	Violette
-Domisisolre	Myosotis
-Domisisolmi	Pensée
-Domisisolfa	Muguet
-Domisisolla	Perce-neige
-Domisisolsi	Boule de neige
-Domisilado	Réséda
-Domisilare	Mousse
-Domisilami	Lierre
-Domisilafa	Clématite
-Domisilasol	Verveine
-Dofadoredo	Minéralogie, Minéral, Minéralogiste, Minéralogique
-Dofadoremi	Mine, Carriere, Mineur
-Dofadorefa	Terre argileuse, alumineuse
-Dofadoresol	Terre, argile, calcair
-Dofadorela	Terre marneuse
-Dofadoresi	Terre glaiscuse
-Dofadomido	Marbre, calcaire compacte, Marbre grossier, granit
-Dofadomire	Porphyre, Porphyroïde
-Dofadomifa	Calcaire Crayeux, craie
-Dofadomisol	Roches
-Dofadomila	Gypse, pierre a plâtre
-Dofadomisi	Albatre Gypseux
-Dofadofado	Quartz, Quartzeux
-Dofadofare	Cristal de roche, quartz, Cristal, Cristallin, hyalin, Cristalliere
-Dofadofami	Aventurine
-Dofadofasol	Quartz jaspe, quartz opaque
-Dofadofala	Quartz agate
-Dofadofasi	Cornaline, Calcédoine
-Dofadosoldo	Fedspath
-Dofadosolre	Pétunse
-Dofadosolmi	Kaolin
-Dofadosolfa	Talc
-Dofadosolla	Mica Foliace
-Dofadosolsi	Mica lamelliforme, verre de Moscovie
-Dofadolado	Amiante, Abeste
-Dofadolare	Houillere, Houille, charbon de terre
-Dofadolami	Goudronner, Goudron
-Dofadolafa	Anthracite, charbon de pierre
-Dofadolasol	Acide carbonique
-Dofadolasi	Lignite, bois bitumeux
-Dofadosido	Souffre, Souffré
-Dofadosire	Acide sulfureux
-Dofadosimi	Acide sulphydrique, hydrogene sulfuré
-Dofadosifa	Oxigene, Oxigéné
-Dofadosisol	Chlore
-Dofadosila	Acide Chlorydique
-Dofaredore	Hydrogene, Hydrogéné
-Dofaredomi	Carbone
-Dofaredofa	Azote, Azoté
-Dofaredosol	Iode
-Dofaredola	Phophore, Phosphorique
-Dofaredosi	Arsenic
-Dofaremido	Sel de nitre, salpêtre, Azotate de potasse
-Dofaremire	Potasse
-Dofaremifa	Ammoniaque
-Dofaremisol	Alumine, Alumineux
-Dofaremila	Alun
-Dofaremisi	Selgemme
-Dofarefado	Magnésie
-Dofaresoldo	Géologie, Géologie, Géologique
-
-;;	Modern
-
-Dosoldo	Be hungry
-Dosolre	Eat
-Dosolmi	Bread
-Dosolfa	Be thirsty
-Dosolla	Drink
-Dosolsi	Water
-Redore	to think
-Redore	Think
-Redosol	Know (a person), be acquainted with
-Refado	Look at
-Refare	Pass, cross over
-Refasol	Encounter, meet
-Refala	Ask
-Refasi	Answer, respond, reply, retort
-Resoldo	Listen
-Resolmi	Leave, come out of, go out of
-Resolfa	Return, later
-Resolla	Pay
-Relado	Sleepy
-Midosol	Admire
-Misoldo	Come
-Misolre	Enter
-Famire	Serve
-Fasolre To leave
-Falado	Necessary
-Fasire	Information
-Solfala	Leave
-Ladosi	Book
-Lasolfa	Defeat
-Lasolre	Entertein, amuse
-Lasido	Something
-
-;;	Symmetric
-
-dore	I, me
-domi	you(sing.)
-dofa	they(sing.)
-dosol	we
-dola	you(plur.)
-dosi	they(plur.)
-
-redo	my, mine
-remi	what
-refa	without, alone
-resol	outside, outer
-rela	known
-resi	none, nothing
-
-mido	your(sing.)
-mire	that, which, who
-mifa	how
-misol	well(adv.)
-mila	near, here
-misi	late, evening, night
-
-fado	their(sing.)
-fare	with, jointly
-fami	which
-fasol	why
-fala	positive
-fasi	much, very
-
-soldo	our
-solre	within, inside, in
-solmi	ill(adv.)
-solfa	because
-solla	always
-solsi	thank
- 	 	 	 	 	 	
-lado	your(plur.)
-lare	unknown
-lami	far, there
-lafa	negative
-lasol	never
-lasi	formal title
-
-sido	their(plur.)
-sire	each, every
-simi	early, morning, day
-sifa	few, scarcely
-sisol	sorry
-sila	affectionate title
-
-domifa	bound, obligation, duty
-domisol	health
-solmido	sickness
-dofami	disagreement
-dodore	globe, zero
-
+abacus [n] abaco
+abandon [vt] cede; linque; relinque
+abate [vt] minue
+abide [vi] dege
+abject [adj] vile
+able [adj] (skillful) capace
+about [prep] (concerning) de
+about [prep] (place, time, quantity) circa
+above [prep] (over but not in contact) super
+abroad [adv] ab; ad extero
+absent [adj] to be absent abes
+accept [vt] accipe
+accident [n] (mishap) infortunio
+accompany [vt] comita
+accomplish [vt] perfice
+accord [vt] (give, award) da
+accordingly [adv] ergo
+according to [prep] juxta; secundo; secundum
+accost [vt] appropinqua
+account [n] computo
+on account of [] ergo; propter
+ache [n] dolore
+achieve [vt] comple
+achievement [n] opera
+acknowledge [vt] agnosce
+acquire [vt] acquire; eme; lucra; obtine
+across [prep] (on the other side of) trans
+address [vt] dirige; discute; ora
+adjacent [adj] adjacente
+adjoin [vt] adjunge
+adjunct [adj] adjuncto
+admit [vt] confite
+adorn [vt] para
+adroit [adj] versuto
+Advent [n] (rel) adventu
+adverse [adj] adverso
+advertise [n] advertisement annuntio
+advise [vt] consilia; consule; notifica
+after [adv] deinde; post
+after [prep] (according to) secundo; secundum
+afterward [adv] postea
+again [adv] bis; de novo; iterum
+against [prep] contra
+against [adj] adverso
+age [n] (old age) senectute
+aged [adj] sena
+agree [adj] (agreeable) amoeno; grato
+be agreeable [] place
+air [n] (airship) aeronave
+alarm [vt] turba
+alas [inter] eheu!; heu!
+albeit [conj] quamvis
+alike [adj] pari
+alive [adj] vivo
+all [adj] toto
+almost [adv] paene; quasi
+alone [adj] solo
+along [prep]
+alongside [] apud
+already [adv] jam
+also [adv] etiam
+although [conj] etsi; quamvis
+always [cor] semper
+ambiguous [adj] vago
+amble [vi] ambula
+among [prep] apud; inter
+amuse [n] (amusement) ludo
+ancestor [n] progenitore
+ancestry [] majores; stirpe
+and [conj] atque; et; item
+angry [adj] irato
+anguilla [n] anguilla
+anguish [n] angustia
+announce [vt] nuntia
+announcement [n] annuntio
+another [adj] altero
+answer [vt] responde
+answer [n] responso
+antique [n] (antiquity) vetustate
+antler [n] ramo
+any [cor] (one, some, every, or all without specification) ullo
+ape [n] simia
+apex [n] vertice
+appertain [vi] pertine
+apple [n] male
+arise [vi] nasce; ori
+arm [n] brachio
+armoire [n] armario
+around [prep] circum
+arrange [vt] ordina
+arrears [n] arretrato
+arrive [vi] adveni; perveni
+arrival [n] adventu
+as [cor] quale; sicut; ut
+as far as [] (distance) usque
+as if [] quasi
+as long as [] dum
+as...as [] tanto...quanto; tanto...quanto tam...quam
+as...so [] ut...ita
+ash [adj] ashy cinereo
+ask [vt] interroga; quaere
+ask for [] roga
+ass [n] (zool) asino
+assemble [vt] assembla; conflue; reuni
+assent [vi] annue
+associate [n] socio
+assume [vt] (debts, responsibilities, etc.) sume
+assume [] (suppose, presume) induc
+assure [n] assurance fiducia
+at [prep] (contiguous to) ad
+at [prep] (in the house of) apud
+at [prep] )at Akane's house) apud Acane
+at [prep] (near) apud
+at [prep] (toward) ad; verso
+at [prep] (at hand) adjacente; prope
+at [prep] (at last) in fine
+at [prep] (at once) subito
+at [prep] (at present) nunc
+at [prep] (at the end) in fine
+at [prep] (at the time) tunc
+attack [vt] opugna
+attain [vt] attinge
+attempt [n] conatu
+attend [vt] servi
+augment [vt] auge
+augur [vt] augura
+augury [n] augurio
+August [n] augusto
+aunt [n] amita
+avoid [vt] evita
+await [vt] attende
+awake [vi] (to wake up) expergisce
+away [adv] ab
+awning [n] tentorio
+back [n] (anat) dorso
+backward [adv] ad retro
+bad [adj] male
+very bad [] pessimo
+badly [adv] male
+baggage [n] impedimento; sarcina
+balance [n] (of account) reliquo
+ball [n] pilo
+band [n] turba
+bang [vt] percute
+bang [n] rumore
+bar [n] (in a river) pulvino
+barbarian [adj] barbarous truce
+bard [n] vate
+bare [adj] mero
+barely [adv] vix
+bark [vi] latra
+bark [n] (tree, outer) cortice
+barley [n] hordeo
+base [vt] funda
+battle [vt] lucta; pugna
+battle [n] lucta
+be [vi] es
+being [n] (entity) ente
+beak [n] becco; rostro
+bean [n] faba
+bear [n] (zoo) urso
+bearing [] vultu
+beard [n] barba
+beast [n] bestia
+beat [vt] (defeat) vince
+beat [vt] (strike repeatedly) battue
+beautiful [adj] pulcro
+because [conj] nam; quia
+because of [prep] ergo; propter
+become [vt] fi
+bed [n] lecto
+bedroom [] cubiculo
+bedspread [] linteolo
+bee [n] ape
+beech [n] fago
+beer [n] cervisia
+before [prep] (place) coram; prae
+before [] (time) ante
+before now [adv] jam
+before then [] jam
+beg [vt] pete
+begin [vt] incipe; ingrede
+beginning [n] principio
+behalf [n] (on behalf of) pro
+behind [prep] retro
+behold! [inter] ecce
+behoove [vi] (to be necessary) oporte
+believe [vt] crede
+bell [n] campana
+below [prep] infra; sub
+bench [n] sedile
+bend [vt] flecte
+benefit [n] lucro
+benign [adj] benigno
+beside [prep] vicino
+besides [] ultra
+best [adj] optimo
+better [adj] meliore; potius
+between [prep] inter
+to be between [] interes
+beverage [n] bibita
+beyond [prep] (after) post
+beyond [] (besides) ultra
+beyond [] (farther) praeter
+beyond [] (on the other side of) trans
+bias [vt] propende
+big [adj] crasso
+bill [n] factura
+beak [n] becco
+bird [n] ave
+birth [n] (birthday) natalitio
+bit [n] mica
+bitter [adj] amaro
+black [adj] nigro
+blade [n] lamina
+blame [n] culpa
+bland [adj] lene
+blandish [n] (blandishment) blanditia
+blaze [vi] splende
+blend [vt] misce
+bless [adj] (blessed) beato
+bliss [adj] (blissful) beato
+block [n] (of stone, etc.) massa
+blond [adj] flavo
+blood [n] sanguine
+bloom [vi] flore
+blow [vt] suffla
+bludgeon [n] virga
+blue [adj] caeruleo
+board [n] tabula
+body [n] corpore
+bog [n] palude
+boil [vt] bulli
+book [n] (bookseller) bibliopola; librario
+boot [n] calceo
+booth [n] umbra
+bore [n] (boredom) taedio; (weariness) taedio
+born [adj] nato
+be born again [] renasce
+be born [vi] nasce
+borough [n] pago
+borrow [vt] mutua
+both [adv] ambo
+both...and [] et...et
+bottle [n] phiala
+box [n] capsula
+boy [n] (boyhood) pueritia
+brace [n] brachio
+brain [n] cerebro
+branch [n] ramo
+brass [n] aes
+bravo [inter] euge!
+bread [n] pane
+break [vt] frange; quassa; rumpe
+broken [adj] fracto
+breakfast [n] dejejuno; primo prandio
+breath [n] flatu; halitu
+breathe [vi] respira
+breeches [n] braca
+brick [n] later
+bridge [n] ponte
+bring [vt] apporta
+bring about [] effice
+broad [adj] lato
+brood [vt] (brood upon) fove
+broth [n] jusculo
+brother [n] fratre
+brown [adj] fusco
+bud [n] germine
+bugle [n] bucina
+build [vt] fabrica
+built [adj] constructo
+building [n] fabrica
+bulk [n] massa
+bundle [n] fasce
+burn [vt] ure
+burn [vi] arde
+business [n] (any matter or concern) opera
+business [n] (commerce) negotio
+bust [n] (chest) pectore
+but [conj] ceterum; sed; vero
+but [] (unless) nisi; si ne
+butcher [vt] trucida
+buy [vt] eme
+by [prep] (authorship) ab
+by [prep] (by means of) per
+by [prep] (in oaths) per
+by [prep] (near) apud; vicino
+by [prep] (by all means) certo
+by [prep] (by chance) forsan
+by [prep] (by now) jam
+by [prep] (by oneself) solo
+by [prep] (by reason of) nam
+by [prep] (by then) jam
+by [prep] (by this) time jam
+cabinet [n] armario
+cake [n] libo
+call [vt] voca
+call out [] clama
+callus [n] callo
+can [vt] pote
+cancel [vt] tolle
+cane [n] baculo
+canoe [n] lintre
+cap [n] pileo
+capable [adj] capace
+capsule [n] capsula
+car [n] carro
+caravan [n] commeatu
+card [n] tessera
+care [vt] (care for) cura
+careful [adj] sollicito
+caress [n] blanditia
+carpet [n] tapete
+carriage [n] vehiculo
+carry [vt] fer
+carry [vt] (by vehicle) vehe
+carry out [] effice
+cascade [n] cataracta
+cast [vt] (form) funde
+cat [n] fele
+cataract [n] cataracta
+catch [vt] rape
+caught [adj] capto
+cause [vt] effice
+caution [n] (care to avoid danger) cautela
+cave [n] cavo; spera
+cease [vt] cessa
+ceiling [n] tecto
+celebrity [n] fama
+cell [n] cella
+cellar [n] cella
+century [n] seculo
+certain [adj] (sure) certo
+to be sure! [] certo!
+to a certain extent [] aliquanto
+certainly (assuredly) [adv] certo; vero
+cerulean [adj] caeruleo
+chair [n] cathedra
+chalk [n] creta; gypso
+chance [n] (by chance) per casu
+change [vt] (substitute one thing for another) cambia
+change [] (transform) muta
+chapter [n] (book) capitulo
+charm [vt] delecta
+chase [n] venatione
+chaste [adj] casto
+cheek [n] gena
+chemise [n] camisia
+chest [n] (anat) pectore; thorace
+chestnut [n] castanea
+chicken [n] pullo
+child [n] puero
+childhood [] pueritia
+chin [n] mento
+China [n] Sina
+Chinese [adj] sinense
+choose [vt] (elect) elige
+chop [n] fissura
+church [n] ecclesia
+cider [n] sicera
+circle [n] circulo
+circle [vt] circui
+circuit [vt] circui
+cite [vt] cita
+city [n] civitate; urbe
+civil [adj] (polite) civile
+clad [adj] vestito
+claim [vi] clama
+claim [n] postulatione
+clan [n] (gens) gente
+clasp [vt] amplecte
+clean [vt] terge
+cleave [n] (cleavage) fissura
+clerk [n] adjutore
+cliff [n] rupe
+cloak [n] pallio
+clock [n] horologio
+close [vt] claude
+closure [n] clausura
+closed [adj] clauso
+closet [n] cubiculo
+cloth [n] panno; tela; texto
+cloth [n] (any woven fabric) fabrica
+cloth [n] (tablecloth) mantele; mappa
+clothe [n] clothes habitu; veste
+cloud [n] nebula
+clover [n] trifolio
+coal [n] carbone (lapideo)
+coarse [adj] crasso; rude
+coat [n] (anat.) tunica
+overcoat [] superveste
+cock [n] gallo
+coddle [vt] fove
+cogitate [vt] cogita
+coil [n] rocchetto
+coil [vi] volve
+cold [adj] frigido
+cold [n] frigore
+collect [vt] collige
+comb [vt] pecte
+come [vi] veni
+come back [] redi; reveni
+comfort [n] (consolation) solacio
+comma [n] virgula
+command [vt] impera
+command [n] potestate
+commence [n] commencement principio
+commissary [n] commissario
+commissioner [n] commissario
+commodious [adj] commodo
+compel [vt] coge
+complete [adj] pleno
+complete [vt] comple
+compress [vt] preme
+conceal [vt] occulta
+conceive [vt] concipe
+conceivable [adj] conceptibile
+concern [adj] concerning de
+condone [vt] condona
+confess [vt] confite
+confide [n] confidence fiducia
+conflict [n] pugna
+conflict [vi] pugna
+connect [n] (connection) junctura
+connected [adj] conjuncto
+conquer [n] (conquerer) victore
+conquered [adj] victo
+consanguineous [adj] consanguineo
+consequence [adv] consequently itaque
+conserve [vt] respice
+consider [vt] puta
+console [n] (consolation) solacio
+construct [vt] fabrica
+constructed [adj] constructo
+consult [vt] consule
+contain [adj] (containing) continente
+content [adj] contento
+continent [n] continente
+continue [vi] dura
+contrive [vt] (invent) inveni
+control [vt] rege
+cook [vt] coque
+cook [n] coquo
+copper [n] cupro
+cork [n] (material) subere
+corn [n] (callus) callo
+corn [] (grain) grano
+corona [n] corona
+correct [vt] corrige; restitue; sana
+correctly [adv] vere
+cost [vt] consta
+cost [n] sumptu
+cotton [n] gossypio
+counsel [vt] consilia
+count [vt] numera
+country [n] rure
+couple [n] paria
+course [n] (of dinner) ferculo
+course [] (racing) cursu
+of course [] certo
+courteous [adj] benigno; gentile
+cousin [n] consobrino
+cover [vt] cooperi; tege
+covered [adj] cooperto
+cow [n] (female) vacca
+coward [n] ignavo; vile
+cream [n] cremore de lacte
+creep [vi] repe
+crew [n] turba
+crop [n] messe
+cross [n] crossing trajectu
+crowd [n] turba
+crown [n] corona
+crown [vt] corona
+crude [adj] crudo
+cruel [adj] truce
+crush [vt] preme
+crushed [adj] fracto
+cry [vt] clama
+cry [vi] fle; lacrima; plange
+cry [n] plora
+cubicle [n] cubiculo
+cubit [n] cubito
+cuff [n] pulsino
+cultivate [adj] (cultivated) culto
+culture [adj] (cultured) erudito
+cup [n] cupa
+cure [vt] cura; sana
+cure [n] cura
+curious [adj] mirando
+curtail [vt] minue
+curtain [n] tentorio; velo
+cushion [n] pulvino
+custodian [n] custode
+custom [adj] (customary) usitato
+cut [vt] caede; incide; seca
+cut [] (off, through) praescinde
+cutter (boat) [n] phaselo
+cut [adj] inciso
+cutlet [n] costeletta
+damage [adj] (damaged) laeso
+danger [n] periculo
+dangerous [adj] periculoso
+dare [vt] aude
+dark [adj] fusco; obscuro
+daughter [n] filia
+dauntless [adj] impavido
+day [n] (24-hour period) die
+death [n] decessu; morte
+debt [n] debito
+decide [n] (decision) judicio
+deck [n] ponte
+declare [vt] dic
+decline [vt] recusa
+defeat [vt] vince
+demand [n] postulatione
+den [n] spera
+dense [adj] spisso
+deny [vt] nega; recusa
+depart [vi] exi; parti
+departure [n] exitu
+deprive [adj] (deprived) privo
+derange [vt] turba
+descend [vi] descende
+design [n] designo
+desire [vt] desidera
+desire [n] desiderio
+despise [vt] despecta; despice
+destitute [adj] inope
+detect [vt] detege
+deuce [n] diabolo
+devastate [vt] pervasto
+devil [n] diabolo
+dew [n] rore
+dextrous [adj] versuto
+die [vi] mori; peri
+differ [adj] (different) diverso
+difficult [n] (difficulty) angustia
+diffuse [vt] diffunde
+digest [vt] digere
+digit [n] digito
+diminish [vt] minue
+dine [vi] conviva; epula
+dinner [n] cena; epula; tertio prandio
+direct [vt] dirige
+dirty [adj] spurco
+disappear [vi] evanesce
+disaster [n] infortunio
+disclaim [vt] nega
+discourse [n] oratione
+discover [vt] detege; discoperi; reperi
+discovered [adj] discoperto; reperto
+discuss [vt] discute
+dish [n] plato
+dismal [adj] moesto
+dispatch [vt] expedi
+displace [vt] amove
+display [vt] (exhibit) expone
+display [] (show) monstra
+disseminate [vt] semina
+dissolve [adj] dissolved soluto
+distant [adj] distante
+district [n] pago
+ditch [n] fossa
+diurnal [adj] diurnale
+diverse [adj] diverso
+do [vt] fac
+did [] e; in praeterito
+I did write [] e scribe
+doctor [n] medico
+dog [n] cane
+domain [n] imperio; regno
+donate [n] donation donation
+donkey [n] asino
+door [n] ostio; porta
+doorstep limine
+double [adj] duplo
+doubt [n] dubio
+dowry [n] dote
+drag [vt] trahe
+draught [n] haustu
+draw [vt] (pull) trahe
+dread [vt] time
+dress [n] (dressmaker) modista
+dress [vt] vesti
+drink [vt] bibe
+drink [n] bibita; haustu
+drinking glass [] poculo
+drive [vt] impelle
+driver [n] vecturario
+drop [n] guta
+dross [n] scoria
+drought [n] siccitate
+drug [n] (druggist) pharmacopola
+dry [adj] sicco
+dry [vt] sicca
+duck [n] anate
+dull [adj] hebete
+dumb [adj] muto
+dumbbell [n] libramenta
+during [n] dum
+duty [n] (custom duty) telonio
+dutiful [adj] pio
+eagle [n] aquila
+ear [n] aure
+early [adj] (towards beginning) cito
+earn [vt] lucra
+earthenware [n] fictilia
+ease [n] otio
+easy [adj] facile
+east [n] est
+eat [vt] ede; manduca
+eel [n] anguilla
+effect [vt] effice
+effectuate [] effice
+effort [n] conatu
+eight [card] octo
+eighty [] octoginta
+eighth [ord] octavo
+eightieth [] octogesimo
+either [conj] (indifferent) vel...vel
+either ... or [] aut...aut
+either [prn] altero
+both of two [] utroque
+elapse [vi] flue; labe
+elbow [n] cubito
+elevate [vt] eleva
+elevator [n] ascensore
+eleven [card] decem-uno
+eleventh [ord] decimo-primo
+else [adv] alio
+elsewhere [cor] alibi
+embarrass [vt] impedi
+embrace [vt] amplecte
+embroider [n] (embroidery) pictura per acu
+emery [n] smyride
+eminent [adj] augusto
+emphasize [vt] preme
+empire [n] imperio
+employ [n] (unemployment) otio
+empty [adj] vacuo
+enamel [n] encausto
+enamel [vt] encausta
+encircle [vt] circumda
+encompass [vt] circui
+encumber [n] (encumbrance) impedimento
+endive [n] endivia
+endorse [vt] fave
+endure [vi] dura
+endure (bear, undergo) [vt] pate
+engage [adj] (be engaged in) versa
+engineer [n] ingeniario
+England [adj] English anglo
+engrave [vt] incide
+engraved [adj] inciso
+enough [adj] (be enough) suppedito
+enough [adv] satis
+enter [vt] intra
+entertain [vt] epula
+entertain [] (amuse) delecta
+entire [adj] toto
+entirely [adv] toto
+entity [n] ente
+entrance [n] ingressu
+entreat [vt] ora
+enumerate [vt] (mention one by one) numera
+envelope [n] involucro
+envelope [vt] involve
+envy [vt] invide
+epistle [n] epistola
+epoch [n] aevo
+equal [adj] pari
+equipment [n] supellectile
+equity [n] jure
+era [n] aevo
+erase [vt] frica
+erect [vt] erige
+erudite [adj] erudito
+escort [vt] comita
+especial [adv] (especially) maximo; praecipue; praesertim
+establish [vt] stabili
+estate [n] loco
+even [adv] etiam
+even if [] etsi
+evening [n] vespere
+eventual [adv] (in the end) in fine
+ever [adv] (always) semper
+every [cor] omne
+everyone [] omne
+everywhere [] passim
+evil [adj] male
+evil [n] male
+evolve [adj] (evolved) evoluto
+examine [vt] inspice
+exceed [vt] supera
+exceedingly [adv] extra; ultra; valde
+excess [n] (balance) reliquo
+excite [vt] incende
+execrate [adj] (execrable) nefando
+execute [vt] (perform) exseque
+exhibit [vt] expone
+expect [vt] expecta
+expedient [n] (to be expedient) expedi
+expose [vt] (set in public view; phot) expone
+expose [] (uncover, reveal) expone
+express [vt] exprime
+exterior [n] extero
+exterior [adj] extraneo
+extraneous [adj] extraneo
+eye [n] oculo
+fabric [n] panno; tela; texto
+face [n] vultu
+factory [n] fabrica; officina
+fair [adj] (hair) flavo
+faithful [adj] fidele
+fall [vi] cade; labe
+far [adj] distante; longe
+so far [adv] adhuc
+farm [n] (farmer) agricola
+farrago [n] farragine
+fate [n] (random, as if by lots) sorte
+father [n] patre
+fatigue [adj] (fatigued) fesso
+faucet [n] valvula
+favor [vt] fave; fove
+fear [vt] time; vere
+fear (general) [n] timore
+fearless [adj] impavido
+feast [n] epula
+feast [vi] conviva
+feather [n] pluma
+feature [vt] praesenta
+fee [n] imposito
+feed [vt] nutri
+feed [] (give food, or provide in manner of food) ale
+feed [n] nutrimento
+feel [vt] senti
+feign [adj] (feigned) ficto
+felt [n] (cloth) coactilia
+female [n] femina
+fern [n] filice
+ferule [n] virga
+fetter [vt] impedi
+fever [n] febri
+few [adj] pauco
+a few [] aliquanto
+field [n] agro
+fight [vt] lucta
+fight [vt] (fight against) opugna
+fight [n] lucta
+file [vt] ordina
+fin [n] pinna
+final [adv] (finally) denique; in fine
+find [vt] inveni; praebe
+finger [n] digito
+finish [vt] fini
+fir [n] abiete
+fire [n] foco; igne; pyro
+fireplace [] camino
+fire (ignite) [vt] incende
+firm [n] (business) fabrica
+first [ord] (at first) primo
+fish [n] pisce
+fish [vt] pisca
+fissure [n] fissura
+five [card] quinque
+fifty [] quinquaginta
+fifth [ord] quinto
+fiftieth [] quinquagesimo
+fix [vt] stabili
+flake [n] flocco
+flame [n] flamma
+flax [n] lino
+flesh [n] carne
+flint [n] silice
+floor [n] pavimento; plano
+flour [n] farina
+flourish [vi] flore
+flow [vi] flue
+flower [n] flore
+flower [vi] flore
+fly [vi] vola
+fly (insect) [n] musca
+foam [n] spuma
+foam [vi] spuma
+follow [vt] fave; seque
+follower [n] fautore
+followed [adj] secuto
+following [] sequente
+food [n] alimento; cibo; nutrimento
+fool [n] stulto
+foolish [adj] stulto
+foot [n] pede
+for [prep] ob; pro
+force [vt] (by physical power) fortia
+force [] (coerce, compel) coacta; coge
+force (mech, mil) [n] fortia
+force [] (strength) fortia; vi
+fore [n] (forefather) progenitore
+forecast [vt] praevide
+forehead [n] fronte
+foreign [adj] extraneo
+foresee [vt] praevide
+forest [n] silva
+forget [vt] oblivisce
+fork [n] furcula
+form [n] modo
+former [adj] priore
+formerly [adv] olim
+found [vt] funda
+four [card] quatuor
+forty [] quadraginta
+four by four [] quatuor per quatuor
+fortieth [ord] quadragesimo
+fourth [] quarto
+fourth [fract] uno quarto
+fox [n] vulpe
+frame [n] (body) corpore
+France [n] Frenchman franco
+frank [n] Frank (hist) franco
+free [adj] gratis; libero
+freely [adv] libenter
+frequent [adv] (frequently) saepe; subinde
+Friday [n] veneredie
+friend [n] amico
+friendship [] amicitia
+frog [n] rana
+from [prep] ab; de
+front [n] (in front of) ob
+fry [adj] (fried) fricto
+full [adj] pleno
+fund [vt] funda
+fungus [n] fungo
+furious [adj] irato
+furlough [n] commeatu
+furniture [n] (piece of furniture) supellectile
+furrow [n] lira
+further [adj] ultra
+further (moreover, yet, more) [adv] praeterea
+futile [adj] inutile
+gain [vt] lucra
+gain [n] lucro
+gale [n] procella
+game [n] joco; ludo
+garden [n] horto
+gather [vt] collige
+gauze [n] gaza
+gentle [adj] gentile; lene
+genus [n] genere
+germ [n] germine
+get [vt] percipe
+get to (be able to) [] pote
+get [] (reach) attinge
+girl [n] puella
+girlhood [] pueritia
+give [vt] da; praebe
+give back [] restitue
+give up [] cede
+glad [adj] laeto
+gladness [n] laetitia
+gladden [vt] laetifica
+gladly [adv] libenter
+glass [n] vitro
+glide [vi] labe
+glove [n] chirotheca
+go [vi] i; vade
+go (on foot) [] grade
+go back [] regrede
+go down [] descende
+go on [] dura
+go out [] exi
+goat [n] capra
+god [n] deo
+godly (pious) [] pio
+gold [n] auro
+good [adj] bono
+good (morally) [] benigno
+goodness [n] bonitate
+goods [] merce
+goose [n] ansere
+govern [vt] guberna; impera; rege
+grace [n] (before meals) prandio
+gradual [adv] gradually paulatim
+graft [vt] insere
+grain [n] grano
+grape [n] uva
+grass [n] herba
+grateful [adj] grato
+grave [adj] (serious, weighty, not trifling) grave
+grave [n] fossa
+gravy [n] suco
+great [adj] magno
+greater [] majore; superiore
+greatly [adv] valde
+green [adj] viride
+greet [vt] saluta
+grey [adj] cano; cinereo
+grid [n] craticula
+grieve [vt] dole
+grill [n] craticula
+grow [vi] cresce
+guest [n] hospite
+guitar [n] cithara
+gum [n] gummi
+habit [n] (clothes) habitu
+habitual [adj] usitato
+habituate [vt] assuefac
+hair [n] capillo; pilo
+half [fract] dimidio
+hall [n] aula
+hand [n] manu
+hand (of a watch) [] indice
+on the other hand [] ceterum
+hand over [vt] trade
+handiwork [n] opera
+handkerchief [n] sudario
+handle [n] manubrio
+handy [adj] (at hand) prompto
+hang [vi] pende
+happen [vi] incide
+happy [adj] felice
+happiness [n] jucunditate
+harangue [vt] ora
+hard [adj] duro
+hardly [adv] vix
+hare [n] lepore
+harrow [vt] hirpice
+harvest [vt] mete
+harvest[n] messe
+harvester [] messore
+haste [vi] hasten matura
+hat [n] cappa; pileo
+hatter [] cappario
+hate [vt] odio
+have [vt] habe
+have on, be wearing [] gere; vesti
+hawk [vt] (peddle) circumfer
+hazard [n] periculo
+he [prn] illo
+he who [] illo
+himself [] se
+head [n] capite
+heal [vt] cura
+health [n] salute; sanitate
+heap [n] massa
+hear [vt] audi
+hearing [n] auditu
+heard [adj] audito
+heart [n] corde
+heat [n] calore
+heat [vt] calefac
+heath [n] erica
+heaven [n] caelo; coelo
+heavy [adj] grave; ponderoso
+heel [n] talo
+heir [n] herede
+hello [inter] eho!; heus!
+help [vt] adjuva
+help [n] auxilio
+helpless [adj] inope; misero
+hemp [n] cannabe
+hen [n] gallina
+hence [adv] ergo; hinc; inde
+henceforth [] post
+her [prn] illa; illo
+herself [] se
+her [pos] suo
+herb [n] (any plant without woody stem) herba
+here [cor] hac; hic
+here is/here are [inter] ecce
+hide [vt] occulta
+high [adj] alto
+higher [] supero
+hinder [vt] obsta
+hint [vt] indica; suggere
+his [pos] suo
+hit [vt] ice; percute
+hither [cor] huc
+hole [n] puteo
+hole (cavity) [] cavo
+hollow [n] cavo
+home [n] domo
+honey [n] melle
+hope [vt] spera
+hope [n] spe
+hors d'oeuvre [n] anteprandio
+horse [n] caballo; equo
+horsetail [] equiseto
+host [n] hospite
+hot [adj] calido
+hour [n] hora
+house [n] domo
+in the house of [] apud
+how [cor] quomodo
+how many [] quot
+how many times? [] quotiens?
+how much [] quanto
+however [adv] sed; tamen
+hug [vt] amplecte
+hulk [n] scapha
+hull [n] scapha
+human [n] homine
+humble [adj] humile
+hundred [card] centum
+hundredth [ord] centesimo
+hunt [n] venatione
+hurrah [inter] io!
+hurricane [n] huracano
+hurry [n] festinatione
+hurt [adj] (hurtful) damnoso
+husband [n] marito; sponso; vir
+I [prn] me
+ice [n] glacie
+idle [n] (idleness) otio
+if [conj] si
+if not [] si non
+ill [adj] infirmo
+illness [n] infirmitate
+ill-omened [adj] infausto
+illiterate [adj] analphabeta
+illuminate [vt] illumina
+immediate [adv] (immediately) mox; statim; subito
+impede [vt] impedi; obsta
+impel [vt] impelle; urge
+impermeable [adj] impermeabile
+implant [vt] insere
+impose [vt] impone
+in [prep] in
+inauspicious [adj] infausto
+inch [n] pollice
+incise [n] (incision) inciso
+incite [vt] incide
+include [adj] (included) incluso
+income [n] (from investments) reddito
+increase [vt] auge
+increase [vi] cresce
+index [n] indice
+indicate [vt] indica
+indignant [adj] (be indignant) indigna
+induce [vt] induc
+infer [vt] infer
+inferior [adj] inferiore
+infirm [adj] infirmo
+infirmity [n] infirmitate
+inflame [vt] incende
+inflect [vt] flecte
+influence [vt] influe
+ingot [n] lingot
+inherit [n] (inheritor) herede
+inject [adj] (injected) iminisso
+injure [adj] (injured) laeso
+injurious [] damnoso
+ink [n] atramento
+inkstand [] atramentario
+inodorous [adj] inodoro
+inquire [vt] inquire
+inscribe [adj] (inscribed) inscripto
+insert [vt] insere; interpone
+inside [adv] (inside of) intra
+inspect [vt] inspice
+instead [prep] potius
+instigate [vt] instiga
+insulate [vt] insula
+insure [n] (insurance) assecurantia; assecuratione
+interest [vt] interes
+interesting [adj] interessante
+interlace [vt] interlaquea
+interpose [vt] interpone
+interrogate [vt] interroga
+intervene [vi] interes
+intimate [vt] suggere
+introduce [vt] (bring in) infer
+invent [vt] inveni
+irate [adj] irato
+iron [n] ferro
+island [n] insula
+it [prn] illo
+its [pos] suo
+its (reflexive) [] se
+janitor [n] famulo
+Japan [n] Nippon
+Japanese [] nipponense
+Japanese [adj] nipponico
+jealous [adj] zelotypo
+jest [vi] lude
+journal [n] diurnale
+journey [n] itinere
+joy [n] gaudio; laetitia
+joyful [adj] laeto
+judge [vt] judica
+judge [n] judice
+judgment [] judicio
+juice [n] suco
+jump [vi] salta
+jump over [vt] transili
+juncture [n] junctura
+Jupiter [n] jove
+just [n] (justice) jure
+keep [vt] (maintain, hold in a place) retine
+keeper [n] custode
+key [n] (of a piano, computer) clave
+key [] (to a lock) clave
+keyboard [] claviario
+kidnap [vt] rape
+kidney [n] rene
+kind [n] genere
+kind [adj] benigno
+king [n] rege
+kingdom [] regno
+kiss [n] basio; osculo
+kitchen [n] coquina
+knee [n] genu
+knife [n] cultro
+knit [vt] scutula
+knitting [n] scutula
+knock [vt] pulsa
+know [vt] cognosce; nosce; sci
+known [adj] cognito; noto
+labor [n] (laborer) operario
+laboratory [n] officina
+lace [n] laqueo
+lacking [vi] (be lacking) defice
+lamb [n] agno
+land [n] terra
+egredi [vi] ex nave
+lane [n] vico
+language [n] lingua
+lap [vt] (drink) linge
+large [adj] magno
+larger [] majore
+last [vi] dura
+last (most recent) [adj] ultimo
+at last [] denique; in fine
+late [adj] (behindhand) sero; tardo
+to be late [] tarda
+lately [adv] nuper
+laugh [vi] ride
+laughter [n] risu
+launch [n] scapha
+laurel [n] lauro
+law [n] jure; lege
+lawn [n] prato
+lay [vt] pone
+lazy [adj] pigro
+lead [vt] duc
+lead [n] plumbo
+leaf [n] folio
+leak [vi] (fluid) flue
+learn [vt] (by study) disce
+to learn by heart [] edisce
+learned [adj] docto; erudito; sapiente
+leather [n] corio
+leave [vt] linque; relinque
+left [adj] sinistro
+at the left [] laeva; sinistro
+leg [n] crure
+lenient [adj] lene
+less [adv] minus
+less...than [] minus...quam
+lesson [n] lectione
+letter [n] (correspondence) epistola
+library [n] bibliotheca
+lick [vt] linge
+lie [vi] jace
+life [n] vita
+lift [vt] eleva; subleva; tolle
+light [n] luce; lumine
+light [vt] accende; illumina
+light (weight) [adj] leve
+lighted [] accenso
+like [vt] ama
+lime [n] calce
+linen [n] lino
+lining [n] subsuto
+lintel [n] limine supero
+lip [n] labio
+list [n] tabella
+little [adj] pauco
+little [adv] pauco
+live [vi] habita
+live [vt] vive
+liver [n] hepate
+load [vt] (cargo, bullets, film, et al.) impone; onera
+locate [adj] (located) sito
+lock [n] (locksmith) claviario
+look [vt] (look at) adspice; perspice; prospice; spece; specta
+look [vi] aspice
+look [n] vultu
+lose [vt] perde
+lost [adj] to be lost (perish) peri
+love [vt] (feel deep affection for) ama
+love [n] amore
+low [adj] basso; humile
+lower [] inferiore
+lucre [n] lucro
+luggage [n] sarcina
+lunch [n] secundo prandio
+lung [n] pulmone
+mad [adj] (rabid) rabido
+maid [n] ancilla
+maid (maiden) [] puella
+major [adj] majore
+major (mil) [n] majore
+make [vt] fac
+male [n] mas; masculo
+malform [vt] maleforma
+man [n] homo; vir
+manage [vt] (look after the affairs of person, business, organization) gere
+manager (for an owner) [n] gerente
+manservant [n] famulo
+mantle [n] pallio
+manufacture [vt] fabrica
+manufacturer [n] fabricante
+many [adj] (so many) tot; multo
+map [n] mappa
+maple [n] acere
+marble [n] marmore
+march [n] (month) martio
+marry [vt] marita
+Mars [n] marte
+marsh [n] palude
+marvel [adj] (marvellous) mirabile
+mass [n] massa
+mass [vt] massa
+master [n] (title) magistro
+master [vt] (learn thoroughly) edisce
+match [n] (for fire) flammifero
+matter [n] pure
+mattress [n] culcita
+mature [vi] matura
+may [vt] (can) pote
+may [] (have right to, be permitted)  lice ad uno
+may [] (perhaps, maybe) forsan
+may [n] (month) majo
+mayor [n] majore
+me [prn] me
+meal [n] farina; mensa; prandio
+mean [n] (by means of) per
+meanwhile [adv] interim
+measure [n] mensura
+meat [n] carne
+medley [n] farragine
+meek [adj] humile
+meet [vt] conflue; incide; reuni
+meeting [n] reunione
+melt [vt] funde
+menace [adj] (menacing) minace
+menu [n] minuta
+merchandise [n] merce
+merchant [n] mercante
+mercy [n] misericordia
+mere [adj] mero
+might [n] vi
+mild [adj] (medicines, diseases) benigno
+mile [n] millia
+milk [n] lacte
+million [card] millione
+millionth [ord] millionesimo
+mind [n] mente
+mine [n] fodina
+mine [pos] de me
+mingle [vt] misce
+minimum [n] minimo
+minus [prep] minus
+mirror [n] speculo
+misfortune [n] infortunio
+mix [vt] misce
+mobile [adj] (capable of movement) mobile
+mode [n] modo
+moist [adj] madido
+Monday [n] lunadie
+money [n] denario
+monkey [n] simia
+month [n] mense
+mood [n] modo
+moon [n] luna
+new moon [] novilunio
+more [adv] magis; plus
+more...than [] plus...quam
+moreover [] praeterea
+morning [n] mane
+most [adv] maximo
+mother [n] matre
+motion [n] motu
+mouth [n] bucca; ore
+move [n] (movable) mobile
+Mr. [n] (short for Mister) domino
+Mrs. [n] (short for Mistress) domina
+much [adv] multo
+not much [] pauco
+too much [] nimis
+much [adj] multo
+mud [n] limo
+mushroom [n] fungo
+must [vt] debe
+mute [adj] muto
+my [pos] meo
+myself [prn] me ipso
+name [n] nomine
+name (say the name of) [vt] nomina
+named [adj] nominato
+napkin [n] mantele
+narrow [adj] angusto; stricto
+near [adj] prope; proximo
+draw near [vi] appropinqua
+near [prep] apud; juxta
+necessary [adj] (to be necessary) oporte
+neck [n] collo
+necktie [] fascia (de collo); focale
+need [vt] necessita
+needs [n] necesse
+needle [n] acu
+negate [vt] nega
+neighbor [n] vicino
+neighboring [adj] vicino
+neither [conj] (neither...nor) neque...nec
+neither [prn] neutro
+nephew [n] nepote
+net [n] rete
+neuter [adj] neutro
+never [cor] nunquam
+nevertheless [adv] tamen
+new [adj] novo
+news [n] notitias
+next [adj] (next to) juxta
+niece [n] nepote
+night [n] nocte
+nine [card] novem
+ninety [] nonaginta
+ninetieth [ord] nonagesimo
+ninth nono no [inter] minimo; non; nullo modo
+no one [cor] nemine
+no way [] in nullo modo
+nobody [n] nemine
+not one [] nullo
+nowhere [] nusquam
+noise [n] rumore
+nominate [vt] nomina
+noon [n] meridie
+nose [n] naso
+not [adv] ne; non
+note [n] nota
+nothing [cor] nihil
+notify [vt] notifica
+noun [n] nomine
+novel [n] (novelty) novitate
+now [adv] nunc
+nozzle [n] (spray) naso; rostro
+nurse [vt] nutri
+nurture [vt] nutri
+nut [n] nuce
+nutriment [n] nutrimento
+oak [n] quercu
+oat [n] avena
+obscure [adj] obscuro
+obtain [vt] obtine
+obtained [adj] obtento
+occasion [n] (instance, circumstance, time) vice
+occur [vi] (happen) incide
+odor [adj] (odorless) inodoro
+of [prep] (agent, authorship) ab
+of [] (concerning) ab
+of [] (origin, derivation, starting point) de
+of [] (out of) ex
+of [] (possession) de
+of late [] nuper
+off [prep] ab
+offend [adj] (offended) offenso
+offer [vt] objice; praebe
+office [n] (place) officina
+offshoot [n] ramo
+often [adv] saepe
+oh! [inter] o!
+oil [n] oleo
+old [adj] (former) priore
+old [] (not new, of long standing) vetere
+old [] (not young, having long existed) sena
+old [] (old age) senectute
+on [prep] super
+once [adv] olim; semel; uno vice
+at once [] mox; statim; subito
+once upon a time [] olim
+one [card] uno
+one by one [] singulo; uno per uno
+one [prn] uno
+one's self [] se ipso
+only [adv] (not only...but also) non solo...sed etiam
+open [vt] aperi
+open [adj] aperto
+opera [n] opera
+operate [vt] (control the functioning of) opera
+operation [n] opere
+or [conj] aut
+or not? [] annon?
+orate [vi] ora
+oration [n] oratione
+order [vt] jube
+in order to [prep] ut
+origin [n] provenientia
+originate [vi] nasce; ori
+ostrich [n] struthione
+other [adj] alio
+our [pos] nostro
+ours [] de nos
+ourselves [prn] nos ipso
+out [prep] get out! apage!
+out of [] ex
+outside [] extra
+outside [adv] foris
+oven [n] caldario; furno
+over [prep] super
+overtake [vt] conseque; superveni
+owe [vt] debe
+owl [n] bubone
+own [adj] proprio
+ox [n] (castrated bull) bove
+pack [n] (package) fasce; pacco
+pack [vt] collige
+pain [n] dolore
+paint [adj] (painted) picto
+pair [n] paria
+palate [n] (roof of the mouth) palato
+paper [n] charta
+parchment [n] pergamena
+pardon [vt] condona
+parent [n] genitore
+partner [n] socio
+pass [vi] percurre
+passer-by [n] praetereunte; transeunte
+passed [adj] praeterito
+passenger [n] (traveller) viatore
+past [n] praeterito
+past [prep] praeter
+pavement [n] pavimento
+pay [vt] (a bill, debt, etc.) paca
+pay [] (make a payment of) paca
+pay [] (someone) paca
+payment (thing paid) [n] pacamento
+payable [adj] pacabile
+pea [n] piso
+peace [n] pace
+peach [n] persica
+peacock [n] pavone
+pear [n] piro
+peel [n] cortice; pelle
+peer [n] pari
+pencil [n] graphio
+stalk [] stilo
+penultimate [adj] paenultimo
+people [n] gente; populo
+pepper [n] pipere
+perceive [vt] intellige; percipe; senti
+percussion [n] percussione
+perfect [vt] perfice
+perform [vt] effice
+perhaps [adv] forsan
+peril [n] periculo
+perish [vi] peri
+permit [vt] pate
+perspire [n] (perspiration) sudore
+pertain [vi] pertine
+pharmacy [n] (pharmacist) pharmacopola
+physician [n] medico
+pile [n] massa
+pile [n] (elec, atomic) pilo
+pillar [n] pilo
+pillow [n] pulvino
+pin [n] pinna
+pine [n] (tree) pino
+pineapple [n] ananas
+pious [adj] pio
+pipe [n] tubo
+pit [n] puteo
+pit [] (cavity) cavo
+pit [] (dug out) fossa
+pit [] (hole) puteo
+pitch [vt] (a tent) stabili
+pitfall [n] fovea
+pity [n] misericordia
+pity [vt] compate
+pivot [vt] (change direction, facing) verte
+pity [] (on a connected axis) gyro
+place [n] loco
+place [vt] pone
+placed [adj] sito
+plaintive [adj] flebile
+plan [vt] (intend) projice
+plane [n] plano
+plant [n] (planting) satione
+plate [n] (for food) plato
+plate [n] (soup plate) scutella
+play [vt] (a role) lude
+play [] (game, sport) lude
+play [n] ludo
+pleasant [adj] amoeno; placente
+please [vt] place
+pleased [adj] contento
+pleasure [n] gaudio; jucunditate; libito; voluntate
+plenty [adj] satis
+plough [n] aratro
+plough [vt] ara
+pluck [vt] velle
+plus [prep] plus
+pocket [n] sacculo
+poet [n] vate
+poison [vt] venena
+Poland [n] Pole polono
+pole [n] (rod, etc.) palo
+police [n] (policeman) vigile
+polish [vt] terge
+polite [adj] civile
+ponderous [adj] ponderoso
+pool [n] palude
+poor [adj] misero
+pope [n] papa
+populace [n] vulgo
+porter [n] bajulo
+possess [vt] posside
+post [n] (postage stamp) atele
+potato [n] solano
+potent [adj] potente
+pottery [n] fictilia
+pour [vt] funde; versa
+power [n] potestate
+powerful [adj] potente
+praise [vt] suffla
+pray [vt] preca
+precede [adj] (preceding) priore
+prefer [adv] (preferably) potius
+prepare [vt] para
+present [vt] praesenta
+to be present [adj] ades
+preserve [vt] parce; respice
+press [vt] preme
+presume [vt] suppone
+prevent [vt] obsta
+previous [adv] (previously) antea
+price [n] pretio
+prick [adj] prickly spinoso
+principle [n] principio
+print [n] (printer) impressore
+printed [adj] impresso
+prior [adj] priore
+product [n] (by-product) paraproducto
+profit [n] reddito
+progenitor [n] progenitore
+progress [vi] progrede
+project [vt] projice
+prompt [adj] prompto
+prompt [vt] instiga
+property [n] (personal property) mobile
+prove [vt] proba
+provide [n] (provisions) cibo
+pull [vt] trahe
+pulsate [vi] pulsa
+punch [vt] ice
+pupil [n] scholare
+purchase [n] emptione
+pus [n] pure
+push [vt] pelle; preme
+push on [vi] progrede
+put [vt] pone; (put in order) ordina
+put [adj] posito
+quadruple [adj] quadruplo
+quadruplicate [] quadruplo
+quash [vt] quassa
+queen [n] regina
+querry [vt] quaere
+question [n] quaesito
+quick [adj] celere; veloce
+quinine [n] quina
+quiver [vi] (shake) treme
+quote [vt] cita
+rabble [n] vulgo
+rabid [adj] rabido
+race [n] stirpe
+rail [n] lira
+railroad [] ferrovia
+rain [n] pluvia
+rain [vt] plue
+raise [vt] releva; subleva
+rate [n] rata
+rather [adv] potius
+rather [] (preference) magis
+ratio [n] ratione
+ravish [vt] rape
+raw [adj] crudo; rude
+read [vt] lege
+reader [n] lectore
+ready [adj] prompto
+reap [vt] mete
+reaper [n] messore
+rear [vt] (feed and support) ale
+reason [n] (faculty) ratione
+recall [vt] recorda
+receive [vt] recipe
+receipt [n] quietantia; receptione
+receiption [] receptione
+recent [adv] (recently) nuper
+reckon [vt] (the amount of) puta
+recollect [n] recordatione recordatione
+record [vt] (set down facts) recorda
+red [adj] rubro
+reduce [vt] minue
+reed [n] canna
+refuse [vt] recusa
+refuse [n] relicto
+region [n] loco
+regret [vt] dole; plora
+regretful [adj] dolente
+regular [adj] usitato
+reign [n] regno
+rejoice [vi] gaude; jubila
+relate [vi] memora
+related [adj] conjuncto; consanguineo
+release [vt] expedi
+relic [n] reliquia
+relieve [vt] (tension, strain, etc.) releva
+relinquish [vt] relinque
+relinquished [adj] relicto
+rely [n] reliance fiducia
+remain [vi] dura; mane; permane; remane; resta
+remainder [n] reliquo
+remains [] reliquia
+remaining [adj] cetero
+remark [adj] (remarkable) mirando
+remember [vt] (mark and keep in mind) recorda
+remembrance [n] recordatione
+remove [vt] (move away) tolle
+remove [] (take away, do away with) exue
+renounce [vt] (abandon a claim to) renuntia
+rent [vt] (something to someone) loca
+rent (payment) [n] reddito
+repair [vt] sana
+repast [n] cibo
+repeat [adv] (repeatedly) iterum
+reply [n] responso
+reproach [vt] reproba
+reprove [vt] reproba
+request [vt] pete
+rescue [vt] salva
+resent [vt] indigna
+reserve [adj] (reserved) saltem
+reside [vi] dege
+residue [n] residuo
+resist [vt] resta
+resort [vi] recurre
+respect [vt] respice; vere
+respond [vt] responde
+respond [n] responso
+rest [vi] quiesce
+restless [adj] inquieto
+restore [vt] restitue
+result [vi] conseque
+retain [vt] retine
+retard [vt] retarda
+retrieve [vt] restitue
+return [vi] (come back) reveni
+return (give back) [vt] redde
+return thanks [] agere gratias
+return [n] reversione
+returns [] reddito
+returned (given back) [adj] reddito
+return (gone back) [] reduce
+reunion [n] reunione
+review [vt] revide
+revise [vt] revide
+revolve [vi] rota; volve
+rice [n] oryza
+rich [adj] locupleto
+riches [n] divitia
+rid [adj] (to get rid of) exue
+right [adj] recto
+at the right [] dextero
+rind [n] cortice
+ring [n] anello; circulo
+ring [vi] sona
+rise [vi] surge
+risk [n] periculo
+river [n] fluvio
+road [n] via
+roast [n] tosto
+rock [n] (boulder) rupe
+rod [n] palo; virga
+roof [n] tecto
+room [n] camera
+bathroom [] balneo
+root [n] radice
+rotate [vi] rota
+rotund [adj] rotundo
+round [adj] rotundo
+round [n] vice
+roundabout [adj] prope
+route [n] trajectu
+row [n] (rowing) remigatione
+royal [n] (royalty) reddito
+rub [vt] frica
+rubric [adj] rubro
+rude [adj] rude
+rug [n] tapete
+rule [vt] guberna; rege; regula
+rule [n] regno; regula
+ruler [] regula
+rumor [n] rumore
+run [vi] curre
+run [n] cursu
+Russia [n] (Russian) russia
+rye [n] secale
+sad [adj] dolente; triste
+sadden [vt] contrista
+safe [adj] securo; tuto
+safely [adv] tuto
+sale [n] (salesman) venditore
+salt [n] sale
+salute [vt] saluta
+same [adj] idem
+sample [n] specimine
+sane [n] (sanity) sanitate
+sap [n] suco
+satiate [vt] satia
+Saturday [n] sabbato; saturnodie
+sausage [n] luganica
+savage [adj] truce
+save [vt] salva
+saved [adj] saltem
+say [vt] dic
+scale [n] (of fish, etc.) squama
+scarce [adv] (scarcely) vix
+scatter [vt] sparge
+schedule [n] horario
+scholar [n] scholare
+school [n] schola
+scoria [n] scoria
+scorn [vt] contemne
+screen [vt] (hide, conceal) occulta
+scrub [vt] terge
+sea [n] mari
+seagreen [adj] glauco
+seam [n] sutura
+season [n] (of year) satione
+seat [n] sede; sedile
+second [ord] secundo
+secret [adv] (secretly) clam
+secure [adj] securo; tuto
+security [n] cautela
+see [vt] vide
+seen [adj] viso
+seed [n] semine
+seek [vt] quaere
+seize [vt] sume
+select [vt] selige
+self [n] ipso
+sell [n] seller venditore
+semen [n] semine
+send [vt] manda; mitte
+sent [adj] misso
+sense [adj] (senseless) (foolish) stulto
+serious [adj] (earnest, sincere, not joking) grave
+serious [] (weighty, not trifling) grave
+serum [n] sero
+serve [vt] servi
+set [vt] set up erige
+settle [vt] stabili
+seven [card] septem
+seventy [] septuaginta
+seventh [ord] septimo
+seventieth [] septuagesimo
+several [adj] (indef amount) aliquanto
+several [] (more than one) nonnullo; plure
+sew [n] sewing sutura
+shade [n] umbra
+shade [vt] umbra
+shaft [n] puteo
+shake [vt] quassa
+sharp [n] (sharpness) acie
+shave [vt] rade
+she [prn] illa; illo
+shed [vt] versa
+sheep [n] ove
+sheet [n] linteolo
+shelf [n] tabula
+shell [n] (outer part) extero
+shine [vi] splende
+ship [n] nave
+shipwrecked person [] naufrago
+shirk [vt] evita
+shirt [n] camisia
+shock [n] percussione
+shoe [n] calceo
+shoemaker [] sutore
+shop [n] negotio
+shore [n] litore
+short [adj] (brief) breve
+short [] (length) curto
+shoulder [n] humero
+shoulder blade [] scapula
+shovel [n] pala
+show [vt] monstra
+shrewd [adj] versuto
+shun [vt] evita
+shutter [n] obturatore
+sick [adj] aegro; infirmo
+sickness [n] infirmitate
+side [n] latere
+this side of [] cis
+sideboard [n] armario
+sight [n] visu
+sign [vt] indica
+silent [adj] (be silent) tace
+silex [n] silice
+silica [n] silice
+silk [n] seta
+silkworm [] bombyce
+silly [adj] stulto
+silver [n] argento
+simplex [adj] simplice
+simultaneous [adj] (simultaneously) simul
+since [prep] deinde
+sing [vt] canta
+single [adj] singulo
+sole [] solo
+sister [n] sorore
+sit [vi] sede
+sit down [] conside
+sitting [adj] sedente
+situate [adj] situated posito
+six [card] sex
+sixty [] sexaginta
+sixth [ord] sexto
+sixtieth [] sexagesimo
+sketch [n] designo
+skin [n] pelle
+skirt [n] lacinia; talaria
+sky [n] caelo; coelo
+skyscraper [] caelorasore
+slag [n] scoria
+slay [vt] trucida
+sleep [vi] dormi
+sleeve [n] manica
+slow [adj] lento
+small [adj] parvo
+smell [vi] (emit odor) odora
+smell (perceive odor) [vt] olfactu
+smelt [vt] funde
+smile [vi] arride
+smoke [vt] (cigar, etc.) fuma
+snatch [vt] velle
+snow [n] nive
+snow [vi] ninge
+so [adv] ergo; ita; sic; tam
+not so [] non ita
+so much the [] tanto
+soak [adj] soaked madido
+soap [n] sapone
+sock [n] socculo
+soft [adj] molle
+soil [n] solo
+soldier [n] milite
+sole [n] (zool) solea
+solve [adj] solved soluto
+some [cor] (unknown or unspecified by name) aliquo
+some [] (unspecified number or quantity) aliquanto
+some amount [] aliquanto; aliquot
+someone [] aliquo
+sometime [] aliquando; interdum
+somewhat aliquid
+son [n] filio
+sorry [adj] dolente
+soul [n] anima
+sound [vi] sona
+sound [n] sono
+soup [n] jusculo
+sour [n] (souring) satione
+sovereign [n] (sovereignty) potestate
+sow [vt] (a seed, etc.) semina
+space [n] spatio
+spare [vt] parce
+spark [n] scintilla
+sparrow [n] passere
+speak [vt] loque
+spoken [adj] locuto
+specimen [n] specimine
+speech [n] oratione
+spell [n] (enchantment) sor o
+spigot [n] obturatore
+split [n] fissura
+spoon [n] cochleare
+spread [vt] diffunde; sparge
+spring [n] (springtime) ver
+spring (originate) [vi] ori
+sprinkle [vt] (wet with any liquid) consperge
+square [n] quadrato
+staff [n] palo
+stake [n] palo
+stand [vi] sta
+star [n] astro; stella
+stare [vt] stare at specta
+state [n] (pol) regno
+station [n] (stationer) chartario
+stay [vi] sta
+stead [n] vice
+steam [n] (steamboat) pyroscapho
+steamship [] pyronave
+steel [n] aciario
+step [n] passu
+step (of stairs) scala
+take steps to [vt] ingrede
+steward [n] (on ship, plane) dapifero
+stick [n] baculo
+still [adv] tamen
+stocking [n] socculo
+stone [n] (material substance) petra
+stone [] (pebble) lapillo; saxo
+stone [] (piece of rock) lapide; saxo
+stool [n] scamno; sedile
+stop [vt] siste
+store [n] (shop) negotio
+store room [] cella
+storm [n] procella
+stove [n] caldario; furno
+straight [adj] recto
+strain [vt] tende
+straw [n] palea
+street [n] strata
+stress [n] (lay stress on) insta
+stretch [vt] (lengthen as from strain) tende
+strike [vt] feri
+strong [adj] forte
+structure [n] (superstructure) opere
+struggle [vi] pugna
+struggle [n] lucta
+stuff [vt] (fill) farci
+stupid [adj] stulto
+style [n] stilo
+such [cor] tale
+such as [] quale
+suck [vt] suge
+sugar [n] saccharo
+suggest [vt] suggere
+summer [n] aestate
+summit [n] summo; vertice
+sun [n] sol
+Sunday [n] soldie
+sunflower [n] heliantho
+super [adj] supra
+superior [adj] superiore
+superstructure [n] opere
+supper [n] cena; quarto prandio
+supply [vt] praebe
+supply [] (make up for what is lacking in) supple
+support [n] (supporter) fautore
+suppose [vt] suppone
+supress [vt] supprime
+sure [adj] certo
+surely [adv] vero
+surmount [vt] supera
+surpass [vt] supera
+surplus [n] reliquo
+surprise [vt] stupefac
+be surprised [] stupe
+surround [vt] circui; circumda
+suspect [vt] suspice
+suture [n] sutura
+swallow [n] hirundine
+swallow [vt] gluti
+swamp [n] palude
+sweat [n] sudore
+sweet [adj] dulce
+swift [adj] veloce
+swim [vi] nata
+sympathy [vi] sympathize with compate
+table [n] (furniture) mensa; tabula
+table [] (list) tabella
+tablecloth [] mantele; mappa
+tadpole [n] ranunculo
+tailor [n] sartore
+take [vt] prehende
+take off [] (clothes) devesti
+talent [n] ingenio
+talk [vt] talk over discute
+tall [adj] alto
+tame [vt] (domesticate) domita
+task [n] opera
+taste [vt] gusta
+taste [n] gustu
+tax [n] (amount owed) imposito
+taxi [n] taxabehiculo; taxametro
+teach [vt] (educate) doce
+teacher [n] magistro
+tear [n] lacrima
+tempt [vt] tenta
+ten [card] decem
+tenth [fract] decimo
+tenant [n] (of a house) inquilio
+tense [n] tempore
+tent [n] tentorio
+term [n] tempore
+test [vt] proba
+than [conj] quam
+thank [vt] agere gratias
+thanks [n] gratias
+thanks! [inter] gratias!
+that [cor] eo; illo
+that one [] illo
+that which [] illo
+that [conj] que
+their [pos] suo
+theirselves [prn] se
+then [cor] interea; tunc
+then [adv] ita
+thence [adv] inde
+there [cor] eo; ibi
+therefore [] ergo; itaque
+thesaurus [n] thesauro
+they [prn] illos; uno
+they [] (female) illas
+thick [adj] spisso
+thick [] (large depth) crasso
+thin [adj] (thin and long) tenue
+thing [n] re
+think [vt] cogita; pensa; puta
+third [ord] tertio
+third [fract] uno tertio
+thirst [n] siti
+thirteen [card] decem-tres
+thirteenth [ord] decimo-tertio
+thirty [card] triginta
+thirtieth [ord] trigesimo
+this [cor] ce; hoc; isto
+thorax [n] thorace
+thorn [n] (thorny) spinoso
+thou [prn] te
+though [conj] etsi; quamvis
+thousand [card] mille
+thousandth [ord] millesimo
+thread [n] filo
+threaten [adj] (threatening) minace
+three [card] tres
+three by three [] tres per tres; trino
+threshold [n] limine
+thrice [adv] ter; tres vice
+thrill [vt] incende
+through [prep] (go through) percurre
+throw [vt] jacta
+throw forth [] projice
+thumb [n] pollice
+thunder [vi] tona
+Thursday [n] jovedie
+thus [cor] ita; sic
+thwart [vt] impedi
+thy [pos] tuo
+thine [] de te
+ticket [n] tessera
+tight [adj] angusto
+timber [n] ligno
+time [n] tempore; vice
+how many times? [] quotiens?
+time-table [] horario
+to spend time [] dege
+tin [n] stanno
+tip [n] (donation) donation
+tire [adj] (tired) lasso
+to [prep] ad
+to [] (as far as) usque
+to [] (toward) verso
+today [] hodie
+toast [adj] toasted tosto
+today [adv] hodie
+tomb [n] (tombstone) lapide
+tomorrow [adv] cras
+tongue [n] lingua
+tooth [n] dente
+top [n] summo
+touch [vt] tange
+touch (sense) [n] tactu
+toward [prep] ad; erga; verso
+towel [n] linteo
+tower [n] turre
+town [n] civitate; urbe
+tract [n] loco; tractu
+trade [n] (trader) commerciante
+train [n] trahino
+trajectory [n] trajectu
+translate [vt] verte
+translation [n] traductione
+transmit [adj] (transmitted) transmisso
+transport [vt] (by vehicle) vehe
+transported [adj] vecto
+trap [n] fovea
+travel [vi] itinera
+traveller [n] viatore
+treasure [n] thesauro
+treble [adj] triplo
+tremble [vi] treme
+trip [n] itinere
+trip [vi] labe
+trousers [n] (breeches) braca
+trout [n] tructa
+true [adj] vero
+truly [adv] quidem; vere
+trumpet [n] bucina; tromba
+try [vt] cona; tenta
+tub [n] tina
+tube [n] tubo
+Tuesday [n] martedie
+tug [vt] trahe
+tunic [n] tunica
+turn [vt] (change direction, facing) verte
+turn (change) [] muta
+turn (on a connected axis) [vi] gyro
+twelve [card] decem-duo
+twelfth [ord] decimo-secundo
+twenty [card] viginti
+twentieth [ord] vigesimo
+twice [adv] bis; duo vice
+twig [n] virga
+twinkle [vi] mica
+twist [vt] torque
+two [card] duo
+two by two [] bino; duo per duo
+ugly [adj] turpe
+umbrella [n] umbella
+uncertain [adj] vago
+uncle [n] avunculo
+under [n] sub
+underling [n] inferiore
+underpants [n] sub-bracas
+understand [vt] intellige; percipe
+undertake [vt] interprehende
+uneasy [adj] inquieto
+unfavorable [adj] infausto
+unfounded [adj] ficto
+union [n] unione
+unknown [adj] ignoto
+unless [conj] nisi; si ne
+unreal [adj] irreale
+unripe [adj] crudo
+until [prep] (as far as) usque
+unwieldy [adj] ponderoso
+up [prep] (get up) surge
+go up [] sali
+up to [] (until) donec
+upholster [vt] farci; operi
+upholstered [adj] operto
+upper [adj] upper supero
+urge [vt] instiga; preme; urge
+urgent [adj] urge
+use [vt] ute
+useful [adj] utile
+useless [] inutile
+usual [adj] usitato
+vacuum [n] (vacuum-cleaner) vacuo
+vague [adj] vago
+valve [n] valvula
+vanish [vi] evanesce
+vanquish [vt] vince
+vanquished [adj] victo
+varied [adj] (diverse) diverso
+veal [n] vitulo (carne de)
+vehicle [n] vehiculo
+velvet [n] velluto
+verb [n] verbo
+versatile [adj] versuto
+vertex [n] vertice
+very [adv] maximo; multo; valde
+very [adj] vere
+vest [n] thorace
+view [n] vista; visu
+vigil [n] vigilia
+vile [adj] vile
+village [n] pago; vico
+vine [n] vineyard vinea
+violent [n] (violence) vi
+virtue [n] (by virtue of) ex
+visage [n] vultu
+vision [n] acie
+vocal [adj] vocale
+voice [n] voce
+vowel [n] vocale
+wagon [n] carro
+wait [vt] (wait for) attende; expecta
+waiter [n] dapifero
+waitress [n] ancilla
+walk [vi] ambula; grade
+wall [n] muro; pariete
+wand [n] virga
+war [n] bello
+warm [adj] calido
+warm [vt] calefac
+wash [vt] lava
+watch [n] (timepiece) horologio
+watchmaker [] horologiario
+water [n] aqua
+waterfall [] cataracta
+waterproof [adj] impermeabile
+wave [n] unda
+we [prn] nos
+weak [adj] debile
+wealth [adj] (wealthy) locupleto
+wear [vt] (clothes) gere; vesti
+weary [adj] lasso
+weather [n] statu de caelo; tempore
+weave [vt] texe
+web [n] tela
+Wednesday [n] mercuriodie
+week [n] hebdomade; septimana
+weep [vi] fle; plange
+weep [n] plora
+weigh [vt] pensa
+weight [n] pondere
+weighty [adj] ponderoso
+well [adv] bene
+well said [] benedicto
+well [n] puteo
+whale [n] balaena
+what [cor] que
+wheat [n] frumento
+wheel [n] rota
+when [cor] quando
+whence [adv] unde
+where [cor] ubi
+whereat [conj] apud que
+whether [conj] an; utro?
+which [cor] quale; que
+which (of two) [] utro
+which (referring to entire previous clause) [] quod
+while [adv] dum
+white [adj] albo
+who [cor] qui
+whole [adj] (of one thing) toto
+wholly [adv] toto
+whom [cor] quem
+why [cor] quare; quid
+why not quin
+wide [adj] lato
+widow [n] viduo
+wife [n] marita; muliere; sponsa; uxore
+wild [adj] silvatico
+will [vt] (future tense) in futuro
+will [n] voluntate
+willingly [adv] libenter
+win [vt] (contract, order) obtine
+wind [vt] torque
+wind [n] vento
+window [n] fenestra
+window sill [] limine
+wine [n] vino
+wing [n] ala
+winter [n] hieme
+wise [adj] sapiente
+wish [vt] vol
+with [prep] cum
+within [] intra
+without [] sine
+witness [n] teste
+woe [inter] vae!
+wolf [n] lupo
+woman [n] muliere
+wonder [adj] (wonderful) mirabile
+wood [n] (forest) silva
+wood (material) ligno
+wood-sorrel [] oxalis
+woof [n] (weaving) trama
+wool [n] lana
+word [n] verbo; vocabulo
+work [vi] labora; opera
+work (control the functioning of, run the affairs of) [vt] opera
+worker [n] operario
+world [n] mundo
+worm [n] verme
+worry [vt] turba
+worst [adj] pejore; pessimo
+worth [n] valore
+be worth [adj] vale
+worthy [] digno
+wound [vt] feri
+wrap [vt] (wrap around) involve
+wreath [n] corona
+wretch [n] misero
+wrist [n] (wristwatch) horologio
+write [vt] scribe
+written [adj] scripto
+yacht [n] phaselo
+yard [n] (enclosed courtyard) area (de domo)
+ye [prn] vos
+yea [inter] (hurrah!) io!
+year [n] anno
+yellow [adj] citrino; flavo
+yes [inter] certo; etiam; ita; ita vero
+yesterday [adv] heri
+yet [adv] (already) jam
+yet [] (however) sed; tamen
+as yet [] adhuc
+not yet [] nondum
+yield [vt] (give way) cede
+yoke [n] (bondage) jugo
+yore [n] of yore olim
+you [prn] vos
+you (plural) vos
+young [adj] juvene
+your [pos] (plural) vestro
+yours [] de vos
+yourselves (plural) [prn] vos
+youth [n] (person) juvene
 `
