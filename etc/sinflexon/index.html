@@ -22,7 +22,6 @@
 	</div>
 	<p id='info'></p>
 	<hr/>
-	<span id='summary'></span>
 	<ul id="result"></ul>
 	<!-- Le symbol pour une vie exempte de perdant! -->
 </body>
@@ -31,24 +30,17 @@
 
 let db = {en:{}, lo:{}}
 
-function push_word_en(key, type, val, note){
-	if(!db.en[key])
-		db.en[key] = []
+function make_def(type, val, note) {
 	let res = ""
 	if(type != "_") res += `[${type}] `
 	res += val
 	if(note) res += ` <i>${note}</i>`
-	db.en[key].push(res)
+	return res
 }
 
-function push_word_lo(key, type, val, note){
-	if(!db.lo[key])
-		db.lo[key] = []
-	let res = ""
-	if(type != "_") res += `[${type}] `
-	res += val
-	if(note) res += ` <i>${note}</i>`
-	db.lo[key].push(res)
+function push_word(dict, key, type, val, note) {
+	if(!db[dict][key]) db[dict][key] = []
+	db[dict][key].push(make_def(type, val, note))
 }
 
 dict.split('\n').forEach((value) => {
@@ -66,25 +58,14 @@ dict.split('\n').forEach((value) => {
 			note = v.split('(')[1].split(')')[0]
 			v = v.replace(`(${note})`, '').trim()
 		}
-		push_word_en(key, type, v, note)
-		push_word_lo(v, type, key, note)
+		push_word("en", key, type, v, note)
+		push_word("lo", v, type, key, note)
 	})
 })
-
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)
 
 document.getElementById("info").innerHTML = `${en_keys.length + lo_keys.length} entries`
-// Connect interface
-document.getElementById("search").addEventListener("keyup", (event) => {
-	if (event.key === "Enter") run_search(event.target.value.toLowerCase())
-});
-document.getElementById("button").onclick = (event) => {
-	run_search(document.getElementById("search").value.toLowerCase())
-}
-// Read anchor tag on start
-if (window.location.hash.substring(1))
-	run_search(window.location.hash.replaceAll("+", " ").substring(1))
 
 function print_entry(a,b,c) {
 	let res = ""
@@ -94,11 +75,28 @@ function print_entry(a,b,c) {
 		res += `<li><b>${a}</b>: ${c} </li>`
 	return res
 }
+function is_vowel(letter) {
+	return letter == 'a' || letter == 'e' || letter == 'i' || letter == 'o' || letter == 'u'
+}
+
+function print_lo(word) {
+	let res = []
+	let last = ""
+	// Combine repeated letters
+	word.split('').forEach((letter, id) => {
+		if(last != letter)
+			res.push(letter), last = letter
+	})
+	// Pop ending vowels
+	while(is_vowel(res[res.length-1])) 
+		res.pop()
+	return `${res.join('')}`
+}
 
 function print_latin(t) {
 	let res = ""
 	db.lo[t].forEach((k) => {
-		res += `<li><b>${t}</b>: ${k}</li>`
+		res += `<li><b>${print_lo(t)}</b>: ${k}</li>`
 	})
 	return res
 }
@@ -112,13 +110,11 @@ function print_english(t) {
 
 function search_term(target) {
 	let res = ``
-	// Absolute
-	if(db.en[target])
-		res += print_english(target)
-	if(db.lo[target])
-		res += print_latin(target)
 	if(res != '')
 		res += `<br>`
+	res += `<li><i>English/LsF</i></li>`
+	if(db.en[target])
+		res += print_english(target)
 	res += `<ul class='en'>`
 	// Search English
 	en_keys.forEach((k) => {
@@ -128,6 +124,9 @@ function search_term(target) {
 	})
 	res += `</ul>`
 	res += `<br>`
+	res += `<li><i>Lø/English</i></li>`
+	if(db.lo[target])
+		res += print_latin(target)
 	res += `<ul class='lo'>`
 	// Search Latin
 	lo_keys.forEach((k) => {
@@ -140,16 +139,23 @@ function search_term(target) {
 }
 
 function run_search(target) {
-	if (!target.length)
-		return
+	if (!target.length) return
 	window.location.hash = target.replaceAll(" ", "+")
 	document.getElementById("search").value = target
-	document.getElementById("summary").innerHTML = ""
 	document.getElementById("result").innerHTML = ""	
 	target.toLowerCase().replaceAll(",","").replaceAll("!","").replaceAll("?","").replaceAll(".","").split(" ").forEach(search_term)
 }
 
-console.log(db)
+// Connect interface
+document.getElementById("search").addEventListener("keyup", (event) => {
+	if (event.key === "Enter") run_search(event.target.value.toLowerCase())
+});
+document.getElementById("button").onclick = (event) => {
+	run_search(document.getElementById("search").value.toLowerCase())
+}
+// Read anchor tag on start
+if (window.location.hash.substring(1))
+	run_search(window.location.hash.replaceAll("+", " ").substring(1))
 	
 </script>
 <style>

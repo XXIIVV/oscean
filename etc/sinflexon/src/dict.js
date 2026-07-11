@@ -297,7 +297,6 @@ cabinet [n] armario
 cake [n] libo
 call [vt] voca
 call out [] clama
-callus [n] callo
 can [vt] pote
 cancel [vt] tolle
 cane [n] baculo
@@ -444,7 +443,7 @@ cook [vt] coque
 cook [n] coquo
 copper [n] cupro
 cork [n] (material) subere
-corn [n] (callus) callo
+corn [n] callo
 corn [] (grain) grano
 corona [n] corona
 correct [vt] corrige; restitue; sana
