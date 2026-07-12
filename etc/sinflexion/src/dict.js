@@ -91,7 +91,7 @@ arrange [vt] ordina
 arrears [n] arretrato
 arrive [vi] adveni; perveni
 arrival [n] adventu
-as [cor] quale; sicut; ut
+as [cor] quale; sicut
 as far as [] (distance) usque
 as if [] quasi
 as long as [] dum
@@ -343,7 +343,7 @@ chapter [n] (book) capitulo
 charm [vt] delecta
 chase [n] venatione
 chaste [adj] casto
-cheek [n] gena
+cheek [n] gnath
 chemise [n] camisia
 chest [n] (anat) pectore; thorace
 chestnut [n] castanea
@@ -378,7 +378,7 @@ close [vt] claude
 closure [n] clausura
 closed [adj] clauso
 closet [n] cubiculo
-cloth [n] panno; tela; texto
+cloth [n] tela; texto
 cloth [n] (any woven fabric) fabrica
 cloth [n] (tablecloth) mantele; mappa
 clothe [n] (clothes) habitu; veste
@@ -461,7 +461,7 @@ courteous [adj] benigno; gentile
 cousin [n] consobrino
 cover [vt] cooperi; tege
 covered [adj] cooperto
-cow [n] (female) vacca
+cow [n] (female) bove
 coward [n] ignavo; vile
 cream [n] cremore de lacte
 creep [vi] repe
@@ -595,7 +595,7 @@ dry [adj] sicco
 dry [vt] sicca
 duck [n] anate
 dull [adj] hebete
-dumb [adj] muto
+dumb [adj] plumbo
 dumbbell [n] libramenta
 during [n] dum
 duty [n] (custom duty) telonio
@@ -1090,7 +1090,7 @@ judge [vt] judica
 judge [n] judice
 judgment [] judicio
 juice [n] suco
-jump [vi] salta
+jump [vi] surge
 jump over [vt] transili
 juncture [n] junctura
 Jupiter [n] jove
@@ -1122,7 +1122,7 @@ lacking [vi] (be lacking) defice
 lamb [n] agno
 land [n] terra
 egredi [vi] ex nave
-lane [n] vico
+lane [n] via
 language [n] lingua
 lap [vt] (drink) linge
 large [adj] magno
@@ -1180,7 +1180,7 @@ live [vi] habita
 live [vt] vive
 liver [n] hepate
 load [vt] (cargo, bullets, film, et al.) impone; onera
-locate [adj] (located) sito
+locate [adj] (located) posito
 lock [n] (locksmith) claviario
 look [vt] (look at) adspice; perspice; prospice; spece; specta
 look [vi] aspice
@@ -1233,7 +1233,7 @@ may [] (perhaps, maybe) forsan
 may [n] (month) majo
 mayor [n] majore
 me [prn] me
-meal [n] farina; mensa; prandio
+meal [n] farina; prandio
 mean [n] (by means of) per
 meanwhile [adv] interim
 measure [n] mensura
@@ -1277,7 +1277,7 @@ new moon [] novilunio
 more [adv] magis; plus
 more...than [] plus...quam
 moreover [] praeterea
-morning [n] mane
+morning [n] auror
 most [adv] maximo
 mother [n] matre
 motion [n] motu
@@ -1412,7 +1412,7 @@ owe [vt] debe
 owl [n] bubone
 own [adj] proprio
 ox [n] (castrated bull) bove
-pack [n] (package) fasce; pacco
+pack [n] (package) fasce
 pack [vt] collige
 pain [n] dolore
 paint [adj] (painted) picto
@@ -1430,9 +1430,7 @@ passenger [n] (traveller) viatore
 past [n] praeterito
 past [prep] praeter
 pavement [n] pavimento
-pay [vt] (a bill, debt, etc.) paca
-pay [] (make a payment of) paca
-pay [] (someone) paca
+pay [vt] (someone) merce
 payment (thing paid) [n] pacamento
 payable [adj] pacabile
 pea [n] piso
@@ -1503,7 +1501,7 @@ pocket [n] sacculo
 poet [n] vate
 poison [vt] venena
 Poland [n] (Pole) Polono
-pole [n] (rod, etc.) palo
+pole [n] (rod, etc.) virga
 police [n] (policeman) vigile
 polish [vt] terge
 polite [adj] civile
@@ -1736,7 +1734,7 @@ sea [n] mari
 seagreen [adj] glauco
 seam [n] sutura
 season [n] (of year) satione
-seat [n] sede; sedile
+seat [n] sedile
 second [ord] secundo
 secret [adv] (secretly) clam
 secure [adj] securo; tuto
@@ -1936,7 +1934,7 @@ suck [vt] suge
 sugar [n] saccharo
 suggest [vt] suggere
 summer [n] aestate
-summit [n] summo; vertice
+summit [n] vertice
 sun [n] sol
 Sunday [n] soldie
 sunflower [n] heliantho
@@ -2298,4 +2296,12 @@ young [adj] juvene
 your [pos] (plural) vestro
 yours [] de vos
 yourselves (plural) [prn] vos
-youth [n] (person) juvene`
+youth [n] (person) juvene
+
+tale [n] fabula
+story [n] fabula
+fiction [n] fabula
+history [n] historia
+`
+
+
