@@ -2302,6 +2302,8 @@ tale [n] fabula
 story [n] fabula
 fiction [n] fabula
 history [n] historia
+poetry [n] poesia
+poem [n] poema
+collection [n] collectione
 `
-
 
