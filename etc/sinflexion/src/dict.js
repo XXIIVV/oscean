@@ -210,7 +210,6 @@ bird [n] ave
 birth [n] (birthday) natalitio
 bit [n] mica
 bitter [adj] amaro
-black [adj] nigro
 blade [n] lamina
 blame [n] culpa
 bland [adj] lene
@@ -2306,6 +2305,8 @@ poetry [n] poesia
 poem [n] poema
 collection [n] collectione
 computer [n] ordinator
-dark [adj] atra; atre
+static [n] nive
+noise [n] nive
+black [adj] atra; ater
 `
 
