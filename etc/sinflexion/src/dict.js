@@ -2305,5 +2305,7 @@ history [n] historia
 poetry [n] poesia
 poem [n] poema
 collection [n] collectione
+computer [n] ordinator
+dark [adj] atra; atre
 `
 
