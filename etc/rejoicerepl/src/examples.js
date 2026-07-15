@@ -411,7 +411,7 @@ examples.fahrenheit_to_celsius=`( Convert Fahrenheit to Celsius )
 .#c-hd .. .#c .°C`
 examples.gaud=`( Salv ad Gaud, lud de symbol et sac. )
 
-( Inser un calcul et quinqu num in sac: )
+( Inser un calcul et quinq num in sac: )
 calcul num^5
 
 ( Consum un num, inser un belar: )
