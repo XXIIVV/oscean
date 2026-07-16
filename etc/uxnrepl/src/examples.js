@@ -380,7 +380,7 @@ examples.mandelbrot=`( Draw the mandelbrot fractal )
 	BRK
 
 %mandelbrot/<emit> ( i2 i -- ) {
-	( i ) #01 SUB #00 SWP ;&lut ADD2 LDA #18 DEO
+	( i ) #00ff ROT ADD ;&lut ADD2 LDA #18 DEO
 	( i2 ) POP }
 
 %mandelbrot/<lb> ( -- ) {

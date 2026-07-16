@@ -1,0 +1,106 @@
+( 54 K . How about a nice game of tic-tac-toe )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|0000 @grid/x $2 &o $2 &turn $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	;handle-turn .Console/vector DEO2
+	;grid/buf str/<print>
+	[ LIT "O ] guide/<print>
+	BRK
+
+@meta 00
+	( ) "Tic-Tac-Toe 0a
+	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( ) "15 20 "Jul 20 "2026 00 00
+
+@handle-turn ( -> )
+	.Console/read DEI [ LIT "a ] SUB
+	( valid ) DUP #09 LTH ?{ POP BRK }
+	( id-mask ) DUP #0001 ROT #40 SFT SFT2 grid/<play>
+	BRK
+
+(
+@|Grid )
+
+%grid/get-state ( -- mask* ) {
+	.&x LDZ2 .&o LDZ2 ORA2 }
+
+%grid/has-free ( -- t ) {
+	/get-state #01ff NEQ2 }
+
+%grid/is-taken ( mask* -- mask* t ) {
+	DUP2 /get-state AND2 ORA }
+
+@grid/<play> ( id mask* -- )
+	/is-taken ?{
+		.&turn LDZ ?{
+			( O ) .&o LDZ2 ORA2 DUP2 .&o STZ2
+			[ LIT "O ] !/<validate> }
+		( X ) .&x LDZ2 ORA2 DUP2 .&x STZ2
+		[ LIT "X ] !/<validate> }
+	POP2 POP ;dict/taken !str/<print>
+
+@grid/<put> ( id XO -- )
+	#00 ROT DUP ADD DUP #06 DIV #06 MUL ADD ;&buf STH2k ADD2 STA
+	STH2r !str/<print>
+
+@grid/buf [
+	"a|b|c 0a "-+-+- 0a
+	"d|e|f 0a "-+-+- 0a
+	"g|h|i 0a 0a $1 ]
+
+@grid/<victory> ( . XO -- )
+	[ LITr -Console/write ] DEOr
+	;dict/victory #800f DEO !str/<print>
+
+@grid/<validate> ( id mask* XO -- )
+	STH
+	ROT STHkr /<put>
+	victory/check ?/<victory>
+	POPr /has-free ?{
+		( | End in Draw )
+		;dict/draw #800f DEO !str/<print> }
+	[ LIT2 "XO ] [ LIT2 00 -&turn ] LDZ EQU DUP .&turn STZ
+	[ JMP SWP POP ]
+	( .. )
+
+@guide/<print> ( XO -- )
+	.Console/write DEO
+	;dict/guide
+	( .. )
+
+@str/<print> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		.Console/write DEO
+		INC2 !/>w
+
+@victory/check ( mask* -- t )
+	STH2
+	;&end ;&lut
+	&>l
+		LDA2k DUP2 STH2kr AND2 EQU2 ?{ INC2 INC2 GTH2k ?/>l }
+	NEQ2 POP2r JMP2r
+
+	&lut [
+	( abc ) 0007
+	( def ) 0038
+	( ghi ) 01c0
+	( adg ) 0049
+	( beh ) 0092
+	( cfi ) 0124
+	( aei ) 0111
+	( ceg ) 0054 ] &end
+
+@dict/taken "Position 20 "taken. 0a 00
+
+@dict/victory 20 "won. 0a 00
+
+@dict/guide 20 "playing: 20 0a 00
+
+@dict/draw "Draw. 0a 00
+
