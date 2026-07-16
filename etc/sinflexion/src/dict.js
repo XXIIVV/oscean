@@ -2304,7 +2304,8 @@ history [n] historia
 poetry [n] poesia
 poem [n] poema
 collection [n] collectione
-computer [n] ordinator
+logic machine [n] (as opposed to counting machine) ordinator
+computer [n] (Aristasian) ordinator
 static [n] nive
 noise [n] nive
 black [adj] atra; ater
