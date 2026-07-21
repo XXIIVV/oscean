@@ -172,20 +172,20 @@ uxn_eval(Uint16 start_pc)
 			} break;
 			case 0x12: {
 				const int x = Get1(1);
-				const int y = (Uint16)(pc + (Sint8)x);
+				const int a = (Uint16)(pc + (Sint8)x);
 				if(!k) u.ptr[r] -= 1;
-				Put1(r, ram[y]);
-				if(d) Put1(r, ram[(Uint16)(y + 1)]);
+				Put1(r, ram[a]);
+				if(d) Put1(r, ram[(Uint16)(a + 1)]);
 			} break;
 			case 0x13: {
 				const int x = Get1(1);
 				const int y = Getx(2, 3);
-				const int z = (Uint16)(pc + (Sint8)x);
+				const int a = (Uint16)(pc + (Sint8)x);
 				if(!k) u.ptr[r] -= d + 2;
 				if(d)
-					ram[z] = y >> 8, ram[(Uint16)(z + 1)] = y;
+					ram[a] = y >> 8, ram[(Uint16)(a + 1)] = y;
 				else
-					ram[z] = y;
+					ram[a] = y;
 			} break;
 			case 0x14: {
 				const int x = Get2(2);
@@ -197,8 +197,10 @@ uxn_eval(Uint16 start_pc)
 				const int x = Get2(2);
 				const int y = Getx(3, 4);
 				if(!k) u.ptr[r] -= d + 3;
-				ram[x] = d ? y >> 8 : y;
-				if(d) ram[(Uint16)(x + 1)] = y;
+				if(d)
+					ram[x] = y >> 8, ram[(Uint16)(x + 1)] = y;
+				else
+					ram[x] = y;
 			} break;
 			case 0x16: {
 				const int x = Get1(1);
@@ -211,9 +213,9 @@ uxn_eval(Uint16 start_pc)
 				const int y = Getx(2, 3);
 				if(!k) u.ptr[r] -= d + 2;
 				if(d)
-					dev[x] = y >> 8, deo(d ? x + 1 : x, y);
+					dev[x] = y >> 8, deo(x + 1, y);
 				else
-					deo(d ? x + 1 : x, y);
+					deo(x, y);
 			} break;
 			case 0x18: {
 				const int x = Getx(1, 2);
@@ -269,9 +271,9 @@ uxn_eval(Uint16 start_pc)
 			case 0x00: return 1;
 			case 0x20: {
 				const int a = ram[pc] << 8 | ram[(Uint16)(pc + 1)];
-				const int b = u.stk[0][--u.ptr[0]];
+				const int x = u.stk[0][--u.ptr[0]];
 				pc += 2;
-				if(b) pc += a;
+				if(x) pc += a;
 			} break;
 			case 0x40: {
 				const int a = ram[pc] << 8 | ram[(Uint16)(pc + 1)];
