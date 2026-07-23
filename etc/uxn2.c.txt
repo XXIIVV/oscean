@@ -141,7 +141,6 @@ static void system_deo_print(void) { system_print("WST", 0), system_print("RST",
 static unsigned int
 console_input(int c, unsigned int type)
 {
-	if(c == EOF) c = 0, type = CONSOLE_END;
 	dev[0x12] = c, dev[0x17] = type;
 	if(console_vector)
 		uxn_eval(console_vector);
@@ -1144,7 +1143,7 @@ stdin_handler(void *p)
 			SDL_Delay(25); /* slow down - the queue is most likely full */
 	}
 	/* EOF */
-	event.cbutton.button = 0x00;
+	event.cbutton.button = '\n';
 	event.cbutton.state = CONSOLE_END;
 	while(SDL_PushEvent(&event) < 0)
 		SDL_Delay(25);
@@ -1401,7 +1400,7 @@ main(int argc, char **argv)
 	if(argc == 1)
 		return !fprintf(stdout, "usage: %s -v | [-f -2] file.rom [args..]\n", argv[0]);
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 10 Jul 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 23 Jul 2026.\n", argv[0]);
 	/* Arguments */
 	if(i < argc && argv[i][0] == '-' && argv[i][1] == 'f')
 		emu_full = 1, i++;
