@@ -1,5 +1,5 @@
 ( 54K . Uxnfor
-| Does this spark joy )
+| Does it spark soy? )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
@@ -27,7 +27,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "15 20 "Jun 20 "2026 $2
+	( date ) "23 20 "Jul 20 "2026 $2
 
 (
 @|src )
@@ -224,13 +224,14 @@
 	LDA2k [ LIT2 "&> ] EQU2 ?/nesting
 	DUP2 wcap/ INC2 LDA
 	( a method ) DUP [ LIT "( ] NEQ ?{ <emit-break-tab> }
+	( a hex byte ) DUP chr/hex #ff EQU ?{ <emit-break-tab> }
 	( a string ) DUP [ LIT "" ] NEQ ?{ <emit-break-tab> }
 	( a block ) [ LIT "[ ] NEQ ?{ <emit-break-tab> }
 	<emit-word>/
 	<emit-space>
-	INC2 LDAk [ LIT "( ] NEQ ?{ <emit-comment>
-		<emit-break-tab> }
-	!eval-scope/w
+	INC2 LDAk [ LIT "( ] NEQ ?eval-scope/w
+	<emit-comment>
+	<emit-break-tab> !eval-scope/w
 
 	&nesting ( addr* -- addr* )
 	DUP2 #0002 SUB2 LDA LIT ") EQU ?{ <emit-break-tab> }
@@ -252,8 +253,8 @@
 	<emit-word>/
 	<emit-space>
 	INC2k LDA [ LIT "& ] EQU ?eval-scope/continue
-	DUP2 count-lambda #0006 LTH2 ?{ <emit-break-tab> }
-	!eval-scope/continue
+	DUP2 count-lambda #0006 LTH2 ?eval-scope/continue
+	<emit-break-tab> !eval-scope/continue
 
 @handle-lambda-end ( addr* -- addr* )
 	<dec-depth>
@@ -281,8 +282,8 @@
 	<emit-word>/
 	<emit-space>
 	INC2k LDA #00 EQU ?eval-scope/continue
-	INC2k LDA [ LIT "} ] EQU ?{ <emit-break-tab> }
-	!eval-scope/continue
+	INC2k LDA [ LIT "} ] EQU ?eval-scope/continue
+	<emit-break-tab> !eval-scope/continue
 
 @handle-include ( addr* -- addr* )
 	<emit-break-once>
@@ -320,7 +321,7 @@
 @count-block ( str* -- length* )
 	[ LIT2r 0000 ]
 	&>w
-		LDAk #5d EQU ?/end
+		LDAk [ LIT "] ] EQU ?/end
 		INC2r INC2 LDAk ?/>w &end POP2 STH2r JMP2r
 
 @count-lambda ( str* -- length* )
@@ -346,10 +347,12 @@
 @<emit-block> ( str* -- str* )
 	DUP2 count-block #002a GTH2 ?<emit-long-block>
 	&>w
-		LDAk <emit>
-		LDAk #5d EQU ?/end
-		INC2 LDAk ?/>w
-	LDAk <emit> &end INC2 JMP2r
+		LDA2k [ LIT2 20 "] ] EQU2 ?{
+			LDAk <emit>
+			INC2 LDAk ?/>w }
+	LDA2k SWP <emit>
+	<emit>
+	INC2 JMP2r
 
 @<emit-long-block> ( str* -- str* )
 	( get largest of two first chunks ) ( a ) INC2k wcap/ INC2 DUP2 wlen STH2
@@ -360,10 +363,10 @@
 		LDAk <emit>
 		LDAk #20 NEQ ?{
 			STHkr [ LIT &lb $1 ] AND ?/no-spacer
-			INC2k LDA #5d EQU ?/no-spacer
+			INC2k LDA [ LIT "] ] EQU ?/no-spacer
 			<emit-break-tab> &no-spacer INC2r }
 		LDAk #00 EQU ?/end
-		INC2 LDAk #5d NEQ ?/>w
+		INC2 LDAk [ LIT "] ] NEQ ?/>w
 	LDAk <emit> &end INC2 POP2r JMP2r
 
 @<emit-comment> ( str* -- str* )
@@ -442,6 +445,11 @@
 
 (
 @|stdlib )
+
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP JMP2r }

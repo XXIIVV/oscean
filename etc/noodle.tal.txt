@@ -55,7 +55,7 @@
 @meta 00 "Noodle 0a
 	( ) "A 20 "Drawing 20 "Program 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "11 20 "Jun 20 "2026 00
+	( ) "23 20 "Jul 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -111,7 +111,7 @@
 	BRK
 
 @filepath/<init> ( -- )
-	.Console/type DEI ?{ canvas/<maximize> !filepath/<new> }
+	.Console/type DEI ?{ canvas/<maximize> !/<new> }
 	;&on-console .Console/vector DEO2
 	JMP2r
 
@@ -166,7 +166,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @filepath/<pop-ext> ( -- )
 	,&ptr LDR #04 SUB ,&ptr STR
@@ -224,13 +224,13 @@
 	( | within x )
 	OVR #02 LTH ?{ POP2 BRK }
 	( | within y )
-	DUP #03 EQU ?&start-drag
-	DUP #08 EQU ?&start-drag
+	DUP #03 EQU ?/start-drag
+	DUP #08 EQU ?/start-drag
 	( | release when not drag )
 	;Mouse/state DEO
-	DUP #03 LTH ?&tool
-	DUP #03 GTH OVR #08 LTH AND ?&patt
-	DUP #07 GTH OVR #0d LTH AND ?&size
+	DUP #03 LTH ?/tool
+	DUP #03 GTH OVR #08 LTH AND ?/patt
+	DUP #07 GTH OVR #0d LTH AND ?/size
 	BRK
 	&tool DUP ADD ADD brush/<set-tool>
 	BRK
@@ -264,8 +264,8 @@
 	BRK
 
 @panel/<set-position> ( x* y* -- )
-	DUP2 #8000 GTH2 ?&invalid
-	OVR2 #8000 GTH2 ?&invalid
+	DUP2 #8000 GTH2 ?/invalid
+	OVR2 #8000 GTH2 ?/invalid
 	( miny ) #0010 GTH2k [ JMP SWP2 POP2 ]
 	( maxy ) .Screen/height DEI2 #008c SUB2 LTH2k [ JMP SWP2 POP2 ] DUP2 .&y STZ2
 	#0088 ADD2 .&y2 STZ2
@@ -318,7 +318,7 @@
 	&>ld
 		DUP2 .Screen/x DEO2
 		DEOkr
-		INC2 INC2 GTH2k ?&>ld
+		INC2 INC2 GTH2k ?/>ld
 	POP2 POP2 POP2r JMP2r
 
 @panel/<draw-icons> ( length selection x* y* -- )
@@ -331,7 +331,7 @@
 		#00 OVR #01 AND #09 MUL [ LIT2 &anchor-x $2 ] ADD2 .Screen/x DEO2
 		#00 OVR #01 SFT #0a MUL [ LIT2 &anchor-y $2 ] ADD2 .Screen/y DEO2
 		#01 OVR STHkr EQU DUP ADD ADD .Screen/sprite DEO
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 POPr JMP2r
 
 (
@@ -452,7 +452,7 @@
 	&>l
 		( load ) STH2k LDAk #ff EOR
 		( save ) STH2r STA
-		INC2 GTH2k ?&>l
+		INC2 GTH2k ?/>l
 	POP2 POP2 /<draw> !panel/<draw>
 
 @canvas/get-pixel ( x* y* -- b )
@@ -492,10 +492,10 @@
 	( l ) OVR2 #0001 SUB2 OVR2 /get-pixel #30 SFT STH
 	ORA2r ORAr STHr
 	( | handlers )
-	DUP #03 EQU ?&remove
-	DUP #06 EQU ?&remove
-	DUP #09 EQU ?&remove
-	DUP #0c EQU ?&remove
+	DUP #03 EQU ?/remove
+	DUP #06 EQU ?/remove
+	DUP #09 EQU ?/remove
+	DUP #0c EQU ?/remove
 	POP POP2 POP2 JMP2r
 	&remove POP !/remove-pixel
 
@@ -520,7 +520,7 @@
 		&>lf
 			LDA2k STH2kr NEQ2 ?{
 				POP2 POP2 STH2r #01 JMP2r }
-			INC2 INC2 GTH2k ?&>lf }
+			INC2 INC2 GTH2k ?/>lf }
 	POP2 POP2 STH2r #00 JMP2r
 
 @canvas/<request> ( x* y* -- )
@@ -549,7 +549,7 @@
 	,&ptr LDR2 ;&stack
 	&>lo
 		LDA2k /<draw-tile>
-		INC2 INC2 GTH2k ?&>lo
+		INC2 INC2 GTH2k ?/>lo
 	POP2 POP2 panel/<draw>
 	;&stack ;&ptr STA2
 	#0000 .Screen/vector DEO2
@@ -578,7 +578,7 @@
 	&>ldl
 		( move ) DUP2 #0008 ADD2 OVR2 STH2kr #0008 SUB2 mem/<sfl>
 		( clear ) DUP2 STH2kr ADD2 #0008 SUB2 #0008 mem/<clr>
-		STH2kr ADD2 GTH2k ?&>ldl
+		STH2kr ADD2 GTH2k ?/>ldl
 	POP2 POP2 POP2r /<draw> !panel/<draw>
 
 @canvas/drag-r ( -- )
@@ -587,7 +587,7 @@
 	&>ldr
 		( move ) DUP2 OVR2 #0008 ADD2 STH2kr #0008 SUB2 mem/<sfr>
 		( clear ) DUP2 #0008 mem/<clr>
-		STH2kr ADD2 GTH2k ?&>ldr
+		STH2kr ADD2 GTH2k ?/>ldr
 	POP2 POP2 POP2r /<draw> !panel/<draw>
 
 @canvas/crop-h ( -- )
@@ -601,7 +601,7 @@
 	&>lsl
 		DUP2 STH2r ;&w LDZ #01 SUB #30 SFT2 ADD2k STH2
 		mem/<sfl>
-		;&w LDZ #30 SFT2 ADD2 GTH2k ?&>lsl
+		;&w LDZ #30 SFT2 ADD2 GTH2k ?/>lsl
 	POP2 POP2 POP2r
 	( update ) .&size LDZ2 #0100 SUB2 !/<set-size>
 
@@ -610,7 +610,7 @@
 	&>lsr
 		DUP2 STH2r ;&w LDZ INC #30 SFT2 ADD2k STH2
 		mem/<sfr>
-		;&w LDZ #30 SFT2 ADD2 GTH2k ?&>lsr
+		;&w LDZ #30 SFT2 ADD2 GTH2k ?/>lsr
 	POP2 POP2 POP2r
 	( update ) .&size LDZ2 #0100 ADD2 !/<set-size>
 
@@ -627,7 +627,7 @@
 	;&path .File/name DEO2
 	canvas/get-length .File/length DEO2
 	;canvas/buf .File/read DEO2
-	JMP2r
+	canvas/<draw> !panel/<draw>
 
 @snarf/path ".snarf 00
 
@@ -659,10 +659,10 @@
 		;window/cols LDZ #0000
 		&>hor
 			DUP2 .&x LDZ2 ADD2 STH2kr /<draw-pixel>
-			INC2 GTH2k ?&>hor
+			INC2 GTH2k ?/>hor
 		POP2 POP2 POP2r #0000 .Screen/x DEO2
 		<draw-lb>
-		INC2 GTH2k ?&>ver
+		INC2 GTH2k ?/>ver
 	POP2 POP2 JMP2r
 
 @zoom/<draw-tile> ( x h -- )
@@ -753,7 +753,7 @@
 	str/len #30 SFT2 JMP2r
 
 @font/draw-str-right ( text* -- text* )
-	DUP2 font/get-width STH2
+	DUP2 /get-width STH2
 	.Screen/x DEI2k STH2r SUB2 ROT DEO2
 	( >> )
 
@@ -762,11 +762,11 @@
 	&>w
 		LDAk DUP ?{ POP INC2 JMP2r }
 		/<draw-chr>
-		INC2 !&>w
+		INC2 !/>w
 
 @font/<draw-size> ( w h -- )
-	SWP font/<draw-byte>
-	[ LIT "x ] font/<draw-chr>
+	SWP /<draw-byte>
+	[ LIT "x ] /<draw-chr>
 	( >> )
 
 @font/<draw-byte> ( byte -- )
@@ -845,15 +845,15 @@
 		( x ) [ LIT2 &dx $2 ] gts2 ?{
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
-		!&>w
+		!/>w
 
 @within-rect ( x* y* rect -- flag )
 	STH
-	( y LTH rect.y1 ) DUP2 STHkr INC INC LDZ2 lts2 ?&skip
-	( y GTH rect.y2 ) INC2k STHkr #06 ADD LDZ2 gts2 ?&skip
+	( y LTH rect.y1 ) DUP2 STHkr INC INC LDZ2 lts2 ?/skip
+	( y GTH rect.y2 ) INC2k STHkr #06 ADD LDZ2 gts2 ?/skip
 	SWP2
-	( x LTH rect.x1 ) DUP2 STHkr LDZ2 lts2 ?&skip
-	( x GTH rect.x2 ) INC2k STHkr #04 ADD LDZ2 gts2 ?&skip
+	( x LTH rect.x1 ) DUP2 STHkr LDZ2 lts2 ?/skip
+	( x GTH rect.x2 ) INC2k STHkr #04 ADD LDZ2 gts2 ?/skip
 	POP2 POP2 POPr #01 JMP2r
 	&skip POP2 POP2 POPr #00 JMP2r
 
@@ -865,9 +865,9 @@
 		OVR
 		&>t2
 			DEOkr
-			INC DUP ?&>t2
+			INC DUP ?/>t2
 		POP <draw-lb>
-		INC DUP ?&>t
+		INC DUP ?/>t
 	POP2 POP2 POP2r JMP2r
 
 @<draw-times> ( -cols auto addr* action* -- )
@@ -876,7 +876,7 @@
 	.Screen/auto DEO
 	&>t
 		DEOkr
-		INC DUP ?&>t
+		INC DUP ?/>t
 	POP POP2r JMP2r
 
 
@@ -889,8 +889,8 @@
 		STH2k .pointer/x1 LDZ2 .pointer/x0 LDZ2 GTH2k [ JMP SWP2 ]
 		&>hor
 			DUP2 STH2kr /<apply>
-			INC2 gts2k ?&>hor
-		POP2 POP2 POP2r INC2 gts2k ?&>ver
+			INC2 gts2k ?/>hor
+		POP2 POP2 POP2r INC2 gts2k ?/>ver
 	POP2 POP2 canvas/<draw> !panel/<draw>
 
 %brush/outside ( x y -- t ) {
@@ -903,11 +903,11 @@
 	&>verd
 		STHk #0800
 		&>hord
-			DUP STHkr brush/outside ?{
+			DUP STHkr /outside ?{
 				( x ) #00 OVR [ LIT2 &x $2 ] ADD2
 				( y ) #00 STHkr [ LIT2 &y $2 ] ADD2 /<apply> }
-			INC GTHk ?&>hord
-		POP2 POPr INC GTHk ?&>verd
+			INC GTHk ?/>hord
+		POP2 POPr INC GTHk ?/>verd
 	POP2 JMP2r
 
 @brush/<paint-magic> ( x* y* -- )
@@ -919,8 +919,8 @@
 		&>horm
 			( x ) #00 OVR [ LIT2 &xm $2 ] ADD2
 			( y ) #00 STHkr [ LIT2 &ym $2 ] ADD2 canvas/<magic-pixel>
-			INC GTHk ?&>horm
-		POP2 POPr INC GTHk ?&>verm
+			INC GTHk ?/>horm
+		POP2 POPr INC GTHk ?/>verm
 	POP2 JMP2r
 
 @brush/<apply> ( x* y* -- )
@@ -1054,11 +1054,11 @@
 	JMP2r
 
 @guide/<clear-rect> ( -- )
-	.zoom/active LDZ ?{ #40 !guide/<line-rect> }
+	.zoom/active LDZ ?{ #40 !/<line-rect> }
 	JMP2r
 
 @guide/<draw-rect> ( -- )
-	.zoom/active LDZ ?{ #42 !guide/<line-rect> }
+	.zoom/active LDZ ?{ #42 !/<line-rect> }
 	JMP2r
 
 @guide/<line-rect> ( color -- )
@@ -1072,7 +1072,7 @@
 		DEOkr
 		.&y2 LDZ2 .Screen/y DEO2
 		DEOkr
-		INC2 GTH2k ?&>hor
+		INC2 GTH2k ?/>hor
 	POP2 POP2
 	( | ver )
 	.&y2 LDZ2 INC2 .&y LDZ2 GTH2k [ JMP SWP2 ]
@@ -1082,7 +1082,7 @@
 		DEOkr
 		.&x2 LDZ2 .Screen/x DEO2
 		DEOkr
-		INC2 GTH2k ?&>ver
+		INC2 GTH2k ?/>ver
 	POP2 POP2 POP2r JMP2r
 
 (
@@ -1261,7 +1261,7 @@
 		[ LIT2 00 _&pixel ] LDR #16 SFT ;&bw-lut ADD2 LDA2 JSR2 canvas/<set-pixel>
 		SWP2 INC2 DUP2 ;image/w LDA2 NEQ2 ?{
 			( linebreak ) POP2 #0000 SWP2 INC2 SWP2 }
-		SWP2 !&>stream
+		SWP2 !/>stream
 	&pixel $8
 	&icn-ext "00x00.icn 00
 	&bw-lut [
@@ -1310,7 +1310,7 @@
 	&>cat
 		#0b09 EQUkr STHr [ JMP SWP POP ] font/<set-color>
 		INC2k font/draw-str POP2 #20 font/<draw-chr>
-		skip-sub INCr LDAk ?&>cat
+		skip-sub INCr LDAk ?/>cat
 	POP2 POP2r JMP2r
 
 @menu/<close> ( -- )
@@ -1386,7 +1386,7 @@
 	[ LITr 00 ] ;&manifest LDA2
 	&>w
 		EQUkr STHr ?{
-			skip-sub INCr LDAk ?&>w
+			skip-sub INCr LDAk ?/>w
 		POP2 #0000 }
 	POP2r JMP2r
 
@@ -1396,7 +1396,7 @@
 	INC2 str/cap STHr #00
 	&>ls
 		DUP STHkr EQU ?{
-			SWP2 #0004 ADD2 str/cap SWP2 INC GTHk ?&>ls
+			SWP2 #0004 ADD2 str/cap SWP2 INC GTHk ?/>ls
 		POP2 POP2 POPr #0000 JMP2r }
 	POP2 INC2 INC2 LDA2 POPr JMP2r
 
@@ -1408,7 +1408,7 @@
 		[ LIT &id 00 ] [ LIT &target-catx $1 ] EQU ?{
 			INC2k font/get-width #0008 ADD2 STH2
 			ADD2r skip-sub ,&id LDR INC ,&id STR
-			LDAk ?&>lcx
+			LDAk ?/>lcx
 		POP2 }
 	STH2r #0010 ADD2 JMP2r
 
@@ -1421,7 +1421,7 @@
 			POP2 POP2 [ LIT &id-xcat 00 ] JMP2r }
 		STH2
 		skip-sub ,&id-xcat LDR INC ,&id-xcat STR
-		LDAk ?&>wxc
+		LDAk ?/>wxc
 	POP2 POP2r #ff JMP2r
 
 @menu/<draw-sub> ( cat mask -- )
@@ -1435,7 +1435,7 @@
 			[ LIT2 &anchor $2 ] .Screen/x DEO2
 			#00 OVR INC #30 SFT2 #0004 ADD2 .Screen/y DEO2
 			SWP2 /<draw-label>
-			SWP2 INC GTHk ?&>subcat
+			SWP2 INC GTHk ?/>subcat
 		POP2 POP2 }
 	POP2 JMP2r
 
@@ -1452,15 +1452,15 @@
 		&>subcat
 			OVR2 LDA2 [ LIT2 &mk $2 ] NEQ2 ?{
 				POP2 INC2 INC2 LDA2 JMP2r }
-			SWP2 #0004 ADD2 str/cap SWP2 INC GTHk ?&>subcat
-		POP2 LDAk ?&>cat
+			SWP2 #0004 ADD2 str/cap SWP2 INC GTHk ?/>subcat
+		POP2 LDAk ?/>cat
 	POP2 #0000 JMP2r
 
 @skip-sub ( sub* -- sub* )
 	LDAk STH
 	INC2 str/cap STHr #00
 	&>subcat
-		SWP2 #0004 ADD2 str/cap SWP2 INC GTHk ?&>subcat
+		SWP2 #0004 ADD2 str/cap SWP2 INC GTHk ?/>subcat
 	POP2 JMP2r
 
 @get-modkey-str ( mod key -- str* )
@@ -1468,18 +1468,18 @@
 	( mod ) SWP STH
 	#0800 &loop STHkr OVR SFT #01 AND #00 EQU ?{
 		#00 OVR ;&buttons ADD2 LDA ;&buf str/<put> }
-	INC GTHk ?&loop
+	INC GTHk ?/loop
 	POP2
 	( mix ) DUP #00 NEQ STHr #00 NEQ #0101 NEQ2 ?{ LIT "+ ;&buf str/<put> }
-	( key ) DUP #08 NEQ ?{ ;&bsp !&cat }
-	DUP #09 NEQ ?{ ;&tab !&cat }
-	DUP #0d NEQ ?{ ;&ent !&cat }
-	DUP #20 NEQ ?{ ;&spc !&cat }
-	DUP #1b NEQ ?{ ;&esc !&cat }
-	DUP #7f NEQ ?{ ;&del !&cat }
+	( key ) DUP #08 NEQ ?{ ;&bsp !/cat }
+	DUP #09 NEQ ?{ ;&tab !/cat }
+	DUP #0d NEQ ?{ ;&ent !/cat }
+	DUP #20 NEQ ?{ ;&spc !/cat }
+	DUP #1b NEQ ?{ ;&esc !/cat }
+	DUP #7f NEQ ?{ ;&del !/cat }
 	DUP ;&buf str/<put> &end POP ;&buf JMP2r
 	&buf $8
-	&buttons "ABsSUDLR $1 &cat ;&buf str/<cat> !&end
+	&buttons "ABsSUDLR $1 &cat ;&buf str/<cat> !/end
 
 	&bsp "bsp $1
 	&tab "tab $1
@@ -1531,7 +1531,7 @@
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
-		INC2 !&>wp
+		INC2 !/>wp
 
 @str/cap ( str* -- end* )
 	LDAk ?{ INC2 JMP2r }
@@ -1553,7 +1553,7 @@
 	/cap-1 STH2
 	&>w
 		LDAk STH2kr STA
-		INC2r INC2 LDAk ?&>w
+		INC2r INC2 LDAk ?/>w
 	POP2 #00 STH2r STA
 	JMP2r
 

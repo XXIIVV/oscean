@@ -1,7 +1,10 @@
-( 54 K . How about a nice game of tic-tac-toe )
+( 54K . How about a nice game of tic-tac-toe )
 
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
-|0000 @grid/x $2 &o $2 &turn $1
+
+|000
+
+	@grid/x $2 &o $2 &turn $1
 
 |100
 
@@ -15,12 +18,12 @@
 @meta 00
 	( ) "Tic-Tac-Toe 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "15 20 "Jul 20 "2026 00 00
+	( ) "23 20 "Jul 20 "2026 00 00
 
 @handle-turn ( -> )
 	.Console/read DEI [ LIT "a ] SUB
 	( valid ) DUP #09 LTH ?{ POP BRK }
-	( id-mask ) DUP #0001 ROT #40 SFT SFT2 grid/<play>
+	( id ) grid/<play>
 	BRK
 
 (
@@ -32,11 +35,11 @@
 %grid/has-free ( -- t ) {
 	/get-state #01ff NEQ2 }
 
-%grid/is-taken ( mask* -- mask* t ) {
-	DUP2 /get-state AND2 ORA }
+%grid/is-taken ( id -- mask* t ) {
+	#0001 ROT #40 SFT SFT2 DUP2 /get-state AND2 ORA }
 
-@grid/<play> ( id mask* -- )
-	/is-taken ?{
+@grid/<play> ( id -- )
+	DUP /is-taken ?{
 		.&turn LDZ ?{
 			( O ) .&o LDZ2 ORA2 DUP2 .&o STZ2
 			[ LIT "O ] !/<validate> }
@@ -44,14 +47,10 @@
 		[ LIT "X ] !/<validate> }
 	POP2 POP ;dict/taken !str/<print>
 
-@grid/<put> ( id XO -- )
-	#00 ROT DUP ADD DUP #06 DIV #06 MUL ADD ;&buf STH2k ADD2 STA
-	STH2r !str/<print>
-
 @grid/buf [
 	"a|b|c 0a "-+-+- 0a
 	"d|e|f 0a "-+-+- 0a
-	"g|h|i 0a 0a $1 ]
+	"g|h|i 0a 0a 00 ]
 
 @grid/<victory> ( . XO -- )
 	[ LITr -Console/write ] DEOr
@@ -59,7 +58,8 @@
 
 @grid/<validate> ( id mask* XO -- )
 	STH
-	ROT STHkr /<put>
+	ROT STHkr #00 ROT DUP ADD DUP #06 DIV #06 MUL ADD ;&buf ADD2 STA
+	;&buf str/<print>
 	victory/check ?/<victory>
 	POPr /has-free ?{
 		( | End in Draw )
@@ -97,10 +97,7 @@
 	( ceg ) 0054 ] &end
 
 @dict/taken "Position 20 "taken. 0a 00
-
-@dict/victory 20 "won. 0a 00
-
-@dict/guide 20 "playing: 20 0a 00
-
-@dict/draw "Draw. 0a 00
+	&victory 20 "won. 0a 00
+	&guide 20 "playing: 20 0a 00
+	&draw "Draw. 0a 00
 
