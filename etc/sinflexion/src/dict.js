@@ -2194,62 +2194,64 @@ young [adj] juvene
 youth [n] (person) juvene
 elsewhere [cor] alibi
 
-
-first [ord] (at first) primo
 one [card] uno
-one by one [card] singulo; uno per uno
-half [fract] dimidio
 two [card] duo
-two by two [card] bino; duo per duo
-second [ord] secundo
-twelve [card] decem duo
-twelfth [ord] decimo secundo
-twenty [card] viginti
-twentieth [ord] vigesimo
-third [ord] tertio
-third [fract] uno tertio
 three [card] tres
-three by three [card] tres per tres; trino
-thirteen [card] decem tres
-thirteenth [ord] decimo tertio
-thirty [card] triginta
-thirtieth [ord] trigesimo
 four [card] quatuor
+five [card] quinque
+six [card] sex
+seven [card] septem
+eight [card] octo
+nine [card] novem
+ten [card] decem
+eleven [card] decem uno
+twelve [card] decem duo
+thirteen [card] decem tres
+twenty [card] viginti
+thirty [card] triginta
 forty [card] quadraginta
+fifty [card] quinquaginta
+sixty [card] sexaginta
+seventy [card] septuaginta
+eighty [card] octoginta
+ninety [card] nonaginta
+hundred [card] centum
+thousand [card] mille
+million [card] millione
+
+one by one [card] singulo; uno per uno
+two by two [card] bino; duo per duo
+three by three [card] tres per tres; trino
 four by four [card] quatuor per quatuor
-fortieth [ord] quadragesimo
-fourth [card] quarto
-fourth [fract] uno quarto
 quadruplicate [card] quadruplo
 quadruple [adj] quadruplo
-five [card] quinque
-fifty [card] quinquaginta
-fifth [ord] quinto
-fiftieth [card] quinquagesimo
-six [card] sex
-sixty [card] sexaginta
-sixth [ord] sexto
-sixtieth [card] sexagesimo
-seven [card] septem
-seventy [card] septuaginta
-seventh [ord] septimo
-seventieth [card] septuagesimo
-eight [card] octo
-eighty [card] octoginta
-eightieth [card] octogesimo
-eighth [ord] octavo
-nine [card] novem
-ninety [card] nonaginta
-ninetieth [ord] nonagesimo
-ten [card] decem
+
+half [fract] dimidio
+third [fract] uno tertio
+fourth [fract] uno quarto
 tenth [fract] decimo
-eleven [card] decem uno
+
+first [ord] (at first) primo
+second [ord] secundo
+third [ord] tertio
+fourth [ord] quarto
+fifth [ord] quinto
+sixth [ord] sexto
+seventh [ord] septimo
+eighth [ord] octavo
 eleventh [ord] decimo primo
-hundred [card] centum
+twelfth [ord] decimo secundo
+thirteenth [ord] decimo tertio
+twentieth [ord] vigesimo
+thirtieth [ord] trigesimo
+fortieth [ord] quadragesimo
+fiftieth [card] quinquagesimo
+sixtieth [card] sexagesimo
+seventieth [ord] septuagesimo
+eightieth [ord] octogesimo
+ninetieth [ord] nonagesimo
 hundredth [ord] centesimo
-thousand [card] mille
 thousandth [ord] millesimo
-million [card] millione
 millionth [ord] millionesimo
 
 I [prn] me
@@ -2299,10 +2301,7 @@ Saturday [n] sabbato; saturnodie
 January [n] (month) januario
 February [n] (month) februario 
 March [n] (month) martio
-
 May [n] (month) majo
-
-
 August [n] (month) augusto
 September [n] (month) september
 October [n] (month) octobre
