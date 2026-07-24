@@ -124,7 +124,6 @@ attend [vt] servi
 augment [vt] auge
 augur [vt] augura
 augury [n] augurio
-August [n] augusto
 aunt [n] amita
 avoid [vt] evita
 await [vt] attende
@@ -205,7 +204,6 @@ beyond [prep] (on the other side of) trans
 bias [vt] propende
 big [adj] crasso
 bill [n] factura
-beak [n] becco
 bird [n] ave
 birth [n] (birthday) natalitio
 bit [n] mica
@@ -615,7 +613,6 @@ effectuate [vt] effice
 effort [n] conatu
 either [conj] (indifferent) vel...vel
 either ... or [conj] aut...aut
-either [prn] altero
 both of two [conj] utroque
 elapse [vi] flue; labe
 elbow [n] cubito
@@ -802,7 +799,6 @@ frank [n] (Frank) franco
 free [adj] gratis; libero
 freely [adv] libenter
 frequent [adv] (frequently) saepe; subinde
-Friday [n] veneredie
 friend [n] amico
 friendship [n] amicitia
 frog [n] rana
@@ -916,9 +912,6 @@ have [vt] habe
 have on, be wearing [vt] gere; vesti
 hawk [vt] (peddle) circumfer
 hazard [n] periculo
-he [prn] illo
-he who [prn] illo
-himself [prn] se
 head [n] capite
 heal [vt] cura
 health [n] salute; sanitate
@@ -942,9 +935,6 @@ hemp [n] cannabe
 hen [n] gallina
 hence [adv] ergo; hinc; inde
 henceforth [conj] post
-her [prn] illa; illo
-herself [prn] se
-her [pos] suo
 herb [n] (any plant without woody stem) herba
 here [cor] hac; hic
 here is/here are [inter] ecce
@@ -953,7 +943,6 @@ high [adj] alto
 higher [adj] supero
 hinder [vt] obsta
 hint [vt] indica; suggere
-his [pos] suo
 hit [vt] ice; percute
 hither [cor] huc
 hole [n] puteo
@@ -987,7 +976,6 @@ hurricane [n] huracano
 hurry [n] festinatione
 hurt [adj] (hurtful) damnoso
 husband [n] marito; sponso; vir
-I [prn] me
 ice [n] glacie
 idle [n] (idleness) otio
 if [conj] si
@@ -1052,9 +1040,6 @@ invent [vt] inveni
 irate [adj] irato
 iron [n] ferro
 island [n] insula
-it [prn] illo
-its [pos] suo
-its (reflexive) [prn] se
 janitor [n] famulo
 Japan [n] Nippon
 Japanese [adj] nipponense
@@ -1193,7 +1178,6 @@ many [adj] (so many) tot; multo
 map [n] mappa
 maple [n] acere
 marble [n] marmore
-march [n] (month) martio
 marry [vt] marita
 Mars [n] marte
 marsh [n] palude
@@ -1209,9 +1193,7 @@ mature [vi] matura
 may [vt] (can) pote
 may [exp] (have right to, be permitted)  lice ad uno
 may [adv] (perhaps, maybe) forsan
-may [n] (month) majo
 mayor [n] majore
-me [prn] me
 meal [n] farina; prandio
 mean [n] (by means of) per
 meanwhile [adv] interim
@@ -1234,7 +1216,6 @@ mile [n] millia
 milk [n] lacte
 mind [n] mente
 mine [n] fodina
-mine [pos] de me
 mingle [vt] misce
 minimum [n] minimo
 minus [prep] minus
@@ -1244,7 +1225,7 @@ mix [vt] misce
 mobile [adj] (capable of movement) mobile
 mode [n] modo
 moist [adj] madido
-Monday [n] lunadie
+
 money [n] denario
 monkey [n] simia
 month [n] mense
@@ -1270,8 +1251,6 @@ mud [n] limo
 mushroom [n] fungo
 must [vt] debe
 mute [adj] muto
-my [pos] meo
-myself [prn] me ipso
 name [n] nomine
 name (say the name of) [vt] nomina
 named [adj] nominato
@@ -1290,7 +1269,6 @@ negate [vt] nega
 neighbor [n] vicino
 neighboring [adj] vicino
 neither [conj] (neither...nor) neque...nec
-neither [prn] neutro
 nephew [n] nepote
 net [n] rete
 neuter [adj] neutro
@@ -1352,8 +1330,6 @@ on [prep] super
 once [adv] olim; semel; uno vice
 at once [adv] mox; statim; subito
 once upon a time [adv] olim
-one [prn] uno
-one's self [prn] se ipso
 only [adv] (not only...but also) non solo...sed etiam
 open [vt] aperi
 open [adj] aperto
@@ -1370,9 +1346,6 @@ origin [n] provenientia
 originate [vi] nasce; ori
 ostrich [n] struthione
 other [adj] alio
-our [pos] nostro
-ours [pos] de nos
-ourselves [prn] nos ipso
 out [prep] (get out!) apage!
 out of [prep] ex
 outside [prep] extra
@@ -1438,7 +1411,6 @@ pine [n] (tree) pino
 pineapple [n] ananas
 pious [adj] pio
 pipe [n] tubo
-pit [n] puteo
 pit [n] (cavity) cavo
 pit [n] (dug out) fossa
 pit [n] (hole) puteo
@@ -1684,7 +1656,6 @@ sample [n] specimine
 sane [n] (sanity) sanitate
 sap [n] suco
 satiate [vt] satia
-Saturday [n] sabbato; saturnodie
 sausage [n] luganica
 savage [adj] truce
 save [vt] salva
@@ -1735,7 +1706,6 @@ shaft [n] puteo
 shake [vt] quassa
 sharp [n] (sharpness) acie
 shave [vt] rade
-she [prn] illa; illo
 shed [vt] versa
 sheep [n] ove
 sheet [n] linteolo
@@ -1868,7 +1838,7 @@ still [adv] tamen
 stocking [n] socculo
 stone [n] (material substance) petra
 stone [n] (pebble) lapillo; saxo
-stone [n] (piece of rock) lapide; saxo
+stone [n] (piece of rock) lapide
 stool [n] scamno; sedile
 stop [vt] siste
 store [n] (shop) negotio
@@ -1897,7 +1867,6 @@ suggest [vt] suggere
 summer [n] aestate
 summit [n] vertice
 sun [n] sol
-Sunday [n] soldie
 sunflower [n] heliantho
 super [adj] supra
 superior [adj] superiore
@@ -1958,16 +1927,12 @@ that [cor] eo; illo
 that one [cor] illo
 that which [cor] illo
 that [conj] que
-their [pos] suo
-theirselves [prn] se
 then [cor] interea; tunc
 then [adv] ita
 thence [adv] inde
 there [cor] eo; ibi
 therefore [cor] ergo; itaque
 thesaurus [n] thesauro
-they [prn] illos; uno
-they [prn] (female) illas
 thick [adj] spisso
 thick [adj] (large depth) crasso
 thin [adj] (thin and long) tenue
@@ -1977,7 +1942,6 @@ thirst [n] siti
 this [cor] ce; hoc; isto
 thorax [n] thorace
 thorn [n] (thorny) spinoso
-thou [prn] te
 though [conj] etsi; quamvis
 thread [n] filo
 threaten [adj] (threatening) minace
@@ -1989,11 +1953,8 @@ throw [vt] jacta
 throw forth [vt] projice
 thumb [n] pollice
 thunder [vi] tona
-Thursday [n] jovedie
 thus [cor] ita; sic
 thwart [vt] impedi
-thy [pos] tuo
-thine [pos] de te
 ticket [n] tessera
 tight [adj] angusto
 timber [n] ligno
@@ -2046,7 +2007,6 @@ trumpet [n] bucina; tromba
 try [vt] cona; tenta
 tub [n] tina
 tube [n] tubo
-Tuesday [n] martedie
 tug [vt] trahe
 tunic [n] tunica
 turn [vt] (change direction, facing) verte
@@ -2132,7 +2092,6 @@ water [n] aqua
 waterfall [n] cataracta
 waterproof [adj] impermeabile
 wave [n] unda
-we [prn] nos
 weak [adj] debile
 wealth [adj] (wealthy) locupleto
 wear [vt] (clothes) gere; vesti
@@ -2140,7 +2099,6 @@ weary [adj] lasso
 weather [n] statu de caelo; tempore
 weave [vt] texe
 web [n] tela
-Wednesday [n] mercuriodie
 week [n] hebdomade; septimana
 weep [vi] fle; plange
 weep [n] plora
@@ -2220,7 +2178,6 @@ write [vt] scribe
 written [adj] scripto
 yacht [n] phaselo
 yard [n] (enclosed courtyard) area (de domo)
-ye [prn] vos
 hurrah! [inter] io!
 year [n] anno
 yellow [adj] citrino; flavo
@@ -2233,12 +2190,7 @@ not yet [adv] nondum
 yield [vt] (give way) cede
 yoke [n] (bondage) jugo
 yore [n] of yore olim
-you [prn] vos
-you [prn] (plural) vos
 young [adj] juvene
-your [pos] (plural) vestro
-yours [pos] de vos
-yourselves (plural) [prn] vos
 youth [n] (person) juvene
 elsewhere [cor] alibi
 
@@ -2300,6 +2252,62 @@ thousandth [ord] millesimo
 million [card] millione
 millionth [ord] millionesimo
 
+I [prn] me
+me [prn] me
+myself [prn] me ipso
+thou [prn] te
+you [prn] (singular) te
+he [prn] illo
+himself [prn] se
+her [prn] illa
+herself [prn] se
+she [prn] illa
+we [prn] nos
+ourselves [prn] nos ipso
+ye [prn] vos
+you [prn] (plural) vos
+yourselves (plural) [prn] vos
+they [prn] illos; illas; uno
+theirselves [prn] se
+one [prn] uno
+one's self [prn] se ipso
+it [prn] illo
+its (reflexive) [prn] se
+either [prn] altero
+neither [prn] neutro
+
+my [pos] de me
+mine [pos] de me
+your [pos] de te
+yours [pos] de te
+his [pos] de il
+hers [pos] de il
+our [pos] de nos
+ours [pos] de nos
+your [pos] de vos
+yours [pos] de vos
+their [pos] de ils
+
+Sunday [n] soldie
+Monday [n] lunadie
+Tuesday [n] martedie
+Wednesday [n] mercuriodie
+Thursday [n] jovedie
+Friday [n] veneredie
+Saturday [n] sabbato; saturnodie
+
+January [n] (month) januario
+February [n] (month) februario 
+March [n] (month) martio
+
+May [n] (month) majo
+
+
+August [n] (month) augusto
+September [n] (month) september
+October [n] (month) octobre
+November [n] (month) novembre
+December [n] (month) decembre
 
 tale [n] fabula
 story [n] fabula

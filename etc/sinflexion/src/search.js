@@ -40,9 +40,19 @@ function make_def(val, note) {
 	return res
 }
 
+function find_copy(ar, val) {
+	let res = 0
+	ar.forEach((v) => {
+		if(v == val) res = 1; })
+	return res
+}
+
 function push_word(dict, key, type, val, note) {
 	if(!db[dict][key]) db[dict][key] = {}
 	if(!db[dict][key][type]) db[dict][key][type] = []
+	// Check duplicate
+	if(find_copy(db[dict][key][type], val))
+		db.warnings++, console.warn(`Duplicate: ${key} -> ${val}`)
 	db[dict][key][type].push(make_def(val, note))
 }
 
