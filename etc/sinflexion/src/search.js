@@ -92,16 +92,16 @@ function is_vowel(letter) {
 	return letter == 'a' || letter == 'e' || letter == 'i' || letter == 'o' || letter == 'u'
 }
 
-function print_term(t, lang) {
+function print_term(t, lang, a, b) {
 	let res = ""
 	Object.keys(db[lang][t]).forEach((k) => { 
-		res += `<li><b>${t}</b>[${k}]: `
+		res += `${a}<b>${t}</b>[${k}]: `
 		db[lang][t][k].forEach((v, id) => {
 			res += `${v}`
 			if(id < db[lang][t][k].length -1)
 				res += `, `
 		})
-		res += `</li>` 
+		res += `${b}` 
 	})
 	return res
 }
@@ -122,27 +122,23 @@ function search_term(target) {
 	let res = ""
 	// Perfect matches
 	if(db.en[target])
-		res += print_term(target, 'en') + '<br />'
+		res += print_term(target, 'en', '<p>', '</p>')
 	if(db.lo[target])
-		res += print_term(target, 'lo') + '<br />'
+		res += print_term(target, 'lo', '<p>', '</p>')
 	// English
 	let res_a = ""
-	if(db.en[target])
-		res_a += print_term(target, 'en')
 	en_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target) 
-			res_a += print_term(k, 'en') })
+			res_a += print_term(k, 'en', '<li>', '</li>') })
 	if(res_a !== "")
-		res += `<li><i>Angl/Latin</i></li><ul>${res_a}</ul>`
+		res += `<p><i>Angl/Latin</i></p><ul>${res_a}</ul>`
 	// Latin
 	let res_b = ""
-	if(db.lo[target])
-		res_b += print_term(target, 'lo')
 	lo_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target)
-			res_b += print_term(k, 'lo') })
+			res_b += print_term(k, 'lo', '<li>', '</li>') })
 	if(res_b !== "")
-		res += `<li><i>Lø/Angl</i></li><ul>${res_b}</ul>`
+		res += `<p><i>Lø/Angl</i></p><ul>${res_b}</ul>`
 	if(!res)
 		res += `<p>Il es <b>nul respons</b> pro quaer "${target}", tent un alter verb.</p>`
 	res += '<br />'
