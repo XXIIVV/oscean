@@ -222,7 +222,6 @@ blood [n] sanguine
 bloom [vi] flore
 blow [vt] suffla
 bludgeon [n] virga
-blue [adj] caeruleo
 board [n] tabula
 body [n] corpore
 bog [n] palude
@@ -869,7 +868,6 @@ gravy [n] suco
 great [adj] magno
 greater [adj] majore; superiore
 greatly [adv] valde
-green [adj] viride
 greet [vt] saluta
 grey [adj] cano; cinereo
 grid [n] craticula
@@ -1538,7 +1536,6 @@ recent [adv] (recently) nuper
 reckon [vt] (the amount of) puta
 recollect [n] recordatione recordatione
 record [vt] (set down facts) recorda
-red [adj] rubro
 reduce [vt] minue
 reed [n] canna
 refuse [vt] recusa
@@ -1672,7 +1669,6 @@ scorn [vt] contemne
 screen [vt] (hide, conceal) occulta
 scrub [vt] terge
 sea [n] mari
-seagreen [adj] glauco
 seam [n] sutura
 season [n] (of year) satione
 seat [n] sedile
@@ -2121,7 +2117,6 @@ which [cor] quale; que
 which (of two) [cor] utro
 which (referring to entire previous clause) [cor] quod
 while [adv] dum
-white [adj] albo
 who [cor] qui
 whole [adj] (of one thing) toto
 wholly [adv] toto
@@ -2180,7 +2175,6 @@ yacht [n] phaselo
 yard [n] (enclosed courtyard) area (de domo)
 hurrah! [inter] io!
 year [n] anno
-yellow [adj] citrino; flavo
 yes [inter] certo; etiam; ita; ita vero
 yesterday [adv] heri
 yet [adv] (already) jam
@@ -2254,49 +2248,49 @@ hundredth [ord] centesimo
 thousandth [ord] millesimo
 millionth [ord] millionesimo
 
-I [prn] me
+I [prn] (pronoun) me
 me [prn] me
 myself [prn] me ipso
 thou [prn] te
-you [prn] (singular) te
-he [prn] illo
+you (singular) [prn] (pronoun) te
+he [prn] (pronoun) illo
 himself [prn] se
 her [prn] illa
 herself [prn] se
-she [prn] illa
-we [prn] nos
+she [prn] (pronoun) illa
+we [prn] (pronoun) nos
 ourselves [prn] nos ipso
 ye [prn] vos
-you [prn] (plural) vos
+you (plural) [prn] (pronoun) vos
 yourselves (plural) [prn] vos
-they [prn] illos; illas; uno
+they [prn] (pronoun) ils; illos; illas; uno
 theirselves [prn] se
 one [prn] uno
 one's self [prn] se ipso
-it [prn] illo
+it [prn] (pronoun) illo
 its (reflexive) [prn] se
 either [prn] altero
 neither [prn] neutro
 
-my [pos] de me
-mine [pos] de me
-your [pos] de te
-yours [pos] de te
-his [pos] de il
-hers [pos] de il
-our [pos] de nos
-ours [pos] de nos
-your [pos] de vos
-yours [pos] de vos
-their [pos] de ils
+my [pos] (possessive) de me
+mine [pos] (possessive) de me
+your [pos] (possessive) de te
+yours [pos] (possessive) de te
+his [pos] (possessive) de il
+hers [pos] (possessive) de il
+our [pos] (possessive) de nos
+ours [pos] (possessive) de nos
+your [pos] (possessive) de vos
+yours [pos] (possessive) de vos
+their [pos] (possessive) de ils
 
-Sunday [n] soldie
-Monday [n] lunadie
-Tuesday [n] martedie
-Wednesday [n] mercuriodie
-Thursday [n] jovedie
-Friday [n] veneredie
-Saturday [n] sabbato; saturnodie
+Sunday [n] (dotw) soldie
+Monday [n] (dotw) lunadie
+Tuesday [n] (dotw) martedie
+Wednesday [n] (dotw) mercuriodie
+Thursday [n] (dotw) jovedie
+Friday [n] (dotw) veneredie
+Saturday [n] sabbato; (dotw) saturnodie
 
 January [n] (month) januario
 February [n] (month) februario 
@@ -2319,7 +2313,16 @@ logic machine [n] (as opposed to counting machine) ordinator
 computer [n] (Aristasian) ordinator
 static [n] nive
 noise [n] nive
-black [adj] atra; ater
+
+color [n] color
+black [adj] (color) atra; ater
+white [adj] (color) albo
+red [adj] (color) rubro
+green [adj] (color) viride
+blue [adj] (color) caeruleo
+yellow [adj] (color) citrino; flavo
+purple [adj] (color) purpur
+seagreen [adj] (color) glauco
 
 `
 

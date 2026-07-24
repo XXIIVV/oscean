@@ -1,8 +1,8 @@
 'use strict'
 
-let db = {en:{}, lo:{}, types: [], warnings: 0}
+let db = {en:{}, lo:{}, groups: {}, group:{}, types: [], warnings: 0}
 
-function make_lo_seg(word){
+function make_lo_seg(word) {
 	let res = []
 	let last = ""
 	let letters = word.split('')
@@ -76,8 +76,10 @@ dict.split('\n').forEach((value) => {
 		}
 		push_word("en", key, type, make_lo(v), note)
 		push_word("lo", make_lo(v), type, key, note)
-		if(!db.types[type])
-			db.types[type] = 0
+		if(!db.groups[note]) db.groups[note] = []
+		db.groups[note].push(make_lo(v))
+		db.group[key] = note
+		if(!db.types[type]) db.types[type] = 0
 		db.types[type]++
 	})
 })
@@ -123,6 +125,16 @@ function search_term(target) {
 		res += print_term(target, 'en', '<p>', '</p>')
 	if(db.lo[target])
 		res += print_term(target, 'lo', '<p>', '</p>')
+	// Group
+	if(db.en[target] && db.group[target]) {
+		let in_family = db.groups[db.group[target]]
+		res += `<p><i>${db.group[target]}</i>: `
+		in_family.forEach((key, id) => {
+			res += `<a href='#${key}'>${key}</a>`
+			res += id < in_family.length - 1 ? `, ` : `.`	
+		})
+		res += `</p>`
+	}
 	// English
 	let res_a = ""
 	en_keys.sort().forEach((k) => {
