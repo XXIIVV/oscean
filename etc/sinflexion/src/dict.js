@@ -56,7 +56,7 @@ alive [adj] vivo
 all [adj] toto
 almost [adv] paene; quasi
 alone [adj] solo
-alongside [] apud
+alongside [adj] apud
 already [adv] jam
 also [adv] etiam
 although [conj] etsi; quamvis
@@ -234,7 +234,7 @@ boot [n] calceo
 booth [n] umbra
 bore [n] (boredom) taedio; (weariness) taedio
 born [adj] nato
-be born again [] renasce
+be born again [vt] renasce
 be born [vi] nasce
 borough [n] pago
 borrow [vt] mutua
@@ -258,7 +258,7 @@ breeches [n] braca
 brick [n] later
 bridge [n] ponte
 bring [vt] apporta
-bring about [] effice
+bring about [vt] effice
 broad [adj] lato
 brood [vt] (brood upon) fove
 broth [n] jusculo
@@ -294,7 +294,7 @@ by [prep] (by thistime ) jam
 cabinet [n] armario
 cake [n] libo
 call [vt] voca
-call out [] clama
+call out [vt] clama
 can [vt] pote
 cancel [vt] tolle
 cane [n] baculo
@@ -312,7 +312,7 @@ carpet [n] tapete
 carriage [n] vehiculo
 carry [vt] fer
 carry [vt] (by vehicle) vehe
-carry out [] effice
+carry out [vt] effice
 cascade [n] cataracta
 cast [vt] (form) funde
 cat [n] fele
@@ -331,13 +331,14 @@ century [n] seculo
 certain [adj] (sure) certo
 to be sure! [] certo!
 to a certain extent [] aliquanto
-certainly (assuredly) [adv] certo; vero
+certainly [adv] certo; vero
+assuredly [adv] certo; vero
 cerulean [adj] caeruleo
 chair [n] cathedra
 chalk [n] creta; gypso
 chance [n] (by chance) per casu
 change [vt] (substitute one thing for another) cambia
-change [] (transform) muta
+change [vt] (transform) muta
 chapter [n] (book) capitulo
 charm [vt] delecta
 chase [n] venatione
@@ -397,7 +398,7 @@ cold [n] frigore
 collect [vt] collige
 comb [vt] pecte
 come [vi] veni
-come back [] redi; reveni
+come back [vt] redi; reveni
 comfort [n] (consolation) solacio
 comma [n] virgula
 command [vt] impera
@@ -492,7 +493,7 @@ cushion [n] pulvino
 custodian [n] custode
 custom [adj] (customary) usitato
 cut [vt] caede; incide; seca
-cut [] (off, through) praescinde
+cut [vt] (off, through) praescinde
 cutter (boat) [n] phaselo
 cut [adj] inciso
 cutlet [n] costeletta
@@ -554,7 +555,7 @@ dismal [adj] moesto
 dispatch [vt] expedi
 displace [vt] amove
 display [vt] (exhibit) expone
-display [] (show) monstra
+display [vt] (show) monstra
 disseminate [vt] semina
 dissolve [adj] (dissolved) soluto
 distant [adj] distante
@@ -563,8 +564,8 @@ ditch [n] fossa
 diurnal [adj] diurnale
 diverse [adj] diverso
 do [vt] fac
-did [] e; in praeterito
-I did write [] e scribe
+did [vt] e; in praeterito
+I did write [vt] e scribe
 doctor [n] medico
 dog [n] cane
 domain [n] imperio; regno
@@ -610,12 +611,12 @@ east [n] est
 eat [vt] ede; manduca
 eel [n] anguilla
 effect [vt] effice
-effectuate [] effice
+effectuate [vt] effice
 effort [n] conatu
 eight [card] octo
-eighty [] octoginta
+eighty [card] octoginta
 eighth [ord] octavo
-eightieth [] octogesimo
+eightieth [card] octogesimo
 either [conj] (indifferent) vel...vel
 either ... or [] aut...aut
 either [prn] altero
@@ -655,7 +656,7 @@ enough [adj] (be enough) suppedito
 enough [adv] satis
 enter [vt] intra
 entertain [vt] epula
-entertain [] (amuse) delecta
+entertain [vt] (amuse) delecta
 entire [adj] toto
 entirely [adv] toto
 entity [n] ente
@@ -700,7 +701,7 @@ exhibit [vt] expone
 expect [vt] expecta
 expedient [n] (to be expedient) expedi
 expose [vt] (set in public view) expone
-expose [] (uncover, reveal) expone
+expose [vt] (uncover, reveal) expone
 express [vt] exprime
 exterior [n] extero
 exterior [adj] extraneo
@@ -730,7 +731,7 @@ feather [n] pluma
 feature [vt] praesenta
 fee [n] imposito
 feed [vt] nutri
-feed [] (give food, or provide in manner of food) ale
+feed [vt] (give food, or provide in manner of food) ale
 feed [n] nutrimento
 feel [vt] senti
 feign [adj] (feigned) ficto
@@ -762,9 +763,9 @@ fish [n] pisce
 fish [vt] pisca
 fissure [n] fissura
 five [card] quinque
-fifty [] quinquaginta
+fifty [card] quinquaginta
 fifth [ord] quinto
-fiftieth [] quinquagesimo
+fiftieth [card] quinquagesimo
 fix [vt] stabili
 flake [n] flocco
 flame [n] flamma
@@ -791,7 +792,7 @@ foolish [adj] stulto
 foot [n] pede
 for [prep] ob; pro
 force [vt] (by physical power) fortia
-force [] (coerce, compel) coacta; coge
+force [vt] (coerce, compel) coacta; coge
 force (mech, mil) [n] fortia
 force [n] (strength) fortia; vi
 fore [n] (forefather) progenitore
@@ -810,7 +811,7 @@ four [card] quatuor
 forty [] quadraginta
 four by four [] quatuor per quatuor
 fortieth [ord] quadragesimo
-fourth [] quarto
+fourth [card] quarto
 fourth [fract] uno quarto
 fox [n] vulpe
 frame [n] (body) corpore
@@ -848,12 +849,12 @@ genus [n] genere
 germ [n] germine
 get [vt] percipe
 get to (be able to) [] pote
-get [] (reach) attinge
+get [vt] (reach) attinge
 girl [n] puella
 girlhood [n] pueritia
 give [vt] da; praebe
-give back [] restitue
-give up [] cede
+give back [vt] restitue
+give up [vt] cede
 glad [adj] laeto
 gladness [n] laetitia
 gladden [vt] laetifica
@@ -862,11 +863,11 @@ glass [n] vitro
 glide [vi] labe
 glove [n] chirotheca
 go [vi] i; vade
-go (on foot) [] grade
-go back [] regrede
-go down [] descende
-go on [] dura
-go out [] exi
+go (on foot) [vt] grade
+go back [vt] regrede
+go down [vt] descende
+go on [vt] dura
+go out [vt] exi
 goat [n] capra
 god [n] deo
 godly (pious) [] pio
@@ -1074,10 +1075,10 @@ iron [n] ferro
 island [n] insula
 it [prn] illo
 its [pos] suo
-its (reflexive) [] se
+its (reflexive) [prn] se
 janitor [n] famulo
 Japan [n] Nippon
-Japanese [] nipponense
+Japanese [adj] nipponense
 Japanese [adj] nipponico
 jealous [adj] zelotypo
 jest [vi] lude
@@ -1125,12 +1126,12 @@ lane [n] via
 language [n] lingua
 lap [vt] (drink) linge
 large [adj] magno
-larger [] majore
+larger [adj] majore
 last [vi] dura
 last (most recent) [adj] ultimo
 at last [] denique; in fine
 late [adj] (behindhand) sero; tardo
-to be late [] tarda
+to be late [adj] tarda
 lately [adv] nuper
 laugh [vi] ride
 laughter [n] risu
@@ -1145,7 +1146,7 @@ lead [n] plumbo
 leaf [n] folio
 leak [vi] (fluid) flue
 learn [vt] (by study) disce
-to learn by heart [] edisce
+to learn by heart [vt] edisce
 learned [adj] docto; erudito; sapiente
 leather [n] corio
 leave [vt] linque; relinque
@@ -1165,7 +1166,7 @@ lift [vt] eleva; subleva; tolle
 light [n] luce; lumine
 light [vt] accende; illumina
 light (weight) [adj] leve
-lighted [] accenso
+lighted [adj] accenso
 like [vt] ama
 lime [n] calce
 linen [n] lino
@@ -1189,7 +1190,7 @@ lost [adj] (to be lost, perish) peri
 love [vt] (feel deep affection for) ama
 love [n] amore
 low [adj] basso; humile
-lower [] inferiore
+lower [adj] inferiore
 lucre [n] lucro
 luggage [n] sarcina
 lunch [n] secundo prandio
@@ -1324,7 +1325,7 @@ next [adj] (next to) juxta
 niece [n] nepote
 night [n] nocte
 nine [card] novem
-ninety [] nonaginta
+ninety [card] nonaginta
 ninetieth [ord] nonagesimo
 ninth nono no [inter] minimo; non; nullo modo
 no one [cor] nemine
@@ -1378,7 +1379,7 @@ once [adv] olim; semel; uno vice
 at once [] mox; statim; subito
 once upon a time [] olim
 one [card] uno
-one by one [] singulo; uno per uno
+one by one [card] singulo; uno per uno
 one [prn] uno
 one's self [] se ipso
 only [adv] (not only...but also) non solo...sed etiam
@@ -1557,7 +1558,7 @@ push on [vi] progrede
 put [vt] pone; (put in order) ordina
 put [adj] posito
 quadruple [adj] quadruplo
-quadruplicate [] quadruplo
+quadruplicate [card] quadruplo
 quash [vt] quassa
 queen [n] regina
 querry [vt] quaere
@@ -1656,7 +1657,7 @@ return thanks [vt] agere gratias
 return [n] reversione
 returns [n] reddito
 returned (given back) [adj] reddito
-return (gone back) [] reduce
+return (gone back) [vt] reduce
 reunion [n] reunione
 review [vt] revide
 revise [vt] revide
@@ -1757,9 +1758,9 @@ serve [vt] servi
 set [vt] (set up) erige
 settle [vt] stabili
 seven [card] septem
-seventy [] septuaginta
+seventy [card] septuaginta
 seventh [ord] septimo
-seventieth [] septuagesimo
+seventieth [card] septuagesimo
 several [adj] (indef amount) aliquanto
 several [] (more than one) nonnullo; plure
 sew [n] (sewing) sutura
@@ -1786,7 +1787,7 @@ shoemaker [n] sutore
 shop [n] negotio
 shore [n] litore
 short [adj] (brief) breve
-short [] (length) curto
+short [adj] (length) curto
 shoulder [n] humero
 shoulder blade [n] scapula
 shovel [n] pala
@@ -1816,13 +1817,13 @@ single [adj] singulo
 sole [] solo
 sister [n] sorore
 sit [vi] sede
-sit down [] conside
+sit down [vt] conside
 sitting [adj] sedente
 situate [adj] (situated) posito
 six [card] sex
-sixty [] sexaginta
+sixty [card] sexaginta
 sixth [ord] sexto
-sixtieth [] sexagesimo
+sixtieth [card] sexagesimo
 sketch [n] designo
 skin [n] pelle
 skirt [n] lacinia; talaria
@@ -1970,7 +1971,7 @@ tablecloth [n] mantele; mappa
 tadpole [n] ranunculo
 tailor [n] sartore
 take [vt] prehende
-take off [] (clothes) devesti
+take off [vt] (clothes) devesti
 talent [n] ingenio
 talk [vt] (talk over) discute
 tall [adj] alto
@@ -2007,7 +2008,7 @@ there [cor] eo; ibi
 therefore [] ergo; itaque
 thesaurus [n] thesauro
 they [prn] illos; uno
-they [] (female) illas
+they [prn] (female) illas
 thick [adj] spisso
 thick [adj] (large depth) crasso
 thin [adj] (thin and long) tenue
@@ -2030,7 +2031,7 @@ thousandth [ord] millesimo
 thread [n] filo
 threaten [adj] (threatening) minace
 three [card] tres
-three by three [] tres per tres; trino
+three by three [card] tres per tres; trino
 threshold [n] limine
 thrice [adv] ter; tres vice
 thrill [vt] incende

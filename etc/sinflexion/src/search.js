@@ -71,7 +71,8 @@ dict.split('\n').forEach((value) => {
 	})
 })
 
-console.log(`${warnings} warnings.`)
+if(warnings > 0)
+	console.log(`${warnings} warnings.`)
 
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)
