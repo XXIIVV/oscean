@@ -34,17 +34,16 @@ function make_lo(word) {
 	return res.trim()
 }
 
-function make_def(type, val, note) {
-	let res = ""
-	if(type != "_") res += `[${type}] `
-	res += val
+function make_def(val, note) {
+	let res = val
 	if(note) res += ` (${note})`
 	return res
 }
 
 function push_word(dict, key, type, val, note) {
-	if(!db[dict][key]) db[dict][key] = []
-	db[dict][key].push(make_def(type, val, note))
+	if(!db[dict][key]) db[dict][key] = {}
+	if(!db[dict][key][type]) db[dict][key][type] = []
+	db[dict][key][type].push(make_def(val, note))
 }
 
 let warnings = 0
@@ -92,16 +91,17 @@ function is_vowel(letter) {
 	return letter == 'a' || letter == 'e' || letter == 'i' || letter == 'o' || letter == 'u'
 }
 
-function print_latin(t) {
+function print_term(t, lang) {
 	let res = ""
-	db.lo[t].forEach((k) => { 
-		res += `<li><b>${make_lo(t)}</b>: ${k}</li>` })
-	return res
-}
-function print_english(t) {
-	let res = ""
-	db.en[t].forEach((k) => { 
-		res += `<li><b>${t}</b>: ${k}</li>` })
+	Object.keys(db[lang][t]).forEach((k) => { 
+		res += `<li><b>${t}</b>[${k}]: `
+		db[lang][t][k].forEach((v, id) => {
+			res += `${v}`
+			if(id < db[lang][t][k].length -1)
+				res += `, `
+		})
+		res += `</li>` 
+	})
 	return res
 }
 
@@ -122,19 +122,19 @@ function search_term(target) {
 	// English
 	let res_a = ""
 	if(db.en[target])
-		res_a += print_english(target)
+		res_a += print_term(target, 'en')
 	en_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target) 
-			res_a += print_english(k) })
+			res_a += print_term(k, 'en') })
 	if(res_a !== "")
 		res += `<li><i>Angl/Latin</i></li><ul>${res_a}</ul>`
 	// Latin
 	let res_b = ""
 	if(db.lo[target])
-		res_b += print_latin(target)
+		res_b += print_term(target, 'lo')
 	lo_keys.forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target)
-			res_b += print_latin(k) })
+			res_b += print_term(k, 'lo') })
 	if(res_b !== "")
 		res += `<li><i>Lø/Angl</i></li><ul>${res_b}</ul>`
 		
