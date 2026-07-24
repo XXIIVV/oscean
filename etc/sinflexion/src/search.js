@@ -120,6 +120,11 @@ function dump() {
 function search_term(target) {
 	if(target == "__dump") return dump()
 	let res = ""
+	// Perfect matches
+	if(db.en[target])
+		res += print_term(target, 'en') + '<br />'
+	if(db.lo[target])
+		res += print_term(target, 'lo') + '<br />'
 	// English
 	let res_a = ""
 	if(db.en[target])
@@ -138,7 +143,6 @@ function search_term(target) {
 			res_b += print_term(k, 'lo') })
 	if(res_b !== "")
 		res += `<li><i>Lø/Angl</i></li><ul>${res_b}</ul>`
-		
 	if(!res)
 		res += `<p>Il es <b>nul respons</b> pro quaer "${target}", tent un alter verb.</p>`
 	res += '<br />'
