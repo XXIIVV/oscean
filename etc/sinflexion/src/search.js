@@ -1,6 +1,6 @@
 'use strict'
 
-let db = {en:{}, lo:{}}
+let db = {en:{}, lo:{}, types: [], warnings: 0}
 
 function make_lo_seg(word){
 	let res = []
@@ -46,8 +46,6 @@ function push_word(dict, key, type, val, note) {
 	db[dict][key][type].push(make_def(val, note))
 }
 
-let warnings = 0
-
 dict.split('\n').forEach((value) => {
 	if(!value) return
 	let seg = value.split('[')
@@ -57,7 +55,7 @@ dict.split('\n').forEach((value) => {
 	let vals = res[1].split(';')
 	if(!type) { 
 		console.warn(`Missing type: ${res[1]}, ${key}.`)
-		warnings++, type = '_'
+		db.warnings++, type = '_'
 	}
 	vals.forEach((val) => {
 		let v = val.trim()
@@ -68,16 +66,18 @@ dict.split('\n').forEach((value) => {
 		}
 		push_word("en", key, type, make_lo(v), note)
 		push_word("lo", make_lo(v), type, key, note)
+		if(!db.types[type])
+			db.types[type] = 0
+		db.types[type]++
 	})
 })
 
-if(warnings > 0)
-	console.log(`${warnings} warnings.`)
+console.log(`${db.warnings} warnings.`)
 
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)
 
-document.getElementById("info").innerHTML = `${en_keys.length + lo_keys.length} traductions`
+document.getElementById("info").innerHTML = `${en_keys.length + lo_keys.length} vocabul`
 
 function print_entry(a,b,c) {
 	let res = ""
@@ -106,19 +106,7 @@ function print_term(t, lang, a, b) {
 	return res
 }
 
-function dump() {
-	let res = ""
-	lo_keys.sort().forEach((key) => {
-		let lo = make_lo(key)
-		res += lo != key ? `${lo}, ${key}\n` : `${lo}\n`
-		db.lo[key].sort().forEach((val) => {
-			res += `	${val}\n` })
-	})
-	console.log(res)
-}
-
 function search_term(target) {
-	if(target == "__dump") return dump()
 	let res = ""
 	// Perfect matches
 	if(db.en[target])
@@ -127,21 +115,20 @@ function search_term(target) {
 		res += print_term(target, 'lo', '<p>', '</p>')
 	// English
 	let res_a = ""
-	en_keys.forEach((k) => {
+	en_keys.sort().forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target) 
 			res_a += print_term(k, 'en', '<li>', '</li>') })
 	if(res_a !== "")
 		res += `<p><i>Angl/Latin</i></p><ul>${res_a}</ul>`
 	// Latin
 	let res_b = ""
-	lo_keys.forEach((k) => {
+	lo_keys.sort().forEach((k) => {
 		if(k.indexOf(target) >= 0 && k != target)
 			res_b += print_term(k, 'lo', '<li>', '</li>') })
 	if(res_b !== "")
 		res += `<p><i>Lø/Angl</i></p><ul>${res_b}</ul>`
 	if(!res)
-		res += `<p>Il es <b>nul respons</b> pro quaer "${target}", tent un alter verb.</p>`
-	res += '<br />'
+		res += `<p>Il es <b>nul respons</b> pro quaer "${target}", tent un alter vocabul.</p>`
 	document.getElementById("result").innerHTML += res
 }
 

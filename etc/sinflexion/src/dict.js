@@ -19,7 +19,7 @@ accordingly [adv] ergo
 according to [prep] juxta; secundo; secundum
 accost [vt] appropinqua
 account [n] computo
-on account of [] ergo; propter
+on account of [prep] ergo; propter
 ache [n] dolore
 achieve [vt] comple
 achievement [n] opera
@@ -46,7 +46,7 @@ against [adj] adverso
 age [n] (old age) senectute
 aged [adj] sena
 agree [adj] (agreeable) amoeno; grato
-be agreeable [] place
+be agreeable [vt] place
 air [n] (airship) aeronave
 alarm [vt] turba
 alas [inter] eheu!; heu!
@@ -92,11 +92,11 @@ arrears [n] arretrato
 arrive [vi] adveni; perveni
 arrival [n] adventu
 as [cor] quale; sicut
-as far as [] (distance) usque
-as if [] quasi
-as long as [] dum
-as...as [] tanto...quanto; tanto...quanto tam...quam
-as...so [] ut...ita
+as far as [prep] (distance) usque
+as if [prep] quasi
+as long as [prep] dum
+as...as [conj] tanto...quanto; tanto...quanto tam...quam
+as...so [conj] ut...ita
 ash [adj] (ashy) cinereo
 ask [vt] interroga; quaere
 ask for [vt] roga
@@ -158,7 +158,7 @@ being [n] (entity) ente
 beak [n] becco; rostro
 bean [n] faba
 bear [n] (zoo) urso
-bearing [] vultu
+bearing [n] vultu
 beard [n] barba
 beast [n] bestia
 beat [vt] (defeat) vince
@@ -174,9 +174,9 @@ bee [n] ape
 beech [n] fago
 beer [n] cervisia
 before [prep] (place) coram; prae
-before [] (time) ante
+before [prep] (time) ante
 before now [adv] jam
-before then [] jam
+before then [prep] jam
 beg [vt] pete
 begin [vt] incipe; ingrede
 beginning [n] principio
@@ -192,16 +192,16 @@ bend [vt] flecte
 benefit [n] lucro
 benign [adj] benigno
 beside [prep] vicino
-besides [] ultra
+besides [prep] ultra
 best [adj] optimo
 better [adj] meliore; potius
 between [prep] inter
-to be between [] interes
+to be between [prep] interes
 beverage [n] bibita
 beyond [prep] (after) post
-beyond [] (besides) ultra
-beyond [] (farther) praeter
-beyond [] (on the other side of) trans
+beyond [prep] (besides) ultra
+beyond [prep] (farther) praeter
+beyond [prep] (on the other side of) trans
 bias [vt] propende
 big [adj] crasso
 bill [n] factura
@@ -239,7 +239,7 @@ be born [vi] nasce
 borough [n] pago
 borrow [vt] mutua
 both [adv] ambo
-both...and [] et...et
+both...and [conj] et...et
 bottle [n] phiala
 box [n] capsula
 boy [n] (boyhood) pueritia
@@ -277,7 +277,7 @@ business [n] (any matter or concern) opera
 business [n] (commerce) negotio
 bust [n] (chest) pectore
 but [conj] ceterum; sed; vero
-but [] (unless) nisi; si ne
+but [conj] (unless) nisi; si ne
 butcher [vt] trucida
 buy [vt] eme
 by [prep] (authorship) ab
@@ -329,8 +329,8 @@ cell [n] cella
 cellar [n] cella
 century [n] seculo
 certain [adj] (sure) certo
-to be sure! [] certo!
-to a certain extent [] aliquanto
+to be sure! [exp] certo!
+to a certain extent [conj] aliquanto
 certainly [adv] certo; vero
 assuredly [adv] certo; vero
 cerulean [adj] caeruleo
@@ -456,7 +456,7 @@ country [n] rure
 couple [n] paria
 course [n] (of dinner) ferculo
 course [n] (racing) cursu
-of course [] certo
+of course [exp] certo
 courteous [adj] benigno; gentile
 cousin [n] consobrino
 cover [vt] cooperi; tege
@@ -613,22 +613,15 @@ eel [n] anguilla
 effect [vt] effice
 effectuate [vt] effice
 effort [n] conatu
-eight [card] octo
-eighty [card] octoginta
-eighth [ord] octavo
-eightieth [card] octogesimo
 either [conj] (indifferent) vel...vel
-either ... or [] aut...aut
+either ... or [conj] aut...aut
 either [prn] altero
-both of two [] utroque
+both of two [conj] utroque
 elapse [vi] flue; labe
 elbow [n] cubito
 elevate [vt] eleva
 elevator [n] ascensore
-eleven [card] decem uno
-eleventh [ord] decimo primo
 else [adv] alio
-elsewhere [cor] alibi
 embarrass [vt] impedi
 embrace [vt] amplecte
 embroider [n] (embroidery) pictura per acu
@@ -680,13 +673,13 @@ especial [adv] (especially) maximo; praecipue; praesertim
 establish [vt] stabili
 estate [n] loco
 even [adv] etiam
-even if [] etsi
+even if [adv] etsi
 evening [n] vespere
 eventual [adv] (in the end) in fine
 ever [adv] (always) semper
 every [cor] omne
-everyone [] omne
-everywhere [] passim
+everyone [cor] omne
+everywhere [cor] passim
 evil [adj] male
 evil [n] male
 evolve [adj] (evolved) evoluto
@@ -742,7 +735,7 @@ ferule [n] virga
 fetter [vt] impedi
 fever [n] febri
 few [adj] pauco
-a few [] aliquanto
+a few [adj] aliquanto
 field [n] agro
 fight [vt] lucta
 fight [vt] (fight against) opugna
@@ -758,14 +751,9 @@ fire [n] foco; igne; pyro
 fireplace [n] camino
 fire (ignite) [vt] incende
 firm [n] (business) fabrica
-first [ord] (at first) primo
 fish [n] pisce
 fish [vt] pisca
 fissure [n] fissura
-five [card] quinque
-fifty [card] quinquaginta
-fifth [ord] quinto
-fiftieth [card] quinquagesimo
 fix [vt] stabili
 flake [n] flocco
 flame [n] flamma
@@ -785,7 +773,7 @@ foam [vi] spuma
 follow [vt] fave; seque
 follower [n] fautore
 followed [adj] secuto
-following [] sequente
+following [vt] sequente
 food [n] alimento; cibo; nutrimento
 fool [n] stulto
 foolish [adj] stulto
@@ -807,12 +795,6 @@ form [n] modo
 former [adj] priore
 formerly [adv] olim
 found [vt] funda
-four [card] quatuor
-forty [] quadraginta
-four by four [] quatuor per quatuor
-fortieth [ord] quadragesimo
-fourth [card] quarto
-fourth [fract] uno quarto
 fox [n] vulpe
 frame [n] (body) corpore
 France [n] (Frenchman) Franco
@@ -848,7 +830,7 @@ gentle [adj] gentile; lene
 genus [n] genere
 germ [n] germine
 get [vt] percipe
-get to (be able to) [] pote
+get to (be able to) [adv] pote
 get [vt] (reach) attinge
 girl [n] puella
 girlhood [n] pueritia
@@ -870,10 +852,10 @@ go on [vt] dura
 go out [vt] exi
 goat [n] capra
 god [n] deo
-godly (pious) [] pio
+godly (pious) [adj] pio
 gold [n] auro
 good [adj] bono
-good (morally) [] benigno
+good (morally) [adj] benigno
 goodness [n] bonitate
 goods [n] merce
 goose [n] ansere
@@ -889,7 +871,7 @@ grave [adj] (serious, weighty, not trifling) grave
 grave [n] fossa
 gravy [n] suco
 great [adj] magno
-greater [] majore; superiore
+greater [adj] majore; superiore
 greatly [adv] valde
 green [adj] viride
 greet [vt] saluta
@@ -905,11 +887,10 @@ habit [n] (clothes) habitu
 habitual [adj] usitato
 habituate [vt] assuefac
 hair [n] capillo; pilo
-half [fract] dimidio
 hall [n] aula
 hand [n] manu
 hand (of a watch) [n] indice
-on the other hand [] ceterum
+on the other hand [exp] ceterum
 hand over [vt] trade
 handiwork [n] opera
 handkerchief [n] sudario
@@ -932,11 +913,11 @@ hat [n] cappa; pileo
 hatter [n] cappario
 hate [vt] odio
 have [vt] habe
-have on, be wearing [] gere; vesti
+have on, be wearing [vt] gere; vesti
 hawk [vt] (peddle) circumfer
 hazard [n] periculo
 he [prn] illo
-he who [] illo
+he who [prn] illo
 himself [prn] se
 head [n] capite
 heal [vt] cura
@@ -960,7 +941,7 @@ helpless [adj] inope; misero
 hemp [n] cannabe
 hen [n] gallina
 hence [adv] ergo; hinc; inde
-henceforth [] post
+henceforth [conj] post
 her [prn] illa; illo
 herself [prn] se
 her [pos] suo
@@ -969,7 +950,7 @@ here [cor] hac; hic
 here is/here are [inter] ecce
 hide [vt] occulta
 high [adj] alto
-higher [] supero
+higher [adj] supero
 hinder [vt] obsta
 hint [vt] indica; suggere
 his [pos] suo
@@ -989,19 +970,17 @@ host [n] hospite
 hot [adj] calido
 hour [n] hora
 house [n] domo
-in the house of [] apud
+in the house of [exp] apud
 how [cor] quomodo
-how many [] quot
-how many times? [] quotiens?
-how much [] quanto
+how many [cor] quot
+how many times? [cor] quotiens?
+how much [cor] quanto
 however [adv] sed; tamen
 hug [vt] amplecte
 hulk [n] scapha
 hull [n] scapha
 human [n] homine
 humble [adj] humile
-hundred [card] centum
-hundredth [ord] centesimo
 hunt [n] venatione
 hurrah [inter] io!
 hurricane [n] huracano
@@ -1012,7 +991,7 @@ I [prn] me
 ice [n] glacie
 idle [n] (idleness) otio
 if [conj] si
-if not [] si non
+if not [exp] si non
 ill [adj] infirmo
 illness [n] infirmitate
 ill-omened [adj] infausto
@@ -1048,7 +1027,7 @@ ingot [n] lingot
 inherit [n] (inheritor) herede
 inject [adj] (injected) iminisso
 injure [adj] (injured) laeso
-injurious [] damnoso
+injurious [adj] damnoso
 ink [n] atramento
 inkstand [n] atramentario
 inodorous [adj] inodoro
@@ -1129,7 +1108,7 @@ large [adj] magno
 larger [adj] majore
 last [vi] dura
 last (most recent) [adj] ultimo
-at last [] denique; in fine
+at last [exp] denique; in fine
 late [adj] (behindhand) sero; tardo
 to be late [adj] tarda
 lately [adv] nuper
@@ -1151,11 +1130,11 @@ learned [adj] docto; erudito; sapiente
 leather [n] corio
 leave [vt] linque; relinque
 left [adj] sinistro
-at the left [] laeva; sinistro
+at the left [prep] laeva; sinistro
 leg [n] crure
 lenient [adj] lene
 less [adv] minus
-less...than [] minus...quam
+less...than [conj] minus...quam
 lesson [n] lectione
 letter [n] (correspondence) epistola
 library [n] bibliotheca
@@ -1228,8 +1207,8 @@ matter [n] pure
 mattress [n] culcita
 mature [vi] matura
 may [vt] (can) pote
-may [] (have right to, be permitted)  lice ad uno
-may [] (perhaps, maybe) forsan
+may [exp] (have right to, be permitted)  lice ad uno
+may [adv] (perhaps, maybe) forsan
 may [n] (month) majo
 mayor [n] majore
 me [prn] me
@@ -1253,8 +1232,6 @@ might [n] vi
 mild [adj] (medicines, diseases) benigno
 mile [n] millia
 milk [n] lacte
-million [card] millione
-millionth [ord] millionesimo
 mind [n] mente
 mine [n] fodina
 mine [pos] de me
@@ -1275,8 +1252,8 @@ mood [n] modo
 moon [n] luna
 new moon [n] novilunio
 more [adv] magis; plus
-more...than [] plus...quam
-moreover [] praeterea
+more...than [conj] plus...quam
+moreover [conj] praeterea
 morning [n] auror
 most [adv] maximo
 mother [n] matre
@@ -1286,8 +1263,8 @@ move [n] (movable) mobile
 Mr. [n] (short for Mister) domino
 Mrs. [n] (short for Mistress) domina
 much [adv] multo
-not much [] pauco
-too much [] nimis
+not much [adv] pauco
+too much [adv] nimis
 much [adj] multo
 mud [n] limo
 mushroom [n] fungo
@@ -1324,15 +1301,12 @@ news [n] notitias
 next [adj] (next to) juxta
 niece [n] nepote
 night [n] nocte
-nine [card] novem
-ninety [card] nonaginta
-ninetieth [ord] nonagesimo
 ninth nono no [inter] minimo; non; nullo modo
 no one [cor] nemine
-no way [] in nullo modo
+no way [exp] in nullo modo
 nobody [n] nemine
-not one [] nullo
-nowhere [] nusquam
+not one [adv] nullo
+nowhere [adv] nusquam
 noise [n] rumore
 nominate [vt] nomina
 noon [n] meridie
@@ -1358,11 +1332,11 @@ occasion [n] (instance, circumstance, time) vice
 occur [vi] (happen) incide
 odor [adj] (odorless) inodoro
 of [prep] (agent, authorship) ab
-of [] (concerning) ab
-of [] (origin, derivation, starting point) de
-of [] (out of) ex
-of [] (possession) de
-of late [] nuper
+of [prep] (concerning) ab
+of [prep] (origin, derivation, starting point) de
+of [prep] (out of) ex
+of [prep] (possession) de
+of late [prep] nuper
 off [prep] ab
 offend [adj] (offended) offenso
 offer [vt] objice; praebe
@@ -1371,17 +1345,15 @@ offshoot [n] ramo
 often [adv] saepe
 oil [n] oleo
 old [adj] (former) priore
-old [] (not new, of long standing) vetere
-old [] (not young, having long existed) sena
-old [] (old age) senectute
+old [adj] (not new, of long standing) vetere
+old [adj] (not young, having long existed) sena
+old [adj] (old age) senectute
 on [prep] super
 once [adv] olim; semel; uno vice
-at once [] mox; statim; subito
-once upon a time [] olim
-one [card] uno
-one by one [card] singulo; uno per uno
+at once [adv] mox; statim; subito
+once upon a time [adv] olim
 one [prn] uno
-one's self [] se ipso
+one's self [prn] se ipso
 only [adv] (not only...but also) non solo...sed etiam
 open [vt] aperi
 open [adj] aperto
@@ -1389,7 +1361,7 @@ opera [n] opera
 operate [vt] (control the functioning of) opera
 operation [n] opere
 or [conj] aut
-or not? [] annon?
+or not? [conj] annon?
 orate [vi] ora
 oration [n] oratione
 order [vt] jube
@@ -1402,8 +1374,8 @@ our [pos] nostro
 ours [pos] de nos
 ourselves [prn] nos ipso
 out [prep] (get out!) apage!
-out of [] ex
-outside [] extra
+out of [prep] ex
+outside [prep] extra
 outside [adv] foris
 oven [n] caldario; furno
 over [prep] super
@@ -1475,7 +1447,7 @@ pitfall [n] fovea
 pity [n] misericordia
 pity [vt] compate
 pivot [vt] (change direction, facing) verte
-pity [] (on a connected axis) gyro
+pity [vt] (on a connected axis) gyro
 place [n] loco
 place [vt] pone
 placed [adj] sito
@@ -1557,8 +1529,6 @@ push [vt] pelle; preme
 push on [vi] progrede
 put [vt] pone; (put in order) ordina
 put [adj] posito
-quadruple [adj] quadruplo
-quadruplicate [card] quadruplo
 quash [vt] quassa
 queen [n] regina
 querry [vt] quaere
@@ -1577,7 +1547,7 @@ rain [vt] plue
 raise [vt] releva; subleva
 rate [n] rata
 rather [adv] potius
-rather [] (preference) magis
+rather [adv] (preference) magis
 ratio [n] ratione
 ravish [vt] rape
 raw [adj] crudo; rude
@@ -1667,7 +1637,7 @@ rich [adj] locupleto
 riches [n] divitia
 rid [adj] (to get rid of) exue
 right [adj] recto
-at the right [] dextero
+at the right [prep] dextero
 rind [n] cortice
 ring [n] anello; circulo
 ring [vi] sona
@@ -1735,7 +1705,6 @@ seagreen [adj] glauco
 seam [n] sutura
 season [n] (of year) satione
 seat [n] sedile
-second [ord] secundo
 secret [adv] (secretly) clam
 secure [adj] securo; tuto
 security [n] cautela
@@ -1757,12 +1726,8 @@ serum [n] sero
 serve [vt] servi
 set [vt] (set up) erige
 settle [vt] stabili
-seven [card] septem
-seventy [card] septuaginta
-seventh [ord] septimo
-seventieth [card] septuagesimo
 several [adj] (indef amount) aliquanto
-several [] (more than one) nonnullo; plure
+several [adj] (more than one) nonnullo; plure
 sew [n] (sewing) sutura
 shade [n] umbra
 shade [vt] umbra
@@ -1798,7 +1763,7 @@ shutter [n] obturatore
 sick [adj] aegro; infirmo
 sickness [n] infirmitate
 side [n] latere
-this side of [] cis
+this side of [n] cis
 sideboard [n] armario
 sight [n] visu
 sign [vt] indica
@@ -1814,16 +1779,12 @@ simultaneous [adj] (simultaneously) simul
 since [prep] deinde
 sing [vt] canta
 single [adj] singulo
-sole [] solo
+sole [adj] solo
 sister [n] sorore
 sit [vi] sede
 sit down [vt] conside
 sitting [adj] sedente
 situate [adj] (situated) posito
-six [card] sex
-sixty [card] sexaginta
-sixth [ord] sexto
-sixtieth [card] sexagesimo
 sketch [n] designo
 skin [n] pelle
 skirt [n] lacinia; talaria
@@ -1844,8 +1805,8 @@ snatch [vt] velle
 snow [n] nive
 snow [vi] ninge
 so [adv] ergo; ita; sic; tam
-not so [] non ita
-so much the [] tanto
+not so [adv] non ita
+so much the [adv] tanto
 soak [adj] (soaked) madido
 soap [n] sapone
 sock [n] socculo
@@ -1855,11 +1816,11 @@ soldier [n] milite
 sole [n] (zool) solea
 solve [adj] (solved) soluto
 some [cor] (unknown or unspecified by name) aliquo
-some [] (unspecified number or quantity) aliquanto
-some amount [] aliquanto; aliquot
-someone [] aliquo
-sometime [] aliquando; interdum
-somewhat [] aliquid
+some [cor] (unspecified number or quantity) aliquanto
+some amount [cor] aliquanto; aliquot
+someone [cor] aliquo
+sometime [cor] aliquando; interdum
+somewhat [cor] aliquid
 son [n] filio
 sorry [adj] dolente
 soul [n] anima
@@ -1929,7 +1890,7 @@ stuff [vt] (fill) farci
 stupid [adj] stulto
 style [n] stilo
 such [cor] tale
-such as [] quale
+such as [cor] quale
 suck [vt] suge
 sugar [n] saccharo
 suggest [vt] suggere
@@ -1985,8 +1946,6 @@ teach [vt] (educate) doce
 teacher [n] magistro
 tear [n] lacrima
 tempt [vt] tenta
-ten [card] decem
-tenth [fract] decimo
 tenant [n] (of a house) inquilio
 tense [n] tempore
 tent [n] tentorio
@@ -1996,8 +1955,8 @@ than [conj] quam
 thank [vt] agere gratias
 thanks [n] gratias
 that [cor] eo; illo
-that one [] illo
-that which [] illo
+that one [cor] illo
+that which [cor] illo
 that [conj] que
 their [pos] suo
 theirselves [prn] se
@@ -2005,7 +1964,7 @@ then [cor] interea; tunc
 then [adv] ita
 thence [adv] inde
 there [cor] eo; ibi
-therefore [] ergo; itaque
+therefore [cor] ergo; itaque
 thesaurus [n] thesauro
 they [prn] illos; uno
 they [prn] (female) illas
@@ -2014,24 +1973,14 @@ thick [adj] (large depth) crasso
 thin [adj] (thin and long) tenue
 thing [n] re
 think [vt] cogita; pensa; puta
-third [ord] tertio
-third [fract] uno tertio
 thirst [n] siti
-thirteen [card] decem tres
-thirteenth [ord] decimo tertio
-thirty [card] triginta
-thirtieth [ord] trigesimo
 this [cor] ce; hoc; isto
 thorax [n] thorace
 thorn [n] (thorny) spinoso
 thou [prn] te
 though [conj] etsi; quamvis
-thousand [card] mille
-thousandth [ord] millesimo
 thread [n] filo
 threaten [adj] (threatening) minace
-three [card] tres
-three by three [card] tres per tres; trino
 threshold [n] limine
 thrice [adv] ter; tres vice
 thrill [vt] incende
@@ -2049,15 +1998,15 @@ ticket [n] tessera
 tight [adj] angusto
 timber [n] ligno
 time [n] tempore; vice
-how many times? [] quotiens?
+how many times? [n] quotiens?
 time-table [n] horario
 to spend time [vt] dege
 tin [n] stanno
 tip [n] (donation) donation
 tire [adj] (tired) lasso
 to [prep] ad
-to [] (as far as) usque
-to [] (toward) verso
+to [prep] (as far as) usque
+to [prep] (toward) verso
 today [n] hodie
 toast [adj] (toasted) tosto
 today [adv] hodie
@@ -2103,16 +2052,10 @@ tunic [n] tunica
 turn [vt] (change direction, facing) verte
 turn (change) [vt] muta
 turn (on a connected axis) [vi] gyro
-twelve [card] decem duo
-twelfth [ord] decimo secundo
-twenty [card] viginti
-twentieth [ord] vigesimo
 twice [adv] bis; duo vice
 twig [n] virga
 twinkle [vi] mica
 twist [vt] torque
-two [card] duo
-two by two [] bino; duo per duo
 ugly [adj] turpe
 umbrella [n] umbella
 uncertain [adj] vago
@@ -2134,7 +2077,7 @@ until [prep] (as far as) usque
 unwieldy [adj] ponderoso
 up [prep] (get up) surge
 go up [vt] sali
-up to [] (until) donec
+up to [adv] (until) donec
 upholster [vt] farci; operi
 upholstered [adj] operto
 upper [adj] upper supero
@@ -2217,8 +2160,8 @@ where [cor] ubi
 whereat [conj] apud que
 whether [conj] an; utro?
 which [cor] quale; que
-which (of two) [] utro
-which (referring to entire previous clause) [] quod
+which (of two) [cor] utro
+which (referring to entire previous clause) [cor] quod
 while [adv] dum
 white [adj] albo
 who [cor] qui
@@ -2226,7 +2169,7 @@ whole [adj] (of one thing) toto
 wholly [adv] toto
 whom [cor] quem
 why [cor] quare; quid
-why not [] quin
+why not [cor] quin
 wide [adj] lato
 widow [n] viduo
 wife [n] marita; muliere; sponsa; uxore
@@ -2245,8 +2188,8 @@ winter [n] hieme
 wise [adj] sapiente
 wish [vt] vol
 with [prep] cum
-within [] intra
-without [] sine
+within [prep] intra
+without [prep] sine
 witness [n] teste
 woe [inter] vae!
 wolf [n] lupo
@@ -2284,9 +2227,9 @@ yellow [adj] citrino; flavo
 yes [inter] certo; etiam; ita; ita vero
 yesterday [adv] heri
 yet [adv] (already) jam
-yet [] (however) sed; tamen
-as yet [] adhuc
-not yet [] nondum
+yet [adv] (however) sed; tamen
+as yet [adv] adhuc
+not yet [adv] nondum
 yield [vt] (give way) cede
 yoke [n] (bondage) jugo
 yore [n] of yore olim
@@ -2297,6 +2240,66 @@ your [pos] (plural) vestro
 yours [pos] de vos
 yourselves (plural) [prn] vos
 youth [n] (person) juvene
+elsewhere [cor] alibi
+
+
+first [ord] (at first) primo
+one [card] uno
+one by one [card] singulo; uno per uno
+half [fract] dimidio
+two [card] duo
+two by two [card] bino; duo per duo
+second [ord] secundo
+twelve [card] decem duo
+twelfth [ord] decimo secundo
+twenty [card] viginti
+twentieth [ord] vigesimo
+third [ord] tertio
+third [fract] uno tertio
+three [card] tres
+three by three [card] tres per tres; trino
+thirteen [card] decem tres
+thirteenth [ord] decimo tertio
+thirty [card] triginta
+thirtieth [ord] trigesimo
+four [card] quatuor
+forty [card] quadraginta
+four by four [card] quatuor per quatuor
+fortieth [ord] quadragesimo
+fourth [card] quarto
+fourth [fract] uno quarto
+quadruplicate [card] quadruplo
+quadruple [adj] quadruplo
+five [card] quinque
+fifty [card] quinquaginta
+fifth [ord] quinto
+fiftieth [card] quinquagesimo
+six [card] sex
+sixty [card] sexaginta
+sixth [ord] sexto
+sixtieth [card] sexagesimo
+seven [card] septem
+seventy [card] septuaginta
+seventh [ord] septimo
+seventieth [card] septuagesimo
+eight [card] octo
+eighty [card] octoginta
+eightieth [card] octogesimo
+eighth [ord] octavo
+nine [card] novem
+ninety [card] nonaginta
+ninetieth [ord] nonagesimo
+ten [card] decem
+tenth [fract] decimo
+eleven [card] decem uno
+eleventh [ord] decimo primo
+hundred [card] centum
+hundredth [ord] centesimo
+thousand [card] mille
+thousandth [ord] millesimo
+million [card] millione
+millionth [ord] millionesimo
+
 
 tale [n] fabula
 story [n] fabula
@@ -2310,5 +2313,6 @@ computer [n] (Aristasian) ordinator
 static [n] nive
 noise [n] nive
 black [adj] atra; ater
+
 `
 
