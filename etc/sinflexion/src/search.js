@@ -47,6 +47,8 @@ function push_word(dict, key, type, val, note) {
 	db[dict][key].push(make_def(type, val, note))
 }
 
+let warnings = 0
+
 dict.split('\n').forEach((value) => {
 	if(!value) return
 	let seg = value.split('[')
@@ -54,7 +56,10 @@ dict.split('\n').forEach((value) => {
 	let res = seg[1].split(']')
 	let type = res[0].trim()
 	let vals = res[1].split(';')
-	if(!type) type = '_'
+	if(!type) { 
+		console.warn(`Missing type: ${res[1]}, ${key}.`)
+		warnings++, type = '_'
+	}
 	vals.forEach((val) => {
 		let v = val.trim()
 		let note = ""
@@ -66,6 +71,8 @@ dict.split('\n').forEach((value) => {
 		push_word("lo", v, type, key, note)
 	})
 })
+
+console.log(`${warnings} warnings.`)
 
 let en_keys = Object.keys(db.en)
 let lo_keys = Object.keys(db.lo)

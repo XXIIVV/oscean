@@ -29,6 +29,9 @@
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "23 20 "Jul 20 "2026 $2
 
+%u8/mod ( a b -- a%b ) {
+	DIVk MUL SUB }
+
 (
 @|src )
 
@@ -321,7 +324,7 @@
 @count-block ( str* -- length* )
 	[ LIT2r 0000 ]
 	&>w
-		LDAk [ LIT "] ] EQU ?/end
+		LDA2k [ LIT2 20 "] ] EQU2 ?/end
 		INC2r INC2 LDAk ?/>w &end POP2 STH2r JMP2r
 
 @count-lambda ( str* -- length* )
@@ -332,20 +335,12 @@
 		LDAk #20 NEQ ?{ INC2r }
 		INC2 LDAk ?/>w &end POP2 STH2r JMP2r
 
-@get-block-width ( len* -- and )
-	DUP2 #0002 EQU2 ?/byte
-	DUP2 #0004 EQU2 ?/short
-	DUP2 #000c GTH2 ?/long
-	POP2 #03 JMP2r
-	&byte POP2 #0f JMP2r
-	&short POP2 #07 JMP2r
-	&long POP2 #01 JMP2r
-
 (
 @|emitters )
 
 @<emit-block> ( str* -- str* )
-	DUP2 count-block #002a GTH2 ?<emit-long-block>
+	INC2k LDA chr/hex INCk ?<emit-counted-block>
+	POP DUP2 count-block #002a GTH2 ?<emit-long-block>
 	&>w
 		LDA2k [ LIT2 20 "] ] EQU2 ?{
 			LDAk <emit>
@@ -355,14 +350,16 @@
 	INC2 JMP2r
 
 @<emit-long-block> ( str* -- str* )
-	( get largest of two first chunks ) ( a ) INC2k wcap/ INC2 DUP2 wlen STH2
-	( b ) wcap/ INC2 wlen STH2r GTH2k [ JMP SWP2 POP2 ]
-	( res ) get-block-width ,&lb STR
+	#10
+	( >> )
+
+@<emit-counted-block> ( str* len -- str* )
+	,&lb STR
 	LIT2r 0000
 	&>w
 		LDAk <emit>
 		LDAk #20 NEQ ?{
-			STHkr [ LIT &lb $1 ] AND ?/no-spacer
+			STHkr [ LIT &lb $1 ] u8/mod ?/no-spacer
 			INC2k LDA [ LIT "] ] EQU ?/no-spacer
 			<emit-break-tab> &no-spacer INC2r }
 		LDAk #00 EQU ?/end
@@ -491,9 +488,6 @@
 @wcap ( w* -- cap* )
 	INC2 & LDAk #20 GTH ?wcap
 	JMP2r
-
-@wlen ( w* -- len* )
-	DUP2 wcap/ SWP2 SUB2 JMP2r
 
 (
 @|assets )
