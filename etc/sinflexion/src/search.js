@@ -122,9 +122,9 @@ function search_term(target) {
 	let res = ""
 	// Perfect matches
 	if(db.en[target])
-		res += print_term(target, 'en', '<p>', '</p>')
+		res += print_term(target, 'en', '<p>Angl: ', '</p>')
 	if(db.lo[target])
-		res += print_term(target, 'lo', '<p>', '</p>')
+		res += print_term(target, 'lo', '<p>Lø: ', '</p>')
 	// Group
 	if(db.en[target] && db.group[target]) {
 		let in_family = db.groups[db.group[target]]
