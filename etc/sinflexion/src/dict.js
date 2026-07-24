@@ -312,7 +312,7 @@ carry [vt] (by vehicle) vehe
 carry out [vt] effice
 cascade [n] cataracta
 cast [vt] (form) funde
-cat [n] fele
+cat [n] fele; cat
 cataract [n] cataracta
 catch [vt] rape
 caught [adj] capto
@@ -1862,7 +1862,7 @@ sugar [n] saccharo
 suggest [vt] suggere
 summer [n] aestate
 summit [n] vertice
-sun [n] sol
+sun [n] sol; solis
 sunflower [n] heliantho
 super [adj] supra
 superior [adj] superiore
@@ -2313,6 +2313,78 @@ logic machine [n] (as opposed to counting machine) ordinator
 computer [n] (Aristasian) ordinator
 static [n] nive
 noise [n] nive
+deep sleep [n] sopor
+tree [n] arbor
+carmen [n] song; poem
+contemplation [n] contemplatio; survey
+horn [n] cornu
+drunkenness [n] crapula
+creator [n] creator
+creature [n] creatura
+create [vt] creo
+grace [n] decor
+pain [n] dolor
+boil [vt] effervo
+overflow [n] eluvies
+slender [adj] exilis
+expect [vt] exspecto
+external [adj] externus
+easy [adj] facile
+window [n] fenestra
+flame [n] flamma
+river [n] flumen
+helmet [n] galea
+cheerful [adj] hilaris
+hour [n] hora
+hypocrite [n] hypocrita
+immediately [adv] ilico
+immortal [adj] immortal
+scold [vt] increpare
+infertile [adj] infelix
+below [adj] inferne
+to infer [vt] infero
+whole [adj] integer
+to joke [vt] iocor
+joke [n] ioco
+wrath [n] ira
+help [vt] iuvo
+witch [n] lamia
+ghosts [n] lemures
+lentil [n] lentis; lens
+rabbit [n] lepus
+wolf [n] lupus
+delay [n] mora
+soon [adj] mox
+navigation [n] navigatio
+sail [vt] navigo
+ship [n] navis
+to kill [vt] neco
+nobody [n] nemo
+vapor [n] nidor
+unless [conj] nisi
+snowy [adj] niveus
+night [n] nox
+secretly [adj] occulto
+hatred [n] odium
+leisure [n] otium
+disturb [vt] perturbo
+rain [n] pluvia
+poem [n] poema
+bridge [n] pons; pontis
+arrest [vt] prehendo
+battle [n] proelium
+long [adj] prolix
+queen [n] regina
+king [n] rex
+rumor [n] rumor
+a single time [prep] semel
+grave [n] sepulchrum
+buried [adj] seputus
+seriously [adj] serius
+city [n] urbs; urbis
+empty [adj] vacuus
+awning [n] velum
+old [adj] vetus
 
 color [n] color
 black [adj] (color) atra; ater
