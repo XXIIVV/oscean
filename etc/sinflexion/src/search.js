@@ -66,8 +66,8 @@ dict.split('\n').forEach((value) => {
 			note = v.split('(')[1].split(')')[0]
 			v = v.replace(`(${note})`, '').trim()
 		}
-		push_word("en", key, type, v, note)
-		push_word("lo", v, type, key, note)
+		push_word("en", key, type, make_lo(v), note)
+		push_word("lo", make_lo(v), type, key, note)
 	})
 })
 
