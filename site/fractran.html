@@ -18,8 +18,8 @@
 <nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="rewriting.html" class="parent">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="fractran.html" class="self">fractran</a></li><li><a href="thue.html">thue</a></li><li><a href="vera.html">vera</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="modal.html">modal</a></li></ul><ul><li><a href="fractran_devlog.html">fractran devlog</a></li></ul></nav>
 <main><h2>Fractran is a computer architecture based on the multiplication of fractions.</h2>
 
-<p>A <b>prime</b> is a number that can only be divided by itself one, since these
-numbers can't be divided, they can considered the DNA of other numbers. The
+<p>A <b>prime</b> is a number that can only be divided by itself and one, since these
+numbers can't be divided, they can considered the atoms of other numbers. The
 factoring of a number into <a href='primes.html'>prime numbers</a>, for
 example: 18 = 2 × 3<sup>2</sup>(r2 = 1, r3 = 2), exposes values which Fractran utilizes as <i>registers</i>.</p>
 
@@ -30,7 +30,7 @@ example: 18 = 2 × 3<sup>2</sup>(r2 = 1, r3 = 2), exposes values which Fractran 
 
 <p>The <b>Bag</b> is a <a href='multisets.html'>single number</a> whose prime factorization holds the value of registers(2, 3, 5, 7, 11, 13, 17, ..). For example, if the state of
 the bag is 1008(2⁴ × 3² × 7), r2 has the value 4, r3 has the value
-2, r7 has the value 1, and all other registers are unassigned.</p>
+2, r7 has the value 1, and all other registers are empty.</p>
 
 <table border='1'>
 	<tr><th rowspan='2'>Bag</th><th colspan='4'>Registers</th></tr>
@@ -88,7 +88,7 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 <img src='../media/refs/fractran.adder1.png' width='140px' class="right"/>
 -->
 
-<p>In summary, the <i>bag</i> holds the state of the program. The state is expressed as <i>symbols</i> in a bag encoded as prime factors. Each fraction acts as a rewrite rule that transforms the number of symbols in the bag.</p>
+<p>To summarize: the <i>bag</i> holds the state of the program. The state is expressed as <i>symbols</i> in a bag encoded as prime factors. Each fraction acts as a rewrite rule that transforms the number of symbols in the bag.</p>
 
 <img src='../media/refs/fractran.multiply.png' width='200px'/>
 
@@ -99,18 +99,18 @@ portraying it as such is doing a disservice to the relatively simple idea at
 its core and to the researchers who might otherwise benefit to venture deeper
 into a relatively unexplored field of computation.</p>
 
-<p>If we think of Fractran as a <a href='rewriting.html'>rewriting language</a> in which prime registers can be assigned a name, and fractions as symbolic rewrite rules, we can de-obfuscate a program. For the documentation below, we will use the <a href='rejoice.html'>Rejoice Notation.</a></p>
-
 <div class='codeview'>
 	<iframe src="../etc/rejoicerepl/index.html#fractran" frameborder="0" class='frame' style='height:400px'></iframe>
 </div>
+
+<p>If we think of Fractran as a <a href='rewriting.html'>rewriting language</a> in which prime registers can be assigned a name, and fractions as symbolic rewrite rules, we can de-obfuscate a program. For the documentation below, we will use the <a href='rejoice.html'>Rejoice Notation.</a></p>
 
 <q>Multiset sounds too technical.<br />
 Dijkstra's bag, not technical enough.</q>
 
 <h3>Programming In Fractran</h3>
 
-<p>Evaluation is done by testing each fraction in a sequence from the first to the last, when a fraction multiplied by the value of the bag gives a whole number, the bag is updated by the product of that multiplication, and search for the next rule starts back again from the beginning.</p>
+<p>Evaluation consists of testing each fraction in a sequence from the first to the last, when a fraction multiplied by the value of the bag gives a whole number, the bag is updated by the product of that multiplication, and search for the next rule starts back again from the beginning.</p>
 
 <ul>
     <li>For each fraction in a list for which the multiplication of the bag and the fraction is an integer, replace the bag by the result of that multiplication.</li>
@@ -213,6 +213,16 @@ x^4 y^3 gth?
 10 × 7/10 = 7      true 
 </pre>
 
+<p>A similar set of rules can check if a register is odd or even:</p>
+<pre>
+x^7 even?
+
+<b>@t</b>
+	[t even?]/[x^2 even?]
+	[t false]/[x even?]
+	[t true]/[even?]
+</pre>
+
 <img src='../media/refs/fraction_and.png' width='150'/>
 
 <h3>Arithmetic</h3>
@@ -300,16 +310,6 @@ x^4 half
 	t/half
 </pre>
 
-<p>A similar set of rules can check if a register is odd or even:</p>
-<pre>
-x^7 even?
-
-<b>@t</b>
-	[t even?]/[x^2 even?]
-	[t false]/[x even?]
-	[t true]/[even?]
-</pre>
-
 <p>The <b>product</b> is reached from a series of additions, by copying the input register,
 into a temporary register and third result register.</p>
 
@@ -343,6 +343,20 @@ x^3 y^2
 	<img src="../media/refs/ssec_computer.jpg" style='width:100%' />
 </center>
 
+<h3 id='fizzbuzz'>Example: Fizzbuzz</h3>
+
+<p>To implement Fizzbuzz, we can increment registers for thirds and fifths to emit fizz and buzz at the proper intervals, while decrementing the upper boundary:</p>
+
+<pre>
+times^100 f b
+
+<b>@t</b> ( times f b -- num f b )
+	[t num f b .FizzBuzz\n]/[times f^3 b^5]
+	[t num f b .Fizz\n]/[times f^3]
+	[t num f b .Buzz\n]/[times b^5]
+	[t num f b .#num .\n]/times
+</pre>
+
 <h3 id='fib'>Example: Fibonacci</h3>
 
 <p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses catalysts(fib, fib.shift, fib.move) to keep the program state which has 3 phases(shift, move and back to fib) and ensures the correct evaluation order:</p>
@@ -360,27 +374,7 @@ res n^5 last fib
 	t/last
 </pre>
 
-<h3 id='fizzbuzz'>Example: Fizzbuzz</h3>
-
-<p>Alternatively to getting the resulting program state at the end of an evaluation, we can emit the bag at a specific rate during the evaluation by checking if a register is active or not.</p>
-
-<pre>
-times^100 f b
-
-<b>@t</b> ( times f b -- num f b )
-	[t num f b .FizzBuzz\n]/[times f^3 b^5]
-	[t num f b .Fizz\n]/[times f^3]
-	[t num f b .Buzz\n]/[times b^5]
-	[t num f b .#num .\n]/times
-</pre>
-
-<p>To explore further, have a look at the <a href='fractran_devlog.html'>Fractran devlog</a>, or try running these <a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples' target='_blank'>examples</a> yourself:</p>
-
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/life.fra' target='_blank'>Conway's Game Of Life in Conway's Fractran</a>(<a href='https://www.youtube.com/watch?v=KcL1qriy5Ho' target='_blank'>video</a>)</li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/collatz.fra' target='_blank'>The Collatz Sequence</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/div.fra' target='_blank'>Divide</a></li>
-</ul>
+<p>To dive deeper, have a look at the <a href='fractran_devlog.html'>Fractran devlog</a>.</p>
 
 <figure>
 	<img 
@@ -404,164 +398,6 @@ times^100 f b
 	.denreg { background:#f78f84; color: black; padding: 0 2px; border-radius: 3px; }
 	.denval { background:#ffd18c; color: black; padding: 0 2px; border-radius: 3px; }
 </style>
--->
-<h2>Thoughts on Fractran</h2>
-
-<h3 id='reduction'>Reduction & Catalysts</h3>
-
-<p>Conway's Fractran traditionally compares the accumulator against <a
-href='fractions.html#reduction'>reduced fractions</a>, but
-computationally-speaking, getting to the gcd of a fraction does little more
-than getting rid of otherwise valuable information used during comparison to
-match against a restricted set of fractions. The support for <a
-href='rewriting.html#catalyst'>catalysts</a>, symbols found on both sides of a
-rewrite rule, makes for a simpler and faster implementation.</p>
-
-<pre>
-:: 15/6 red <b>green</b> > blue <b>green</b>
-:: 5/2 red > blue
-
-red green
-</pre>
-
-<p>These two fractions are not equal and reducing the first into the
-second, eliminates the capability to match against it <b>only</b> when the
-catalyst <code>green</code> is present in the accumulator.</p>
-
-<h3>Deadcode Elimination</h3>
-
-<p>An unreachable rule is created when a rule's left-hand side is part of the left-hand side of a rule below it:</p>
-
-<pre>
-:: foo > baz
-<i>:: foo bar > baz</i>
-
-foo bar
-</pre>
-
-<p>For a rule to be <i>reachable</i>, all the symbols in the left-hand side must be present in either the right-hand side of an other valid rule, or in the accumulator.</p>
-<pre>
-:: violet > red
-<i>:: purple > violet</i>
-
-violet
-</pre>
-
-<p>Rules that are unreachable are considered comments and should not be part of the ruleset during evaluation.</p>
-
-<h3 id='exhaustive'>Exhaustive Rules</h3>
-<p>When moving values between registers, each move takes one rewriting and thus can quickly become computationally expensive:</p>
-<pre>
-:: a > res
-:: b > res
-
-AC 1000, a^3 b^3 
-00 1000 × 3/2 = 1500, a^2 res b^3 
-00 1500 × 3/2 = 2250, a res^2 b^3 
-00 2250 × 3/2 = 3375, res^3 b^3 
-01 3375 × 3/5 = 2025, res^4 b^2 
-01 2025 × 3/5 = 1215, res^5 b 
-01 1215 × 3/5 = 729, res^6 
-
-Completed in 6 steps.
-</pre>
-
-<p>A rule with a right-hand side that does not include symbols present in any of the left-hand sides of the rules above it can be run exhaustively and perform many applications without having to look for the next applicable rule:</p>
-<pre>
-AC 1000, a^3 b^3 
-00 1000 × 3/2 = 3375, res^3 b^3 
-01 3375 × 3/5 = 729, res^6 
-
-Completed in 2 steps.
-</pre>
-
-<h3 id='reversibility'>Reversibility</h3>
-
-<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>,
-meaning that a some programs can run backward to their original state.
-Evaluation is undone by applying rules and inverting their numerator and
-denominator, or right and left sides.</p>
-
-<pre>
-AC 19, fruit-cake
-02 19 × 119/19 = 119, apple-cake fruit-salad
-01 119 × 715/17 = 5005, apples apple-cake oranges cherries
-00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
-</pre>
-
-<p>For a program to be reversible, two rules may <b>not</b> share identical
-numerators or denominators. The implementation of a reversible CNOT logic gate
-differs from the non-reversible logic gates in that we cannot rely on the
-absence of registers, rules must contain symbols for their absence:</p>
-
-<pre>
-:: c+ t+ cnot > c+ t- cnot
-:: c+ t- cnot > c+ t+ cnot
-:: c- t+ cnot > c- t+ cnot
-:: c- t- cnot > c- t- cnot
-</pre>
-
-<figure>
-	<img 
-		src="../media/refs/jacek2.jpg"
-		alt="Jacek, from Na srebrnym globie"/>
-	<figcaption>
-		&mdash; Jacek is upset with earth's computers.
-	</figcaption>
-</figure>
-
-<h3 id='implementation'>Implementation</h3>
-
-<p>A basic implementation of the runtime core is a mere 20 lines:</p>
-
-<div class='codeview'>
-	<iframe src='../etc/framin.c.txt' style='height:315px'></iframe>
-	<pre>cc framin.c -o framin <a href='../etc/framin.c.txt' target='_blank'>view raw</a></pre>
-</div>
-
-
-<h3 id='stack'>A Stack Machine</h3>
-
-<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, by allocating a number of registers to store the items in the stack. We can push a value stored in x to the top of the stack by shifting the content from one register to the next.</p>
-
-<pre>
-:: push > move-de
-:: move-de d > move-de e :: move-de > move-cd
-:: move-cd c > move-cd d :: move-cd > move-bc
-:: move-bc b > move-bc c :: move-bc > move-ab
-:: move-ab a > move-ab b :: move-ab > move-xa
-:: move-xa x > move-xa a :: move-xa > 
-
-:: a) > push x^1 b)
-:: b) > push x^2 c)
-:: c) > push x^3 
-
-a)
-</pre>
-
-<p>In that same way, we can pop, and store in x, the value at the top of the stack by shifting content the other way.</p>
-
-<pre>
-:: pop > move-ax
-:: move-ax a > move-ax x :: move-ax > move-ba
-:: move-ba b > move-ba a :: move-ba > move-cb
-:: move-cb c > move-cb b :: move-cb > move-dc
-:: move-dc d > move-dc c :: move-dc > move-ed
-:: move-ed e > move-ed d :: move-ed > 
-
-a^1 b^2 c^3 pop
-</pre>
-
-<!--
-
-<p>An implementation of the full symbolic runtime is about <a href='ansi_c.html'>300
-lines</a>:</p>
-
-<div class='codeview'>
-	<iframe src='../etc/fractran.c.txt'></iframe>
-	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
-</div>
-
 -->
 <ul></ul><p><b>incoming: </b><a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="binary.html">binary</a> <a href="primes.html">primes</a> <a href="fractions.html">fractions</a> <a href="tropical_arithmetic.html">tropical arithmetic</a> <a href="paper_games.html">paper games</a> <a href="reversible_computing.html">reversible computing</a> <a href="rejoice.html">rejoice</a> <a href="rejoice_devlog.html">rejoice devlog</a> <a href="rewriting.html" class="parent">rewriting</a> <a href="thue.html">thue</a> <a href="bagel.html">bagel</a> <a href="2024.html">2024</a> <a href="2021.html">2021</a> <a href="malleable_computing.html">malleable computing</a> </p></main>
 <footer>

@@ -122,13 +122,15 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 	multiples of 5 with Buzz,
 	and multiples of both with FizzBuzz )
 
-times^100 f b
+times^100
 
-@Loop ( times f b -- num f b )
-	[num f b .FizzBuzz\\n Loop]/[times f^3 b^5]
-	[num f b .Fizz\\n Loop]/[times f^3]
-	[num f b .Buzz\\n Loop]/[times b^5]
-	[num f b .#num .\\n Loop]/times`
+@Loop ( times -- )
+	num f b
+	[Loop .FizzBuzz\\n]/[times f^3 b^5]
+	[Loop .Fizz\\n]/[times f^3]
+	[Loop .Buzz\\n]/[times b^5]
+	[Loop .#num .\\n]/times
+`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
@@ -426,13 +428,12 @@ belar/num
 `
 examples.fractran=`( This is a comment )
 
-[apple^2 orange]      ( This is a bag )
+[apple^2 orange]         ( This is a bag )
 
-@top                  ( This is a label )
-[banana top]/orange^3 ( Each transformation is encoded as a fraction )
-[orange top]/apple    ( Each fraction must include the top label. )
-
-.#banana              ( Print the count of a symbol in the bag )
+@top                     ( This is a label )
+  [top banana]/orange^3  ( Transformations are encoded as fractions )
+  [top orange]/apple     ( Each Fractran fraction includes the top label. )
+  .#banana               ( Print the count of a symbol in the bag )
 
 ( When no fractions can be applied,
   the program ends. )
