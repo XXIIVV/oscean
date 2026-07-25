@@ -90,49 +90,31 @@ c -> a</pre></td></tr>
 	<tr><th>fork</th><td><pre>a -> b c</pre></td></tr>
 </table>
 
---><h2>Fractran is a computer architecture based entirely on the multiplication of fractions.</h2>
+--><h2>Fractran is a computer architecture based on the multiplication of fractions.</h2>
 
 <p>A <b>prime</b> is a number that can only be divided by itself one, since these
 numbers can't be divided, they can considered the DNA of other numbers. The
 factoring of a number into <a href='primes.html'>prime numbers</a>, for
-example: 18 = 2 × 3<sup>2</sup>, exposes values which Fractran utilizes as
-<i>registers</i>. There are two parts to a Fractran program:</p>
-
-<ol>
-	<li><a href='#acc'>The Accumulator</a></li>
-	<li><a href='#rules'>The Fractions</a></li>
-</ol>
+example: 18 = 2 × 3<sup>2</sup>(r2 = 1, r3 = 2), exposes values which Fractran utilizes as <i>registers</i>.</p>
 
 <figure>
 	<img src='../media/refs/vogue-fractran.jpg' width='300' alt='流行通信'/>
 	<figcaption>Typical Fractran Programmer</figcaption>
 </figure>
 
-<h3 id='acc'>The Accumulator</h3>
+<p>The <b>Bag</b> is a <a href='multisets.html'>single number</a> whose prime factorization holds the value of registers(2, 3, 5, 7, 11, 13, 17, ..). For example, if the state of
+the bag is 1008(2⁴ × 3² × 7), r2 has the value 4, r3 has the value
+2, r7 has the value 1, and all other registers are unassigned.</p>
 
-<table border='1' class="right">
-	<tr><th rowspan='2'>Accumulator</th><th colspan='4'>Registers</th></tr>
+<table border='1'>
+	<tr><th rowspan='2'>Bag</th><th colspan='4'>Registers</th></tr>
 	<tr><th>r2</th><th>r3</th><th>r5</th><th>r7</th></tr>
 	<tr><th>6</th><td>1</td><td>1</td><td></td><td></td></tr>
 	<tr><th>18</th><td>1</td><td>2</td><td></td><td></td></tr>
 	<tr><th>1008</th><td>4</td><td>2</td><td></td><td>1</td></tr>
-	<tr><th>5402250</th><td>1</td><td>2</td><td>3</td><td>4</td></tr>
 </table>
 
-<p>The <b>Accumulator</b> is a single number whose prime factorization holds the
-value of registers(2, 3, 5, 7, 11, 13, 17, ..). For example, if the state of
-the accumulator is 1008(2⁴ × 3² × 7), r2 has the value 4, r3 has the value
-2, r7 has the value 1, and all other registers are unassigned.</p>
-
-<h3>The Fraction</h3>
-
-<img src='../media/refs/fractran.adder1.png' width='140px' class="right"/>
-
-<p>A <b>Fraction</b> represents an instruction that tests one or more
-registers by the prime factors of its numerator and denominator. To evaluate
-the result of a rule we take the the accumulator, if multiplying it by this
-<a href='fractions.html'>fraction</a> will give us an integer, we will update the accumulator with the
-result.</p>
+<p>A <b>Rule</b> is represented by a <a href='fractions.html'>fraction</a> that tests one or more registers. To evaluate the result of a fraction, if multiplying the bag by this fraction gives an integer, in other words, if the bag contains the symbols in the denominator, we remove them and add the symbols in the numerator.</p>
 
 <table border='1'>
 	<tr>
@@ -141,8 +123,8 @@ result.</p>
 		<th>21/20</th>
 	</tr>
 	<tr>
-		<td>(<span class='numreg'>2</span><sup class='numval'>1</sup>)/(<span class='denreg'>3</span><sup class='denval'>1</sup>)</td>
-		<td>(<span class='numreg'>3</span><sup class='numval'>1</sup> × <span class='numreg'>5</span><sup class='numval'>1</sup>)/(<span class='denreg'>2</span><sup class='denval'>8</sup>)</td>
+		<td><span class='numreg'>2</span><sup class='numval'>1</sup>/<span class='denreg'>3</span><sup class='denval'>1</sup></td>
+		<td>(<span class='numreg'>3</span><sup class='numval'>1</sup> × <span class='numreg'>5</span><sup class='numval'>1</sup>)/<span class='denreg'>2</span><sup class='denval'>8</sup></td>
 		<td>(<span class='numreg'>3</span><sup class='numval'>1</sup> × <span class='numreg'>7</span><sup class='numval'>1</sup>)/(<span class='denreg'>2</span><sup class='denval'>2</sup> × <span class='denreg'>5</span><sup class='denval'>1</sup>)</td>
 	</tr>
 	<tr>
@@ -176,10 +158,13 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 	</tr>
 </table>
 
-<p>Operations become more readable when broken down into their primes. We can
-think of every prime number as having a register which can take on non-negative
-integer values. Each fraction is an instruction that operates on some of the
-registers.</p>
+<!--
+<img src='../media/refs/fractran.adder1.png' width='140px' class="right"/>
+-->
+
+<p>In summary, the <i>bag</i> holds the state of the program. The state is expressed as <i>symbols</i> in a bag encoded as prime factors. Each fraction acts as a rewrite rule that transforms the number of symbols in the bag.</p>
+
+<img src='../media/refs/fractran.multiply.png' width='200px'/>
 
 <h3 id='notation'>A Notation</h3>
 
@@ -188,72 +173,42 @@ portraying it as such is doing a disservice to the relatively simple idea at
 its core and to the researchers who might otherwise benefit to venture deeper
 into a relatively unexplored field of computation.</p>
 
-<p><a href='https://wryl.tech' target='_blank'>Wryl</a>, who created <a href='modal.html'>Modal</a>, demonstrated to me an interesting connection between Fractran and <a href='rewriting.html'>rewriting languages</a> which is made clearer by using a notation where prime registers are automatically assigned names, and fractions are defined in terms of transformations of these names:</p>
+<p>If we think of Fractran as a <a href='rewriting.html'>rewriting language</a> in which prime registers can be assigned a name, and fractions as symbolic rewrite rules, we can de-obfuscate a program. For the documentation below, we will use the <a href='rejoice.html'>Rejoice Notation.</a></p>
 
-<pre style='clear:both'>
-:: left side > right side  <i>15/6 left.2 side.3 > side.3 right.5</i>
-
-AC 6 left side  <i>accumulator</i>
-00 6 × 15/6 = 15, side right  <i>result</i>
-</pre>
-
-<article>
-	<p>A compiler assigns the symbols <i>left</i>, <i>side</i> and <i>right</i> to the prime numbers 2, 3 and 5. The product of <i>left</i>(2) and <i>side</i>(3) for the denominator, <i>side</i>(3) and <i>right</i>(5) for the numerator, result in the fraction 15/6.</p>
-</article>
-
-<p>This documentation will represent registers with names(x, y, foo-bar, baz,
-..). Fractions will be written as rewrite rules starting with <code>::</code>,
-a left-side, a spacer(>) and a right-side. The notation indicates which
-registers to replace on the denominator left-side, and what to replace them
-with on the numerator right-side. Unlike John Conway's original specification
-of Fractran, fractions are <a href='#reduction'>not reduced</a>.</p>
+<div class='codeview'>
+	<iframe src="../etc/rejoicerepl/index.html#fractran" frameborder="0" class='frame' style='height:400px'></iframe>
+</div>
 
 <q>Multiset sounds too technical.<br />
 Dijkstra's bag, not technical enough.</q>
 
-<img src='../media/refs/fractran.multiply.png' width='220px'/>
-
 <h3>Programming In Fractran</h3>
 
-<p>In a rule definition, which is a fraction where prime factorization is written as names, we find names to the left-side of the spacer(>) to be rewritten by names found on the right-side. Each new name is added to the dictionary and represented internally as a prime number.</p>
-
-<pre>
-<i>:: > A rule with no left-side is a comment.</i>
-:: flour sugar apples > apple-cake
-:: apples oranges cherries > fruit-salad
-:: fruit-salad apple-cake > fruit-cake
-
-sugar oranges apples cherries flour apples
-</pre>
-
-<p>Rules are tested in a sequence from the first to the last, when a rewrite rule gives us an integer when when multiplied by the accumulator, the accumulator is updated by the product of that multiplication, and search for the next rule starts back again from the beginning.</p>
-
-<pre>
-:: 7/30 flour.2 sugar.3 apples.5 > apple-cake.7 
-:: 17/715 apples.5 oranges.11 cherries.13 > fruit-salad.17 
-:: 19/119 apple-cake.7 fruit-salad.17 > fruit-cake.19 
-
-AC 21450 flour sugar apples apples oranges cherries 
-00 21450 × 7/30 = 5005, apples apple-cake oranges cherries 
-01 5005 × 17/715 = 119, apple-cake fruit-salad 
-02 119 × 19/119 = 19, fruit-cake 
-</pre>
-
-<p>In other words, it helps to visualize the fractions in a program as a list of rewrite rules that tests the accumulator against its left-side, and starts back at the top of the list after updating the accumulator when it is a match, or keep going when it does not.</p>
-
-<q>Fractran has a single operation, and can be explained in <a href='pocket_rewriting.html'>10 seconds</a>.</q>
+<p>Evaluation is done by testing each fraction in a sequence from the first to the last, when a fraction multiplied by the value of the bag gives a whole number, the bag is updated by the product of that multiplication, and search for the next rule starts back again from the beginning.</p>
 
 <ul>
-    <li>For each fraction in a list for which the multiplication of the accumulator and the fraction is an integer, replace the accumulator by the result of that multiplication.</li>
-    <li>Repeat this rule until no fraction in the list produces an integer when multiplied by the accumulator, then halt.</li>
+    <li>For each fraction in a list for which the multiplication of the bag and the fraction is an integer, replace the bag by the result of that multiplication.</li>
+    <li>Repeat this rule until no fraction in the list produces an integer when multiplied by the bag, then halt.</li>
 </ul>
 
-<p>That's all!</p>
+<pre style='margin-bottom:1px'>
+sugar oranges apples cherries flour apples
 
-<figure>
-	<img src='../media/refs/fractran.png' width='340'/>
-	<figcaption>The Book of Numbers, <a href='https://en.wikipedia.org/wiki/John_Horton_Conway' target='_blank'>John Conway</a></figcaption>
-</figure>
+<b>@t</b>
+	<i>( 7/30 )</i>   [t apple-cake]/[flour sugar apples]
+	<i>( 17/715 )</i> [t fruit-salad]/[apples oranges cherries]
+	<i>( 19/119 )</i> [t fruit-cake]/[fruit-salad apple-cake]
+</pre>
+<pre>
+21450                flour.2 sugar.3 apples.5 apples.5 oranges.11 cherries.13
+21450 × 7/30 = 5005  apples.5 apple-cake.7 oranges.11 cherries .13
+5005 × 17/715 = 119  apple-cake.7 fruit-salad.17
+119 × 19/119 = 19    fruit-cake.19
+</pre>
+
+<q>Fractran has a single operation,<br />and can be explained in <a href='pocket_rewriting.html'>10 seconds</a>.</q>
+
+<img src='../media/refs/fractran.png' width='340'/>
 
 <h3>Loops</h3>
 
@@ -271,83 +226,65 @@ while(year++) {
 <p>To create a loop, a rewriting program relies on cycling back onto a term and the boundary of a loop is done by catching the ending case. Now, if we translate the above program into rewrite rules:</p>
 
 <pre>
-:: year year autumn > Reached!
-:: spring > summer > autumn > winter > spring year
-
 spring
+
+<b>@t</b>
+	[t .Reached!]/[autumn year^2]
+	[t summer]/spring 
+	[t autumn]/summer 
+	[t winter]/autumn 
+	[t spring year]/winter
 </pre>
 
 <p>Looking at the trace of the evaluation, we can see the following transformations:<p>
 
 <pre>
-AC 7, spring 
-01 7 × 11/7 = 11, summer 
-02 11 × 3/11 = 3, autumn 
-03 3 × 13/3 = 13, winter 
-04 13 × 14/13 = 14, year spring 
-01 14 × 11/7 = 22, year summer 
-02 22 × 3/11 = 6, year autumn 
-03 6 × 13/3 = 26, year winter 
-04 26 × 14/13 = 28, year^2 spring 
-01 28 × 11/7 = 44, year^2 summer 
-02 44 × 3/11 = 12, year^2 autumn 
-00 12 × 5/12 = 5, Reached!
+7                spring 
+7 × 11/7 = 11    summer 
+11 × 3/11 = 3    autumn 
+3 × 13/3 = 13    winter 
+13 × 14/13 = 14  year spring 
+14 × 11/7 = 22   year summer 
+22 × 3/11 = 6    year autumn 
+6 × 13/3 = 26    year winter 
+26 × 14/13 = 28  year^2 spring 
+28 × 11/7 = 44   year^2 summer 
+44 × 3/11 = 12   year^2 autumn 
+12 × 5/12 = 5    Reached!
 </pre>
 <img src='../media/refs/multiset.png' width='130'/>
 
 <h3 id='logic'>Logic</h3>
 
 <p>Binary logic is typically implemented as multiple rules, where each is a
-potential location in the <a href='binary.html'>truth table</a>:</p>
+potential location in the <a href='binary.html'>truth table</a>, notice how it needs a sentinel symbol <code>and?</code> to catch the absence of inputs.</p>
 
 <pre>
-:: x y and? > true
-:: x   and? > false
-::   y and? > false
+x y and?
 
-:: x y or? > true
-:: x   or? > true
-::   y or? > true
-::     or? > false
-
-:: x y xor? > false
-:: x   xor? > true
-::   y xor? > true
-
-:: true  not? > false
-:: false not? > true
-
-AC 30, x y and? 
-00 30 × 7/30 = 7, true
+<b>@t</b>
+	[t true]/[x y and?]
+	[t false]/[x and?]
+	[t false]/[y and?]
+	[t false]/[and?]
 </pre>
 
 <p>The comparison operations are implemented using a loop that drains the
 registers until only the offset remains:</p>
 
+<pre style='margin-bottom:1px'>
+x^4 y^3 gth?
+
+<b>@t</b>
+	[t gth?]/[x y gth?]
+	[t true]/[x gth?]
+	[t false]/[gth?]
+</pre>
 <pre>
-:: x y gth? > gth?
-:: x   gth? > true
-::     gth? > false
-
-:: x y lth? > lth?
-::   y lth? > true
-::     lth? > false
-
-:: x y equ? > equ?
-:: x   equ? > false
-::   y equ? > false
-::     equ? > true
-
-:: x y neq? > neq?
-:: x   neq? > true
-::   y neq? > true
-::     neq? > false
-
-AC 2160, x^4 y^3 gth?
-00 2160 × 5/30 = 360, x^3 y^2 gth?
-00 360 × 5/30 = 60, x^2 y gth? 
-00 60 × 5/30 = 10, x gth? 
-01 10 × 7/10 = 7, true 
+2160 × 5/30 = 360  x^3 y^2 gth?
+360 × 5/30 = 60    x^2 y gth? 
+60 × 5/30 = 10     x gth? 
+10 × 7/10 = 7      true 
 </pre>
 
 <img src='../media/refs/fraction_and.png' width='150'/>
@@ -357,434 +294,159 @@ AC 2160, x^4 y^3 gth?
 <p>The <b>sum</b> of two registers(x+y) can be reached by writing
 the result in a third register(sum):</p>
 
-<pre>
-:: x   add > add sum
-::   y add > add sum
-::     add >
+<pre style='margin-bottom:1px'>
+x^4 y^2 add 
 
-AC 2352, x^4 add y^2 
-00 2352 × 15/6 = 5880, x^3 add sum y^2 
-00 5880 × 15/6 = 14700, x^2 add sum^2 y^2 
-00 14700 × 15/6 = 36750, x add sum^3 y^2 
-00 36750 × 15/6 = 91875, add sum^4 y^2 
-01 91875 × 15/21 = 65625, add sum^5 y 
-01 65625 × 15/21 = 46875, add sum^6 
-02 46875 × 1/3 = 15625, sum^6
+<b>@t</b>
+	[t sum add]/[x add]
+	[t sum add]/[y add]
+	t/add
+</pre>
+<pre>
+2352 × 15/6 = 5880     x^3 add sum y^2 
+5880 × 15/6 = 14700    x^2 add sum^2 y^2 
+14700 × 15/6 = 36750   x add sum^3 y^2 
+36750 × 15/6 = 91875   add sum^4 y^2 
+91875 × 15/21 = 65625  add sum^5 y 
+65625 × 15/21 = 46875  add sum^6 
+46875 × 1/3 = 15625    sum^6
 </pre>
 
 <p>Alternatively, the result can also be reached by moving the value of one
 register into the other:</p>
 
 <pre>
-:: y > x
+x^4 y^2 add 
 
-AC 144 x^4 y^2
-00 144 × 2/3 = 96, x^5 y
-00 96 × 2/3 = 64, x^6
+<b>@t</b>
+	[t y add]/[x add]
 </pre>
 
 <p>The <b>difference</b> between two registers(x-y) can be reached by consuming
 the value of two registers at once, and moving the remains into a third(pos)
 and fourth(neg) to get the signed result:</p>
 
-<pre>
-:: x y sub > sub
-:: x   sub > sub pos
-::   y sub > sub neg
-::     sub >
+<pre style='margin-bottom:1px'>
+x^4 y^6 sub 
 
-AC 58320, x^4 y^6 sub 
-00 58320 × 5/30 = 9720, x^3 y^5 sub 
-00 9720 × 5/30 = 1620, x^2 y^4 sub 
-00 1620 × 5/30 = 270, x y^3 sub 
-00 270 × 5/30 = 45, y^2 sub 
-02 45 × 55/15 = 165, y sub neg 
-02 165 × 55/15 = 605, sub neg^2 
-03 605 × 1/5 = 121, neg^2 
+<b>@t</b>
+	[t sub]/[x y sub]
+	[t sub pos]/[x sub]
+	[t sub neg]/[y sub]
+	t/sub
 </pre>
-
-<p>Alternatively, the result can also be reached by consuming
-the value of two registers at once, and moving the remains to the first if we
-want the result inside x:</p>
-
 <pre>
-:: x y >
-::   y > x
-
-AC 576 x^6 y^2
-00 576 × 1/6 = 96, x^5 y 
-00 96 × 1/6 = 16, x^4
+58320 × 5/30 = 9720  x^3 y^5 sub 
+9720 × 5/30 = 1620   x^2 y^4 sub 
+1620 × 5/30 = 270    x y^3 sub 
+270 × 5/30 = 45      y^2 sub 
+45 × 55/15 = 165     y sub neg 
+165 × 55/15 = 605    sub neg^2 
+605 × 1/5 = 121      neg^2 
 </pre>
 
 <p>The <b>doubling</b> of a register(x*2) is a matter of incrementing an output
 register twice for each input register values:</p>
 
-<pre>
-:: x double > res res double
-::   double >
+<pre style='margin-bottom:1px'>
+x^4 double 
 
-AC 48, x^4 double 
-00 48 × 75/6 = 600, x^3 double res^2 
-00 600 × 75/6 = 7500, x^2 double res^4 
-00 7500 × 75/6 = 93750, x double res^6 
-00 93750 × 75/6 = 1171875, double res^8 
-01 1171875 × 1/3 = 390625, res^8
+<b>@t</b>
+	[t res^2 double]/[x double]
+	t/double
+</pre>
+<pre>
+48 × 75/6 = 600         x^3 double res^2 
+600 × 75/6 = 7500       x^2 double res^4 
+7500 × 75/6 = 93750     x double res^6 
+93750 × 75/6 = 1171875  double res^8 
+1171875 × 1/3 = 390625  res^8
 </pre>
 
 <p>The <b>halving</b> of a register(x/2) is a matter of decrementing an input
 register twice for each output register value:</p>
 
 <pre>
-:: x x half > res half
-::     half > 
+x^4 half 
 
-AC 48, x^4 half 
-00 48 × 15/12 = 60, x^2 half res 
-00 60 × 15/12 = 75, half res^2 
-01 75 × 1/3 = 25, res^2
+<b>@t</b>
+	[t res half]/[x^2 half]
+	t/half
 </pre>
 
 <p>A similar set of rules can check if a register is odd or even:</p>
 <pre>
-:: x x even? > even?
-:: x   even? > false
-::     even? > true
+x^7 even?
 
-AC 384, x^7 even? 
-00 384 × 3/12 = 6, x even? 
-01 6 × 5/6 = 5, false 
+<b>@t</b>
+	[t even?]/[x^2 even?]
+	[t false]/[x even?]
+	[t true]/[even?]
 </pre>
 
 <p>The <b>product</b> is reached from a series of additions, by copying the input register,
 into a temporary register and third result register.</p>
 
-<pre>
-:: z i > x i
-::   i >
-:: x y > y z res
-::   y > i
-:: x   >
+<pre style='margin-bottom:1px'>
+x^3 y^2 
 
-AC 675, x^3 y^2 
-02 675 × 70/15 = 3150, res x^2 y^2 z 
-02 3150 × 70/15 = 14700, res^2 x y^2 z^2 
-02 14700 × 70/15 = 68600, res^3 y^2 z^3 
-03 68600 × 11/5 = 150920, res^3 y z^3 i 
-00 150920 × 33/77 = 11880, res^3 x^3 y i 
-01 11880 × 1/11 = 1080, res^3 x^3 y 
-02 1080 × 70/15 = 5040, res^4 x^2 y z 
-02 5040 × 70/15 = 23520, res^5 x y z^2 
-02 23520 × 70/15 = 109760, res^6 y z^3 
-03 109760 × 11/5 = 241472, res^6 z^3 i 
-00 241472 × 33/77 = 19008, res^6 x^3 i 
-01 19008 × 1/11 = 1728, res^6 x^3 
-04 1728 × 1/3 = 64, res^6
+<b>@t</b>
+	[t x i]/[z i]
+	t/i
+	[t y z res]/[x y]
+	[t i]/y
+	t/x
 </pre>
-
-<center>
-	<img src="../media/refs/ssec_computer.jpg" />
-</center>
+<pre>
+675 × 70/15 = 3150      res x^2 y^2 z 
+3150 × 70/15 = 14700    res^2 x y^2 z^2 
+14700 × 70/15 = 68600   res^3 y^2 z^3 
+68600 × 11/5 = 150920   res^3 y z^3 i 
+150920 × 33/77 = 11880  res^3 x^3 y i 
+11880 × 1/11 = 1080     res^3 x^3 y 
+1080 × 70/15 = 5040     res^4 x^2 y z 
+5040 × 70/15 = 23520    res^5 x y z^2 
+23520 × 70/15 = 109760  res^6 y z^3 
+109760 × 11/5 = 241472  res^6 z^3 i 
+241472 × 33/77 = 19008  res^6 x^3 i 
+19008 × 1/11 = 1728     res^6 x^3 
+1728 × 1/3 = 64         res^6
+</pre>
 	
+<center>
+	<img src="../media/refs/ssec_computer.jpg" style='width:100%' />
+</center>
+
 <h3 id='fib'>Example: Fibonacci</h3>
 
 <p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses catalysts(fib, fib.shift, fib.move) to keep the program state which has 3 phases(shift, move and back to fib) and ensures the correct evaluation order:</p>
 
-<pre style='margin-bottom:1px'>
-:: fib n last > fib n B
-:: fib n res  > fib n A B
-:: fib n      > fibrec
-:: fibrec A > fibrec last
-:: fibrec B > fibrec res
-:: fibrec   > fib
-:: last     >
-
-AC 31590, res n^5 last fib
-..
-06 41600000000 × 1/5 = 106496, res^13 fib 
-</pre> 
-<pre>31590 : 429/195 3003/78 17/39 85/119 34/187 13/17 1/5</pre>
-
-<h3 id='fac'>Example: Factorial</h3>
-
-<p>Let's have a look at something a bit <i>more advanced</i>, the function to
-generate the 5th Factorial number from the sequence(1, 2, 6, 24, 120..). This
-program uses a multiplication portion, and a series of rules to
-move between each number in the sequence:</p>
-
-<pre style='margin-bottom:1px'>
-:: fac a i > fac n i
-::       i >
-:: fac n y > fac res a y
-:: fac   y > fac i
-:: fac     >
-::     res >     y
-::     n n > fac n
-
-AC 23750, fac n^4 y
-.. 
-05 125829120 × 2/3 = 83886080, y^24 n
-</pre>
-<pre>23750 : 2755/12673 1/29 2622/190 551/38 1/19 2/3 95/25 </pre>
-
-<p>This solution was contributed by TARDIInsanity.</p>
-
-<h3 id='precedence'>Operator Precedence</h3>
-
-<p>To find the result of <code>3*(4+5)-6</code>, in which a specific sequence of
-operation is needed to find the correct answer, the
-order in which operators will be evaluated can be specified with the order in which the rules are created:</p>
-
 <pre>
-:: +5     > x^5
-:: *3 x   > *3 y^3
-:: *3     >
-:: -6 y^6 > 
+res n^5 last fib
 
-x^4 +5 *3 -6
-
-AC 27664, x^4 +5 *3 -6 
-00 27664 × 32/7 = 126464, x^9 *3 -6 
-01 126464 × 351/26 = 1883522578791789, y^27 *3 -6 
-02 1883522578791789 × 1/13 = 144886352214753, y^27 -6 
-03 144886352214753 × 1/13851 = 10460353203, y^21
+<b>@t</b>
+	[t fib n B]/[fib n last]
+	[t fib n A B]/[fib n res]
+	[t fibrec]/[fib n]
+	[t fibrec last]/[fibrec A]
+	[t fibrec res]/[fibrec B]
+	[t fib]/fibrec
+	t/last
 </pre>
-
-<h3 id='stack'>A Stack Machine</h3>
-
-<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, by allocating a number of registers to store the items in the stack. We can push a value stored in x to the top of the stack by shifting the content from one register to the next.</p>
-
-<pre>
-:: push > move-de
-:: move-de d > move-de e :: move-de > move-cd
-:: move-cd c > move-cd d :: move-cd > move-bc
-:: move-bc b > move-bc c :: move-bc > move-ab
-:: move-ab a > move-ab b :: move-ab > move-xa
-:: move-xa x > move-xa a :: move-xa > 
-
-:: a) > push x^1 b)
-:: b) > push x^2 c)
-:: c) > push x^3 
-
-a)
-</pre>
-
-<p>In that same way, we can pop, and store in x, the value at the top of the stack by shifting content the other way.</p>
-
-<pre>
-:: pop > move-ax
-:: move-ax a > move-ax x :: move-ax > move-ba
-:: move-ba b > move-ba a :: move-ba > move-cb
-:: move-cb c > move-cb b :: move-cb > move-dc
-:: move-dc d > move-dc c :: move-dc > move-ed
-:: move-ed e > move-ed d :: move-ed > 
-
-a^1 b^2 c^3 pop
-</pre>
-
-<h3 id='tictactoe'>Example: Tic-Tac-Toe</h3>
-
-<p>Fractran's <b>output</b> capability is limited to the resulting accumulator at the end of an evaluation. The advantage of symbolic rewriting is that registers are already assigned names, so we shall print those instead. As for <b>input</b>, we can type in new symbol tokens and appending their value to the accumulator between evaluations. We can implement a <i>tic-tac-toe</i> in a mere 16 rules:</p>
-
-<pre>
-<i>:: > Reserve the first registers for the player moves</i>
-
-:: x#a o#a x#b o#b x#c o#c
-:: x#d o#d x#e o#e x#f o#f
-:: x#g o#g x#h o#h x#i o#i
-
-<i>:: > This register remains active until the game ends</i>
-
-game
-
-<i>:: > A symbol to draw the value of registers in a grid</i>
-
-"
-
-  Set move in the format x#a, o#b, x#c, etc:
-
-  a b c  |  {x#a o#a .} {x#b o#b .} {x#c o#c .}
-  d e f  |  {x#d o#d .} {x#e o#e .} {x#f o#f .}
-  g h i  |  {x#g o#g .} {x#h o#h .} {x#i o#i .}
-
- "
-
-<i>:: > Rules for each possible victory states</i>
-
-:: game x#a x#b x#c > x#a x#b x#c "Player X wins!" 
-:: game o#a o#b o#c > o#a o#b o#c "Player O wins!"
-:: game x#d x#e x#f > x#d x#e x#f "Player X wins!" 
-:: game o#d o#e o#f > o#d o#e o#f "Player O wins!"
-:: game x#g x#h x#i > x#g x#h x#i "Player X wins!" 
-:: game o#g o#h o#i > o#g o#h o#i "Player O wins!"
-:: game x#a x#e x#i > x#a x#e x#i "Player X wins!" 
-:: game o#a o#e o#i > o#a o#e o#i "Player O wins!"
-:: game x#g x#e x#c > x#g x#e x#c "Player X wins!" 
-:: game o#g o#e o#c > o#g o#e o#c "Player O wins!"
-:: game x#a x#d x#g > x#a x#d x#g "Player X wins!" 
-:: game o#a o#d o#g > o#a o#d o#g "Player O wins!"
-:: game x#b x#e x#h > x#b x#e x#h "Player X wins!" 
-:: game o#b o#e o#h > o#b o#e o#h "Player O wins!"
-:: game x#c x#f x#i > x#c x#f x#i "Player X wins!" 
-:: game o#c o#f o#i > o#c o#f o#i "Player O wins!"
-</pre>
-
-<p>Program don't need to specify anything other than these 16 rules, as players can already input their moves in the format of its register names: x#a, o#b, x#c, etc.</p>
-
-<pre>
-  Set move in the format x#a, o#b, x#c, etc:
-
-  a b c  |  x o o
-  d e f  |  . x .
-  g h i  |  . . x
-
-  Player X wins!
-</pre>
-
-<p>A Fractran program specifies the wiring and logic of an interactive application, registers point to symbols in memory and so the bytecode itself is never localized as these strings reside in the application's front-end far from its logic.</p>
 
 <h3 id='fizzbuzz'>Example: Fizzbuzz</h3>
 
-<p>Alternatively to getting the resulting program state at the end of an evaluation, we can emit the accumulator at a specific rate during the evaluation by checking if a register is active or not.</p>
+<p>Alternatively to getting the resulting program state at the end of an evaluation, we can emit the bag at a specific rate during the evaluation by checking if a register is active or not.</p>
 
 <pre>
-<i>:: > Reserve the first registers for the increments and base-10</i>
+times^100 f b
 
-:: +5 +3
-:: 1# 2# 3# 4# 5# 6# 7# 8# 9# 0
-:: 1  2  3  4  5  6  7  8  9
-
-<i>:: > Leave the printing register for no more than one rewrite</i>
-
-:: print: fizz >
-:: print: buzz >
-:: print: fizzbuzz >
-:: print: "{1# 2# 3# 4# 5# 6# 7# 8# 9# 0}{1 2 3 4 5 6 7 8 9}" > 
-
-<i>:: > Fizzbuzz logic</i>
-
-:: eval +3 +3 +3 +5 +5 +5 +5 +5 > print: fizzbuzz
-:: eval +3 +3 +3 > print: fizz
-:: eval +5 +5 +5 +5 +5 > print: buzz
-:: eval > print: "{1# 2# 3# 4# 5# 6# 7# 8# 9# 0}{1 2 3 4 5 6 7 8 9}"
-
-<i>:: > Base-10 numbers</i>
-
-:: 1# 9 > 2# 0 +3 +5 eval
-:: 2# 9 > 3# 0 +3 +5 eval
-:: 3# 9 > 4# 0 +3 +5 eval
-:: 4# 9 > 5# 0 +3 +5 eval
-:: 5# 9 > 6# 0 +3 +5 eval
-:: 6# 9 > 7# 0 +3 +5 eval
-:: 7# 9 > 8# 0 +3 +5 eval
-:: 8# 9 > 9# 0 +3 +5 eval
-:: 9# 9 > 
-
-:: 0 > 1 +3 +5 eval
-:: 1 > 2 +3 +5 eval
-:: 2 > 3 +3 +5 eval
-:: 3 > 4 +3 +5 eval
-:: 4 > 5 +3 +5 eval
-:: 5 > 6 +3 +5 eval
-:: 6 > 7 +3 +5 eval
-:: 7 > 8 +3 +5 eval
-:: 8 > 9 +3 +5 eval
-:: 9 > 1# 0 +3 +5 eval
-
-<i>:: > The initial state</i>
-
-0
+<b>@t</b> ( times f b -- num f b )
+	[t num f b .FizzBuzz\n]/[times f^3 b^5]
+	[t num f b .Fizz\n]/[times f^3]
+	[t num f b .Buzz\n]/[times b^5]
+	[t num f b .#num .\n]/times
 </pre>
-
-<p>During the evaluation, these 27 fractions will toggle <code>r79(print:)</code> giving us a trigger when the accumulator state might be read. This is demonstrated here as an alternative approach for emitting programs and debugging where the runtime is masking lower registers to the printing register.</p>
-
-<pre>
-07 25338 × 7979/103 = 1962834      01 
-07 159444 × 7979/103 = 12351492    02 
-05 1045656 × 6557/2781 = 2465432   fizz 
-07 262032 × 7979/103 = 20298576    04 
-06 1750176 × 7031/3296 = 3733461   buzz 
-05 339282 × 6557/2781 = 799954     fizz 
-07 82812 × 7979/103 = 6415116      07 
-07 526536 × 7979/103 = 40788648    08 
-05 3248208 × 6557/2781 = 7658576   fizz 
-06 1829280 × 7031/3296 = 3902205   buzz 
-07 380070 × 7979/103 = 29442510    11 
-05 2391660 × 6557/2781 = 5639020   fizz 
-07 580920 × 7979/103 = 45001560    13 
-07 3930480 × 7979/103 = 304478640  14 
-04 26252640 × 7663/88992 = 2260585 fizzbuzz 
-07 188490 × 7979/103 = 14601570    16 
-07 1242180 × 7979/103 = 96226740   17 
-05 7898040 × 6557/2781 = 18621880  fizz
-..
-</pre>
-
-<!--
-<h3 id='stack_hard'>Example: Stack, The Hard Way</h3>
-
-<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. This computation model keeps an entire program state in a single number, and the following stack machine allocates a whole stack into a single register of that number. The theory is that it is possible to keep a stack of zeros and ones in a single register using a <a href='binary.html#stack'>binary encoding</a> for that number.</p>
-
-<ul>
-	<li>Pushing a <kbd>0</kbd> onto the stack is equivalent to doubling the number.</li>
-	<li>Pushing a <kbd>1</kbd> is equivalent to doubling and adding 1.</li>
-	<li>Popping is equivalent to dividing by 2, where the remainder is the number.</li>
-</ul>
-
-<p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above. After the evaluation, our LIFO stack has a value of 30, and is equal to <kbd>1</kbd> <kbd>1</kbd> <kbd>1</kbd> <kbd>0</kbd>, where the right-most one is the item on top. Now, for <b>pop</b>, we can halve the x register, again, same as demonstrated above, and keeping the result of the value in a register for 0, and a register for 1.</p>
-
-<pre>
-:: push 1 x > A A push 1
-:: push 1 > x
-:: push 0 x > A A push 0
-:: push 0 >
-
-:: pop x x > A pop
-:: pop x   > 1
-:: pop     > 0
-
-:: A A > x x
-:: A > x
-<i>
-x    push 1 = x^3
-x^3  push 1 = x^7
-x^7  push 1 = x^15
-x^13 push 0 = x^30
-
-x^30 pop : 0 x^15
-x^15 pop : 1 x^7
-x^7  pop : 1 x^3
-x^3  pop : 1 x</i>
-</pre>
-
-<p>We can build on these two primitives and define temporary register to keep the result of popping, extra stack operations <b>dup</b> and <b>swap</b>, and a little state-machine to input some of these commands:</p>
-
-<pre>
-:: ?#a 0 > 0#a :: ?#a 1 > 1#a
-:: ?#b 0 > 0#b :: ?#b 1 > 1#b
-
-:: dup > pop ?#a dup-next
-:: dup-next 0#a > 0#a 0#a push-a push-a 
-:: dup-next 1#a > 1#a 1#a push-a push-a 
-
-:: swap > swap-next pop ?#a 
-:: swap-next > swap-last pop ?#b push-a
-:: swap-last > push-b
-
-:: push-a 0#a > push 0
-:: push-a 1#a > push 1
-:: push-b 0#b > push 0
-:: push-b 1#b > push 1
-
-:: 1) > push 1 2) <i>1</i>
-:: 2) > push 1 3) <i>1 1</i>
-:: 3) > push 1 4) <i>1 1 1</i>
-:: 4) > push 0 5) <i>1 1 1 0</i>
-:: 5) > swap   6) <i>1 1 0 1</i>
-:: 6) > dup       <i>1 1 0 1 1</i>
-
-1) x 
-</pre>
--->
 
 <p>To explore further, have a look at the <a href='fractran_devlog.html'>Fractran devlog</a>, or try running these <a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples' target='_blank'>examples</a> yourself:</p>
 
@@ -803,24 +465,20 @@ x^3  pop : 1 x</i>
 	</figcaption>
 </figure>
 
-<q>The wise marvels at the commonplace.</q>
-<cite>Confucius</cite>
-
 <ul>
-	<li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a>, used for this documentation.</li>
-	<li><a href='https://tjwei.github.io/Fractran' target='_blank'>Fractran Interpreter(Web)</a></li>
 	<li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li>
 	<li><a href='https://raganwald.com/2020/05/03/fractran.html' target='_blank'>Remembering John Conway</a></li>
 	<li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>On Esolang</a></li>
-	<li><b>Multiset Languages</b>: <a href='rejoice.html'>Rejoice</a>, <a href='bagel.html'>Bägel</a>.</li>
 </ul>
 
+<!--
 <style>
 	.numreg { background:#72dec2; color: black; padding: 0 2px; border-radius: 3px; }
 	.numval { background:#b3f2c6; color: black; padding: 0 2px; border-radius: 3px; }
 	.denreg { background:#f78f84; color: black; padding: 0 2px; border-radius: 3px; }
 	.denval { background:#ffd18c; color: black; padding: 0 2px; border-radius: 3px; }
 </style>
+-->
 <h2>Thue is a string-rewriting system.</h2>
 
 <img src='../media/refs/thue.png' style='float:right;width:140px;margin:0;padding:15px'/>

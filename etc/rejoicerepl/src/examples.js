@@ -424,3 +424,16 @@ belar/num
 ( Ad fin, imprim computat. )
 .#teser
 `
+examples.fractran=`( This is a comment )
+
+[apple^2 orange]      ( This is a bag )
+
+@top                  ( This is a label )
+[banana top]/orange^3 ( Each transformation is encoded as a fraction )
+[orange top]/apple    ( Each fraction must include the top label. )
+
+.#banana              ( Print the count of a symbol in the bag )
+
+( When no fractions can be applied,
+  the program ends. )
+`
