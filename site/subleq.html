@@ -18,37 +18,81 @@
 <nav><ul><li><a href="complexity.html">complexity</a></li><li><a href="knots_computing.html">knots computing</a></li><li><a href="paper_computing.html">paper computing</a></li><li><a href="ternary_computing.html">ternary computing</a></li><li><a href="parallel_computing.html">parallel computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html" class="parent">virtual machines</a></li><li><a href="hardware.html">hardware</a></li></ul><ul><li><a href="subleq.html" class="self">subleq</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="uxn.html">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul></ul></nav>
 <main><h2>Subleq is a One Instruction Set Computer(OISC) architecture.</h2>
 
-<p>The subleq instruction subtracts the contents at address <code>a</code> from the contents at address <code>b</code>, stores the result at address <code>b</code>, and then, if the result is not positive, jumps to address <code>c</code>. If the result is positive, execution proceeds to the next instruction in sequence.</p>
+<p>The Subleq instruction subtracts the contents at address <code>a</code> from the contents at address <code>b</code>, stores the result at address <code>b</code>, and if the result is negative or zero, jumps to address in <code>c</code>. If the result is positive, execution proceeds to the next instruction.</p>
 
 <pre>
 if (mem[B] -= mem[A]) <= 0 
 	goto C
 </pre>
 
-<p>Each subleq instruction has 3 operands which are memory addresses:</p>
-
-<pre>A B C</pre>
-
-<p>For example, in the following example, the first instruction subtracts 7 (address 3) from 7 (address 4). The result in address 4 is 0, so goto 6. On address 6 is the instruction 3 4 0 which again subtracts 7 from now 0 and jumps back to 0.</p>
+<p>Each Subleq instruction is stored in 3 cells, each cell holds a number. For example, to add two numbers, 3 and 4, stored in cells 0x9 and 0xa. </p>
 
 <pre>
-3 4 6
-7 7 7
-3 4 0
+<i>0</i> 0 0 3   <i>m[0] - m[0], m[0] = 0, jump to 3.</i>
+<i>3</i> 9 0 6   <i>m[0] - m[9], m[0] = -3, jump to 6.</i>
+<i>6</i> 0 a 0   <i>m[a] - m[0], m[a] = 7..</i>
+<i>9</i> 3 4 0 
 </pre>
+
+<h3>Interpreter</h3>
+
+<p>Subleq programs can be encoded in <a href='uxntal.html'>Uxntal</a> and evaluated. Here is an example program that adds to numbers and copies the result into a specific cell:</p>
+
+<div class='codeview'>
+	<iframe src="../etc/uxnrepl/index.html#subleq" frameborder="0" class='frame'></iframe>
+</div>
+
+<h3>Jump(Q)</h3>
+
+<pre>
+<i>&0</i> -&0 -&0 -/Q
+<i>&Q</i> 
+</pre>
+
+<h3>Adding(x,y)</h3>
+
+<pre>
+<i>&0</i> -&0 -&0 -/1
+<i>&1</i> -&x -&0 -/2
+<i>&2</i> -&0 -&y -/Q
+
+<i>&x</i> 12
+<i>&y</i> 34
+<i>&Q</i>
+</pre>
+
+<h3>Move(x,y)</h3>
+
+<pre>
+<i>&0</i> -&0 -&0 -/1
+<i>&1</i> -&y -&y -/2
+<i>&2</i> -&x -&0 -/3
+<i>&3</i> -&0 -&y -/4
+<i>&4</i> -&0 -&0 -/Q
+
+<i>&a</i> 12
+<i>&Q</i>
+</pre>
+
+<h3>BranchOnEqual(b,c)</h3>
+
+<pre>
+<i>&0</i>   -&0 -&0 -/1
+<i>&1</i>   -&b -&0 -/L1
+<i>&2</i>   -&0 -&0 -/OUT
+<i>&L1</i>  -&0 -&0 -/4
+<i>&4</i>   -&0 -&b -/c
+<i>&OUT</i> ..
+<i>&b</i>
+<i>&c</i>
+<i>&Q</i>
+</pre>
+<!--
 
 <h2>Instructions</h2>
 
 <table border='1'>
-	<tr><th>JMP c</th><td><pre>Z Z c</pre></td></tr>
-	<tr><th>ADD a, b</th><td>
-<pre>a, Z
-Z, b
-Z, Z</pre></td></tr>
-	<tr><th>MOV a, b</th><td><pre>b, b
-a, Z
-Z, b
-Z, Z</pre></td></tr>
+
 	<tr><th>BEQ b, c</th><td><pre>b, Z, L1
   Z, Z, OUT
 L1:
@@ -57,7 +101,7 @@ L1:
 OUT:
   ...</td></tr>
 </table>
-
+-->
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/exercises/subleq.tal' target='_blank'>Subleq in Uxntal</a></li>
 	<li><a href='http://mazonka.com/subleq/index.html' target='_blank'>Oleg Mazonka</a></li>

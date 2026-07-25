@@ -343,6 +343,46 @@ examples.fizzbuzz=`( Print the fizzbuzz sequence )
 	#0a18 DEO
 	INC GTHk ?fizzbuzz
 	POP2 BRK`
+examples.subleq=`( 54K . -leq )
+
+@subleq/on-reset ( -> )
+	( | Load rom into zero-page )
+	#00
+	&>l
+		DUP #00 OVR ;&rom ADD2 LDA2 ROT STZ2
+		INC INC DUP ?&>l
+	POP
+	( | Eval until hitting Q line )
+	[ LIT2 -&Q 00 ]
+	&>w
+		/step NEQk ?&>w
+	POP2
+	( | Load cell w )
+	.&w LDZ BRK
+
+@subleq/step ( ptr -- ptr )
+	( a b . b ) LDZ2k STHk LDZ SWP LDZ SUB
+	( [b]=b-a ) DUP STHr STZ
+	DUP ?{
+		POP &apply INC INC LDZ JMP2r }
+	#80 AND ?&apply
+	#03 ADD JMP2r
+
+|0200
+	( | Add a + b, and move result in w )
+	@subleq/rom [4
+	&0 -&0 -&0 -/1
+	&1 -&a -&0 -/2
+	&2 -&0 -&b -/3
+	&3 -&w -&w -/4
+	&4 -&a -&0 -/5
+	&5 -&0 -&w -/6
+	&6 -&0 -&0 -/Q ]
+	&a 12
+	&b 34
+	&w 00 &Q
+
+`
 examples.sierpinski=`( Draw the Sierpiński triangle )
 
 @sierpinski ( -> )
