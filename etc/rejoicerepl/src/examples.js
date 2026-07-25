@@ -124,7 +124,7 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 
 times^100
 
-@Loop ( times -- )
+@Loop ( times -- num f b )
 	num f b
 	[Loop .FizzBuzz\\n]/[times f^3 b^5]
 	[Loop .Fizz\\n]/[times f^3]
