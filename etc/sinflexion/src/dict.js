@@ -961,7 +961,6 @@ in the house of [exp] apud
 how [cor] quomodo
 how many [cor] quot
 how many times? [cor] quotiens?
-how much [cor] quanto
 however [adv] sed; tamen
 hug [vt] amplecte
 hulk [n] scapha
@@ -1784,8 +1783,7 @@ solve [adj] (solved) soluto
 some [cor] (unknown or unspecified by name) aliquo
 some [cor] (unspecified number or quantity) aliquanto
 some amount [cor] aliquanto; aliquot
-someone [cor] aliquo
-sometime [cor] aliquando; interdum
+sometime [cor] interdum
 somewhat [cor] aliquid
 son [n] filio
 sorry [adj] dolente
@@ -1926,7 +1924,7 @@ that [conj] que
 then [cor] interea; tunc
 then [adv] ita
 thence [adv] inde
-there [cor] eo; ibi
+there [cor] eo
 therefore [cor] ergo; itaque
 thesaurus [n] thesauro
 thick [adj] spisso
@@ -2108,16 +2106,13 @@ whale [n] balaena
 what [cor] que
 wheat [n] frumento
 wheel [n] rota
-when [cor] quando
 whence [adv] unde
-where [cor] ubi
 whereat [conj] apud que
 whether [conj] an; utro?
 which [cor] quale; que
 which (of two) [cor] utro
 which (referring to entire previous clause) [cor] quod
 while [adv] dum
-who [cor] qui
 whole [adj] (of one thing) toto
 wholly [adv] toto
 whom [cor] quem
@@ -2388,5 +2383,29 @@ yellow [adj] (color) citrino; flavo
 purple [adj] (color) purpur
 seagreen [adj] (color) glauco
 
-`
+how much [cor] quant
+so much [cor] tant
+somewhat [cor] aliquant
+every quantity [cor] omn quant
+none [cor] nul
+how [cor] qualmen
+so [cor] talmen
+somehow [cor] aliqualmen
+in every way [cor] omn mod
+in no way [cor] nul mod
+when [cor] quand
+then [cor] tand
+sometime [cor] aliquand
+always [cor] omn quand
+never [cor] nul quand
+where [cor] ub
+there [cor] ib
+somewhere [cor] aliub
+everwyhere [cor] omn part
+nowhere [cor] nul part
+who [cor] qui
+someone [cor] aliq
+everyone [cor] omn qui
+no one [cor] nul qui
 
+`
