@@ -2345,6 +2345,7 @@ city [n] urbs; urbis
 empty [adj] vacuus
 awning [n] velum
 old [adj] vetus
+reduce [vt] reduc
 
 my [pos] (possessive) de me
 mine [pos] (possessive) de me

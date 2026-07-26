@@ -383,6 +383,48 @@ examples.subleq=`( 54K . -leq )
 	&w 00 &Q
 
 `
+examples.brainfuck=`( 54K . Brainfuck )
+
+@brainfuck/on-reset ( -> )
+	;rom [ LIT2r =rom/end ]
+	&>while
+		LDAk [ LIT "+ ] NEQ ?{ LDAkr STHr INC STH2kr STA }
+		LDAk [ LIT "- ] NEQ ?{ LDAkr STHr #01 SUB STH2kr STA }
+		LDAk [ LIT "> ] NEQ ?{ INC2r }
+		LDAk [ LIT "< ] NEQ ?{ [ LIT2r 0001 ] SUB2r }
+		LDAk [ LIT ". ] NEQ ?{ LDAkr [ LITr 18 ] DEOr }
+		LDAk [ LIT "[ ] NEQ ?{ LDAkr STHr goto-next }
+		LDAk [ LIT "] ] NEQ ?{ LDAkr STHr goto-back }
+		INC2 LDAk ?&>while
+	POP2 POP2r BRK
+
+@goto-next ( prg* byte . mem* -- )
+	?{ JMP2r }
+	[ LITr 00 ] INC2
+	&>loop
+		LDAk [ LIT "[ ] NEQ ?{ INCr }
+		LDAk [ LIT "] ] NEQ ?{ STHkr ?{ POPr JMP2r }
+			[ LITr 01 ] SUBr }
+		INC2 !&>loop
+
+@goto-back ( prg* byte . mem* -- )
+	?{ JMP2r }
+	[ LITr 00 ] #0001 SUB2
+	&>loop
+		LDAk [ LIT "] ] NEQ ?{ INCr }
+		LDAk [ LIT "[ ] NEQ ?{ STHkr ?{ POPr JMP2r }
+			[ LITr 01 ] SUBr }
+		#0001 SUB2 !&>loop
+
+@rom [1
+	">++++++++[<+++++++++>-]<.>++++
+	"[<+++++++>-]<+.+++++++..+++.>>
+	"++++++[<+++++++>-]<++.--------
+	"----.>++++++[<+++++++++>-]<+.<
+	".+++.------.--------.>>>++++[<
+	"++++++++>-]<+. ] 00 &end
+
+`
 examples.sierpinski=`( Draw the Sierpiński triangle )
 
 @sierpinski ( -> )

@@ -27,7 +27,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Jul 20 "2026 $2
+	( date ) "25 20 "Jul 20 "2026 $2
 
 %u8/mod ( a b -- a%b ) {
 	DIVk MUL SUB }
@@ -357,14 +357,16 @@
 	,&lb STR
 	LIT2r 0000
 	&>w
-		LDAk <emit>
+		LDAk DUP ?{ POP POP2r JMP2r }
+		<emit>
 		LDAk #20 NEQ ?{
 			STHkr [ LIT &lb $1 ] u8/mod ?/no-spacer
-			INC2k LDA [ LIT "] ] EQU ?/no-spacer
+			LDA2k [ LIT2 20 "] ] EQU2 ?/no-spacer
 			<emit-break-tab> &no-spacer INC2r }
-		LDAk #00 EQU ?/end
-		INC2 LDAk [ LIT "] ] NEQ ?/>w
-	LDAk <emit> &end INC2 POP2r JMP2r
+		INC2 LDA2k [ LIT2 20 "] ] NEQ2 ?/>w
+	POP2r LDAk <emit>
+	INC2 LDAk <emit>
+	INC2 JMP2r
 
 @<emit-comment> ( str* -- str* )
 	INC2k INC2 LDA [ LIT "| ] NEQ ,&break-after STR
