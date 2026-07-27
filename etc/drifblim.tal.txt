@@ -27,7 +27,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "10 20 "Jul 20 "2026 0a0a
+	( date ) "26 20 "Jul 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -126,8 +126,6 @@
 	/<init>
 	;src/buf token/<stream>
 	error/get ?/<fail>
-	;rom/boundary LDA2 #0100 NEQ2 ?{ ;src/buf info/<error-path> }
-	error/get ?/<fail>
 	/<resolve>
 	error/get ?/<fail>
 	JMP2r
@@ -138,7 +136,7 @@
 
 @rom/<reset> ( -- )
 	;&mmu-wipe .System/expansion DEO2
-	#0100 ;&boundary STA2
+	#00ff ;&boundary STA2
 	#0100 !/<set-head>
 
 	&mmu-wipe [ 00 ff00 0001 0000 00 ]
@@ -161,12 +159,13 @@
 	( | emit rom )
 	;dst/buf .File/name DEO2
 	#0001 .File/length DEO2
-	#00ff
+	#00ff !{
+
 	&>ler
 		INC2 DUP2 ,&src STR2
 		;&mmu-get .System/expansion DEO2
-		;&buf .File/write DEO2
-		NEQ2k ?/>ler
+		;&buf .File/write DEO2 }
+	NEQ2k ?/>ler
 	POP2 POP2
 	( | emit sym )
 	;dict/sym-ext dst/<push-str>
@@ -188,6 +187,8 @@
 	.File/name DEO2
 	#0001 DUP2 .File/length DEO2
 	;&line STA2
+	;&stat .File/stat DEO2
+	[ LIT2 "! &stat $1 ] NEQ ?{ ;src/buf info/<error-path> }
 	/<new>
 	&>s
 		error/get ?{
@@ -723,7 +724,7 @@
 
 @rom/<write-byte> ( byte -- )
 	[ LIT2 &head 0100 ] INC2k ,&head STR2
-	DUP2 [ LIT2 &boundary 0100 ] LTH2 ?{ DUP2 ,&boundary STR2 }
+	DUP2 [ LIT2 &boundary 00ff ] LTH2 ?{ DUP2 ,&boundary STR2 }
 	( | test zero-page )
 	OVR ?/<put>
 	POP2 POP
