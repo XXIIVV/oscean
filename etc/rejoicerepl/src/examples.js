@@ -180,7 +180,9 @@ examples.binary_logic=`( Put a logic gate and binary states in the bag: )
 
 or true false
 
-( not ) false/[not true] true/[not false]
+( not ) 
+false/[not true] 
+true/[not false]
 
 ( and )
 true/[and true^2]
@@ -190,7 +192,8 @@ false/[and false^2]
 ( or )
 true/[or false true]
 true/[or true^2]
-false/[or false^2]`
+false/[or false^2]
+`
 examples.binary_print=`( Input a decimal number: )
 
 d^92
