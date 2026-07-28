@@ -97,14 +97,10 @@ function Emu ()
 		this.uxn.dev[port] = val
 		switch(port){
 		/* System */
-		case 0x00:
 		case 0x01: this.system.vector = (this.uxn.dev[0x00] << 8) | this.uxn.dev[0x01]; break
-		case 0x06:
-		case 0x07: this.system.meta = (this.uxn.dev[0x06] << 8) | this.uxn.dev[0x07]; break
 		case 0x0e: this.console.write_string(`${this.system.print_wst()}\n${this.system.print_rst()}\n`); break
 		case 0x0f: console.log("Evaluation ended."); break
 		/* Console */
-		case 0x10:
 		case 0x11: this.console.vector = (this.uxn.dev[0x10] << 8) | this.uxn.dev[0x11]; break
 		case 0x18: this.console.write(val); break
 		case 0x19: this.console.error(val); break
@@ -126,6 +122,7 @@ function Repl(rom, keyword)
 		this.result_el = document.getElementById("result")
 		this.run_el = document.getElementById("run")
 		this.load_examples()
+		this.load_metadata()
 		// Connect textarea
 		this.editor_el.addEventListener("keydown", (e) => {
 			let { keyCode } = e
@@ -167,6 +164,18 @@ function Repl(rom, keyword)
 		this.examples_el.addEventListener('change', (e) => {
 			this.select_example(e.currentTarget.value)
 		}, true)
+	}
+	
+	this.load_metadata = () => {
+		if(rom[0] != 0xa0) return
+		if(rom[3] != 0x80) return
+		if(rom[4] != 0x06) return
+		if(rom[5] != 0x37) return
+		let addr = (rom[1] << 8 | rom[2]) - 0xff
+		let str = ""
+		while(rom[addr])
+			str +=  String.fromCharCode(rom[addr++]);
+		console.log(str)
 	}
 
 	this.popup = (text) => {

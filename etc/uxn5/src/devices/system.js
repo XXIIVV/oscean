@@ -44,6 +44,7 @@ function System(emu)
 			document.getElementById("metarom").innerHTML = str
 		}
 	}
+
 	this.deo = (addr) => {
 		switch(addr) {
 			case 0x07: this.metadata(peek16(emu.uxn.dev, 0x06)); break;

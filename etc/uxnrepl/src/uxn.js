@@ -10,6 +10,7 @@ function Uxn(emu) {
 	this.dev = new Uint8Array(0x100)
 	this.get_ptr = (id) => ptr[id]
 	this.get_stk = (id) => stk[id]
+	this.get_ram = () => ram
 
 	/* Primitives */
 	function Ld1(r, o)          { return stk[r][(ptr[r] - o) & 0xff] }

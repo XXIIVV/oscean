@@ -1019,30 +1019,23 @@ emu_deo(const Uint8 port, const Uint8 value)
 
 /* clang-format off */
 
-#define Ld1(o)      stk[r][(Uint8)(ptr[r]-(o))]
-#define Ld2(o)      (Ld1(o) << 8 | stk[r][(Uint8)(ptr[r]-(o)+1)])
-#define Ldx(o8,o16) d ? Ld2(o16) : Ld1(o8)
-#define Re1(m)      ptr[r] -= m;
-#define Rex(m1,m2)  ptr[r] -= d ? m2 : m1;
-#define Pu1(s,v)    stk[s][ptr[s]++] = v;
-#define Pu2(s,v)    Pu1(s,v>>8) Pu1(s,v)
-#define Pux(s,v)    if(d) Pu1(s,(v)>>8) Pu1(s,v)
-#define Lda(s,o)    Pu1(r,ram[o]) if(d) Pu1(r,ram[(s)(o+1)])
+#define Lb(o)       stk[r][(Uint8)(ptr[r]-o)]
+#define Lx(m,m1,m2) m ? Lb(m2) << 8 | Lb(m2+1) : Lb(m1)
+#define Pb(s,v)     stk[s][ptr[s]++] = v;
+#define Px(m,s,v)   if(m) Pb(s,(v)>>8) Pb(s,v)
+#define Lda(m,s,o)  Pb(r,ram[o]) if(m) Pb(r,ram[(s)(o+1)])
 #define Sta(s,o,u)  if(d) ram[o]=u>>8, ram[(s)(o+1)]=u; else ram[o]=u;
-#define Dei         Pu1(r,emu_dei(x)) if(d) Pu1(r,dev[(x+1)&0xff])
-#define Deo         if(d) dev[x]=y>>8, emu_deo(x+1,y); else emu_deo(x,y);
+#define MUTE        (void)x;(void)y;(void)z;(void)r;(void)d;
 
-#define MUTE (void)x;(void)y;(void)z;(void)r;(void)d;
-
-#define OP(opc,X,Y,Z,K,P) \
-	case (opc)|0x00: { const int d=0,r=0,x=X,y=Y,z=Z; K P MUTE } break; \
-	case (opc)|0x20: { const int d=1,r=0,x=X,y=Y,z=Z; K P MUTE } break; \
-	case (opc)|0x40: { const int d=0,r=1,x=X,y=Y,z=Z; K P MUTE } break; \
-	case (opc)|0x60: { const int d=1,r=1,x=X,y=Y,z=Z; K P MUTE } break; \
-	case (opc)|0x80: { const int d=0,r=0,x=X,y=Y,z=Z; P MUTE } break; \
-	case (opc)|0xa0: { const int d=1,r=0,x=X,y=Y,z=Z; P MUTE } break; \
-	case (opc)|0xc0: { const int d=0,r=1,x=X,y=Y,z=Z; P MUTE } break; \
-	case (opc)|0xe0: { const int d=1,r=1,x=X,y=Y,z=Z; P MUTE } break;
+#define OP(opc,X,Y,Z,k1,k2,P) \
+	case opc|0x00: { const int d=0,r=0,x=X,y=Y,z=Z; ptr[r]-=d?k2:k1; P MUTE } break; \
+	case opc|0x20: { const int d=1,r=0,x=X,y=Y,z=Z; ptr[r]-=d?k2:k1; P MUTE } break; \
+	case opc|0x40: { const int d=0,r=1,x=X,y=Y,z=Z; ptr[r]-=d?k2:k1; P MUTE } break; \
+	case opc|0x60: { const int d=1,r=1,x=X,y=Y,z=Z; ptr[r]-=d?k2:k1; P MUTE } break; \
+	case opc|0x80: { const int d=0,r=0,x=X,y=Y,z=Z; P MUTE } break; \
+	case opc|0xa0: { const int d=1,r=0,x=X,y=Y,z=Z; P MUTE } break; \
+	case opc|0xc0: { const int d=0,r=1,x=X,y=Y,z=Z; P MUTE } break; \
+	case opc|0xe0: { const int d=1,r=1,x=X,y=Y,z=Z; P MUTE } break;
 
 static unsigned int
 uxn_eval(Uint16 start_pc)
@@ -1051,44 +1044,44 @@ uxn_eval(Uint16 start_pc)
 	for(;;)
 	switch(ram[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: { Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2; if(stk[0][--ptr[0]]) pc+=a; } break;
-	/* JMI */ case 0x40: { Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2+a; } break;
-	/* JSI */ case 0x60: { Uint16 a=ram[pc]<<8|ram[pc+1]; const Uint8 d=1; pc+=2; Pux(1,pc); pc+=a; } break;
-	/* LIT */ case 0x80: { const Uint8 r=0,d=0; Lda(Uint16,pc); pc+=1; } break;
-	/* LI2 */ case 0xa0: { const Uint8 r=0,d=1; Lda(Uint16,pc); pc+=2; } break;
-	/* LIr */ case 0xc0: { const Uint8 r=1,d=0; Lda(Uint16,pc); pc+=1; } break;
-	/* L2r */ case 0xe0: { const Uint8 r=1,d=1; Lda(Uint16,pc); pc+=2; } break;
-	/* INC */ OP(0x01, Ldx(1,2),0,       0,       Rex(1,2),Pux(r,x+1))
-	/* POP */ OP(0x02, 0,       0,       0,       Rex(1,2),{})
-	/* NIP */ OP(0x03, Ldx(1,2),0,       0,       Rex(2,4),Pux(r,x))
-	/* SWP */ OP(0x04, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,x) Pux(r,y))
-	/* ROT */ OP(0x05, Ldx(1,2),Ldx(2,4),Ldx(3,6),Rex(3,6),Pux(r,y) Pux(r,x) Pux(r,z))
-	/* DUP */ OP(0x06, Ldx(1,2),0,       0,       Rex(1,2),Pux(r,x) Pux(r,x))
-	/* OVR */ OP(0x07, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y) Pux(r,x) Pux(r,y))
-	/* EQU */ OP(0x08, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pu1(r,x==y))
-	/* NEQ */ OP(0x09, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pu1(r,y!=x))
-	/* GTH */ OP(0x0a, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pu1(r,y>x))
-	/* LTH */ OP(0x0b, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pu1(r,y<x))
-	/* JMP */ OP(0x0c, Ldx(1,2),0,       0,       Rex(1,2),pc=d?x:(pc+(Sint8)x);)
-	/* JCN */ OP(0x0d, Ldx(1,2),Ld1(d+2),0,       Rex(2,3),if(y) pc=d?x:(pc+(Sint8)x);)
-	/* JSR */ OP(0x0e, Ldx(1,2),0,       0,       Rex(1,2),Pu2(!r,pc) pc=d?x:(pc+(Sint8)x);)
-	/* STH */ OP(0x0f, Ldx(1,2),0,       0,       Rex(1,2),Pux(!r,x))
-	/* LDZ */ OP(0x10, Ld1(1),  0,       0,       Re1(1),  Lda(Uint8,x))
-	/* STZ */ OP(0x11, Ld1(1),  Ldx(2,3),0,       Rex(2,3),Sta(Uint8,x,y))
-	/* LDR */ OP(0x12, Ld1(1),  0,       0,       Re1(1),  Uint16 t=pc+(Sint8)x; Lda(Uint16,t))
-	/* STR */ OP(0x13, Ld1(1),  Ldx(2,3),0,       Rex(2,3),Uint16 t=pc+(Sint8)x; Sta(Uint16,t,y))
-	/* LDA */ OP(0x14, Ld2(2),  0,       0,       Re1(2),  Lda(Uint16,x))
-	/* STA */ OP(0x15, Ld2(2),  Ldx(3,4),0,       Rex(3,4),Sta(Uint16,x,y))
-	/* DEI */ OP(0x16, Ld1(1),  0,       0,       Re1(1),  Dei)
-	/* DEO */ OP(0x17, Ld1(1),  Ldx(2,3),0,       Rex(2,3),Deo)
-	/* ADD */ OP(0x18, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y+x))
-	/* SUB */ OP(0x19, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y-x))
-	/* MUL */ OP(0x1a, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y*x))
-	/* DIV */ OP(0x1b, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,x?y/x:0))
-	/* AND */ OP(0x1c, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y&x))
-	/* ORA */ OP(0x1d, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y|x))
-	/* EOR */ OP(0x1e, Ldx(1,2),Ldx(2,4),0,       Rex(2,4),Pux(r,y^x))
-	/* SFT */ OP(0x1f, Ld1(1)  ,Ldx(2,3),0,       Rex(2,3),Pux(r,(y>>(x&0xf))<<(x>>4)))
+	/* JCI */ case 0x20: { const Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2; if(stk[0][--ptr[0]]) pc+=a; } break;
+	/* JMI */ case 0x40: { const Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2+a; } break;
+	/* JSI */ case 0x60: { const Uint16 a=ram[pc]<<8|ram[pc+1]; pc+=2; Px(1,1,pc); pc+=a; } break;
+	/* LIT */ case 0x80: { const Uint8 r=0; Lda(0,Uint16,pc); pc+=1; } break;
+	/* LI2 */ case 0xa0: { const Uint8 r=0; Lda(1,Uint16,pc); pc+=2; } break;
+	/* LIr */ case 0xc0: { const Uint8 r=1; Lda(0,Uint16,pc); pc+=1; } break;
+	/* L2r */ case 0xe0: { const Uint8 r=1; Lda(1,Uint16,pc); pc+=2; } break;
+	/* INC */ OP(0x01, Lx(d,1,2), 0,         0,1,2, Px(d,r,x+1))
+	/* POP */ OP(0x02, 0,         0,         0,1,2, {})
+	/* NIP */ OP(0x03, Lx(d,1,2), 0,         0,2,4, Px(d,r,x))
+	/* SWP */ OP(0x04, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,x) Px(d,r,y))
+	/* ROT */ OP(0x05, Lx(d,1,2), Lx(d,2,4), Lx(d,3,6), 3,6, Px(d,r,y) Px(d,r,x) Px(d,r,z))
+	/* DUP */ OP(0x06, Lx(d,1,2), 0,         0,1,2, Px(d,r,x) Px(d,r,x))
+	/* OVR */ OP(0x07, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y) Px(d,r,x) Px(d,r,y))
+	/* EQU */ OP(0x08, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,x==y))
+	/* NEQ */ OP(0x09, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,y!=x))
+	/* GTH */ OP(0x0a, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,y>x))
+	/* LTH */ OP(0x0b, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,y<x))
+	/* JMP */ OP(0x0c, Lx(d,1,2), 0,         0,1,2, pc=d?x:(pc+(Sint8)x);)
+	/* JCN */ OP(0x0d, Lx(d,1,2), Lb((d+2)), 0,2,3, if(y) pc=d?x:(pc+(Sint8)x);)
+	/* JSR */ OP(0x0e, Lx(d,1,2), 0,         0,1,2, Px(1,!r,pc) pc=d?x:(pc+(Sint8)x);)
+	/* STH */ OP(0x0f, Lx(d,1,2), 0,         0,1,2, Px(d,!r,x))
+	/* LDZ */ OP(0x10, Lx(0,1,1), 0,         0,1,1, Lda(d,Uint8,x))
+	/* STZ */ OP(0x11, Lx(0,1,1), Lx(d,2,3), 0,2,3, Sta(Uint8,x,y))
+	/* LDR */ OP(0x12, Lx(0,1,1), 0,         0,1,1, Uint16 t=pc+(Sint8)x; Lda(d,Uint16,t))
+	/* STR */ OP(0x13, Lx(0,1,1), Lx(d,2,3), 0,2,3, Uint16 t=pc+(Sint8)x; Sta(Uint16,t,y))
+	/* LDA */ OP(0x14, Lx(1,2,2), 0,         0,2,2, Lda(d,Uint16,x))
+	/* STA */ OP(0x15, Lx(1,2,2), Lx(d,3,4), 0,3,4, Sta(Uint16,x,y))
+	/* DEI */ OP(0x16, Lx(0,1,1), 0,         0,1,1, Pb(r,emu_dei(x)) if(d) Pb(r,dev[(x+d)&0xff]))
+	/* DEO */ OP(0x17, Lx(0,1,1), Lx(d,2,3), 0,2,3, if(d) dev[x]=y>>8; emu_deo(x+d,y);)
+	/* ADD */ OP(0x18, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y+x))
+	/* SUB */ OP(0x19, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y-x))
+	/* MUL */ OP(0x1a, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y*x))
+	/* DIV */ OP(0x1b, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,x?y/x:0))
+	/* AND */ OP(0x1c, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y&x))
+	/* ORA */ OP(0x1d, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y|x))
+	/* EOR */ OP(0x1e, Lx(d,1,2), Lx(d,2,4), 0,2,4, Px(d,r,y^x))
+	/* SFT */ OP(0x1f, Lx(0,1,1), Lx(d,2,3), 0,2,3, Px(d,r,(y>>(x&0xf))<<(x>>4)))
 	}
 	return 0;
 }
@@ -1342,7 +1335,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(79K), 10 Jul 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(79K), 27 Jul 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
