@@ -12,9 +12,16 @@
 |100
 
 @on-reset ( -> )
+	;meta #06 DEO2
 	;line/on-console .Console/vector DEO2
 	random/<init>
 	BRK
+
+@meta $1
+	( name ) "Thue 0a
+	( desc ) "A 20 "Thue 20 "Interpreter 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "29 20 "Jul 20 "2026 00 00
 
 (
 @|Compiler )
@@ -40,7 +47,7 @@
 	,&ptr LDR .&buf
 	&>l
 		/is-spacer ?{
-			INC GTHk ?&>l
+			INC GTHk ?/>l
 		POP #ff }
 	NIP JMP2r
 
@@ -80,7 +87,7 @@
 @acc/<fill> ( str* -- str* )
 	&>wf
 		LDAk DUP ?{ POP #00 /append !/<swap> }
-		/append INC2 !&>wf
+		/append INC2 !/>wf
 
 @acc/<swap> ( -- )
 	;&buf-1 ;&buf-2 [ LIT2 01 &flip $1 ] INCk ,&flip STR
@@ -96,17 +103,22 @@
 @acc/<eval> ( -- )
 	/<swap>
 	/<print>
+	#0000
 	&>we
 		[ LIT2 00 -rewrite ] STZ
 		/<step>
-		.rewrite LDZ ?{ JMP2r }
-		/<print> !&>we
+		.rewrite LDZ ?{ POP2 JMP2r }
+		/<print>
+		INC2 ORAk ?/>we
+	;&exhausted !err/<print>
+
+	&exhausted "Thue 20 "exhausted. 0a00
 
 @acc/<step> ( src* -- src* )
 	/get-src
 	&>ws
 		LDAk ?{ POP2 JMP2r }
-		/match INC2 !&>ws
+		/match INC2 !/>ws
 
 @acc/match ( src* -- src* )
 	rules/find INC2k ORA ?{ POP2 LDAk !/append }
@@ -119,7 +131,7 @@
 	LDAk [ LIT "~ ] NEQ ?{ INC2 str/<print> !/<fill> }
 	&>wa
 		LDAk DUP ?{ POP POP2 !/<fill> }
-		/append INC2 !&>wa
+		/append INC2 !/>wa
 
 (
 @|Rules )
@@ -129,13 +141,13 @@
 	;&ptr LDA2 ;&buf
 	&>lf
 		LDA2k STH2kr /compare ?{ DUP2 shuffle/<push> }
-		#0004 ADD2 GTH2k ?&>lf
+		#0004 ADD2 GTH2k ?/>lf
 	POP2 POP2 POP2r !shuffle/pull
 
 @rules/compare ( rule* src* -- t )
 	STH2
 	&>wc
-		LDAk LDAkr STHr NEQ ?{ INC2 INC2r LDAk ?&>wc }
+		LDAk LDAkr STHr NEQ ?{ INC2 INC2r LDAk ?/>wc }
 	POP2r LDA #00 NEQ JMP2r
 
 @rules/<push> ( spacer -- )
@@ -170,7 +182,7 @@
 	&>w
 		LDZk DUP ?{ POP2 #00 !/<push> }
 		/<push>
-		INC !&>w
+		INC !/>w
 
 @dict/<push> ( c -- )
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
@@ -203,7 +215,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk chr/escape }
 		.Console/write DEO
-		INC2 !&>wp
+		INC2 !/>wp
 
 @str/len ( str* -- length* )
 	DUP2 /cap SWP2 INC2 SUB2 JMP2r
@@ -216,7 +228,7 @@
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
 		.Console/error DEO
-		INC2 !&>wp
+		INC2 !/>wp
 
 @chr/escape ( byte -- byte )
 	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
