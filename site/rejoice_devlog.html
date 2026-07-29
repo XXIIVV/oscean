@@ -111,6 +111,21 @@ c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
 [a^5 b^5] 
 </pre>
 
+<h3>On Subroutines</h3>
+<p>Rejoice has no return stack, and no way to automatically handle returning from a goto, these must be implemented in the program itself:</p>
+<pre>
+x^3 y^4 r1 Add @R1
+x^5 y^5 r2 Add @R2
+End
+
+@Add ( x y -- )
+	( x+y   ) x^y/y^y
+	( print ) .#x/x^x .\s
+	R1/r1
+	R2/r2
+
+@End</pre>
+
 <h3 id='fractran'>On Fractran</h3>
 <p>A <a href='fractran.html'>Fractran</a> program can be thought of as a Rejoice program with a single label, at the top of the program, present in each numerator.</p>
 
@@ -144,6 +159,49 @@ c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
 [x^3 y^4 +] [r^x r^y]/[x^x + y^y]
 [r^7] </pre>
 
+<h3>Text Adventure</h3>
+
+<p>Here's an implementation of the controller to move between the living room, attic and garden. Inspired by Conrad Barski's Land of Lisp.</p>
+
+<center>
+	<img src='../media/refs/attic_garden.png' width='400'/>
+</center>
+
+<pre>
+( start in the living room ) EnterLivingroom
+( will queue commands ) cmd1 
+
+@Eval
+	( living room to attic ) [Use ladder cmd2]/cmd1 
+	( back to living room ) [Use ladder cmd3]/cmd2 
+	( living room to garden ) [Use door cmd4]/cmd3
+	( back to living room ) [Use door]/cmd4
+	End
+
+@Use 
+	EnterAttic/[livingroom ladder^2 door]
+	EnterLivingroom/[attic ladder^2]
+	EnterGarden/[livingroom ladder door^2]
+	EnterLivingroom/[garden door^2]
+	End
+
+@EnterGarden ( -- )
+	."You have entered the garden, you see a well.\n"
+	garden door
+	Eval
+
+@EnterLivingroom ( -- )
+	."You have entered the living room.\n"
+	livingroom door ladder 
+	Eval
+
+@EnterAttic ( -- )
+	."You have entered the attic.\n"
+	attic ladder
+	Eval
+
+@End
+</pre>
 
 <h3 id='bestiary'>Bestiary</h3>
 
