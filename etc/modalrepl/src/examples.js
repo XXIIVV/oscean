@@ -89,6 +89,15 @@ examples.search=`<> (Find a value in a list)
 
 ((find e) a (b (c (d (e (f (g (h ()))))))))
 `
+examples.mixfix=`<> (add ?x ?y) (?x + ?y)
+<> (?x ?y add) (?x + ?y)
+
+<> ((?a) + ?b) (?a + (?b))
+<> (0 + ?b) (sum ?b)
+<> (print (sum ?:)) ()
+
+(print (12 (add 2 3) add))
+`
 examples.fizzbuzz=`<> (For a hundred numbers:
       - When divisible by 15, print FizzBuzz
       - When divisible by 3, print Fizz
