@@ -53,7 +53,7 @@ etc/index.html: bin/dir.rom etc/*
 
 # Repls
 
-repl: etc/uxnrepl/src/asm.js etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js etc/thuerepl/src/thue.js etc/neurrepl/src/neur.js etc/modalrepl/src/modal.js
+repl: etc/uxnrepl/src/asm.js etc/rejoicerepl/src/rejoice.js etc/lisprepl/src/heol.js etc/thuerepl/src/thue.js etc/neurrepl/src/neur.js etc/modalrepl/src/modal.js etc/tagrepl/src/tag.js
 
 bin/format-js.rom: etc/format-js.tal.txt
 	@ ${ASM} etc/format-js.tal.txt bin/format-js.rom
@@ -81,3 +81,7 @@ etc/modalrepl/src/modal.js: bin/format-js.rom etc/modal.tal.txt
 	@ ${ASM} etc/modal.tal.txt modal
 	@ ${EMU} bin/format-js.rom modal > etc/modalrepl/src/modal.js
 	@ rm -f modal modal.sym
+etc/tagrepl/src/tag.js: bin/format-js.rom etc/tag.tal.txt
+	@ ${ASM} etc/tag.tal.txt tag
+	@ ${EMU} bin/format-js.rom tag > etc/tagrepl/src/tag.js
+	@ rm -f tag tag.sym

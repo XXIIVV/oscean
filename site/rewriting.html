@@ -15,7 +15,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="thue.html">thue</a></li><li><a href="vera.html">vera</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="modal.html">modal</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="tag.html">tag</a></li><li><a href="thue.html">thue</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="modal.html">modal</a></li></ul></nav>
 <main><h2>Rewriting languages are typically made of rules and an initial state.</h2>
 
 <img src='../media/refs/rewrite_seele.png' class="right" style='width:140px'/>
@@ -472,6 +472,71 @@ res n^5 last fib
 	.denval { background:#ffd18c; color: black; padding: 0 2px; border-radius: 3px; }
 </style>
 -->
+<h2>Tag systems</h2>
+
+<p>A Tag system is a FIFO(<i>First in, first out</i>) queue <a href='rewriting.html'>rewriting language</a> made of rules where a symbol is read at one end of the queue, and the result pushed at the other end. An interesting attribute of this rewriting system is that there is no rule search due to the left-hand side of the rule being a fixed-length.</p>
+
+<img src='../media/refs/jsrf.png' width='200' class='right'/>
+
+<p>A 2-tag system, like the system described below, reads a symbol and deletes the following one. A 3-tag system, would read a symbol and delete 2 symbols.</p>
+
+<h3>Playground</h3>
+
+<p>Evaluation consists of reading a single symbol at the left of the queue, loading its associated rule and putting the right-hand side of the rule at the end of the queue. If there is no rule associated to the symbol, halt.</p>
+
+<iframe src="../etc/tagrepl/index.html" frameborder="0" height="350"></iframe>
+
+<h3>Logic</h3>
+
+<p>We can think of the <b>and</b> logic gate as a set of rules that will end in either a true or a false state:</p>
+<pre style='margin-bottom:1px'>
+x >> T.
+y >> T.
+o >> F
+T >> Q
+F >> Q
+</pre>
+<pre style='margin-bottom:1px'>
+x.y.
+  y.T.
+    T.T.
+      T.Q  <i>; True</i>
+        QQ
+</pre>
+<pre>
+x.o.
+  o.T.
+    T.F
+      FQ   <i>; False</i>
+        Q
+</pre>
+
+<h3>Loops</h3>
+
+<p>Let's imagine a nested loop like <code>while(i++ < 3) while(j++ < 3)</code>, we'll have a set of rules to move between the iterator states:</p>
+<pre style='margin-bottom:1px'>
+0 >> 1.
+1 >> 2.
+2 >> 3.
+</pre>
+<pre>
+0.0.0.
+  0.0.1.
+    0.1.1.
+      1.1.1.
+        1.1.2.
+          1.2.2.
+            2.2.2.
+              2.2.3.
+                2.3.3.
+                  3.3.3.
+</pre>
+
+<ul>
+	<li><a href='https://en.wikipedia.org/wiki/Tag_system' target='_blank'>Tag Systems</a>, Wikipedia</li>
+</ul>
+
+<img src='../media/refs/creative_coding_privacy.png' width='300'/>
 <h2>Thue is a string-rewriting system.</h2>
 
 <img src='../media/refs/thue.png' style='float:right;width:140px;margin:0;padding:15px'/>
@@ -680,109 +745,6 @@ So it was a kingdom was lost,
 	George Herbert, Jacula Prudentum
 
 -->
-<h2>Vera is a multiset rewriting system.</h2>
-
-<p>Vera is a <a href='multisets.html'>multiset</a> rewriting system designed to converse with computers,
-created by the same author as <a href='modal.html'>Modal</a>. A program is made
-entirely of facts and rules:</p>
-
-<pre>
-|| The first character in a file assigns a spacer glyph.
-|| A program is made of rules and facts.
-
-|| Two spacers indicate the creation of facts
-|| Facts are separated by commas, a matchbox, a log, paper
-
-| A rule has a left side | And a right side.
-| Facts on the left side | are replaced by facts in the right side
-
-| a flame, a log | a warm fire
-| a matchbox | a match, a match, a box
-| a match, paper | a flame
-</pre>
-
-<h3>Spacer</h3>
-<p>The first character in a file assigns a <b>spacer</b> glyph to be used to
-indicate rules and facts, the pipe character <kbd>|</kbd> is most commonly
-used:</p>
-<pre>
-| this is a rule |
-|| this is a fact, this is another fact
-</pre>
-
-<h3>Facts</h3>
-<p>A <b>fact</b> is the name for an item in the bag, the bag is the collection
-of all existing facts. A line starting with two spacing characters(also called an
-empty rule) will add facts to the bag, facts are comma separated:</p>
-
-<pre>
-|| a fact, another fact
-|| one more fact,
-	yet another,
-	a last fact
-</pre>
-
-<p>Whitespace only exists to separate the words in a fact, but are not
-significant when matching facts. These 3 facts are equal:</p>
-<pre>
-|| a new fact, a   new fact, a new   fact
-</pre>
-
-<p>Multiple instances of the same facts can be created by using the colon
-character. There are same amount of instances of these two facts:</p>
-<pre>
-|| a, a, a, a, b:4
-</pre>
-
-<h3>Rules</h3>
-<p>A <b>rule </b>is made of a left and often a right side, and indicate facts to
-remove and replace in the bag.</p>
-
-<pre>
-| a fact, another fact | the result
-| another rule | another result
-| a rule may not have a right side | 
-</pre>
-
-<h3>Evaluation</h3>
-<p>In turn, each rule is matched against the existing facts found in the bag,
-starting from the first rule, when a rule's left-hand side is found in the bag,
-these facts are replaced by the rule's right-hand side, and matching is started
-again from the top. </p>
-
-<pre>
-|flour, sugar, apples| apple cake
-|apples, oranges, cherries| fruit salad
-|fruit salad, apple cake| fruit cake
-
-|| sugar, oranges, apples, apples, cherries, flour
-</pre>
-
-<p>Vera will match any amount found in the left-hand side, the following two
-rules are equivalent in Vera:</p>
-
-<pre>
-| an apple, hunger | a core
-| an apple, an apple, an apple, hunger | a core
-</pre>
-
-<h3>Comments</h3>
-<p>Vera will discard a rule when all the facts found in its left-hand side are not
-present in any rule's right-hand side or declared as facts.</p>
-<pre>
-| yellow | This is a comment.
-| purple | This is not a comment.
-| # | This is also a comment.
-|| purple
-</pre>
-
-<ul>
-	<li><a href='../etc/vera.c.txt' target='_blank'>Vera Interpreter(C89)</a>, ANSI C.</li>
-	<li><a href='https://git.casuallyblue.dev/nova/wiki/wiki/A-Raven's-Flyby-of-Vera' target='_blank'>A Raven's Flyby</a>, tutorial.</li>
-	<li><a href='https://wiki.nova-lang.net/index.php?title=Main_Page' target='_blank'>Vera Wiki</a></li>
-</ul>
-
-
 <h2>Interaction nets are a graph rewriting system.</h2>
 
 <p><b>Interaction nets</b>(INs) encode computations in a graph of nodes that is <a href='rewriting.html'>rewritten</a> until it stabilizes, they can capture all computable functions with no external machinery or a garbage collector. A computational step can be defined as a constant time operation, and the model allows for <a href='parallel_computing.html'>parallelism</a> in which many steps can take place at the same time.</p>
@@ -820,11 +782,7 @@ by the rewriting steps in the following format:</p>
 
 <p>Evaluation is done by scanning from left-to-right across a string that represents a serialized tree. Rules are tested against each node, when a match occurs, the left-hand side of the matching pattern is erased from the tree, the right-hand side of the rule is written in its stead, and scanning starts over at the start of the tree. The evaluation ends when no rule match.</p>
 
-<iframe src="../etc/modalrepl/index.html" frameborder="0" class='frame' style='height:500px'></iframe>
-
-<style>
-.frame { overflow: hidden; height: 450px; margin-bottom: 15px; border-radius:5px }
-</style>
+<iframe src="../etc/modalrepl/index.html" frameborder="0" height="500"></iframe>
 
 <h3 id='rules'>Rules</h3>
 
@@ -1133,7 +1091,7 @@ the exact number of items must be known beforehand.</p>
 	<li><a href='https://www.sheeeeeeeep.art/types-of-modal.html'>Levels of Dynamic behavior in Modal</a></li>
 	<li>This language is an original creation of <a href='https://wryl.tech/' target='_blank'>wryl</a> from 2018, who has courteously spent countless hours to help me progress with the language, much of the code above is derived from their research and merely made available here as to give this fantastic system a home on the internet.</li>
 </ul>
-<ul></ul><p><b>incoming: </b><a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="paper_rewriting.html">paper rewriting</a> <a href="rejoice_devlog.html">rejoice devlog</a> <a href="fractran.html">fractran</a> <a href="fractran_devlog.html">fractran devlog</a> <a href="thue.html">thue</a> <a href="interaction_nets.html">interaction nets</a> <a href="neur.html">neur</a> <a href="2025.html">2025</a> <a href="2024.html">2024</a> </p></main>
+<ul></ul><p><b>incoming: </b><a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="paper_rewriting.html">paper rewriting</a> <a href="rejoice_devlog.html">rejoice devlog</a> <a href="fractran.html">fractran</a> <a href="fractran_devlog.html">fractran devlog</a> <a href="tag.html">tag</a> <a href="thue.html">thue</a> <a href="interaction_nets.html">interaction nets</a> <a href="neur.html">neur</a> <a href="2025.html">2025</a> <a href="2024.html">2024</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
 	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>

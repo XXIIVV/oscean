@@ -1,0 +1,110 @@
+( 54K . Tag )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+
+|000
+
+	@line/buf $1 &spacer
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	;line/on-console .Console/vector DEO2
+	BRK
+
+@meta $1
+	( name ) "Tag 0a
+	( desc ) "A 20 "2-Tag 20 "Interpreter 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "29 20 "Jul 20 "2026 00 00
+
+(
+@|Compiler )
+
+@line/on-console ( -> )
+	.Console/read DEI DUP #0a NEQ ?{
+		/<parse>
+		[ LIT2 00 -&buf ] STZ
+		[ LIT2 -&buf _&ptr ] STR
+		BRK }
+	DUP #20 GTH ?{ POP BRK }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@line/<parse> ( -- )
+	[ LIT2 "; -&buf ] LDZ EQU ?&skip
+	;&buf LDAk ?{ &skip POP2 JMP2r }
+	.&spacer LDZ2 [ LIT2 ">> ] EQU2 ?rules/<add>
+	state/<push-str> !state/<eval>
+
+(
+@|Rules )
+
+@rules/get-addr ( 0 chr -- addr* )
+	#20 SUB DUP ADD ;&buf ADD2 JMP2r
+
+@rules/<add> ( str* -- )
+	LDAk STH
+	#0003 ADD2 dict/alloc #00 STHr /get-addr STA2
+	JMP2r
+
+(
+@|State )
+
+@state/<eval> ( -- )
+	/<print>
+	#00
+	&>step
+		#00 [ LIT2 &head =&buf ] INC2k INC2 #0fff AND2 ;&buf ADD2 ,&head STR2
+		LDA rules/get-addr LDA2 ORAk ?{ POP2 JMP2r }
+		/<push-str>
+		/<print>
+		INC DUP ?/>step
+	;&exhausted !/<print-str>
+
+	&exhausted "Tag 20 "exhausted. 0a00
+
+@state/<print> ( -- )
+	,&head LDR2 ;&buf
+	&>l
+		EQU2k ?{ #2019 DEO
+			INC2 !/>l }
+	POP2 POP2 ,&head LDR2
+	( >> )
+
+@state/<print-str> ( str* -- )
+	&>wp
+		LDAk DUP ?{
+			POP POP2 #0a19 DEO
+			JMP2r }
+		#19 DEO
+		INC2 !/>wp
+
+@state/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		INC2 !/>w
+
+(
+@|Dict )
+
+@dict/alloc ( str* -- ptr* )
+	,&ptr LDR2 SWP2
+	&>w
+		LDAk DUP #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA2
+		?{ POP2 JMP2r }
+		INC2 !/>w
+
+(
+@|Buffers )
+
+@dict/buf $1000
+
+@rules/buf $100
+|8000 @state/buf $1000
+
