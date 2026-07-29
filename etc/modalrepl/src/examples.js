@@ -92,11 +92,11 @@ examples.search=`<> (Find a value in a list)
 examples.mixfix=`<> (add ?x ?y) (?x + ?y)
 <> (?x ?y add) (?x + ?y)
 
-<> ((?a) + ?b) (?a + (?b))
-<> (0 + ?b) (sum ?b)
-<> (print (sum ?:)) ()
+<> ((n (?a)) + (n ?b)) ((n ?a) + (n (?b)))
+<> ((n 0) + (n ?b)) (n ?b)
+<> (print (n ?:)) ()
 
-(print (12 (add 2 3) add))
+(print ((n 12) (add (n 2) (n 3)) add))
 `
 examples.fizzbuzz=`<> (For a hundred numbers:
       - When divisible by 15, print FizzBuzz
