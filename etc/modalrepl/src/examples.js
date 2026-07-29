@@ -1,6 +1,5 @@
-let examples = {}
-
-examples.hello_world = `<> (Welcome to the Modal playground,
+let examples={}
+examples.hello_world=`<> (Welcome to the Modal playground,
     Click the Rewrite button to evaluate the program.
     Select other examples with the dropdown.)
 
@@ -17,26 +16,26 @@ examples.hello_world = `<> (Welcome to the Modal playground,
 
 <> (print-bool (Bool ?:)) (done.)
 
-(print-bool (equal baz baz))`
-
-examples.add = `<> (Add 2 + 3, print the result)
+(print-bool (equal baz baz))
+`
+examples.add=`<> (Add 2 + 3, print the result)
 
 <> (add (?a) ?b) (add ?a (?b))
 <> (add 0 ?b) (sum ?b)
 <> (print (sum ?:)) ()
 
-(print (add 3 2))`,
-
-examples.reverse_list = `<> (Reverse a List)
+(print (add 3 2))
+`
+examples.reverse_list=`<> (Reverse a List)
 
 <> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
 <> (reverse List ?empty ?list) (print List ?list)
 <> (print List (?: ?x)) (print List ?x)
 <> (print List ()) (done.)
 
-(reverse List (m (o (d (a (l ()))))) ())`,
-
-examples.tic_tac_toe = `<> (Tic-tac-toe
+(reverse List (m (o (d (a (l ()))))) ())
+`
+examples.tictactoe=`<> (Tic-tac-toe
     All the winning boards: )
 
 <> (?x ?x ?x
@@ -66,9 +65,9 @@ examples.tic_tac_toe = `<> (Tic-tac-toe
 
 (a b c
  d e f
- g h i)`,
-
-examples.product = `<> (Multiply 2 * 5, print the result)
+ g h i)
+`
+examples.product=`<> (Multiply 2 * 5, print the result)
 
 <> (?a * (?b)) ((?a * ?b) + ?a)
 <> ((?a) + ?b) (?a + (?b))
@@ -78,20 +77,19 @@ examples.product = `<> (Multiply 2 * 5, print the result)
 <> (wait) (print)
 <> ((?:) (print)) ()
 
-((2 * 5) (wait))` ,
+((2 * 5) (wait))
+`
+examples.search=`<> (Find a value in a list)
 
-examples.find =  `<> (Find a value in a list)
+<> ((find ?q) ?q (?n ?t)) ((found ?q) ?n ?t)
+<> ((find ?q) ?h (?n ?t)) (?h ((find ?q) ?n ?t))
+<> ((find ?q) ?h ()) ((unfound ?q) ?h ())
+<> (?h ((found ?q) ?n ?t)) ((found ?q) ?h (?n ?t))
+<> (?h ((unfound ?q) ?n ?t)) ((unfound ?q) ?h (?n ?t))
 
-<> ((find ?target) ?target (?next ?tail)) (?head (found ?target) ?next ?tail)
-<> ((find ?target) ?head (?next ?tail)) (?head ((find ?target) ?next ?tail))
-<> ((find ?target) ?head ()) ((unfound ?target) ?head ())
-<> (?head ((found ?target) ?next ?tail)) ((found ?target) ?head (?next ?tail))
-<> (?head ((unfound ?target) ?next ?tail)) ((unfound ?target) ?head (?next ?tail))
-
-((find e) a (b (c (d (e (f (g (h ()))))))))`,
-
-examples.fizzbuzz =  
-`<> (For a hundred numbers:
+((find e) a (b (c (d (e (f (g (h ()))))))))
+`
+examples.fizzbuzz=`<> (For a hundred numbers:
       - When divisible by 15, print FizzBuzz
       - When divisible by 3, print Fizz
       - When divisible by 5, print Buzz
@@ -106,10 +104,9 @@ examples.fizzbuzz =
 <> (?i ?f 5)   ((print-word Buzz) ?i ?f 0)
 <> (?i ?f ?b)  ((print-word ?i) ?i ?f ?b)
 
-(1 1 1)`,
-
-examples.fibonacci = 
-`<> (Print the nth Fibonacci number)
+(1 1 1)
+`
+examples.fibonacci=`<> (Print the nth Fibonacci number)
 
 <> (fib 0) 0
 <> (fib 1) 1
@@ -120,5 +117,5 @@ examples.fibonacci =
 <> (wait) (print)
 <> (?: (print)) ()
 
-((fib 6) (wait))`
-
+((fib 6) (wait))
+`
