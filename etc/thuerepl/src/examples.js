@@ -9,6 +9,19 @@ examples.sum=`a+b::=aa+
 +=?::=
 ::=
 aaa+bbbbb=?`
+examples.logic=`(not T)::=F
+(not F)::=T
+(or T T)::=T
+(or T F)::=T
+(or F T)::=T
+(or F F)::=F
+(and T T)::=T
+(and T F)::=F
+(and F T)::=F
+(and F F)::=F
+::=
+(and (or F (not F)) T)
+`
 examples.roll_dice=`%text,::=~You rolled: 
 %dice::=~1.
 %dice::=~2.
