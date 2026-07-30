@@ -1,8 +1,8 @@
 let dict=`
 abacus [n] abaco
-abandon [vt] cede; linque; relinque
-abate [vt] minue
-abide [vi] dege
+abandon [v] cede; linque; relinque
+abate [v] minue
+abide [v] dege
 abject [adj] vile
 able [adj] (skillful) capace
 about [prep] (concerning) de
@@ -10,33 +10,33 @@ about [prep] (place, time, quantity) circa
 above [prep] (over but not in contact) super
 abroad [adv] ab; ad extero
 absent [adj] (to be absent) abes
-accept [vt] accipe
+accept [v] accipe
 accident [n] (mishap) infortunio
-accompany [vt] comita
-accomplish [vt] perfice
-accord [vt] (give, award) da
+accompany [v] comita
+accomplish [v] perfice
+accord [v] (give, award) da
 accordingly [adv] ergo
 according to [prep] juxta; secundo; secundum
-accost [vt] appropinqua
+accost [v] appropinqua
 account [n] computo
 on account of [prep] ergo; propter
 ache [n] dolore
-achieve [vt] comple
+achieve [v] comple
 achievement [n] opera
-acknowledge [vt] agnosce
-acquire [vt] acquire; eme; lucra; obtine
+acknowledge [v] agnosce
+acquire [v] acquire; eme; lucra; obtine
 across [prep] (on the other side of) trans
-address [vt] dirige; discute; ora
+address [v] dirige; discute; ora
 adjacent [adj] adjacente
-adjoin [vt] adjunge
+adjoin [v] adjunge
 adjunct [adj] adjuncto
-admit [vt] confite
-adorn [vt] para
+admit [v] confite
+adorn [v] para
 adroit [adj] versuto
 Advent [n] (rel) adventu
 adverse [adj] adverso
 advertise [n] (advertisement) annuntio
-advise [vt] consilia; consule; notifica
+advise [v] consilia; consule; notifica
 after [adv] deinde; post
 after [prep] (according to) secundo; secundum
 afterward [adv] postea
@@ -46,9 +46,9 @@ against [adj] adverso
 age [n] (old age) senectute
 aged [adj] sena
 agree [adj] (agreeable) amoeno; grato
-be agreeable [vt] place
+be agreeable [v] place
 air [n] (airship) aeronave
-alarm [vt] turba
+alarm [v] turba
 alas [inter] eheu!; heu!
 albeit [conj] quamvis
 alike [adj] pari
@@ -62,7 +62,7 @@ also [adv] etiam
 although [conj] etsi; quamvis
 always [cor] semper
 ambiguous [adj] vago
-amble [vi] ambula
+amble [v] ambula
 among [prep] apud; inter
 amuse [n] (amusement) ludo
 ancestor [n] progenitore
@@ -71,25 +71,25 @@ and [conj] atque; et; item
 angry [adj] irato
 anguilla [n] anguilla
 anguish [n] angustia
-announce [vt] nuntia
+announce [v] nuntia
 announcement [n] annuntio
 another [adj] altero
-answer [vt] responde
+answer [v] responde
 answer [n] responso
 antique [n] (antiquity) vetustate
 antler [n] ramo
 any [cor] (one, some, every, or all without specification) ullo
 ape [n] simia
 apex [n] vertice
-appertain [vi] pertine
+appertain [v] pertine
 apple [n] male
-arise [vi] nasce; ori
+arise [v] nasce; ori
 arm [n] brachio
 armoire [n] armario
 around [prep] circum
-arrange [vt] ordina
+arrange [v] ordina
 arrears [n] arretrato
-arrive [vi] adveni; perveni
+arrive [v] adveni; perveni
 arrival [n] adventu
 as [cor] quale; sicut
 as far as [prep] (distance) usque
@@ -98,14 +98,14 @@ as long as [prep] dum
 as...as [conj] tanto...quanto; tanto...quanto tam...quam
 as...so [conj] ut...ita
 ash [adj] (ashy) cinereo
-ask [vt] interroga; quaere
-ask for [vt] roga
+ask [v] interroga; quaere
+ask for [v] roga
 ass [n] (zool) asino
-assemble [vt] assembla; conflue; reuni
-assent [vi] annue
+assemble [v] assembla; conflue; reuni
+assent [v] annue
 associate [n] socio
-assume [vt] (debts, responsibilities, etc.) sume
-assume [vt] (suppose, presume) induc
+assume [v] (debts, responsibilities, etc.) sume
+assume [v] (suppose, presume) induc
 assure [n] (assurance) fiducia
 at [prep] (contiguous to) ad
 at [prep] (in the house of) apud
@@ -117,17 +117,17 @@ at [prep] (at once) subito
 at [prep] (at present) nunc
 at [prep] (at the end) in fine
 at [prep] (at the time) tunc
-attack [vt] opugna
-attain [vt] attinge
+attack [v] opugna
+attain [v] attinge
 attempt [n] conatu
-attend [vt] servi
-augment [vt] auge
-augur [vt] augura
+attend [v] servi
+augment [v] auge
+augur [v] augura
 augury [n] augurio
 aunt [n] amita
-avoid [vt] evita
-await [vt] attende
-awake [vi] (to wake up) expergisce
+avoid [v] evita
+await [v] attende
+awake [v] (to wake up) expergisce
 away [adv] ab
 awning [n] tentorio
 back [n] (anat) dorso
@@ -139,20 +139,20 @@ baggage [n] impedimento; sarcina
 balance [n] (of account) reliquo
 ball [n] pilo
 band [n] turba
-bang [vt] percute
+bang [v] percute
 bang [n] rumore
 bar [n] (in a river) pulvino
 barbarian [adj] (barbarous) truce
 bard [n] vate
 bare [adj] mero
 barely [adv] vix
-bark [vi] latra
+bark [v] latra
 bark [n] (tree, outer) cortice
 barley [n] hordeo
-base [vt] funda
-battle [vt] lucta; pugna
+base [v] funda
+battle [v] lucta; pugna
 battle [n] lucta
-be [vi] es
+be [v] es
 being [n] (entity) ente
 beak [n] becco; rostro
 bean [n] faba
@@ -160,12 +160,12 @@ bear [n] (zoo) urso
 bearing [n] vultu
 beard [n] barba
 beast [n] bestia
-beat [vt] (defeat) vince
-beat [vt] (strike repeatedly) battue
+beat [v] (defeat) vince
+beat [v] (strike repeatedly) battue
 beautiful [adj] pulcro
 because [conj] nam; quia
 because of [prep] ergo; propter
-become [vt] fi
+become [v] fi
 bed [n] lecto
 bedroom [n] cubiculo
 bedspread [n] linteolo
@@ -176,18 +176,18 @@ before [prep] (place) coram; prae
 before [prep] (time) ante
 before now [adv] jam
 before then [prep] jam
-beg [vt] pete
-begin [vt] incipe; ingrede
+beg [v] pete
+begin [v] incipe; ingrede
 beginning [n] principio
 behalf [n] (on behalf of) pro
 behind [prep] retro
 behold! [inter] ec
-behoove [vi] (to be necessary) oporte
-believe [vt] crede
+behoove [v] (to be necessary) oporte
+believe [v] crede
 bell [n] campana
 below [prep] infra; sub
 bench [n] sedile
-bend [vt] flecte
+bend [v] flecte
 benefit [n] lucro
 benign [adj] benigno
 beside [prep] vicino
@@ -201,7 +201,7 @@ beyond [prep] (after) post
 beyond [prep] (besides) ultra
 beyond [prep] (farther) praeter
 beyond [prep] (on the other side of) trans
-bias [vt] propende
+bias [v] propende
 big [adj] crasso
 bill [n] factura
 bird [n] ave
@@ -212,29 +212,29 @@ blade [n] lamina
 blame [n] culpa
 bland [adj] lene
 blandish [n] (blandishment) blanditia
-blaze [vi] splende
-blend [vt] misce
+blaze [v] splende
+blend [v] misce
 bless [adj] (blessed) beato
 bliss [adj] (blissful) beato
 block [n] (of stone, etc.) massa
 blond [adj] flavo
 blood [n] sanguine
-bloom [vi] flore
-blow [vt] suffla
+bloom [v] flore
+blow [v] suffla
 bludgeon [n] virga
 board [n] tabula
 body [n] corpore
 bog [n] palude
-boil [vt] bulli
+boil [v] bulli
 book [n] (bookseller) bibliopola; librario
 boot [n] calceo
 booth [n] umbra
 bore [n] (boredom) taedio; (weariness) taedio
 born [adj] nato
-be born again [vt] renasce
-be born [vi] nasce
+be born again [v] renasce
+be born [v] nasce
 borough [n] pago
-borrow [vt] mutua
+borrow [v] mutua
 both [adv] ambo
 both...and [conj] et...et
 bottle [n] phiala
@@ -246,37 +246,37 @@ branch [n] ramo
 brass [n] aes
 bravo [inter] eug!
 bread [n] pane
-break [vt] frange; quassa; rumpe
+break [v] frange; quassa; rumpe
 broken [adj] fracto
 breakfast [n] dejejuno; primo prandio
 breath [n] flatu; halitu
-breathe [vi] respira
+breathe [v] respira
 breeches [n] braca
 brick [n] later
 bridge [n] ponte
-bring [vt] apporta
-bring about [vt] effice
+bring [v] apporta
+bring about [v] effice
 broad [adj] lato
-brood [vt] (brood upon) fove
+brood [v] (brood upon) fove
 broth [n] jusculo
 brother [n] fratre
 brown [adj] fusco
 bud [n] germine
 bugle [n] bucina
-build [vt] fabrica
+build [v] fabrica
 built [adj] constructo
 building [n] fabrica
 bulk [n] massa
 bundle [n] fasce
-burn [vt] ure
-burn [vi] arde
+burn [v] ure
+burn [v] arde
 business [n] (any matter or concern) opera
 business [n] (commerce) negotio
 bust [n] (chest) pectore
 but [conj] ceterum; sed; vero
 but [conj] (unless) nisi; si ne
-butcher [vt] trucida
-buy [vt] eme
+butcher [v] trucida
+buy [v] eme
 by [prep] (authorship) ab
 by [prep] (by means of) per
 by [prep] (in oaths) per
@@ -290,10 +290,10 @@ by [prep] (by then) jam
 by [prep] (by thistime ) jam
 cabinet [n] armario
 cake [n] libo
-call [vt] voca
-call out [vt] clama
-can [vt] pote
-cancel [vt] tolle
+call [v] voca
+call out [v] clama
+can [v] pote
+cancel [v] tolle
 cane [n] baculo
 canoe [n] lintre
 cap [n] pileo
@@ -302,24 +302,24 @@ capsule [n] capsula
 car [n] carro
 caravan [n] commeatu
 card [n] tessera
-care [vt] (care for) cura
+care [v] (care for) cura
 careful [adj] sollicito
 caress [n] blanditia
 carpet [n] tapete
 carriage [n] vehiculo
-carry [vt] fer
-carry [vt] (by vehicle) vehe
-carry out [vt] effice
+carry [v] fer
+carry [v] (by vehicle) vehe
+carry out [v] effice
 cascade [n] cataracta
-cast [vt] (form) funde
+cast [v] (form) funde
 cat [n] fele; cat
 cataract [n] cataracta
-catch [vt] rape
+catch [v] rape
 caught [adj] capto
-cause [vt] effice
+cause [v] effice
 caution [n] (care to avoid danger) cautela
 cave [n] cavo; spera
-cease [vt] cessa
+cease [v] cessa
 ceiling [n] tecto
 celebrity [n] fama
 cell [n] cella
@@ -334,10 +334,10 @@ cerulean [adj] caeruleo
 chair [n] cathedra
 chalk [n] creta; gypso
 chance [n] (by chance) per casu
-change [vt] (substitute one thing for another) cambia
-change [vt] (transform) muta
+change [v] (substitute one thing for another) cambia
+change [v] (transform) muta
 chapter [n] (book) capitulo
-charm [vt] delecta
+charm [v] delecta
 chase [n] venatione
 chaste [adj] casto
 cheek [n] gnath
@@ -350,28 +350,28 @@ childhood [n] pueritia
 chin [n] mento
 China [n] Sina
 Chinese [adj] sinense
-choose [vt] (elect) elige
+choose [v] (elect) elige
 chop [n] fissura
 church [n] ecclesia
 cider [n] sicera
 circle [n] circulo
-circle [vt] circui
-circuit [vt] circui
-cite [vt] cita
+circle [v] circui
+circuit [v] circui
+cite [v] cita
 city [n] civitate; urbe
 civil [adj] (polite) civile
 clad [adj] vestito
-claim [vi] clama
+claim [v] clama
 claim [n] postulatione
 clan [n] (gens) gente
-clasp [vt] amplecte
-clean [vt] terge
+clasp [v] amplecte
+clean [v] terge
 cleave [n] (cleavage) fissura
 clerk [n] adjutore
 cliff [n] rupe
 cloak [n] pallio
 clock [n] horologio
-close [vt] claude
+close [v] claude
 closure [n] clausura
 closed [adj] clauso
 closet [n] cubiculo
@@ -386,69 +386,69 @@ coarse [adj] crasso; rude
 coat [n] (anat.) tunica
 overcoat [n] superveste
 cock [n] gallo
-coddle [vt] fove
-cogitate [vt] cogita
+coddle [v] fove
+cogitate [v] cogita
 coil [n] rocchetto
-coil [vi] volve
+coil [v] volve
 cold [adj] frigido
 cold [n] frigore
-collect [vt] collige
-comb [vt] pecte
-come [vi] veni
-come back [vt] redi; reveni
+collect [v] collige
+comb [v] pecte
+come [v] veni
+come back [v] redi; reveni
 comfort [n] (consolation) solacio
 comma [n] virgula
-command [vt] impera
+command [v] impera
 command [n] potestate
 commence [n] commencement principio
 commissary [n] commissario
 commissioner [n] commissario
 commodious [adj] commodo
-compel [vt] coge
+compel [v] coge
 complete [adj] pleno
-complete [vt] comple
-compress [vt] preme
-conceal [vt] occulta
-conceive [vt] concipe
+complete [v] comple
+compress [v] preme
+conceal [v] occulta
+conceive [v] concipe
 conceivable [adj] conceptibile
 concern [adj] (concerning) de
-condone [vt] condona
-confess [vt] confite
+condone [v] condona
+confess [v] confite
 confide [n] (confidence) fiducia
 conflict [n] pugna
-conflict [vi] pugna
+conflict [v] pugna
 connect [n] (connection) junctura
 connected [adj] conjuncto
 conquer [n] (conquerer) victore
 conquered [adj] victo
 consanguineous [adj] consanguineo
 consequence [adv] (consequently) itaque
-conserve [vt] respice
-consider [vt] puta
+conserve [v] respice
+consider [v] puta
 console [n] (consolation) solacio
-construct [vt] fabrica
+construct [v] fabrica
 constructed [adj] constructo
-consult [vt] consule
+consult [v] consule
 contain [adj] (containing) continente
 content [adj] contento
 continent [n] continente
-continue [vi] dura
-contrive [vt] (invent) inveni
-control [vt] rege
-cook [vt] coque
+continue [v] dura
+contrive [v] (invent) inveni
+control [v] rege
+cook [v] coque
 cook [n] coquo
 copper [n] cupro
 cork [n] (material) subere
 corn [n] callo
 corn [n] (grain) grano
 corona [n] corona
-correct [vt] corrige; restitue; sana
+correct [v] corrige; restitue; sana
 correctly [adv] vere
-cost [vt] consta
+cost [v] consta
 cost [n] sumptu
 cotton [n] gossypio
-counsel [vt] consilia
-count [vt] numera
+counsel [v] consilia
+count [v] numera
 country [n] rure
 couple [n] paria
 course [n] (of dinner) ferculo
@@ -456,24 +456,24 @@ course [n] (racing) cursu
 of course [exp] certo
 courteous [adj] benigno; gentile
 cousin [n] consobrino
-cover [vt] cooperi; tege
+cover [v] cooperi; tege
 covered [adj] cooperto
 cow [n] (female) bove
 coward [n] ignavo; vile
 cream [n] cremore de lacte
-creep [vi] repe
+creep [v] repe
 crew [n] turba
 crop [n] messe
 cross [n] crossing trajectu
 crowd [n] turba
 crown [n] corona
-crown [vt] corona
+crown [v] corona
 crude [adj] crudo
 cruel [adj] truce
-crush [vt] preme
+crush [v] preme
 crushed [adj] fracto
-cry [vt] clama
-cry [vi] fle; lacrima; plange
+cry [v] clama
+cry [v] fle; lacrima; plange
 cry [n] plora
 cubicle [n] cubiculo
 cubit [n] cubito
@@ -481,23 +481,23 @@ cuff [n] pulsino
 cultivate [adj] (cultivated) culto
 culture [adj] (cultured) erudito
 cup [n] cupa
-cure [vt] cura; sana
+cure [v] cura; sana
 cure [n] cura
 curious [adj] mirando
-curtail [vt] minue
+curtail [v] minue
 curtain [n] tentorio; velo
 cushion [n] pulvino
 custodian [n] custode
 custom [adj] (customary) usitato
-cut [vt] caede; incide; seca
-cut [vt] (off, through) praescinde
+cut [v] caede; incide; seca
+cut [v] (off, through) praescinde
 cutter (boat) [n] phaselo
 cut [adj] inciso
 cutlet [n] costeletta
 damage [adj] (damaged) laeso
 danger [n] periculo
 dangerous [adj] periculoso
-dare [vt] aude
+dare [v] aude
 dark [adj] fusco; obscuro
 daughter [n] filia
 dauntless [adj] impavido
@@ -506,63 +506,63 @@ death [n] decessu; morte
 debt [n] debito
 decide [n] (decision) judicio
 deck [n] ponte
-declare [vt] dic
-decline [vt] recusa
-defeat [vt] vince
+declare [v] dic
+decline [v] recusa
+defeat [v] vince
 demand [n] postulatione
 den [n] spera
 dense [adj] spisso
-deny [vt] nega; recusa
-depart [vi] exi; parti
+deny [v] nega; recusa
+depart [v] exi; parti
 departure [n] exitu
 deprive [adj] (deprived) privo
-derange [vt] turba
-descend [vi] descende
+derange [v] turba
+descend [v] descende
 design [n] designo
-desire [vt] desidera
+desire [v] desidera
 desire [n] desiderio
-despise [vt] despecta; despice
+despise [v] despecta; despice
 destitute [adj] inope
-detect [vt] detege
+detect [v] detege
 deuce [n] diabolo
-devastate [vt] pervasto
+devastate [v] pervasto
 devil [n] diabolo
 dew [n] rore
 dextrous [adj] versuto
-die [vi] mori; peri
+die [v] mori; peri
 differ [adj] (different) diverso
 difficult [n] (difficulty) angustia
-diffuse [vt] diffunde
-digest [vt] digere
+diffuse [v] diffunde
+digest [v] digere
 digit [n] digito
-diminish [vt] minue
-dine [vi] conviva; epula
+diminish [v] minue
+dine [v] conviva; epula
 dinner [n] cena; epula; tertio prandio
-direct [vt] dirige
+direct [v] dirige
 dirty [adj] spurco
-disappear [vi] evanesce
+disappear [v] evanesce
 disaster [n] infortunio
-disclaim [vt] nega
+disclaim [v] nega
 discourse [n] oratione
-discover [vt] detege; discoperi; reperi
+discover [v] detege; discoperi; reperi
 discovered [adj] discoperto; reperto
-discuss [vt] discute
+discuss [v] discute
 dish [n] plato
 dismal [adj] moesto
-dispatch [vt] expedi
-displace [vt] amove
-display [vt] (exhibit) expone
-display [vt] (show) monstra
-disseminate [vt] semina
+dispatch [v] expedi
+displace [v] amove
+display [v] (exhibit) expone
+display [v] (show) monstra
+disseminate [v] semina
 dissolve [adj] (dissolved) soluto
 distant [adj] distante
 district [n] pago
 ditch [n] fossa
 diurnal [adj] diurnale
 diverse [adj] diverso
-do [vt] fac
-did [vt] e; in praeterito
-I did write [vt] e scribe
+do [v] fac
+did [v] e; in praeterito
+I did write [v] e scribe
 doctor [n] medico
 dog [n] cane
 domain [n] imperio; regno
@@ -573,23 +573,23 @@ doorstep [n] limine
 double [adj] duplo
 doubt [n] dubio
 dowry [n] dote
-drag [vt] trahe
+drag [v] trahe
 draught [n] haustu
-draw [vt] (pull) trahe
-dread [vt] time
+draw [v] (pull) trahe
+dread [v] time
 dress [n] (dressmaker) modista
-dress [vt] vesti
-drink [vt] bibe
+dress [v] vesti
+drink [v] bibe
 drink [n] bibita; haustu
 drinking glass [n] poculo
-drive [vt] impelle
+drive [v] impelle
 driver [n] vecturario
 drop [n] guta
 dross [n] scoria
 drought [n] siccitate
 drug [n] (druggist) pharmacopola
 dry [adj] sicco
-dry [vt] sicca
+dry [v] sicca
 duck [n] anate
 dull [adj] hebete
 dumb [adj] plumbo
@@ -600,61 +600,61 @@ dutiful [adj] pio
 eagle [n] aquila
 ear [n] aure
 early [adj] (towards beginning) cito
-earn [vt] lucra
+earn [v] lucra
 earthenware [n] fictilia
 ease [n] otio
 easy [adj] facile
 east [n] est
-eat [vt] ede; manduca
+eat [v] ede; manduca
 eel [n] anguilla
-effect [vt] effice
-effectuate [vt] effice
+effect [v] effice
+effectuate [v] effice
 effort [n] conatu
 either [conj] (indifferent) vel...vel
 either ... or [conj] aut...aut
 both of two [conj] utroque
-elapse [vi] flue; labe
+elapse [v] flue; labe
 elbow [n] cubito
-elevate [vt] eleva
+elevate [v] eleva
 elevator [n] ascensore
 else [adv] alio
-embarrass [vt] impedi
-embrace [vt] amplecte
+embarrass [v] impedi
+embrace [v] amplecte
 embroider [n] (embroidery) pictura per acu
 emery [n] smyride
 eminent [adj] augusto
-emphasize [vt] preme
+emphasize [v] preme
 empire [n] imperio
 employ [n] (unemployment) otio
 empty [adj] vacuo
 enamel [n] encausto
-enamel [vt] encausta
-encircle [vt] circumda
-encompass [vt] circui
+enamel [v] encausta
+encircle [v] circumda
+encompass [v] circui
 encumber [n] (encumbrance) impedimento
 endive [n] endivia
-endorse [vt] fave
-endure [vi] dura
-endure (bear, undergo) [vt] pate
+endorse [v] fave
+endure [v] dura
+endure (bear, undergo) [v] pate
 engage [adj] (be engaged in) versa
 engineer [n] ingeniario
 England [adj] (English) Anglo
-engrave [vt] incide
+engrave [v] incide
 engraved [adj] inciso
 enough [adj] (be enough) suppedito
 enough [adv] satis
-enter [vt] intra
-entertain [vt] epula
-entertain [vt] (amuse) delecta
+enter [v] intra
+entertain [v] epula
+entertain [v] (amuse) delecta
 entire [adj] toto
 entirely [adv] toto
 entity [n] ente
 entrance [n] ingressu
-entreat [vt] ora
-enumerate [vt] (mention one by one) numera
+entreat [v] ora
+enumerate [v] (mention one by one) numera
 envelope [n] involucro
-envelope [vt] involve
-envy [vt] invide
+envelope [v] involve
+envy [v] invide
 envious [adj] invide
 jealous [adj] invide
 epistle [n] epistola
@@ -663,12 +663,12 @@ equal [adj] pari
 equipment [n] supellectile
 equity [n] jure
 era [n] aevo
-erase [vt] frica
-erect [vt] erige
+erase [v] frica
+erect [v] erige
 erudite [adj] erudito
-escort [vt] comita
+escort [v] comita
 especial [adv] (especially) maximo; praecipue; praesertim
-establish [vt] stabili
+establish [v] stabili
 estate [n] loco
 even [adv] etiam
 even if [adv] etsi
@@ -681,19 +681,19 @@ everywhere [cor] passim
 evil [adj] male
 evil [n] male
 evolve [adj] (evolved) evoluto
-examine [vt] inspice
-exceed [vt] supera
+examine [v] inspice
+exceed [v] supera
 exceedingly [adv] extra; ultra; valde
 excess [n] (balance) reliquo
-excite [vt] incende
+excite [v] incende
 execrate [adj] (execrable) nefando
-execute [vt] (perform) exseque
-exhibit [vt] expone
-expect [vt] expecta
+execute [v] (perform) exseque
+exhibit [v] expone
+expect [v] expecta
 expedient [n] (to be expedient) expedi
-expose [vt] (set in public view) expone
-expose [vt] (uncover, reveal) expone
-express [vt] exprime
+expose [v] (set in public view) expone
+expose [v] (uncover, reveal) expone
+express [v] exprime
 exterior [n] extero
 exterior [adj] extraneo
 extraneous [adj] extraneo
@@ -703,7 +703,7 @@ face [n] vultu
 factory [n] fabrica; officina
 fair [adj] (hair) flavo
 faithful [adj] fidele
-fall [vi] cade; labe
+fall [v] cade; labe
 far [adj] distante; longe
 so far [adv] adhuc
 farm [n] (farmer) agricola
@@ -712,47 +712,47 @@ fate [n] (random, as if by lots) sorte
 father [n] patre
 fatigue [adj] (fatigued) fesso
 faucet [n] valvula
-favor [vt] fave; fove
-fear [vt] time; vere
+favor [v] fave; fove
+fear [v] time; vere
 fear (general) [n] timore
 fearless [adj] impavido
 feast [n] epula
-feast [vi] conviva
+feast [v] conviva
 feather [n] pluma
-feature [vt] praesenta
+feature [v] praesenta
 fee [n] imposito
-feed [vt] nutri
-feed [vt] (give food, or provide in manner of food) ale
+feed [v] nutri
+feed [v] (give food, or provide in manner of food) ale
 feed [n] nutrimento
-feel [vt] senti
+feel [v] senti
 feign [adj] (feigned) ficto
 felt [n] (cloth) coactilia
 female [n] femina
 fern [n] filice
 ferule [n] virga
-fetter [vt] impedi
+fetter [v] impedi
 fever [n] febri
 few [adj] pauco
 a few [adj] aliquanto
 field [n] agro
-fight [vt] lucta
-fight [vt] (fight against) opugna
+fight [v] lucta
+fight [v] (fight against) opugna
 fight [n] lucta
-file [vt] ordina
+file [v] ordina
 fin [n] pinna
 final [adv] (finally) denique; in fine
-find [vt] inveni; praebe
+find [v] inveni; praebe
 finger [n] digito
-finish [vt] fini
+finish [v] fini
 fir [n] abiete
 fire [n] foco; igne; pyro
 fireplace [n] camino
-fire (ignite) [vt] incende
+fire (ignite) [v] incende
 firm [n] (business) fabrica
 fish [n] pisce
-fish [vt] pisca
+fish [v] pisca
 fissure [n] fissura
-fix [vt] stabili
+fix [v] stabili
 flake [n] flocco
 flame [n] flamma
 flax [n] lino
@@ -760,39 +760,39 @@ flesh [n] carne
 flint [n] silice
 floor [n] pavimento; plano
 flour [n] farina
-flourish [vi] flore
-flow [vi] flu
+flourish [v] flore
+flow [v] flu
 flower [n] flore
-flower [vi] flore
-fly [vi] vola
+flower [v] flore
+fly [v] vola
 fly (insect) [n] musca
 foam [n] spuma
-foam [vi] spuma
-follow [vt] fave; seque
+foam [v] spuma
+follow [v] fave; seque
 follower [n] fautore
 followed [adj] secuto
-following [vt] sequente
+following [v] sequente
 food [n] alimento; cibo; nutrimento
 fool [n] stulto
 foolish [adj] stulto
 foot [n] pede
 for [prep] ob; pro
-force [vt] (by physical power) fortia
-force [vt] (coerce, compel) coacta; coge
+force [v] (by physical power) fortia
+force [v] (coerce, compel) coacta; coge
 force (mech, mil) [n] fortia
 force [n] (strength) fortia; vi
 fore [n] (forefather) progenitore
-forecast [vt] praevide
+forecast [v] praevide
 forehead [n] fronte
 foreign [adj] extraneo
-foresee [vt] praevide
+foresee [v] praevide
 forest [n] silva
-forget [vt] oblivisce
+forget [v] oblivisce
 fork [n] furcula
 form [n] modo
 former [adj] priore
 formerly [adv] olim
-found [vt] funda
+found [v] funda
 fox [n] vulpe
 frame [n] (body) corpore
 France [n] (Frenchman) Franco
@@ -807,7 +807,7 @@ from [prep] ab; de
 front [n] (in front of) ob
 fry [adj] (fried) fricto
 full [adj] pleno
-fund [vt] funda
+fund [v] funda
 fungus [n] fungo
 furious [adj] irato
 furlough [n] commeatu
@@ -816,37 +816,37 @@ furrow [n] lira
 further [adj] ultra
 further (moreover, yet, more) [adv] praeterea
 futile [adj] inutile
-gain [vt] lucra
+gain [v] lucra
 gain [n] lucro
 gale [n] procella
 game [n] joco; ludo
 garden [n] horto
-gather [vt] collige
+gather [v] collige
 gauze [n] gaza
 gentle [adj] gentile; lene
 genus [n] genere
 germ [n] germine
-get [vt] percipe
+get [v] percipe
 get to (be able to) [adv] pote
-get [vt] (reach) attinge
+get [v] (reach) attinge
 girl [n] puella
 girlhood [n] pueritia
-give [vt] da; praebe
-give back [vt] restitue
-give up [vt] cede
+give [v] da; praebe
+give back [v] restitue
+give up [v] cede
 glad [adj] laeto
 gladness [n] laetitia
-gladden [vt] laetifica
+gladden [v] laetifica
 gladly [adv] libenter
 glass [n] vitro
-glide [vi] labe
+glide [v] labe
 glove [n] chirotheca
-go [vi] i; vade
-go (on foot) [vt] grade
-go back [vt] regrede
-go down [vt] descende
-go on [vt] dura
-go out [vt] exi
+go [v] i; vade
+go (on foot) [v] grade
+go back [v] regrede
+go down [v] descende
+go on [v] dura
+go out [v] exi
 goat [n] capra
 god [n] deo
 godly (pious) [adj] pio
@@ -856,10 +856,10 @@ good (morally) [adj] benigno
 goodness [n] bonitate
 goods [n] merce
 goose [n] ansere
-govern [vt] guberna; impera; rege
+govern [v] guberna; impera; rege
 grace [n] (before meals) prandio
 gradual [adv] (gradually) paulatim
-graft [vt] insere
+graft [v] insere
 grain [n] grano
 grape [n] uva
 grass [n] herba
@@ -870,65 +870,65 @@ gravy [n] suco
 great [adj] magno
 greater [adj] majore; superiore
 greatly [adv] valde
-greet [vt] saluta
+greet [v] saluta
 grey [adj] cano; cinereo
 grid [n] craticula
-grieve [vt] dole
+grieve [v] dole
 grill [n] craticula
-grow [vi] cresce
+grow [v] cresce
 guest [n] hospite
 guitar [n] cithara
 gum [n] gummi
 habit [n] (clothes) habitu
 habitual [adj] usitato
-habituate [vt] assuefac
+habituate [v] assuefac
 hair [n] capillo; pilo
 hall [n] aula
 hand [n] manu
 hand (of a watch) [n] indice
 on the other hand [exp] ceterum
-hand over [vt] trade
+hand over [v] trade
 handiwork [n] opera
 handkerchief [n] sudario
 handle [n] manubrio
 handy [adj] (at hand) prompto
-hang [vi] pende
-happen [vi] incide
+hang [v] pende
+happen [v] incide
 happy [adj] felice
 happiness [n] jucunditate
-harangue [vt] ora
+harangue [v] ora
 hard [adj] duro
 hardly [adv] vix
 hare [n] lepore
-harrow [vt] hirpice
-harvest [vt] mete
+harrow [v] hirpice
+harvest [v] mete
 harvest[n] messe
 harvester [n] messore
-haste [vi] (hasten) matura
+haste [v] (hasten) matura
 hat [n] cappa; pileo
 hatter [n] cappario
-hate [vt] odio
-have [vt] habe
-have on, be wearing [vt] gere; vesti
-hawk [vt] (peddle) circumfer
+hate [v] odio
+have [v] habe
+have on, be wearing [v] gere; vesti
+hawk [v] (peddle) circumfer
 hazard [n] periculo
 head [n] capite
-heal [vt] cura
+heal [v] cura
 health [n] salute; sanitate
 heap [n] massa
-hear [vt] audi
+hear [v] audi
 hearing [n] auditu
 heard [adj] audito
 heart [n] corde
 heat [n] calore
-heat [vt] calefac
+heat [v] calefac
 heath [n] erica
 heaven [n] caelo; coelo
 heavy [adj] grave; ponderoso
 heel [n] talo
 heir [n] herede
 hello [inter] heus!
-help [vt] adjuva
+help [v] adjuva
 help [n] auxilio
 helpless [adj] inope; misero
 hemp [n] cannabe
@@ -938,19 +938,19 @@ henceforth [conj] post
 herb [n] (any plant without woody stem) herba
 here [cor] hac; hic
 here is/here are [inter] ecce
-hide [vt] occulta
+hide [v] occulta
 high [adj] alto
 higher [adj] supero
-hinder [vt] obsta
-hint [vt] indica; suggere
-hit [vt] ice; percute
+hinder [v] obsta
+hint [v] indica; suggere
+hit [v] ice; percute
 hither [cor] huc
 hole [n] puteo
 hole (cavity) [n] cavo
 hollow [n] cavo
 home [n] domo
 honey [n] melle
-hope [vt] spera
+hope [v] spera
 hope [n] spe
 hors d'oeuvre [n] anteprandio
 horse [n] caballo; equo
@@ -964,7 +964,7 @@ how [cor] quomodo
 how many [cor] quot
 how many times? [cor] quotiens?
 however [adv] sed; tamen
-hug [vt] amplecte
+hug [v] amplecte
 hulk [n] scapha
 hull [n] scapha
 human [n] homine
@@ -983,33 +983,33 @@ ill [adj] infirmo
 illness [n] infirmitate
 ill-omened [adj] infausto
 illiterate [adj] analphabeta
-illuminate [vt] illumina
+illuminate [v] illumina
 immediate [adv] (immediately) mox; statim; subito
-impede [vt] impedi; obsta
-impel [vt] impelle; urge
+impede [v] impedi; obsta
+impel [v] impelle; urge
 impermeable [adj] impermeabile
-implant [vt] insere
-impose [vt] impone
+implant [v] insere
+impose [v] impone
 in [prep] in
 inauspicious [adj] infausto
 inch [n] pollice
 incise [n] (incision) inciso
-incite [vt] incide
+incite [v] incide
 include [adj] (included) incluso
 income [n] (from investments) reddito
-increase [vt] auge
-increase [vi] cresce
+increase [v] auge
+increase [v] cresce
 index [n] indice
-indicate [vt] indica
+indicate [v] indica
 indignant [adj] (be indignant) indigna
-induce [vt] induc
-infer [vt] infer
+induce [v] induc
+infer [v] infer
 inferior [adj] inferiore
 infirm [adj] infirmo
 infirmity [n] infirmitate
-inflame [vt] incende
-inflect [vt] flecte
-influence [vt] influe
+inflame [v] incende
+inflect [v] flecte
+influence [v] influe
 ingot [n] lingot
 inherit [n] (inheritor) herede
 inject [adj] (injected) iminisso
@@ -1018,24 +1018,24 @@ injurious [adj] damnoso
 ink [n] atramento
 inkstand [n] atramentario
 inodorous [adj] inodoro
-inquire [vt] inquire
+inquire [v] inquire
 inscribe [adj] (inscribed) inscripto
-insert [vt] insere; interpone
+insert [v] insere; interpone
 inside [adv] (inside of) intra
-inspect [vt] inspice
+inspect [v] inspice
 instead [prep] potius
-instigate [vt] instiga
-insulate [vt] insula
+instigate [v] instiga
+insulate [v] insula
 insure [n] (insurance) assecurantia; assecuratione
-interest [vt] interes
+interest [v] interes
 interesting [adj] interessante
-interlace [vt] interlaquea
-interpose [vt] interpone
-interrogate [vt] interroga
-intervene [vi] interes
-intimate [vt] suggere
-introduce [vt] (bring in) infer
-invent [vt] inveni
+interlace [v] interlaquea
+interpose [v] interpone
+interrogate [v] interroga
+intervene [v] interes
+intimate [v] suggere
+introduce [v] (bring in) infer
+invent [v] inveni
 irate [adj] irato
 iron [n] ferro
 island [n] insula
@@ -1043,26 +1043,26 @@ janitor [n] famulo
 Japan [n] Nippon
 Japanese [adj] nipponense
 Japanese [adj] nipponico
-jest [vi] lude
+jest [v] lude
 journal [n] diurnale
 journey [n] itinere
 joy [n] gaudio; laetitia
 joyful [adj] laeto
-judge [vt] judica
+judge [v] judica
 judge [n] judice
 judgment [n] judicio
 juice [n] suco
-jump [vi] surge
-jump over [vt] transili
+jump [v] surge
+jump over [v] transili
 juncture [n] junctura
 Jupiter [n] jove
 just [n] (justice) jure
-keep [vt] (maintain, hold in a place) retine
+keep [v] (maintain, hold in a place) retine
 keeper [n] custode
 key [n] (of a piano, computer) clave
 key [n] (to a lock) clave
 keyboard [n] claviario
-kidnap [vt] rape
+kidnap [v] rape
 kidney [n] rene
 kind [n] genere
 kind [adj] benigno
@@ -1072,46 +1072,46 @@ kiss [n] basio; osculo
 kitchen [n] coquina
 knee [n] genu
 knife [n] cultro
-knit [vt] scutula
+knit [v] scutula
 knitting [n] scutula
-knock [vt] pulsa
-know [vt] cognosce; nosce; sci
+knock [v] pulsa
+know [v] cognosce; nosce; sci
 known [adj] cognito; noto
 labor [n] (laborer) operario
 laboratory [n] officina
 lace [n] laqueo
-lacking [vi] (be lacking) defice
+lacking [v] (be lacking) defice
 lamb [n] agno
 land [n] terra
-egredi [vi] ex nave
+egredi [v] ex nave
 lane [n] via
 language [n] lingua
-lap [vt] (drink) linge
+lap [v] (drink) linge
 large [adj] magno
 larger [adj] majore
-last [vi] dura
+last [v] dura
 last (most recent) [adj] ultimo
 at last [exp] denique; in fine
 late [adj] (behindhand) sero; tardo
 to be late [adj] tarda
 lately [adv] nuper
-laugh [vi] ride
+laugh [v] ride
 laughter [n] risu
 launch [n] scapha
 laurel [n] lauro
 law [n] jure; lege
 lawn [n] prato
-lay [vt] pone
+lay [v] pone
 lazy [adj] pigro
-lead [vt] duc
+lead [v] duc
 lead [n] plumbo
 leaf [n] folio
-leak [vi] (fluid) flue
-learn [vt] (by study) disce
-to learn by heart [vt] edisce
+leak [v] (fluid) flue
+learn [v] (by study) disce
+to learn by heart [v] edisce
 learned [adj] docto; erudito; sapiente
 leather [n] corio
-leave [vt] linque; relinque
+leave [v] linque; relinque
 left [adj] sinistro
 at the left [prep] laeva; sinistro
 leg [n] crure
@@ -1121,15 +1121,15 @@ less...than [conj] minus...quam
 lesson [n] lectione
 letter [n] (correspondence) epistola
 library [n] bibliotheca
-lick [vt] linge
-lie [vi] jace
+lick [v] linge
+lie [v] jace
 life [n] vita
-lift [vt] eleva; subleva; tolle
+lift [v] eleva; subleva; tolle
 light [n] luce; lumine
-light [vt] accende; illumina
+light [v] accende; illumina
 light (weight) [adj] leve
 lighted [adj] accenso
-like [vt] ama
+like [v] ama
 lime [n] calce
 linen [n] lino
 lining [n] subsuto
@@ -1138,18 +1138,18 @@ lip [n] labio
 list [n] tabella
 little [adj] pauco
 little [adv] pauco
-live [vi] habita
-live [vt] vive
+live [v] habita
+live [v] vive
 liver [n] hepate
-load [vt] (cargo, bullets, film, et al.) impone; onera
+load [v] (cargo, bullets, film, et al.) impone; onera
 locate [adj] (located) posito
 lock [n] (locksmith) claviario
-look [vt] (look at) adspice; perspice; prospice; spece; specta
-look [vi] aspice
+look [v] (look at) adspice; perspice; prospice; spece; specta
+look [v] aspice
 look [n] vultu
-lose [vt] perde
+lose [v] perde
 lost [adj] (to be lost, perish) peri
-love [vt] (feel deep affection for) ama
+love [v] (feel deep affection for) ama
 love [n] amore
 low [adj] basso; humile
 lower [adj] inferiore
@@ -1162,33 +1162,33 @@ maid [n] ancilla
 maid (maiden) [n] puella
 major [adj] majore
 major (mil) [n] majore
-make [vt] fac
+make [v] fac
 male [n] mas; masculo
-malform [vt] maleforma
+malform [v] maleforma
 man [n] homo; vir
-manage [vt] (look after the affairs of person, business, organization) gere
+manage [v] (look after the affairs of person, business, organization) gere
 manager (for an owner) [n] gerente
 manservant [n] famulo
 mantle [n] pallio
-manufacture [vt] fabrica
+manufacture [v] fabrica
 manufacturer [n] fabricante
 many [adj] (so many) tot; multo
 map [n] mappa
 maple [n] acere
 marble [n] marmore
-marry [vt] marita
+marry [v] marita
 Mars [n] marte
 marsh [n] palude
 marvel [adj] (marvellous) mirabile
 mass [n] massa
-mass [vt] massa
+mass [v] massa
 master [n] (title) magistro
-master [vt] (learn thoroughly) edisce
+master [v] (learn thoroughly) edisce
 match [n] (for fire) flammifero
 matter [n] pure
 mattress [n] culcita
-mature [vi] matura
-may [vt] (can) pote
+mature [v] matura
+may [v] (can) pote
 may [exp] (have right to, be permitted)  lice ad uno
 may [adv] (perhaps, maybe) forsan
 mayor [n] majore
@@ -1199,9 +1199,9 @@ measure [n] mensura
 meat [n] carne
 medley [n] farragine
 meek [adj] humile
-meet [vt] conflue; incide; reuni
+meet [v] conflue; incide; reuni
 meeting [n] reunione
-melt [vt] funde
+melt [v] funde
 menace [adj] (menacing) minace
 menu [n] minuta
 merchandise [n] merce
@@ -1214,12 +1214,12 @@ mile [n] millia
 milk [n] lacte
 mind [n] mente
 mine [n] fodina
-mingle [vt] misce
+mingle [v] misce
 minimum [n] minimo
 minus [prep] minus
 mirror [n] speculo
 misfortune [n] infortunio
-mix [vt] misce
+mix [v] misce
 mobile [adj] (capable of movement) mobile
 mode [n] modo
 moist [adj] madido
@@ -1247,23 +1247,23 @@ too much [adv] nimis
 much [adj] multo
 mud [n] limo
 mushroom [n] fungo
-must [vt] debe
+must [v] debe
 mute [adj] muto
 name [n] nomine
-name (say the name of) [vt] nomina
+name (say the name of) [v] nomina
 named [adj] nominato
 napkin [n] mantele
 narrow [adj] angusto; stricto
 near [adj] prope; proximo
-draw near [vi] appropinqua
+draw near [v] appropinqua
 near [prep] apud; juxta
 necessary [adj] (to be necessary) oporte
 neck [n] collo
 necktie [n] fascia (de collo); focale
-need [vt] necessita
+need [v] necessita
 needs [n] necesse
 needle [n] acu
-negate [vt] nega
+negate [v] nega
 neighbor [n] vicino
 neighboring [adj] vicino
 neither [conj] (neither...nor) neque...nec
@@ -1284,28 +1284,28 @@ nobody [n] nemine
 not one [adv] nullo
 nowhere [adv] nusquam
 noise [n] rumore
-nominate [vt] nomina
+nominate [v] nomina
 noon [n] meridie
 nose [n] naso
 not [adv] ne; non
 note [n] nota
 nothing [cor] nihil
-notify [vt] notifica
+notify [v] notifica
 noun [n] nomine
 novel [n] (novelty) novitate
 now [adv] nunc
 nozzle [n] (spray) naso; rostro
-nurse [vt] nutri
-nurture [vt] nutri
+nurse [v] nutri
+nurture [v] nutri
 nut [n] nuce
 nutriment [n] nutrimento
 oak [n] quercu
 oat [n] avena
 obscure [adj] obscuro
-obtain [vt] obtine
+obtain [v] obtine
 obtained [adj] obtento
 occasion [n] (instance, circumstance, time) vice
-occur [vi] (happen) incide
+occur [v] (happen) incide
 odor [adj] (odorless) inodoro
 of [prep] (agent, authorship) ab
 of [prep] (concerning) ab
@@ -1315,7 +1315,7 @@ of [prep] (possession) de
 of late [prep] nuper
 off [prep] ab
 offend [adj] (offended) offenso
-offer [vt] objice; praebe
+offer [v] objice; praebe
 office [n] (place) officina
 offshoot [n] ramo
 often [adv] saepe
@@ -1329,19 +1329,19 @@ once [adv] olim; semel; uno vice
 at once [adv] mox; statim; subito
 once upon a time [adv] olim
 only [adv] (not only...but also) non solo...sed etiam
-open [vt] aperi
+open [v] aperi
 open [adj] aperto
 opera [n] opera
-operate [vt] (control the functioning of) opera
+operate [v] (control the functioning of) opera
 operation [n] opere
 or [conj] aut
 or not? [conj] annon?
-orate [vi] ora
+orate [v] ora
 oration [n] oratione
-order [vt] jube
+order [v] jube
 in order to [prep] ut
 origin [n] provenientia
-originate [vi] nasce; ori
+originate [v] nasce; ori
 ostrich [n] struthione
 other [adj] alio
 out [prep] (get out!) apag!
@@ -1350,30 +1350,30 @@ outside [prep] extra
 outside [adv] foris
 oven [n] caldario; furno
 over [prep] super
-overtake [vt] conseque; superveni
-owe [vt] debe
+overtake [v] conseque; superveni
+owe [v] debe
 owl [n] bubone
 own [adj] proprio
 ox [n] (castrated bull) bove
 pack [n] (package) fasce
-pack [vt] collige
+pack [v] collige
 pain [n] dolore
 paint [adj] (painted) picto
 pair [n] paria
 palate [n] (roof of the mouth) palato
 paper [n] charta
 parchment [n] pergamena
-pardon [vt] condona
+pardon [v] condona
 parent [n] genitore
 partner [n] socio
-pass [vi] percurre
+pass [v] percurre
 passer-by [n] praetereunte; transeunte
 passed [adj] praeterito
 passenger [n] (traveller) viatore
 past [n] praeterito
 past [prep] praeter
 pavement [n] pavimento
-pay [vt] (someone) merce
+pay [v] (someone) merce
 payment (thing paid) [n] pacamento
 payable [adj] pacabile
 pea [n] piso
@@ -1388,16 +1388,16 @@ stalk [n] stilo
 penultimate [adj] paenultimo
 people [n] gente; populo
 pepper [n] pipere
-perceive [vt] intellige; percipe; senti
+perceive [v] intellige; percipe; senti
 percussion [n] percussione
-perfect [vt] perfice
-perform [vt] effice
+perfect [v] perfice
+perform [v] effice
 perhaps [adv] forsan
 peril [n] periculo
-perish [vi] peri
-permit [vt] pate
+perish [v] peri
+permit [v] pate
 perspire [n] (perspiration) sudore
-pertain [vi] pertine
+pertain [v] pertine
 pharmacy [n] (pharmacist) pharmacopola
 physician [n] medico
 pile [n] massa
@@ -1412,40 +1412,40 @@ pipe [n] tubo
 pit [n] (cavity) cavo
 pit [n] (dug out) fossa
 pit [n] (hole) puteo
-pitch [vt] (a tent) stabili
+pitch [v] (a tent) stabili
 pitfall [n] fovea
 pity [n] misericordia
-pity [vt] compate
-pivot [vt] (change direction, facing) verte
-pity [vt] (on a connected axis) gyro
+pity [v] compate
+pivot [v] (change direction, facing) verte
+pity [v] (on a connected axis) gyro
 place [n] loco
-place [vt] pone
+place [v] pone
 placed [adj] sito
 plaintive [adj] flebile
-plan [vt] (intend) projice
+plan [v] (intend) projice
 plane [n] plano
 plant [n] (planting) satione
 plate [n] (for food) plato
 plate [n] (soup plate) scutella
-play [vt] (a role) lude
+play [v] (a role) lude
 play [n] (game, sport) lude
 play [n] ludo
 pleasant [adj] amoeno; placente
-please [vt] place
+please [v] place
 pleased [adj] contento
 pleasure [n] gaudio; jucunditate; libito; voluntate
 plenty [adj] satis
 plough [n] aratro
-plough [vt] ara
-pluck [vt] velle
+plough [v] ara
+pluck [v] velle
 plus [prep] plus
 pocket [n] sacculo
 poet [n] vate
-poison [vt] venena
+poison [v] venena
 Poland [n] (Pole) Polono
 pole [n] (rod, etc.) virga
 police [n] (policeman) vigile
-polish [vt] terge
+polish [v] terge
 polite [adj] civile
 ponderous [adj] ponderoso
 pool [n] palude
@@ -1453,25 +1453,25 @@ poor [adj] misero
 pope [n] papa
 populace [n] vulgo
 porter [n] bajulo
-possess [vt] posside
+possess [v] posside
 post [n] (postage stamp) atele
 potato [n] solano
 potent [adj] potente
 pottery [n] fictilia
-pour [vt] funde; versa
+pour [v] funde; versa
 power [n] potestate
 powerful [adj] potente
-praise [vt] suffla
-pray [vt] preca
+praise [v] suffla
+pray [v] preca
 precede [adj] (preceding) priore
 prefer [adv] (preferably) potius
-prepare [vt] para
-present [vt] praesenta
+prepare [v] para
+present [v] praesenta
 to be present [adj] ades
-preserve [vt] parce; respice
-press [vt] preme
-presume [vt] suppone
-prevent [vt] obsta
+preserve [v] parce; respice
+press [v] preme
+presume [v] suppone
+prevent [v] obsta
 previous [adv] (previously) antea
 price [n] pretio
 prick [adj] (prickly) spinoso
@@ -1482,125 +1482,125 @@ prior [adj] priore
 product [n] (by-product) paraproducto
 profit [n] reddito
 progenitor [n] progenitore
-progress [vi] progrede
-project [vt] projice
+progress [v] progrede
+project [v] projice
 prompt [adj] prompto
-prompt [vt] instiga
+prompt [v] instiga
 property [n] (personal property) mobile
-prove [vt] proba
+prove [v] proba
 provide [n] (provisions) cibo
-pull [vt] trahe
-pulsate [vi] pulsa
-punch [vt] ice
+pull [v] trahe
+pulsate [v] pulsa
+punch [v] ice
 pupil [n] scholare
 purchase [n] emptione
 pus [n] pure
-push [vt] pelle; preme
-push on [vi] progrede
-put [vt] pone; (put in order) ordina
+push [v] pelle; preme
+push on [v] progrede
+put [v] pone; (put in order) ordina
 put [adj] posito
-quash [vt] quassa
+quash [v] quassa
 queen [n] regina
-querry [vt] quaere
+querry [v] quaere
 question [n] quaesito
 quick [adj] celere; veloce
 quinine [n] quina
-quiver [vi] (shake) treme
-quote [vt] cita
+quiver [v] (shake) treme
+quote [v] cita
 rabble [n] vulgo
 rabid [adj] rabido
 race [n] stirpe
 rail [n] lira
 railroad [n] ferrovia
 rain [n] pluvia
-rain [vt] plue
-raise [vt] releva; subleva
+rain [v] plue
+raise [v] releva; subleva
 rate [n] rata
 rather [adv] potius
 rather [adv] (preference) magis
 ratio [n] ratione
-ravish [vt] rape
+ravish [v] rape
 raw [adj] crudo; rude
-read [vt] lege
+read [v] lege
 reader [n] lectore
 ready [adj] prompto
-reap [vt] mete
+reap [v] mete
 reaper [n] messore
-rear [vt] (feed and support) ale
+rear [v] (feed and support) ale
 reason [n] (faculty) ratione
-recall [vt] recorda
-receive [vt] recipe
+recall [v] recorda
+receive [v] recipe
 receipt [n] quietantia; receptione
 receiption [n] receptione
 recent [adv] (recently) nuper
-reckon [vt] (the amount of) puta
+reckon [v] (the amount of) puta
 recollect [n] recordatione recordatione
-record [vt] (set down facts) recorda
-reduce [vt] minue
+record [v] (set down facts) recorda
+reduce [v] minue
 reed [n] canna
-refuse [vt] recusa
+refuse [v] recusa
 refuse [n] relicto
 region [n] loco
-regret [vt] dole; plora
+regret [v] dole; plora
 regretful [adj] dolente
 regular [adj] usitato
 reign [n] regno
-rejoice [vi] gaude; jubila
-relate [vi] memora
+rejoice [v] gaude; jubila
+relate [v] memora
 related [adj] conjuncto; consanguineo
-release [vt] expedi
+release [v] expedi
 relic [n] reliquia
-relieve [vt] (tension, strain, etc.) releva
-relinquish [vt] relinque
+relieve [v] (tension, strain, etc.) releva
+relinquish [v] relinque
 relinquished [adj] relicto
 rely [n] (reliance) fiducia
-remain [vi] dura; mane; permane; remane; resta
+remain [v] dura; mane; permane; remane; resta
 remainder [n] reliquo
 remains [n] reliquia
 remaining [adj] cetero
 remark [adj] (remarkable) mirando
-remember [vt] (mark and keep in mind) recorda
+remember [v] (mark and keep in mind) recorda
 remembrance [n] recordatione
-remove [vt] (move away) tolle
-remove [vt] (take away, do away with) exue
-renounce [vt] (abandon a claim to) renuntia
-rent [vt] (something to someone) loca
+remove [v] (move away) tolle
+remove [v] (take away, do away with) exue
+renounce [v] (abandon a claim to) renuntia
+rent [v] (something to someone) loca
 rent (payment) [n] reddito
-repair [vt] sana
+repair [v] sana
 repast [n] cibo
 repeat [adv] (repeatedly) iterum
 reply [n] responso
-reproach [vt] reproba
-reprove [vt] reproba
-request [vt] pete
-rescue [vt] salva
-resent [vt] indigna
+reproach [v] reproba
+reprove [v] reproba
+request [v] pete
+rescue [v] salva
+resent [v] indigna
 reserve [adj] (reserved) saltem
-reside [vi] dege
+reside [v] dege
 residue [n] residuo
-resist [vt] resta
-resort [vi] recurre
-respect [vt] respice; vere
-respond [vt] responde
+resist [v] resta
+resort [v] recurre
+respect [v] respice; vere
+respond [v] responde
 respond [n] responso
-rest [vi] quiesce
+rest [v] quiesce
 restless [adj] inquieto
-restore [vt] restitue
-result [vi] conseque
-retain [vt] retine
-retard [vt] retarda
-retrieve [vt] restitue
-return [vi] (come back) reveni
-return (give back) [vt] redde
-return thanks [vt] agere gratias
+restore [v] restitue
+result [v] conseque
+retain [v] retine
+retard [v] retarda
+retrieve [v] restitue
+return [v] (come back) reveni
+return (give back) [v] redde
+return thanks [v] agere gratias
 return [n] reversione
 returns [n] reddito
 returned (given back) [adj] reddito
-return (gone back) [vt] reduce
+return (gone back) [v] reduce
 reunion [n] reunione
-review [vt] revide
-revise [vt] revide
-revolve [vi] rota; volve
+review [v] revide
+revise [v] revide
+revolve [v] rota; volve
 rice [n] oryza
 rich [adj] locupleto
 riches [n] divitia
@@ -1609,8 +1609,8 @@ right [adj] recto
 at the right [prep] dextero
 rind [n] cortice
 ring [n] anello; circulo
-ring [vi] sona
-rise [vi] surge
+ring [v] sona
+rise [v] surge
 risk [n] periculo
 river [n] fluvio
 road [n] via
@@ -1621,7 +1621,7 @@ roof [n] tecto
 room [n] camera
 bathroom [n] balneo
 root [n] radice
-rotate [vi] rota
+rotate [v] rota
 rotund [adj] rotundo
 round [adj] rotundo
 round [n] vice
@@ -1629,45 +1629,45 @@ roundabout [adj] prope
 route [n] trajectu
 row [n] (rowing) remigatione
 royal [n] (royalty) reddito
-rub [vt] frica
+rub [v] frica
 rubric [adj] rubro
 rude [adj] rude
 rug [n] tapete
-rule [vt] guberna; rege; regula
+rule [v] guberna; rege; regula
 rule [n] regno; regula
 ruler [n] regula
 rumor [n] rumore
-run [vi] curre
+run [v] curre
 run [n] cursu
 Russia [n] (Russian) Russia
 rye [n] secale
 sad [adj] dolente; triste
-sadden [vt] contrista
+sadden [v] contrista
 safe [adj] securo; tuto
 safely [adv] tuto
 sale [n] (salesman) venditore
 salt [n] sale
-salute [vt] saluta
+salute [v] saluta
 same [adj] idem
 sample [n] specimine
 sane [n] (sanity) sanitate
 sap [n] suco
-satiate [vt] satia
+satiate [v] satia
 sausage [n] luganica
 savage [adj] truce
-save [vt] salva
+save [v] salva
 saved [adj] saltem
-say [vt] dic
+say [v] dic
 scale [n] (of fish, etc.) squama
 scarce [adv] (scarcely) vix
-scatter [vt] sparge
+scatter [v] sparge
 schedule [n] horario
 scholar [n] scholare
 school [n] schola
 scoria [n] scoria
-scorn [vt] contemne
-screen [vt] (hide, conceal) occulta
-scrub [vt] terge
+scorn [v] contemne
+screen [v] (hide, conceal) occulta
+scrub [v] terge
 sea [n] mari
 seam [n] sutura
 season [n] (of year) satione
@@ -1675,42 +1675,42 @@ seat [n] sedile
 secret [adv] (secretly) clam
 secure [adj] securo; tuto
 security [n] cautela
-see [vt] vide
+see [v] vide
 seen [adj] viso
 seed [n] semine
-seek [vt] quaere
-seize [vt] sume
-select [vt] selige
+seek [v] quaere
+seize [v] sume
+select [v] selige
 self [n] ipso
 sell [n] seller venditore
 semen [n] semine
-send [vt] manda; mitte
+send [v] manda; mitte
 sent [adj] misso
 sense [adj] (senseless, foolish) stulto
 serious [adj] (earnest, sincere, not joking) grave
 serious [adj] (weighty, not trifling) grave
 serum [n] sero
-serve [vt] servi
-set [vt] (set up) erige
-settle [vt] stabili
+serve [v] servi
+set [v] (set up) erige
+settle [v] stabili
 several [adj] (indef amount) aliquanto
 several [adj] (more than one) nonnullo; plure
 sew [n] (sewing) sutura
 shade [n] umbra
-shade [vt] umbra
+shade [v] umbra
 shaft [n] puteo
-shake [vt] quassa
+shake [v] quassa
 sharp [n] (sharpness) acie
-shave [vt] rade
-shed [vt] versa
+shave [v] rade
+shed [v] versa
 sheep [n] ove
 sheet [n] linteolo
 shelf [n] tabula
 shell [n] (outer part) extero
-shine [vi] splende
+shine [v] splende
 ship [n] nave
 shipwrecked person [n] naufrago
-shirk [vt] evita
+shirk [v] evita
 shirt [n] camisia
 shock [n] percussione
 shoe [n] calceo
@@ -1722,9 +1722,9 @@ short [adj] (length) curto
 shoulder [n] humero
 shoulder blade [n] scapula
 shovel [n] pala
-show [vt] monstra
+show [v] monstra
 shrewd [adj] versuto
-shun [vt] evita
+shun [v] evita
 shutter [n] obturatore
 sick [adj] aegro; infirmo
 sickness [n] infirmitate
@@ -1732,7 +1732,7 @@ side [n] latere
 this side of [n] cis
 sideboard [n] armario
 sight [n] visu
-sign [vt] indica
+sign [v] indica
 silent [adj] (be silent) tace
 silex [n] silice
 silica [n] silice
@@ -1743,12 +1743,12 @@ silver [n] argento
 simplex [adj] simplice
 simultaneous [adj] (simultaneously) simul
 since [prep] deinde
-sing [vt] canta
+sing [v] canta
 single [adj] singulo
 sole [adj] solo
 sister [n] sorore
-sit [vi] sede
-sit down [vt] conside
+sit [v] sede
+sit down [v] conside
 sitting [adj] sedente
 situate [adj] (situated) posito
 sketch [n] designo
@@ -1757,19 +1757,19 @@ skirt [n] lacinia; talaria
 sky [n] caelo; coelo
 skyscraper [n] caelorasore
 slag [n] scoria
-slay [vt] trucida
-sleep [vi] dormi
+slay [v] trucida
+sleep [v] dormi
 sleeve [n] manica
 slow [adj] lento
 small [adj] parvo
-smell [vi] (emit odor) odora
-smell (perceive odor) [vt] olfactu
-smelt [vt] funde
-smile [vi] arride
-smoke [vt] (cigar, etc.) fuma
-snatch [vt] velle
+smell [v] (emit odor) odora
+smell (perceive odor) [v] olfactu
+smelt [v] funde
+smile [v] arride
+smoke [v] (cigar, etc.) fuma
+snatch [v] velle
 snow [n] nive
-snow [vi] ninge
+snow [v] ninge
 so [adv] ergo; ita; sic; tam
 not so [adv] non ita
 so much the [adv] tanto
@@ -1789,17 +1789,17 @@ somewhat [cor] aliquid
 son [n] filio
 sorry [adj] dolente
 soul [n] anima
-sound [vi] sona
+sound [v] sona
 sound [n] sono
 soup [n] jusculo
 sour [n] (souring) satione
 sovereign [n] (sovereignty) potestate
-sow [vt] (a seed, etc.) semina
+sow [v] (a seed, etc.) semina
 space [n] spatio
-spare [vt] parce
+spare [v] parce
 spark [n] scintilla
 sparrow [n] passere
-speak [vt] loque
+speak [v] loque
 spoken [adj] locuto
 specimen [n] specimine
 speech [n] oratione
@@ -1807,26 +1807,26 @@ spell [n] (enchantment) sor o
 spigot [n] obturatore
 split [n] fissura
 spoon [n] cochleare
-spread [vt] diffunde; sparge
+spread [v] diffunde; sparge
 spring [n] (springtime) ver
-spring (originate) [vi] ori
-sprinkle [vt] (wet with any liquid) consperge
+spring (originate) [v] ori
+sprinkle [v] (wet with any liquid) consperge
 square [n] quadrato
 staff [n] palo
 stake [n] palo
-stand [vi] sta
+stand [v] sta
 star [n] astro; stella
-stare [vt] (stare at) specta
+stare [v] (stare at) specta
 state [n] (pol) regno
 station [n] (stationer) chartario
-stay [vi] sta
+stay [v] sta
 stead [n] vice
 steam [n] (steamboat) pyroscapho
 steamship [n] pyronave
 steel [n] aciario
 step [n] passu
 step [n] (of stairs) scala
-take steps to [vt] ingrede
+take steps to [v] ingrede
 steward [n] (on ship, plane) dapifero
 stick [n] baculo
 still [adv] tamen
@@ -1835,30 +1835,30 @@ stone [n] (material substance) petra
 stone [n] (pebble) lapillo; saxo
 stone [n] (piece of rock) lapide
 stool [n] scamno; sedile
-stop [vt] siste
+stop [v] siste
 store [n] (shop) negotio
 store room [n] cella
 storm [n] procella
 stove [n] caldario; furno
 straight [adj] recto
-strain [vt] tende
+strain [v] tende
 straw [n] palea
 street [n] strata
 stress [n] (lay stress on) insta
-stretch [vt] (lengthen as from strain) tende
-strike [vt] feri
+stretch [v] (lengthen as from strain) tende
+strike [v] feri
 strong [adj] forte
 structure [n] (superstructure) opere
-struggle [vi] pugna
+struggle [v] pugna
 struggle [n] lucta
-stuff [vt] (fill) farci
+stuff [v] (fill) farci
 stupid [adj] stulto
 style [n] stilo
 such [cor] tale
 such as [cor] quale
-suck [vt] suge
+suck [v] suge
 sugar [n] saccharo
-suggest [vt] suggere
+suggest [v] suggere
 summer [n] aestate
 summit [n] vertice
 sun [n] sol; solis
@@ -1867,56 +1867,56 @@ super [adj] supra
 superior [adj] superiore
 superstructure [n] opere
 supper [n] cena; quarto prandio
-supply [vt] praebe
+supply [v] praebe
 supply [n] (make up for what is lacking in) supple
 support [n] (supporter) fautore
-suppose [vt] suppone
-supress [vt] supprime
+suppose [v] suppone
+supress [v] supprime
 sure [adj] certo
 surely [adv] vero
-surmount [vt] supera
-surpass [vt] supera
+surmount [v] supera
+surpass [v] supera
 surplus [n] reliquo
-surprise [vt] stupefac
+surprise [v] stupefac
 be surprised [adj] stupe
-surround [vt] circui; circumda
-suspect [vt] suspice
+surround [v] circui; circumda
+suspect [v] suspice
 suture [n] sutura
 swallow [n] hirundine
-swallow [vt] gluti
+swallow [v] gluti
 swamp [n] palude
 sweat [n] sudore
 sweet [adj] dulce
 swift [adj] veloce
-swim [vi] nata
-sympathy [vi] (sympathize with) compate
+swim [v] nata
+sympathy [v] (sympathize with) compate
 table [n] (furniture) mensa; tabula
 table [n] (list) tabella
 tablecloth [n] mantele; mappa
 tadpole [n] ranunculo
 tailor [n] sartore
-take [vt] prehende
-take off [vt] (clothes) devesti
+take [v] prehende
+take off [v] (clothes) devesti
 talent [n] ingenio
-talk [vt] (talk over) discute
+talk [v] (talk over) discute
 tall [adj] alto
-tame [vt] (domesticate) domita
+tame [v] (domesticate) domita
 task [n] opera
-taste [vt] gusta
+taste [v] gusta
 taste [n] gustu
 tax [n] (amount owed) imposito
 taxi [n] taxabehiculo; taxametro
-teach [vt] (educate) doce
+teach [v] (educate) doce
 teacher [n] magistro
 tear [n] lacrima
-tempt [vt] tenta
+tempt [v] tenta
 tenant [n] (of a house) inquilio
 tense [n] tempore
 tent [n] tentorio
 term [n] tempore
-test [vt] proba
+test [v] proba
 than [conj] quam
-thank [vt] agere gratias
+thank [v] agere gratias
 thanks [n] gratias
 that [cor] eo; illo
 that one [cor] illo
@@ -1932,7 +1932,7 @@ thick [adj] spisso
 thick [adj] (large depth) crasso
 thin [adj] (thin and long) tenue
 thing [n] re
-think [vt] cogita; pensa; puta
+think [v] cogita; pensa; puta
 thirst [n] siti
 this [cor] ce; hoc; isto
 thorax [n] thorace
@@ -1942,21 +1942,21 @@ thread [n] filo
 threaten [adj] (threatening) minace
 threshold [n] limine
 thrice [adv] ter; tres vice
-thrill [vt] incende
+thrill [v] incende
 through [prep] (go through) percurre
-throw [vt] jacta
-throw forth [vt] projice
+throw [v] jacta
+throw forth [v] projice
 thumb [n] pollice
-thunder [vi] tona
+thunder [v] tona
 thus [cor] ita; sic
-thwart [vt] impedi
+thwart [v] impedi
 ticket [n] tessera
 tight [adj] angusto
 timber [n] ligno
 time [n] tempore; vice
 how many times? [n] quotiens?
 time-table [n] horario
-to spend time [vt] dege
+to spend time [v] dege
 tin [n] stanno
 tip [n] (donation) donation
 tire [adj] (tired) lasso
@@ -1971,7 +1971,7 @@ tomorrow [adv] cras
 tongue [n] lingua
 tooth [n] dente
 top [n] summo
-touch [vt] tange
+touch [v] tange
 touch (sense) [n] tactu
 toward [prep] ad; erga; verso
 towel [n] linteo
@@ -1981,36 +1981,36 @@ tract [n] loco; tractu
 trade [n] (trader) commerciante
 train [n] trahino
 trajectory [n] trajectu
-translate [vt] verte
+translate [v] verte
 translation [n] traductione
 transmit [adj] (transmitted) transmisso
-transport [vt] (by vehicle) vehe
+transport [v] (by vehicle) vehe
 transported [adj] vecto
 trap [n] fovea
-travel [vi] itinera
+travel [v] itinera
 traveller [n] viatore
 treasure [n] thesauro
 treble [adj] triplo
-tremble [vi] treme
+tremble [v] treme
 trip [n] itinere
-trip [vi] labe
+trip [v] labe
 trousers [n] (breeches) braca
 trout [n] tructa
 true [adj] vero
 truly [adv] quidem; vere
 trumpet [n] bucina; tromba
-try [vt] cona; tenta
+try [v] cona; tenta
 tub [n] tina
 tube [n] tubo
-tug [vt] trahe
+tug [v] trahe
 tunic [n] tunica
-turn [vt] (change direction, facing) verte
-turn (change) [vt] muta
-turn (on a connected axis) [vi] gyro
+turn [v] (change direction, facing) verte
+turn (change) [v] muta
+turn (on a connected axis) [v] gyro
 twice [adv] bis; duo vice
 twig [n] virga
-twinkle [vi] mica
-twist [vt] torque
+twinkle [v] mica
+twist [v] torque
 ugly [adj] turpe
 umbrella [n] umbella
 uncertain [adj] vago
@@ -2018,8 +2018,8 @@ uncle [n] avunculo
 under [n] sub
 underling [n] inferiore
 underpants [n] sub bracas
-understand [vt] intellige; percipe
-undertake [vt] interprehende
+understand [v] intellige; percipe
+undertake [v] interprehende
 uneasy [adj] inquieto
 unfavorable [adj] infausto
 unfounded [adj] ficto
@@ -2031,22 +2031,22 @@ unripe [adj] crudo
 until [prep] (as far as) usque
 unwieldy [adj] ponderoso
 up [prep] (get up) surge
-go up [vt] sali
+go up [v] sali
 up to [adv] (until) donec
-upholster [vt] farci; operi
+upholster [v] farci; operi
 upholstered [adj] operto
 upper [adj] upper supero
-urge [vt] instiga; preme; urge
+urge [v] instiga; preme; urge
 urgent [adj] urge
-use [vt] ute
+use [v] ute
 useful [adj] utile
 useless [adj] inutile
 usual [adj] usitato
 vacuum [n] (vacuum-cleaner) vacuo
 vague [adj] vago
 valve [n] valvula
-vanish [vi] evanesce
-vanquish [vt] vince
+vanish [v] evanesce
+vanquish [v] vince
 vanquished [adj] victo
 varied [adj] (diverse) diverso
 veal [n] vitulo (carne de)
@@ -2071,16 +2071,16 @@ vocal [adj] vocale
 voice [n] voce
 vowel [n] vocale
 wagon [n] carro
-wait [vt] (wait for) attende; expecta
+wait [v] (wait for) attende; expecta
 waiter [n] dapifero
 waitress [n] ancilla
-walk [vi] ambula; grade
+walk [v] ambula; grade
 wall [n] muro; pariete
 wand [n] virga
 war [n] bello
 warm [adj] calido
-warm [vt] calefac
-wash [vt] lava
+warm [v] calefac
+wash [v] lava
 watch [n] (timepiece) horologio
 watchmaker [n] horologiario
 water [n] aqua
@@ -2089,15 +2089,15 @@ waterproof [adj] impermeabile
 wave [n] unda
 weak [adj] debile
 wealth [adj] (wealthy) locupleto
-wear [vt] (clothes) gere; vesti
+wear [v] (clothes) gere; vesti
 weary [adj] lasso
 weather [n] statu de caelo; tempore
-weave [vt] texe
+weave [v] texe
 web [n] tela
 week [n] hebdomade; septimana
-weep [vi] fle; plange
+weep [v] fle; plange
 weep [n] plora
-weigh [vt] pensa
+weigh [v] pensa
 weight [n] pondere
 weighty [adj] ponderoso
 well [adv] bene
@@ -2123,11 +2123,11 @@ wide [adj] lato
 widow [n] viduo
 wife [n] marita; muliere; sponsa; uxore
 wild [adj] silvatico
-will [vt] (future tense) in futuro
+will [v] (future tense) in futuro
 will [n] voluntate
 willingly [adv] libenter
-win [vt] (contract, order) obtine
-wind [vt] torque
+win [v] (contract, order) obtine
+wind [v] torque
 wind [n] vento
 window [n] fenestra
 window sill [n] limine
@@ -2135,7 +2135,7 @@ wine [n] vino
 wing [n] ala
 winter [n] hieme
 wise [adj] sapiente
-wish [vt] vol
+wish [v] vol
 with [prep] cum
 within [prep] intra
 without [prep] sine
@@ -2150,22 +2150,22 @@ wood-sorrel [n] oxalis
 woof [n] (weaving) trama
 wool [n] lana
 word [n] verbo; vocabulo
-work [vi] labora; opera
-work (control the functioning of, run the affairs of) [vt] opera
+work [v] labora; opera
+work (control the functioning of, run the affairs of) [v] opera
 worker [n] operario
 world [n] mundo
 worm [n] verme
-worry [vt] turba
+worry [v] turba
 worst [adj] pejore; pessimo
 worth [n] valore
 be worth [adj] vale
 worthy [adj] digno
-wound [vt] feri
-wrap [vt] (wrap around) involve
+wound [v] feri
+wrap [v] (wrap around) involve
 wreath [n] corona
 wretch [n] misero
 wrist [n] (wristwatch) horologio
-write [vt] scribe
+write [v] scribe
 written [adj] scripto
 yacht [n] phaselo
 yard [n] (enclosed courtyard) area (de domo)
@@ -2177,7 +2177,7 @@ yet [adv] (already) jam
 yet [adv] (however) sed; tamen
 as yet [adv] adhuc
 not yet [adv] nondum
-yield [vt] (give way) cede
+yield [v] (give way) cede
 yoke [n] (bondage) jugo
 yore [n] of yore olim
 young [adj] juvene
@@ -2287,12 +2287,12 @@ horn [n] cornu
 drunkenness [n] crapula
 creator [n] creator
 creature [n] creatura
-create [vt] cre
+create [v] cre
 grace [n] decor
-boil [vt] effervo
+boil [v] effervo
 overflow [n] eluvies
 slender [adj] exilis
-expect [vt] exspecto
+expect [v] exspecto
 external [adj] externus
 river [n] flumen
 helmet [n] galea
@@ -2300,15 +2300,15 @@ cheerful [adj] hilaris
 hypocrite [n] hypocrita
 immediately [adv] ilico
 immortal [adj] immortal
-scold [vt] increpare
+scold [v] increpare
 infertile [adj] infelix
 below [adj] inferne
-to infer [vt] infero
+to infer [v] infero
 whole [adj] integer
-to joke [vt] iocor
+to joke [v] iocor
 joke [n] ioco
 wrath [n] ira
-help [vt] iuvo
+help [v] iuvo
 witch [n] lamia
 ghosts [n] lemures
 lentil [n] lentis; lens
@@ -2317,9 +2317,9 @@ wolf [n] lupus
 delay [n] mora
 soon [adj] mox
 navigation [n] navigatio
-sail [vt] navigo
+sail [v] navigo
 ship [n] navis
-to kill [vt] neco
+to kill [v] neco
 nobody [n] nemo
 vapor [n] nidor
 snowy [adj] niveus
@@ -2327,9 +2327,9 @@ night [n] nox
 secretly [adj] occulto
 hatred [n] odium
 leisure [n] otium
-disturb [vt] perturbo
+disturb [v] perturbo
 bridge [n] pons; pontis
-arrest [vt] prehendo
+arrest [v] prehendo
 battle [n] proelium
 long [adj] prolix
 king [n] rex
@@ -2341,7 +2341,7 @@ city [n] urbs; urbis
 empty [adj] vacuus
 awning [n] velum
 old [adj] vetus
-reduce [vt] reduc
+reduce [v] reduc
 
 my [pos] (possessive) de me
 mine [pos] (possessive) de me
