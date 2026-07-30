@@ -24,18 +24,17 @@ emu_deo(Uint8 port, Uint8 value)
 	}
 }
 
-#define DEC(m) stk[m][--ptr[m]]
-#define INC(m) stk[m][ptr[m]++]
-#define IMM a = ram[pc++] << 8, a |= ram[pc++];
-#define MOV pc = d ? (Uint16)a : pc + (Sint8)a;
-#define POx(o,m) o = DEC(r); if(m) o |= DEC(r) << 8;
-#define PUx(i,m,s) if(m) c = (i), INC(s) = c >> 8, INC(s) = c; else INC(s) = i;
-#define GOT(o) if(d) o[1] = DEC(r); o[0] = DEC(r);
-#define PUT(i,s) INC(s) = i[0]; if(d) INC(s) = i[1];
-#define POK(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
-#define PEK(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUT(v,r)
-#define DEO(o,v) if(d) dev[o] =  v[0]; emu_deo(o + d, v[d]);
-#define DEI(i,v) v[0] = emu_dei(i); if(d) v[1] = dev[(i + 1) & 0xff]; PUT(v,r)
+#define DEc(m) stk[m][--ptr[m]]
+#define INc(m) stk[m][ptr[m]++]
+#define POx(o,m) o = DEc(r); if(m) o |= DEc(r) << 8;
+#define PUx(i,m,s) if(m) c = (i), INc(s) = c >> 8, INc(s) = c; else INc(s) = i;
+#define GOt(o) if(d) o[1] = DEc(r); o[0] = DEc(r);
+#define PUt(i,s) INc(s) = i[0]; if(d) INc(s) = i[1];
+#define POk(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
+#define PEk(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUt(v,r)
+#define IMm a = ram[pc++] << 8, a |= ram[pc++];
+#define MOv pc = d ? (Uint16)a : pc + (Sint8)a;
+
 #define OPC(opc, A, B) {\
 	case 0x00|opc: {Uint8 d=0,r=0;A B} break;\
 	case 0x20|opc: {Uint8 d=1,r=0;A B} break;\
@@ -53,36 +52,36 @@ uxn_eval(Uint16 pc)
 	for(;;)
 	switch(ram[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: if(DEC(0)) { IMM pc += a; } else pc += 2; break;
-	/* JMI */ case 0x40: IMM pc += a; break;
-	/* JSI */ case 0x60: IMM PUx(pc, 1, 1) pc += a; break;
-	/* LI2 */ case 0xa0: INC(0) = ram[pc++]; /* fall-through */
-	/* LIT */ case 0x80: INC(0) = ram[pc++]; break;
-	/* L2r */ case 0xe0: INC(1) = ram[pc++]; /* fall-through */
-	/* LIr */ case 0xc0: INC(1) = ram[pc++]; break;
-	/* INC */ OPC(0x01,POx(a,d),PUx(a + 1,d,r))
+	/* JCI */ case 0x20: if(DEc(0)) { IMm pc += a; } else pc += 2; break;
+	/* JMI */ case 0x40: IMm pc += a; break;
+	/* JSI */ case 0x60: IMm PUx(pc, 1, 1) pc += a; break;
+	/* LI2 */ case 0xa0: INc(0) = ram[pc++]; /* fall-through */
+	/* LIT */ case 0x80: INc(0) = ram[pc++]; break;
+	/* L2r */ case 0xe0: INc(1) = ram[pc++]; /* fall-through */
+	/* LIr */ case 0xc0: INc(1) = ram[pc++]; break;
+	/* INc */ OPC(0x01,POx(a,d),PUx(a + 1,d,r))
 	/* POP */ OPC(0x02,ptr[r] -= 1 + d;,{})
-	/* NIP */ OPC(0x03,GOT(x) ptr[r] -= 1 + d;,PUT(x,r))
-	/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x,r) PUT(y,r))
-	/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y,r) PUT(x,r) PUT(z,r))
-	/* DUP */ OPC(0x06,GOT(x),PUT(x,r) PUT(x,r))
-	/* OVR */ OPC(0x07,GOT(x) GOT(y),PUT(y,r) PUT(x,r) PUT(y,r))
+	/* NIP */ OPC(0x03,GOt(x) ptr[r] -= 1 + d;,PUt(x,r))
+	/* SWP */ OPC(0x04,GOt(x) GOt(y),PUt(x,r) PUt(y,r))
+	/* ROT */ OPC(0x05,GOt(x) GOt(y) GOt(z),PUt(y,r) PUt(x,r) PUt(z,r))
+	/* DUP */ OPC(0x06,GOt(x),PUt(x,r) PUt(x,r))
+	/* OVR */ OPC(0x07,GOt(x) GOt(y),PUt(y,r) PUt(x,r) PUt(y,r))
 	/* EQU */ OPC(0x08,POx(a,d) POx(b,d),PUx(b == a,0,r))
 	/* NEQ */ OPC(0x09,POx(a,d) POx(b,d),PUx(b != a,0,r))
 	/* GTH */ OPC(0x0a,POx(a,d) POx(b,d),PUx(b > a,0,r))
 	/* LTH */ OPC(0x0b,POx(a,d) POx(b,d),PUx(b < a,0,r))
-	/* JMP */ OPC(0x0c,POx(a,d),MOV)
-	/* JCN */ OPC(0x0d,POx(a,d) POx(b,0),if(b) MOV)
-	/* JSR */ OPC(0x0e,POx(a,d),PUx(pc,1,!r) MOV)
-	/* STH */ OPC(0x0f,GOT(x),PUT(x,!r))
-	/* LDZ */ OPC(0x10,POx(a,0),PEK(a, x, 0xff))
-	/* STZ */ OPC(0x11,POx(a,0) GOT(y),POK(a, y, 0xff))
-	/* LDR */ OPC(0x12,POx(a,0),PEK(pc + (Sint8)a, x, 0xffff))
-	/* STR */ OPC(0x13,POx(a,0) GOT(y),POK(pc + (Sint8)a, y, 0xffff))
-	/* LDA */ OPC(0x14,POx(a,1),PEK(a, x, 0xffff))
-	/* STA */ OPC(0x15,POx(a,1) GOT(y),POK(a, y, 0xffff))
-	/* DEI */ OPC(0x16,POx(a,0),DEI(a, x))
-	/* DEO */ OPC(0x17,POx(a,0) GOT(y),DEO(a, y))
+	/* JMP */ OPC(0x0c,POx(a,d),MOv)
+	/* JCN */ OPC(0x0d,POx(a,d) POx(b,0),if(b) MOv)
+	/* JSR */ OPC(0x0e,POx(a,d),PUx(pc,1,!r) MOv)
+	/* STH */ OPC(0x0f,GOt(x),PUt(x,!r))
+	/* LDZ */ OPC(0x10,POx(a,0),PEk(a, x, 0xff))
+	/* STZ */ OPC(0x11,POx(a,0) GOt(y),POk(a, y, 0xff))
+	/* LDR */ OPC(0x12,POx(a,0),PEk(pc + (Sint8)a, x, 0xffff))
+	/* STR */ OPC(0x13,POx(a,0) GOt(y),POk(pc + (Sint8)a, y, 0xffff))
+	/* LDA */ OPC(0x14,POx(a,1),PEk(a, x, 0xffff))
+	/* STA */ OPC(0x15,POx(a,1) GOt(y),POk(a, y, 0xffff))
+	/* DEI */ OPC(0x16,POx(a,0),x[0] = emu_dei(a); if(d) x[1] = dev[(a + 1) & 0xff]; PUt(x,r))
+	/* DEO */ OPC(0x17,POx(a,0) GOt(y),if(d) dev[a] =  y[0]; emu_deo(a + d, y[d]);)
 	/* ADD */ OPC(0x18,POx(a,d) POx(b,d),PUx(b + a, d,r))
 	/* SUB */ OPC(0x19,POx(a,d) POx(b,d),PUx(b - a, d,r))
 	/* MUL */ OPC(0x1a,POx(a,d) POx(b,d),PUx(b * a, d,r))
