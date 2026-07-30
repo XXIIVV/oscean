@@ -122,14 +122,13 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 	multiples of 5 with Buzz,
 	and multiples of both with FizzBuzz )
 
-times^100
+[times^100 n f b]
 
-@Loop ( times -- num f b )
-	num f b
-	[Loop .FizzBuzz\\n]/[times f^3 b^5]
-	[Loop .Fizz\\n]/[times f^3]
-	[Loop .Buzz\\n]/[times b^5]
-	[Loop .#num .\\n]/times
+@Loop ( times -- n f b )
+	[Loop n f b .FizzBuzz\\n]/[times f^3 b^5]
+	[Loop n f b .Fizz\\n]/[times f^3]
+	[Loop n f b .Buzz\\n]/[times b^5]
+	[Loop n f b .#n .\\n]/times
 `
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
