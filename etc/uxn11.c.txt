@@ -1019,12 +1019,15 @@ emu_deo(const Uint8 port, const Uint8 value)
 
 /* clang-format off */
 
+/*
+@|Uxn --------------------------------------------------------------- */
+
 #define Lb(o)       stk[r][(Uint8)(ptr[r]-o)]
-#define Lx(m,m1,m2) m ? Lb(m2) << 8 | Lb(m2+1) : Lb(m1)
+#define Lx(m,o,o2)  m ? Lb(o2) << 8 | Lb(o2+1) : Lb(o)
 #define Pb(s,v)     stk[s][ptr[s]++] = v;
-#define Px(m,s,v)   if(m) Pb(s,(v)>>8) Pb(s,v)
-#define Lda(m,s,o)  Pb(r,ram[o]) if(m) Pb(r,ram[(s)(o+1)])
-#define Sta(s,o,u)  if(d) ram[o]=u>>8, ram[(s)(o+1)]=u; else ram[o]=u;
+#define Px(m,s,v)   if(m) {const int t=(v);Pb(s,t>>8) Pb(s,t)} else Pb(s,v)
+#define Lda(m,u,o)  Pb(r,ram[o]) if(m) Pb(r,ram[(u)(o+1)])
+#define Sta(u,o,v)  if(d) ram[o]=v>>8, ram[(u)(o+1)]=v; else ram[o]=v;
 #define MUTE        (void)x;(void)y;(void)z;(void)r;(void)d;
 
 #define OP(opc,X,Y,Z,k1,k2,P) \
@@ -1062,9 +1065,9 @@ uxn_eval(Uint16 start_pc)
 	/* NEQ */ OP(0x09, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,y!=x))
 	/* GTH */ OP(0x0a, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,y>x))
 	/* LTH */ OP(0x0b, Lx(d,1,2), Lx(d,2,4), 0,2,4, Pb(r,y<x))
-	/* JMP */ OP(0x0c, Lx(d,1,2), 0,         0,1,2, pc=d?x:(pc+(Sint8)x);)
-	/* JCN */ OP(0x0d, Lx(d,1,2), Lb((d+2)), 0,2,3, if(y) pc=d?x:(pc+(Sint8)x);)
-	/* JSR */ OP(0x0e, Lx(d,1,2), 0,         0,1,2, Px(1,!r,pc) pc=d?x:(pc+(Sint8)x);)
+	/* JMP */ OP(0x0c, Lx(d,1,2), 0,         0,1,2, pc=d?x:pc+(Sint8)x;)
+	/* JCN */ OP(0x0d, Lx(d,1,2), Lb((d+2)), 0,2,3, if(y) pc=d?x:pc+(Sint8)x;)
+	/* JSR */ OP(0x0e, Lx(d,1,2), 0,         0,1,2, Px(1,!r,pc) pc=d?x:pc+(Sint8)x;)
 	/* STH */ OP(0x0f, Lx(d,1,2), 0,         0,1,2, Px(d,!r,x))
 	/* LDZ */ OP(0x10, Lx(0,1,1), 0,         0,1,1, Lda(d,Uint8,x))
 	/* STZ */ OP(0x11, Lx(0,1,1), Lx(d,2,3), 0,2,3, Sta(Uint8,x,y))
@@ -1335,7 +1338,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(79K), 27 Jul 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(79K), 30 Jul 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
