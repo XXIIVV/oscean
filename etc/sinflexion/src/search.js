@@ -118,8 +118,28 @@ function print_term(t, lang, a, b) {
 	return res
 }
 
+function dump() {
+	let res = ""
+	Object.keys(db.lo).sort().forEach((k) => { 
+		res += `${k}\n`
+		Object.keys(db.lo[k]).sort().forEach((t) => { 
+			res += `\t[${t}] `
+			db.lo[k][t].forEach((w, id) => {
+				res += `${w}`
+				res += id < db.lo[k][t].length - 1 ? ', ' : ''
+			})
+			res += `\n`
+		})
+	})
+	console.log(res)
+}
+
 function search_term(target) {
 	let res = ""
+	if(target='___') {
+		dump()
+		return
+	}
 	// Perfect matches
 	if(db.en[target])
 		res += print_term(target, 'en', '<p>Angl: ', '</p>')

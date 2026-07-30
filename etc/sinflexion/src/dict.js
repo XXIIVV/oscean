@@ -181,7 +181,7 @@ begin [vt] incipe; ingrede
 beginning [n] principio
 behalf [n] (on behalf of) pro
 behind [prep] retro
-behold! [inter] ecce
+behold! [inter] ec
 behoove [vi] (to be necessary) oporte
 believe [vt] crede
 bell [n] campana
@@ -244,7 +244,7 @@ brace [n] brachio
 brain [n] cerebro
 branch [n] ramo
 brass [n] aes
-bravo [inter] euge!
+bravo [inter] eug!
 bread [n] pane
 break [vt] frange; quassa; rumpe
 broken [adj] fracto
@@ -326,7 +326,7 @@ cell [n] cella
 cellar [n] cella
 century [n] seculo
 certain [adj] (sure) certo
-to be sure! [exp] certo!
+to be sure! [exp] cert!
 to a certain extent [conj] aliquanto
 certainly [adv] certo; vero
 assuredly [adv] certo; vero
@@ -655,6 +655,8 @@ enumerate [vt] (mention one by one) numera
 envelope [n] involucro
 envelope [vt] involve
 envy [vt] invide
+envious [adj] invide
+jealous [adj] invide
 epistle [n] epistola
 epoch [n] aevo
 equal [adj] pari
@@ -759,7 +761,7 @@ flint [n] silice
 floor [n] pavimento; plano
 flour [n] farina
 flourish [vi] flore
-flow [vi] flue
+flow [vi] flu
 flower [n] flore
 flower [vi] flore
 fly [vi] vola
@@ -925,7 +927,7 @@ heaven [n] caelo; coelo
 heavy [adj] grave; ponderoso
 heel [n] talo
 heir [n] herede
-hello [inter] eho!; heus!
+hello [inter] heus!
 help [vt] adjuva
 help [n] auxilio
 helpless [adj] inope; misero
@@ -1041,7 +1043,6 @@ janitor [n] famulo
 Japan [n] Nippon
 Japanese [adj] nipponense
 Japanese [adj] nipponico
-jealous [adj] zelotypo
 jest [vi] lude
 journal [n] diurnale
 journey [n] itinere
@@ -1343,7 +1344,7 @@ origin [n] provenientia
 originate [vi] nasce; ori
 ostrich [n] struthione
 other [adj] alio
-out [prep] (get out!) apage!
+out [prep] (get out!) apag!
 out of [prep] ex
 outside [prep] extra
 outside [adv] foris
@@ -2286,7 +2287,7 @@ horn [n] cornu
 drunkenness [n] crapula
 creator [n] creator
 creature [n] creatura
-create [vt] creo
+create [vt] cre
 grace [n] decor
 boil [vt] effervo
 overflow [n] eluvies
