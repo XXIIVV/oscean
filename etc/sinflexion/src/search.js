@@ -136,7 +136,7 @@ function dump() {
 
 function search_term(target) {
 	let res = ""
-	if(target='___') {
+	if(target=="___") {
 		dump()
 		return
 	}
