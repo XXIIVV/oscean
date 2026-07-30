@@ -189,8 +189,8 @@ function Repl(rom, keyword)
 	}
 
 	this.run = () => {
-		let query = this.editor_el.value+'\n'
-		let emu = new Emu()
+		const query = this.editor_el.value+'\n'
+		const emu = new Emu()
 		emu.uxn.dev[0x17] = 1
 		emu.uxn.load(rom).eval(0x0100)
 		for (let i = 0; i < query.length; i++)
@@ -203,7 +203,7 @@ function Repl(rom, keyword)
 		} else
 			this.result_el.innerHTML = emu.console.stdout_body
 		// Trim console
-		let segments = emu.console.stderr_body.trim().split('\n')
+		const segments = emu.console.stderr_body.trim().split('\n')
 		if(segments.length > 50)
 			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n')
 		else

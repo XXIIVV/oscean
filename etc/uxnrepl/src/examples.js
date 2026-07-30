@@ -225,16 +225,17 @@ examples.reverse_string=`( Reverse a string and print it )
 
 @str/buf "wonderland 00
 `
-examples.fibonacci=`( 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
+examples.fibonacci=`( 54K . Fibonacci Short
+| 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
 
-#0009 fibonacci/<print> BRK
+#0009 u16/fib BRK
 
-@fibonacci/<print> ( num* -- numfib* )
+@u16/fib ( num* -- numfib* )
 	#0001 GTH2k ?{ POP2 JMP2r }
-	SUB2k /<print> STH2
-	INC2 SUB2 /<print> STH2r ADD2 JMP2r
+	SUB2k /fib STH2
+	INC2 SUB2 /fib STH2r ADD2 JMP2r
 `
-examples.print_date=`( Print the date in the format: Day, 1 Jan 2026 )
+examples.print_date=`( 54K . Print date as.. Day, 1 Jan 2026 )
 
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2
 
@@ -274,7 +275,7 @@ examples.print_date=`( Print the date in the format: Day, 1 Jan 2026 )
 	"Sun $1 "Mon $1 "Tue $1 "Wed $1
 	"Thu $1 "Fri $1 "Sat $1 ]
 `
-examples.print_time=`( Print the time in the format: hh:mm:ss )
+examples.print_time=`( 54K . Print time as.. hh:mm:ss )
 
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1
 
@@ -298,7 +299,7 @@ examples.print_time=`( Print the time in the format: hh:mm:ss )
 	LIT "0 ADD #18 DEO
 	JMP2r
 `
-examples.print_arvelie=`( Print the Arvelie date )
+examples.print_arvelie=`( 54K . Arvelie Date )
 
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2
 
@@ -324,7 +325,11 @@ examples.print_arvelie=`( Print the Arvelie date )
 	[ LIT "0 ] ADD #18 DEO
 	JMP2r
 `
-examples.fizzbuzz=`( Print the fizzbuzz sequence )
+examples.fizzbuzz=`( 54K . Fizzbuzz
+| Fizz when divisible by 3
+| Buzz when divisible by 5
+| FizzBuzz when divisible by 15
+| Otherwise, a number )
 
 #6501
 
@@ -342,7 +347,8 @@ examples.fizzbuzz=`( Print the fizzbuzz sequence )
 		MUL SUB #30 ADD #18 DEO }
 	#0a18 DEO
 	INC GTHk ?fizzbuzz
-	POP2 BRK`
+	POP2 BRK
+`
 examples.subleq=`( 54K . -leq )
 
 @subleq/on-reset ( -> )
@@ -425,7 +431,7 @@ examples.brainfuck=`( 54K . Brainfuck )
 	"++++++++>-]<+. ] 00 &end
 
 `
-examples.sierpinski=`( Draw the Sierpiński triangle )
+examples.sierpinski=`( 54K . Sierpiński Triangle )
 
 @sierpinski ( -> )
 	( mask ) [ LIT2r 0a18 ] [ LIT2r 2018 ] 
@@ -440,8 +446,9 @@ examples.sierpinski=`( Draw the Sierpiński triangle )
 			INC ADDk ,&size LDR LTH ?&>fill
 		POP2 OVR2r DEOr
 		#01 SUB INCk ?&>ver
-	POP POP2r POP2r BRK`
-examples.mandelbrot=`( Draw the mandelbrot fractal )
+	POP POP2r POP2r BRK
+`
+examples.mandelbrot=`( 54K . Mandelbrot Fractal )
 
 |0020 @W
 |0016 @H
@@ -504,4 +511,5 @@ examples.mandelbrot=`( Draw the mandelbrot fractal )
 	.bits SFT2 OVR #02 AND ?{ JMP2r }
 	;bits/mask ORA2 JMP2r
 
-	&lut "Q80XCTI1l!i;:"^',. 20`
+	&lut "Q80XCTI1l!i;:"^',. 20
+`
