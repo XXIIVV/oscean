@@ -429,15 +429,15 @@ belar/num
 ( Ad fin, imprim computat. )
 .#teser
 `
-examples.fractran=`( This is a comment )
+examples.fractran=`( This is a Fractran program )
 
-[apple^2 orange]         ( This is a bag )
+[apple^2 orange]       ( This is the state of the accumulator. )
 
-@top                     ( This is a label )
-  [top banana]/orange^3  ( Transformations are encoded as fractions )
-  [top orange]/apple     ( Each Fractran fraction includes the top label. )
-  .#banana               ( Print the count of a symbol in the bag )
+@t                     ( This is a label. )
+  [t banana]/orange^3  ( This trades 3 oranges for 1 banana. )
+  [t orange]/apple     ( Each numerator must include the "t" label. )
+  [t .Fractran]/banana ( A dot-symbol prints its name to the console. )
 
 ( When no fractions can be applied,
-  the program ends. )
+  the Fractran program ends. )
 `
