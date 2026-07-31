@@ -11,7 +11,7 @@
 @on-reset ( -> )
 	;tests/end ;tests
 	&>l
-		LDA2k JSR2 test INC2 INC2 GTH2k ?&>l
+		LDA2k JSR2 test INC2 INC2 GTH2k ?/>l
 	POP2 POP2
 	( lb ) #0a18 DEO
 	( debugger ) #010e DEO
@@ -31,116 +31,125 @@
 @chr/<test> ( -- value )
 	;&name str/<print>
 	( | lc )
-	LIT "a /lc LIT "a NEQ ?&fail
-	LIT "A /lc LIT "a NEQ ?&fail
-	LIT "Z /lc LIT "z NEQ ?&fail
-	LIT "[ /lc LIT "[ NEQ ?&fail
-	LIT "@ /lc LIT "@ NEQ ?&fail
+	LIT "a /lc LIT "a NEQ ?/fail
+	LIT "A /lc LIT "a NEQ ?/fail
+	LIT "Z /lc LIT "z NEQ ?/fail
+	LIT "[ /lc LIT "[ NEQ ?/fail
+	LIT "@ /lc LIT "@ NEQ ?/fail
 	( | uc )
-	LIT "A /uc LIT "A NEQ ?&fail
-	LIT "a /uc LIT "A NEQ ?&fail
-	LIT "z /uc LIT "Z NEQ ?&fail
-	LIT "[ /uc LIT "[ NEQ ?&fail
-	LIT "@ /uc LIT "@ NEQ ?&fail
+	LIT "A /uc LIT "A NEQ ?/fail
+	LIT "a /uc LIT "A NEQ ?/fail
+	LIT "z /uc LIT "Z NEQ ?/fail
+	LIT "[ /uc LIT "[ NEQ ?/fail
+	LIT "@ /uc LIT "@ NEQ ?/fail
 	( | hex )
-	LIT "0 /hex #00 NEQ ?&fail
-	LIT "1 /hex #01 NEQ ?&fail
-	LIT "9 /hex #09 NEQ ?&fail
-	LIT "a /hex #0a NEQ ?&fail
-	LIT "f /hex #0f NEQ ?&fail
-	LIT "g /hex #ff NEQ ?&fail
-	LIT 00 /hex #ff NEQ ?&fail
+	LIT "0 /hex #00 NEQ ?/fail
+	LIT "1 /hex #01 NEQ ?/fail
+	LIT "9 /hex #09 NEQ ?/fail
+	LIT "a /hex #0a NEQ ?/fail
+	LIT "f /hex #0f NEQ ?/fail
+	LIT "g /hex #ff NEQ ?/fail
+	LIT 00 /hex #ff NEQ ?/fail
 	#01 JMP2r
 	&fail #00 JMP2r
+
 	&name 0a "chr: 20 00
 
 @str/<test> ( -- )
-	;&name str/<print>
+	;&name /<print>
 	( | len )
-	[ { "hello $1 } STH2r ] /len #0005 NEQ2 ?&fail
-	[ { "what $1 } STH2r ] /len #0004 NEQ2 ?&fail
-	[ { $1 } STH2r ] /len #0000 NEQ2 ?&fail
+	[ { "hello $1 } STH2r ] /len #0005 NEQ2 ?/fail
+	[ { "what $1 } STH2r ] /len #0004 NEQ2 ?/fail
+	[ { $1 } STH2r ] /len #0000 NEQ2 ?/fail
 	( | cmp )
 	( a ) [ { "text 00 } STH2r ]
-	( b ) [ { "text 00 } STH2r ] /cmp #01 NEQ ?&fail
+	( b ) [ { "text 00 } STH2r ] /cmp #01 NEQ ?/fail
 	( a ) [ { "text 00 } STH2r ]
-	( b ) [ { "te 00 } STH2r ] /cmp #00 NEQ ?&fail
+	( b ) [ { "te 00 } STH2r ] /cmp #00 NEQ ?/fail
 	( a ) [ { "textext 00 } STH2r ]
-	( b ) [ { "text 00 } STH2r ] /cmp #00 NEQ ?&fail
+	( b ) [ { "text 00 } STH2r ] /cmp #00 NEQ ?/fail
 	( a ) [ { 00 "ext 00 } STH2r ]
-	( b ) [ { "text 00 } STH2r ] /cmp #00 NEQ ?&fail
+	( b ) [ { "text 00 } STH2r ] /cmp #00 NEQ ?/fail
 	( | hex )
-	;dict/0 /hex #0000 NEQ2 ?&fail
-	;dict/90 /hex #0090 NEQ2 ?&fail
-	;dict/0a /hex #000a NEQ2 ?&fail
-	;dict/9a /hex #009a NEQ2 ?&fail
-	;dict/01af /hex #01af NEQ2 ?&fail
-	;dict/1af0 /hex #1af0 NEQ2 ?&fail
-	;dict/1af /hex #01af NEQ2 ?&fail
+	;dict/0 /hex #0000 NEQ2 ?/fail
+	;dict/90 /hex #0090 NEQ2 ?/fail
+	;dict/0a /hex #000a NEQ2 ?/fail
+	;dict/9a /hex #009a NEQ2 ?/fail
+	;dict/01af /hex #01af NEQ2 ?/fail
+	;dict/1af0 /hex #1af0 NEQ2 ?/fail
+	;dict/1af /hex #01af NEQ2 ?/fail
 	( | dec )
-	;dict/0 /dec #0000 NEQ2 ?&fail
-	;dict/1 /dec #0001 NEQ2 ?&fail
-	;dict/10 /dec #000a NEQ2 ?&fail
-	;dict/90 /dec #005a NEQ2 ?&fail
-	;dict/09 /dec #0009 NEQ2 ?&fail
-	;dict/12340 /dec #3034 NEQ2 ?&fail
-	;dict/65535 /dec #ffff NEQ2 ?&fail
+	;dict/0 /dec #0000 NEQ2 ?/fail
+	;dict/1 /dec #0001 NEQ2 ?/fail
+	;dict/10 /dec #000a NEQ2 ?/fail
+	;dict/90 /dec #005a NEQ2 ?/fail
+	;dict/09 /dec #0009 NEQ2 ?/fail
+	;dict/12340 /dec #3034 NEQ2 ?/fail
+	;dict/65535 /dec #ffff NEQ2 ?/fail
 	( | signed dec )
-	;dict/0 /dec-sign #0000 NEQ2 ?&fail
-	;dict/1 /dec-sign #0001 NEQ2 ?&fail
-	;dict/10 /dec-sign #000a NEQ2 ?&fail
-	;dict/90 /dec-sign #005a NEQ2 ?&fail
-	;dict/09 /dec-sign #0009 NEQ2 ?&fail
-	;dict/12340 /dec-sign #3034 NEQ2 ?&fail
-	;dict/32767 /dec-sign #7fff NEQ2 ?&fail
-	;dict/sub0 /dec-sign #0000 NEQ2 ?&fail
-	;dict/sub1 /dec-sign #ffff NEQ2 ?&fail
-	;dict/sub10 /dec-sign #fff6 NEQ2 ?&fail
-	;dict/sub127 /dec-sign #ff81 NEQ2 ?&fail
-	;dict/sub256 /dec-sign #ff00 NEQ2 ?&fail
-	;dict/sub32768 /dec-sign #8000 NEQ2 ?&fail
+	;dict/0 /dec-sign #0000 NEQ2 ?/fail
+	;dict/1 /dec-sign #0001 NEQ2 ?/fail
+	;dict/10 /dec-sign #000a NEQ2 ?/fail
+	;dict/90 /dec-sign #005a NEQ2 ?/fail
+	;dict/09 /dec-sign #0009 NEQ2 ?/fail
+	;dict/12340 /dec-sign #3034 NEQ2 ?/fail
+	;dict/32767 /dec-sign #7fff NEQ2 ?/fail
+	;dict/sub0 /dec-sign #0000 NEQ2 ?/fail
+	;dict/sub1 /dec-sign #ffff NEQ2 ?/fail
+	;dict/sub10 /dec-sign #fff6 NEQ2 ?/fail
+	;dict/sub127 /dec-sign #ff81 NEQ2 ?/fail
+	;dict/sub256 /dec-sign #ff00 NEQ2 ?/fail
+	;dict/sub32768 /dec-sign #8000 NEQ2 ?/fail
+	( | index )
+	;dict/sub256 LIT "- /index #0000 NEQ2 ?/fail
+	;dict/sub256 LIT "2 /index #0001 NEQ2 ?/fail
+	;dict/sub256 LIT "5 /index #0002 NEQ2 ?/fail
+	;dict/sub256 LIT "q /index #ffff NEQ2 ?/fail
 	#01 JMP2r
 	&fail #00 JMP2r
+
 	&name 0a "str: 20 $1
 
 @ztr/<test> ( -- )
 	;&name str/<print>
 	( | len )
 	[ { "foo $1 } STH2r ] /<set>
-	[ { "foo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	[ { "foo $1 } STH2r ] ;&buf str/cmp #00 EQU ?/fail
 	( | push )
 	LIT "b /<push>
-	[ { "foob $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	[ { "foob $1 } STH2r ] ;&buf str/cmp #00 EQU ?/fail
 	/pop POP /pop POP
 	( | pop )
-	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?/fail
 	( | length )
-	LIT "a [ /<push> /length ] #03 NEQ ?&fail
+	LIT "a [ /<push> /length ] #03 NEQ ?/fail
 	( | walk-dec )
 	;dict/12340 /<set>
-	.&buf /walk-dec-u16 ROT POP #3034 NEQ2 ?&fail
+	.&buf /walk-dec-u16 ROT POP #3034 NEQ2 ?/fail
 	;dict/123 /<set>
-	.&buf /walk-dec-u8 NIP #7b NEQ ?&fail
+	.&buf /walk-dec-u8 NIP #7b NEQ ?/fail
 	#01 JMP2r
 	&fail #00 JMP2r
+
 	&name 0a "ztr: 20 $1
 
 @obj/<test> ( -- )
 	;&name str/<print>
 	( | len )
 	[ { "foo $1 } STH2r ] /<set>
-	[ { "foo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	[ { "foo $1 } STH2r ] ;&buf str/cmp #00 EQU ?/fail
 	( | push )
 	LIT "b /<push>
-	[ { "foob $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	[ { "foob $1 } STH2r ] ;&buf str/cmp #00 EQU ?/fail
 	/pop POP /pop POP
 	( | pop )
-	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?&fail
+	[ { "fo $1 } STH2r ] ;&buf str/cmp #00 EQU ?/fail
 	( | length )
 	LIT "a /<push>
-	/length #0003 NEQ2 ?&fail
+	/length #0003 NEQ2 ?/fail
 	#01 JMP2r
 	&fail #00 JMP2r
+
 	&name 0a "obj: 20 $1
 
 (
@@ -176,7 +185,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @ztr/<push> ( c -- )
 	[ LIT2 00 &ptr -&buf ]
@@ -201,21 +210,21 @@
 	&>wp
 		LDZk DUP ?{ POP2 JMP2r }
 		#18 DEO
-		INC !&>wp
+		INC !/>wp
 
 @ztr/walk-dec-u16 ( ztr -- ztr u16* )
 	[ LIT2r 0000 ]
 	&>w16
 		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STH2r JMP2r }
 		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
-		ADD2r INC !&>w16
+		ADD2r INC !/>w16
 
 @ztr/walk-dec-u8 ( ztr -- ztr u8 )
 	[ LITr 00 ]
 	&>w8
 		LDZk LIT "0 SUB DUP #0a LTH ?{ POP STHr JMP2r }
 		LITr 0a MULr STH
-		ADDr INC !&>w8
+		ADDr INC !/>w8
 
 (
 @|Str )
@@ -231,7 +240,7 @@
 	[ LIT2r 0000 ]
 	&>wh
 		[ LITr 40 ] SFT2r LDAk chr/hex [ LITr 00 ] STH
-		ADD2r INC2 LDAk ?&>wh
+		ADD2r INC2 LDAk ?/>wh
 	POP2 STH2r JMP2r
 
 @str/dec-sign ( str* -- val* )
@@ -246,15 +255,24 @@
 		[ LITr 00 ] STH
 		MUL2r [ LITr 00 ] STH
 		ADD2r INC2 }
-	( str* . val* ) LDAk [ LIT "0 ] SUB #0a LTHk ?&>ldec
+	( str* . val* ) LDAk [ LIT "0 ] SUB #0a LTHk ?/>ldec
 	POP2 POP2 STH2r JMP2r
 
 @str/cmp ( a* b* -- f )
 	STH2
 	&>wc
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
-		LDAk LDAkr STHr NEQ ?&d
-		INC2 INC2r !&>wc
+		LDAk LDAkr STHr NEQ ?/d
+		INC2 INC2r !/>wc
+
+@str/index ( str* c -- pos* )
+	STH
+	DUP2
+	&>wi
+		LDAk DUP ?{
+			POPr POP POP2 POP2 #ffff JMP2r }
+		STHkr EQU ?{ INC2 !/>wi }
+	POPr SWP2 SUB2 JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -276,7 +294,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @obj/<push> ( c -- )
 	#00 [ LIT2 &ptr =&buf ]
@@ -301,7 +319,7 @@
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
-		INC2 !&>wp
+		INC2 !/>wp
 
 (
 @|assets )

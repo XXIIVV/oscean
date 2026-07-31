@@ -389,7 +389,7 @@ examples.subleq=`( 54K . -leq )
 	&w 00 &Q
 
 `
-examples.brainfuck=`( 54K . Brainfuck )
+examples.bf_interpreter=`( 54K . Brainfuck Interpreter )
 
 @brainfuck/on-reset ( -> )
 	;rom [ LIT2r =rom/end ]
@@ -429,6 +429,159 @@ examples.brainfuck=`( 54K . Brainfuck )
 	"----.>++++++[<+++++++++>-]<+.<
 	".+++.------.--------.>>>++++[<
 	"++++++++>-]<+. ] 00 &end
+
+`
+examples.bf_compiler=`( 54K . Brainfuck Compiler )
+
+@compiler/on-reset ( -> )
+	;&input
+	&>w
+		LDAk ?{
+			POP2 ;&ptr LDA2 ;&buf mem/<print>
+			BRK }
+		/<push-line>
+		INC2 !/>w
+
+@compiler/<push-line> ( addr* -- next* )
+	LDAk LIT "> EQU ?pointer/<inc>
+	LDAk LIT "< EQU ?pointer/<dec>
+	LDAk LIT "+ EQU ?/<push-inc>
+	LDAk LIT "- EQU ?/<push-dec>
+	LDAk LIT "[ EQU ?/<push-jca>
+	LDAk LIT "] EQU ?/<push-jcb>
+	LDAk LIT ". EQU ?/<push-out>
+	JMP2r
+
+@compiler/<push-out> ( addr* -- next* )
+	( LIT2 hb lb LDA ) /<push-litptrlda>
+	( LIT 18 ) #18 /<push-lit>
+	( DEO ) [ LIT DEO ] !/<push>
+
+@compiler/<push-jca> ( addr* -- next* )
+	( Record bracket position ) ;&ptr LDA2 stack/<push>
+	( LIT2 hb lb LDA ) /<push-litptrlda>
+	( LIT 00 ) #00 /<push-lit>
+	( EQU ) [ LIT EQU ] /<push>
+	( LIT2 xx xx ) #eeee /<push-lit2>
+	( JCN2 ) [ LIT JCN2 ] !/<push>
+
+@compiler/<push-jcb> ( addr* -- next* )
+	( Before opening bracket ) stack/pop
+	( Beyond closing bracket ) ;&ptr LDA2 #0008 ADD2 #7f00 SUB2
+	( Punch hole in jca ) OVR2 #0008 ADD2 STA2
+	( LIT2 hb lb LDA ) /<push-litptrlda>
+	( LIT2 xx xx ) #7f00 SUB2 /<push-lit2>
+	( JCN2 ) [ LIT JCN2 ] !/<push>
+
+@compiler/<push-inc> ( addr* -- next* )
+	[ LIT2 ADDr "+ ] !/<push-mod>
+
+@compiler/<push-dec> ( addr* -- next* )
+	[ LIT2 SUBr "- ]
+	( >> )
+
+@compiler/<push-mod> ( addr* -- next* )
+	,&c STR
+	,&o STR
+	LIT2r 0000
+	&>wm
+		LDAk [ LIT &c "+ ] EQU ?{
+			#0001 SUB2
+			( LIT2 hb lb LDA ) /<push-litptrlda>
+			[ &o ADDr ] STHr
+			( LIT u8 ) /<push-lit>
+			( ADD ) [ LIT ADD ] /<push>
+			( LIT2 hb lb ) /<push-litptr>
+			( STA ) [ LIT STA ] !/<push> }
+		INC2 INCr !/>wm
+
+@compiler/<push-lit> ( u8 -- )
+	[ LIT LIT ] SWP !/<push2>
+
+@compiler/<push-litptrlda> ( -- )
+	( LIT2 hb lb ) /<push-litptr>
+	( LDA ) [ LIT LDA ] !/<push>
+
+@compiler/<push-litptr> ( -- )
+	( LIT2 hb lb ) pointer/get
+	( >> )
+
+@compiler/<push-lit2> ( u16* -- )
+	( LIT2 ) [ LIT LIT2 ] /<push>
+	( >> )
+
+@compiler/<push2> ( hb lb )
+	( hb lb ) SWP /<push>
+	( >> )
+
+@compiler/<push> ( u8 -- )
+	( u8 ) [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+(
+@|Stack )
+
+@stack/<push> ( addr* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@stack/pop ( -- addr* )
+	,&ptr LDR2 #0002 SUB2 DUP2 ,&ptr STR2
+	LDA2 JMP2r
+
+(
+@|Pointer )
+
+@pointer/get ( -- addr* )
+	,&ptr LDR2 JMP2r
+
+@pointer/<dec> ( -- )
+	/get #0001 SUB2 !/<set>
+
+@pointer/<inc> ( -- )
+	[ LIT2 &ptr 8000 ] INC2
+	( >> )
+
+@pointer/<set> ( addr* -- )
+	,&ptr STR2
+	JMP2r
+
+(
+@|Stdlib )
+
+@mem/<print> ( to* from* -- )
+	[ LIT2r 0701 ]
+	&>l
+		LDA2k u16/<print>
+		#2018 DEO
+		ANDkr STHr ?{ #0a18 DEO }
+		INC2 INC2 INCr GTH2k ?&>l
+	POP2 POP2 POP2r JMP2r
+
+@u16/<print> ( short* -- )
+	SWP u8/<print>
+	( >> )
+
+@u8/<print> ( byte -- )
+	DUP #04 SFT /<print-nibble>
+	( >> )
+	&<print-nibble> ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD
+	( ascii ) [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@compiler/input [1
+	">++++++++[<+++++++++>-]<.>++++
+	"[<+++++++>-]<+.+++++++..+++.>>
+	"++++++[<+++++++>-]<++.--------
+	"----.>++++++[<+++++++++>-]<+.<
+	".+++.------.--------.>>>++++[<
+	"++++++++>-]<+. ] 00
+
+@stack/buf $200
+|8000 @compiler/buf
 
 `
 examples.sierpinski=`( 54K . Sierpiński Triangle )
