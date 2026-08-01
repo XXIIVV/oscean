@@ -13,7 +13,7 @@ take ."It's " [True Fool]/[take gold]
 
 @Fool  .pyrite.. End
 @True  .gold! @End`
-examples.primes=`( Check if number n, is prime: )
+examples.primes=`( Check if number n, is prime )
 
 n^23 .#n
 
@@ -25,21 +25,23 @@ i^2 pow^4
 	( rem=n%i )     t^n '[]/t^i rem/t []/t^t
 	[Loop i pow^i pow^i pow]/rem
 
-." is not prime" @End`
-examples.fractions=`( A whole number, equal to 7/1: )
+." is not prime" @End
+`
+examples.fractions=`( A whole number, equal to 7/1 )
 7
 
-( A proper fraction, less than 1: )
+( A proper fraction, less than 1 )
 3/7
 
-( An improper fraction, greater than 1: )
+( An improper fraction, greater than 1 )
 5/2
 
-( An unreduced fraction, a factor is present on both sides: )
+( An unreduced fraction, a factor is present on both sides )
 [5 3]/[2 3]
 
-( The previous fraction, reduced: )
-5/2`
+( The previous fraction, reduced )
+5/2
+`
 examples.multisets=`( Put a marble in the bag )
 
 marble
@@ -69,7 +71,7 @@ examples.product=`( Generate the multiplication table up to 12x12 )
 	[]/y^12 [Col y .\\n]/y
 `
 examples.gcd=`( A program to find the GCD of two numbers,
-	and print the result: )
+	and print the result )
 
 x^6 y^15
 
@@ -80,15 +82,21 @@ x^6 y^15
 	[y^x x^z]/[x^x z^z]
 	[Gcd y]/y
 
-.#x`
-examples.random=`( flip a coin )
+.#x
+`
+examples.random=`( Flip a coin and print the result )
 
 [Head Tail]
 
-@Head ."You flipped head" Halt
-@Tail ."You flipped tail"
-@Halt`
-examples.sort=`( Sort numbers in a list from largest to smallest: )
+@Head 
+	."You flipped head" Halt
+	
+@Tail 
+	."You flipped tail"
+	
+@Halt
+`
+examples.sort=`( Sort numbers in a list from largest to smallest )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
 
@@ -101,8 +109,9 @@ examples.sort=`( Sort numbers in a list from largest to smallest: )
 
 ( Print them: )
 
-.#a .\\s .#b .\\s .#c .\\s .#d .\\s .#e .\\s .#f`
-examples.search=`( Search for a number in a list: )
+.#a .\\s .#b .\\s .#c .\\s .#d .\\s .#e .\\s .#f
+`
+examples.search=`( Search for a number in a list )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
 ( target ) target^78
@@ -116,7 +125,8 @@ examples.search=`( Search for a number in a list: )
 	Found/[f^target target^f] i
 	."Not found."\\n End
 @Found ( i -- )
-	."Found at index: " .#i .\\n @End`
+	."Found at index: " .#i .\\n @End
+`
 examples.fizzbuzz=`( Prints numbers from 1 to 100,
 	replacing multiples of 3 with Fizz,
 	multiples of 5 with Buzz,
@@ -133,8 +143,24 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-n^10 y ( n y -- x y )
-	'[y^x x^y .#x .\\s]/[x^x n]`
+n^10 y 
+@fibonacci ( n y -- x y )
+	'[y^x x^y .#x .\\s]/[x^x n]
+`
+examples.factorial=`( Print the Factorial number n )
+
+n^6 
+
+@Fac ( n -- n )
+	acc^n /acc
+	@Loop ( n acc -- n )
+		End/nil^acc          ( if acc == 0: goto End )
+		't^acc/n             ( t = acc * n, n = 0 )
+		[Loop n^t]/[acc t^t] ( if acc--: t = 0, n = t, goto Loop )
+@End
+
+.#n
+`
 examples.collatz=`( Print the Collatz sequence for n^7: 
 	7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
 
@@ -146,7 +172,10 @@ n^7
 	End/[none^y x n]
 		[Collatz n^n n^n n^n n]/[y^y n^n x] 
 		[Collatz n^y]/[n^n y^y] @End`
-examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
+examples.sierpinski=`( Draw the Sierpiński Triangle )
+
+y4 y3 y2 y1 y0 width height^31
+
 @Rows ( width height -- )
 	c^width ." "^height
 	@Cols ( c -- )
@@ -161,8 +190,9 @@ examples.sierpinski=`y4 y3 y2 y1 y0 width height^31
 	[Rows width .\\n y0]/[height y1]
 	[Rows width .\\n y1 y0]/[height y2]
 	[Rows width .\\n y2 y1 y0]/[height y3]
-	[Rows width .\\n y3 y2 y1 y0]/[height y4]`
-examples.stack_machine=`( 3-items Stack Primitives: )
+	[Rows width .\\n y3 y2 y1 y0]/[height y4]
+`
+examples.stack_machine=`( Operate a 3-cells stack machine )
 
 n^56 ( 56 )       [b^a a^n c^b]/[a^a b^b c^c n^n]
 n^34 ( 34 56 )    [b^a a^n c^b]/[a^a b^b c^c n^n]
@@ -174,8 +204,9 @@ n^12 ( 12 34 56 ) [b^a a^n c^b]/[a^a b^b c^c n^n]
 ( dup 34 34 12 )  [a^a b^a c^b]/[a^a b^b c^c]
 ( add 68 12 )     [a^b b^c]/[b^b c^c]
 ( sub 56 )        []/[a^b b^b c^c]
-( put )           [.#a a^b b^c]/[a^a b^b c^c]`
-examples.binary_logic=`( Put a logic gate and binary states in the bag: )
+( put )           [.#a a^b b^c]/[a^a b^b c^c]
+`
+examples.binary_logic=`( Put a logic gate and binary states in the bag )
 
 or true false
 
@@ -193,7 +224,7 @@ true/[or false true]
 true/[or true^2]
 false/[or false^2]
 `
-examples.binary_print=`( Input a decimal number: )
+examples.binary_print=`( Put a decimal number in the bag )
 
 d^92
 
@@ -205,8 +236,9 @@ d^92
 ( Print 8 bits )
 
 .#b7 .#b6 .#b5 .#b4 .\\s
-.#b3 .#b2 .#b1 .#b0`
-examples.binary_adder=`( Put two binary numbers in the bag:
+.#b3 .#b2 .#b1 .#b0
+`
+examples.binary_adder=`( Put two binary numbers in the bag
   Bit   b7 b6 b5 b4 b3 b2 b1 b0 )
 
 ( 73  )    b6       b3       b0
@@ -220,8 +252,9 @@ b5/[b4^2] b6/[b5^2] b7/[b6^2]
 ( Binary to Decimal )
 
 d^128/b7 d^64/b6 d^32/b5 d^16/b4
-d^8/b3   d^4/b2  d^2/b1  d/b0`
-examples.ternary_logic=`( Put a logic gate and balanced ternary states in the bag: )
+d^8/b3   d^4/b2  d^2/b1  d/b0
+`
+examples.ternary_logic=`( Put a logic gate and balanced ternary states in the bag )
 
 or bt0 bt-
 
@@ -239,8 +272,9 @@ bt+/[and bt+^2]   bt+/[and bt0 bt+] bt+/[and bt- bt+]
 ( or )
 bt+/[or bt+ bt-] bt0/[or bt0 bt-] bt-/[or bt-^2]
 bt+/[or bt+ bt0] bt0/[or bt0^2]   bt-/[or bt- bt0]
-bt+/[or bt+^2]   bt0/[or bt0 bt+] bt-/[or bt- bt+]`
-examples.ternary_print=`( Input a decimal number: )
+bt+/[or bt+^2]   bt0/[or bt0 bt+] bt-/[or bt- bt+]
+`
+examples.ternary_print=`( Put a decimal number in the bag )
 
 d^92
 
@@ -252,8 +286,9 @@ d^92
 ( Print 6 trits )
 
 .#b5 .#b4 .#b3 .\\s
-.#b2 .#b1 .#b0`
-examples.ternary_adder=`( Put two ternary numbers in the bag: )
+.#b2 .#b1 .#b0
+`
+examples.ternary_adder=`( Put two ternary numbers in the bag )
 
 ( 73  )    t3^2 t2^2      t0
 ( 124 ) t4 t3   t2   t1^2 t0
@@ -266,8 +301,9 @@ t4/[t3^3] t5/[t4^3] t6/[t5^3]
 ( Ternary to Decimal )
 
 'd^243/t5 'd^81/t4 'd^27/t3 
-'d^9/t2   'd^3/t1  'd/t0`
-examples.decimal_print=`( Print the result of a division with decimal points: )
+'d^9/t2   'd^3/t1  'd/t0
+`
+examples.decimal_print=`( Print the result of a division with decimal points )
 
 n^10 d^6
 
@@ -275,8 +311,9 @@ n^10 d^6
 ( /d    ) 'd1/x^d []/d^d
 ( /100  ) 'int/d1^100
 ( /10   ) 'd0/d1^10
-( print ) .#int .. .#d0 .#d1`
-examples.hexadecimal_print=`( Input a decimal number: )
+( print ) .#int .. .#d0 .#d1
+`
+examples.hexadecimal_print=`( Put a decimal number in the bag )
 
 d^92
 
@@ -294,8 +331,9 @@ d^92
 	[Next .3]/n^3  [Next .2]/n^2  [Next .1]/n    .0
 
 @Next ( task -- )
-	Low/task`
-examples.heptavintimal_print=`( Input a decimal number: )
+	Low/task
+`
+examples.heptavintimal_print=`( Put a decimal number in the bag )
 
 d^128
 
@@ -318,9 +356,10 @@ d^128
 	[Next .b]/t^2  [Next .a]/t    .0
 
 @Next ( task -- )
-	Low/task`
+	Low/task
+`
 examples.toffoli=`( The Toffoli gate is a reversible CNOT gate with
-	two control bits[a,b] and one target bit[c]: )
+	two control bits[a,b] and one target bit[c] )
 
 toffoli a b c
 
@@ -345,8 +384,11 @@ toffoli a b c
 	[toffoli b c]/[t b c]
 	[toffoli b]/[t b]
 	[toffoli c]/[t c]
-	toffoli/t`
-examples.proquints=`( high byte ) byte1^128
+	toffoli/t
+`
+examples.proquints=`( Print the proquint spelling of 16-bits )
+
+( high byte ) byte1^128
 ( low byte  ) byte2^30
 
 tasks^4
@@ -371,7 +413,9 @@ tasks^4
 	[v1 tasks^1]/tasks^2 [c2]/tasks
 	
 `
-examples.spirograph=`( inner cog: ) x^40
+examples.spirograph=`( Calculate the number of turns of two spirograph cogs )
+
+( inner cog: ) x^40
 ( outer cog  ) a^96
 
 ( a -> y,y2 ) [y^a y2^a]/a^a
@@ -382,7 +426,8 @@ examples.spirograph=`( inner cog: ) x^40
 	[Gcd y]/y
 
 ( y2/x  ) 'res/y2^x
-( print ) ."Turns: " .#res`
+( print ) ."Turns: " .#res
+`
 examples.wdr_computer=`( The Know-how Computer is an educational model of a computer
 	consisting of a pen, paper, and matches.
   Let's pretend that we're a register machine pretending
