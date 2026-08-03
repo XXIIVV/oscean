@@ -14,6 +14,7 @@
 	<title>POP-2 Playground</title>
 	<script src="../uxnrepl/src/uxn.js"></script>
 	<script src="../uxnrepl/src/emu.js"></script>
+	<script src="../uxnrepl/src/asm.js"></script>
 	<script src="src/pop2.js"></script>
 	<script src="src/examples.js"></script>
 </head>
@@ -26,7 +27,53 @@
 		<select id="examples"></select>
 	</div>
 	<script type="text/javascript">
-	new Repl(pop2, "Compile").init()
+const repl = new Repl(pop2, "Compile").init()
+const logs_el = document.getElementById("logs")
+
+repl.emit = (res) => { 
+	run(res)
+	
+}
+	
+function run(input) {
+	let res = setup(input)
+	if(!res) {
+		result_el.innerHTML = "Compilation failed."
+		status(1, "Eval", 0)
+		return
+	}
+	emulator.uxn.eval(0x100)
+	logs_el.innerHTML += emulator.console.stdout_body
+	if(emulator.console.stdout_body)
+		logs_el.scrollTop = logs_el.scrollHeight;
+	result_el.innerHTML = emulator.system.print_wst()
+	status(1, "Restart", "Step")
+}
+
+function setup(input) {
+	let program = new Uint8Array(0x10000)
+	let res = assemble(input, program)
+	emulator = new Emu()
+	emulator.uxn.load(program).init()
+	return res
+}
+
+function assemble(query, program) {
+	let emu_asm = new Emu()
+	let rom_length = 0
+	emu_asm.console.write = (char) => { program[rom_length++] = char }
+	emu_asm.uxn.load(assembler).eval(0x0100)
+	logs_el.innerHTML = ""
+	for (let i = 0; i < query.length; i++)
+		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
+	emu_asm.console.input(0x0a, 2)
+	emu_asm.console.input(0x00, 4)
+	result_el.innerHTML = `> ${emu_asm.console.stdout_body}`
+	logs_el.innerHTML = emu_asm.console.stderr_body
+	logs_el.scrollTop = logs_el.scrollHeight;
+	return rom_length
+}
+
 	</script>
 	<style>
 		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
