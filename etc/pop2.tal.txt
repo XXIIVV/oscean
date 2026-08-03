@@ -1,10 +1,7 @@
 ( 54K . POP-2 )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-
-|000
-
-	@token/buf $40
+|00 @token/buf
 
 |100
 
@@ -23,12 +20,6 @@
 	/<push>
 	BRK
 
-@token/exists ( -- t )
-	.&buf LDZ JMP2r
-
-@token/get-last ( -- c )
-	[ LIT2 ff _&ptr ] LDR ADD LDZ JMP2r
-
 @token/<push> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
@@ -36,7 +27,7 @@
 
 @token/<parse> ( -- )
 	.&buf LDZ ?{ JMP2r }
-	;&buf /<route>
+	;&buf /<route-keyword>
 	( >> )
 
 @token/<reset> ( -- )
@@ -54,145 +45,168 @@
 		/<push>
 		INC2 !/>w
 
-@token/<route> ( token* -- )
-	DUP2 ;dict/function str/cmp ?function/<bind>
-	DUP2 ;dict/comment str/cmp ?comment/<bind>
-	DUP2 ;dict/if str/cmp ?if/<bind>
-	DUP2 ;dict/then str/cmp ?then/<bind>
-	DUP2 ;dict/elseif str/cmp ?elseif/<bind>
-	DUP2 ;dict/else str/cmp ?else/<bind>
-	DUP2 ;dict/close str/cmp ?close/<bind>
-	DUP2 ;dict/vars str/cmp ?vars/<bind>
-	DUP2 ;dict/goto str/cmp ?goto/<bind>
-	DUP2 ;dict/end str/cmp ?end/<bind>
-	/get-last LIT ": EQU ?label/<bind>
-	!expr/<bind-token>
+@token/<route-keyword> ( token* -- )
+	DUP2 keywords/find INC2k ORA ?{
+		POP2
+		( label: ) /is-label ?label/<bind>
+		!expr/<bind-token> }
+	NIP2 INC2 INC2 LDA2 JMP2
+
+@token/is-label ( -- t )
+	[ LIT2 ff _&ptr ] LDR ADD LDZ LIT ": EQU JMP2r
+
+%chr/<lb> ( -- ) {
+	#0a18 DEO }
+
+%chr/<ws> ( -- ) {
+	#2018 DEO }
+
+(
+@|BlockComment )
+
+@comment/<bind> ( -- )
+	;&on-console .Console/vector DEO2
+	;&a !str/<print-ws>
+
+	&a 0a "( 00
+
+@comment/on-console ( -> )
+	.Console/read DEI
+	( | handlers )
+	DUP LIT "; NEQ ?{
+		POP ;&b str/<print>
+		token/<bind>
+		BRK }
+	#18 DEO
+	BRK
+
+	&b 20 ") 0a 00
 
 (
 @|BlockFunction )
 
-@function/<bind> ( token* -- )
-	POP2 dict/<reset>
+@function/<bind> ( -- )
+	dict/<reset>
 	stack/<reset>
 	expr/<reset>
 	;&on-console .Console/vector DEO2
+	;dict/anon-jump str/<print-ws>
 	;&a !str/<print>
 
-	&a "!{ 20 "@fn- 00
+	&a "@fn- 00
 
 @function/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{
-		POP /<parse>
-		/<emit-bindings>
-		#0a18 DEO
+	( | handlers )
+	DUP LIT "; NEQ ?{
+		POP
+		( | print name )
+		;expr/buf str/walk-ws str/print-word chr/<ws>
+		vars/<parse>
+		lambda/<emit-bindings>
 		token/<bind>
 		BRK }
 	expr/<push-any>
 	BRK
 
-@function/<parse> ( -- )
-	token/<reset>
-	;expr/buf str/walk-ws str/print-word #2018 DEO
-	;&c str/<print>
-	&>w
-		LDAk DUP ?{
-			POP POP2 /<parse-token>
-			;&d !str/<print> }
-		DUP #20 GTH ?{ POP /<parse-token> !/resume }
-		token/<push> &resume INC2 !/>w
-
-	&c "!{ 20 00
-	&d "} 20 00
-
-@function/<parse-token> ( -- )
-	;token/buf LDAk ?{ POP2 JMP2r }
-	DUP2 dict/alloc stack/<push>
-	#0002 SWP2 sublab-prefab/<emit>
-	pad-prefab/<emit> !token/<reset>
-
-@function/<emit-bindings> ( -- )
-	&>web
-		stack/depth ?{ JMP2r }
-		stack/pop binding-prefab/<emit> !/>web
-
-@end/<bind> ( str* -- )
-	POP2 ;dict/jmp2r str/<print-ws>
-	;&a str/<print-lb> !token/<bind>
-
-	&a "} 00
-
-(
-@|BlockComment )
-
-@comment/<bind> ( token* -- )
-	POP2 ;&on-console .Console/vector DEO2
-	;&a !str/<print>
-
-	&a 0a "( 2000
-
-@comment/<release> ( -- )
-	token/<bind>
-	;&b !str/<print>
-
-	&b 20 ") 0a 00
-
-@comment/on-console ( -> )
-	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<release>
-		BRK }
-	#18 DEO
-	BRK
-
 (
 @|BlockVars )
 
-@vars/<bind> ( token* -- )
-	POP2 ;&on-console .Console/vector DEO2
-	;&a !str/<print>
-
-	&a "!{ 20 00
-
-@vars/<release> ( -- )
-	token/<bind>
-	;&b !str/<print>
-
-	&b "} 0a 00
+@vars/<bind> ( -- )
+	dict/<reset>
+	stack/<reset>
+	expr/<reset>
+	;&on-console .Console/vector DEO2
+	JMP2r
 
 @vars/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<parse-token>
-		/<release>
+	( | handlers )
+	DUP LIT "; NEQ ?{
+		POP ;expr/buf /<parse>
+		token/<bind>
 		BRK }
-	( | Support for strings )
-	DUP LIT "" NEQ ?{
-		,&string LDR #00 EQU ,&string STR }
-	( | Skip break if inside string )
-	[ LIT &string $1 ] ?{
-		( ws ) DUP #20 GTH ?{ POP /<parse-token>
-			BRK } }
-	token/<push>
+	expr/<push-any>
 	BRK
 
+@vars/<parse> ( expr* -- )
+	token/<reset>
+	;dict/anon-jump str/<print-ws>
+	&>w
+		LDAk DUP ?{
+			POP POP2 /<parse-token>
+			LIT2 "} 18 DEO
+			chr/<lb>
+			JMP2r }
+		DUP LIT "" NEQ ?{ token/<push>
+			INC2 /<parse-string> !/resume }
+		DUP #20 GTH ?{ POP /<parse-token> !/resume }
+		token/<push> &resume INC2 !/>w
+
+@vars/<parse-string> ( str* -- str* )
+	&>wps
+		LDAk
+		( | handlers )
+		DUP ?{ POP JMP2r }
+		DUP LIT "" NEQ ?{ !token/<push> }
+		token/<push>
+		INC2 !/>wps
+
 @vars/<parse-token> ( -- )
-	token/exists ?{ JMP2r }
-	;token/buf
+	;token/buf LDAk ?{ POP2 JMP2r }
 	&>wpt
 		LDAk DUP ?{
-			POP POP2 ;token/buf sublab-prefab/<emit>
+			POP POP2 ;token/buf DUP2 dict/alloc stack/<push>
+			sublab-prefab/<emit>
 			#0002 pad-prefab/<emit> !token/<reset> }
 		LIT ": NEQ ?{
 			STH2k #00 STH2r STA
-			;token/buf sublab-prefab/<emit>
+			;token/buf DUP2 dict/alloc stack/<push>
+			sublab-prefab/<emit>
 			INC2 LDAk LIT "" NEQ ?{ string-prefab/<emit> !token/<reset> }
 			str/dec pad-prefab/<emit> !token/<reset> }
 		INC2 !/>wpt
 
 (
+@|BlockLambda )
+
+@lambda/<bind> ( -- )
+	dict/<reset>
+	stack/<reset>
+	expr/<reset>
+	;&on-console .Console/vector DEO2
+	JMP2r
+
+@lambda/on-console ( -> )
+	.Console/read DEI
+	( | handlers )
+	DUP LIT "; NEQ ?{
+		POP ;expr/buf vars/<parse>
+		/<emit-bindings>
+		token/<bind>
+		BRK }
+	expr/<push-any>
+	BRK
+
+@lambda/<emit-bindings> ( -- )
+	&>web
+		stack/depth ?{ chr/<lb>
+			JMP2r }
+		stack/pop binding-prefab/<emit> !/>web
+
+(
+@|BlockEnd )
+
+@end/<bind> ( -- )
+	;dict/jmp2r str/<print-ws>
+	LIT2 "} 18 DEO
+	chr/<lb> !token/<bind>
+
+(
 @|BlockGoto )
 
-@goto/<bind> ( token* -- )
-	POP2 ;&on-console .Console/vector DEO2 !token/<reset>
+@goto/<bind> ( -- )
+	;&on-console .Console/vector DEO2 !token/<reset>
 
 @goto/on-console ( -> )
 	.Console/read DEI DUP #20 GTH ?{ POP /<parse>
@@ -203,19 +217,21 @@
 @goto/<parse> ( -- )
 	;token/buf jump-prefab/<emit> !token/<bind>
 
-@label/<bind> ( token* -- )
-	;&a str/<print>
-	LIT ": str/<print-until>
-	#2018 DEO !token/<bind>
+(
+@|BlockLabel )
 
-	&a 0a "& 00
+@label/<bind> ( token* -- )
+	chr/<lb>
+	LIT2 "& 18 DEO
+	LIT ": str/<print-until>
+	chr/<ws> !token/<bind>
 
 (
 @|BlockIfElse )
 
-@if/<bind> ( token* -- )
+@if/<bind> ( -- )
 	#00 ;&case STA
-	/nest-push POP2 ;&on-console .Console/vector DEO2 !expr/<reset>
+	/nest-push ;&on-console .Console/vector DEO2 !expr/<reset>
 
 @if/on-console ( -> )
 	.Console/read DEI
@@ -228,14 +244,13 @@
 	expr/<parse>
 	;&a str/<print>
 	/<print-nest>
-	LIT2 2018 DEO
+	chr/<ws>
 	;&b str/<print>
 	/<print-nest>
-	LIT2 2018 DEO
-	LIT2 2018 DEO !token/<bind>
+	chr/<ws> !token/<bind>
 
 	&a "ORA 20 "?/cn- 00
-	&b "!{ 0a "&cn- 00
+	&b "!{ 20 "&cn- 00
 
 @if/nest-push ( -- )
 	LIT &nest $1 INC ,&nest STR
@@ -252,8 +267,8 @@
 	[ LIT &case $1 ] INC ,&case STR
 	JMP2r
 
-@elseif/<bind> ( token* -- )
-	POP2 ;&on-console .Console/vector DEO2 !expr/<reset>
+@elseif/<bind> ( -- )
+	;&on-console .Console/vector DEO2 !expr/<reset>
 
 @elseif/on-console ( -> )
 	.Console/read DEI
@@ -267,15 +282,15 @@
 	;if/a str/<print>
 	if/<print-nest>
 	if/case-get #18 DEO
-	#2018 DEO
+	chr/<ws>
 	;if/b str/<print>
 	if/<print-nest>
 	if/case-get #18 DEO
-	#2018 DEO
+	chr/<ws>
 	token/<bind> !if/case-push
 
-@then/<bind> ( token* -- )
-	POP2 ;&on-console .Console/vector DEO2 !expr/<reset>
+@then/<bind> ( -- )
+	;&on-console .Console/vector DEO2 !expr/<reset>
 
 @then/on-console ( -> )
 	.Console/read DEI
@@ -289,13 +304,15 @@
 	token/<bind>
 	;&a str/<print>
 	if/<print-nest>
-	;&b !str/<print>
+	chr/<ws>
+	LIT2 "} 18 DEO
+	chr/<lb>
+	JMP2r
 
 	&a "!/cn-c 00
-	&b 20 "} 0a 00
 
-@else/<bind> ( token* -- )
-	POP2 ;&on-console .Console/vector DEO2 !expr/<reset>
+@else/<bind> ( -- )
+	;&on-console .Console/vector DEO2 !expr/<reset>
 
 @else/on-console ( -> )
 	.Console/read DEI
@@ -307,18 +324,20 @@
 @else/<parse> ( -- )
 	expr/<parse> !token/<bind>
 
-@close/<bind> ( token* -- )
-	POP2 ;&a str/<print>
+@close/<bind> ( -- )
+	chr/<lb>
+	;&a str/<print>
 	if/<print-nest>
-	#2018 DEO !token/<bind>
+	chr/<ws> !token/<bind>
 
-	&a 0a "&cn-c 00
+	&a "&cn-c 00
 
 (
 @|BlockExpr )
 
 @expr/<bind-token> ( token* -- )
 	/<reset>
+	stack/<reset>
 	dict/<reset>
 	;&on-console .Console/vector DEO2 !/<push-str>
 
@@ -334,8 +353,8 @@
 	&>wp
 		LDAk ?{
 			POP2 stack/pop /<parse-postfix>
-			#2018 DEO !token/<bind> }
-		( /<debug> ) /walk-operand
+			chr/<ws> !token/<bind> }
+		/walk-operand
 		( | parens )
 		LDAk LIT "{ NEQ ?{ INC2 ;&nil stack/<push> }
 		LDAk LIT "} NEQ ?{ INC2 stack/pop /<parse-postfix> }
@@ -345,11 +364,6 @@
 			stack/pop /<parse-postfix> }
 		LDAk LIT ", NEQ ?{ INC2 ;&nil stack/<push> }
 		/walk-value stack/pop /<parse-postfix> !/>wp
-
-@expr/<debug> ( -- )
-	#0918 DEO
-	stack/depth LIT "0 ADD #18 DEO
-	DUP2 !str/<p>
 
 @expr/walk-value ( str* -- str* )
 	token/<reset>
@@ -450,42 +464,28 @@
 	JMP2r
 
 	&a ";& 00
-	&c "# 00
 
 @expr/<parse-value-dec> ( str* -- )
-	;&c str/<print>
+	LIT2 "# 18 DEO
 	str/dec u16/<print>
-	#2018 DEO
+	chr/<ws>
 	JMP2r
 
 @expr/<parse-value-hex> ( str* -- )
-	;&c str/<print>
+	LIT2 "# 18 DEO
 	INC2 INC2 str/hex u16/<print>
-	#2018 DEO
+	chr/<ws>
 	JMP2r
 
 @expr/<parse-postfix> ( str* -- )
 	LDAk ?{ POP2 JMP2r }
-	LDA2k LIT2 "-> NEQ2 ?{ POP2 ;dict/sta-s !str/<print-ws> }
-	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/sta2 !str/<print-ws> }
-	LDA2k LIT2 "-: NEQ2 ?{ POP2 ;dict/deo-s !str/<print-ws> }
-	LDA2k LIT2 "=: NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
-	LDAk LIT "+ NEQ ?{ POP2 ;dict/add2 !str/<print-ws> }
-	LDAk LIT "- NEQ ?{ POP2 ;dict/sub2 !str/<print-ws> }
-	LDAk LIT "* NEQ ?{ POP2 ;dict/mul2 !str/<print-ws> }
-	LDAk LIT "/ NEQ ?{ POP2 ;dict/div2 !str/<print-ws> }
-	LDAk LIT "% NEQ ?{ POP2 ;dict/mod2 !str/<print-ws> }
-	LDAk LIT "= NEQ ?{ POP2 ;dict/equ2-s !str/<print-ws> }
-	LDAk LIT "! NEQ ?{ POP2 ;dict/neq2-s !str/<print-ws> }
-	LDAk LIT "> NEQ ?{ POP2 ;dict/gth2-s !str/<print-ws> }
-	LDAk LIT "< NEQ ?{ POP2 ;dict/lth2-s !str/<print-ws> }
-	LDAk LIT "| NEQ ?{ POP2 ;dict/ora2 !str/<print-ws> }
-	LDAk LIT "& NEQ ?{ POP2 ;dict/and2 !str/<print-ws> }
-	LDAk LIT "^ NEQ ?{ POP2 ;dict/eor2 !str/<print-ws> }
-	LDAk LIT ", NEQ ?{ POP2 ;&nil !str/<print-ws> }
-	LDAk LIT "; NEQ ?{ !str/<print-ws> }
-	( | Function )
-	;dict/fn-prefix str/<print> !str/<print-ws>
+	LDA2k LIT2 "-> NEQ2 ?{ POP2 ;dict/sta2 !str/<print-ws> }
+	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
+	LDAk operators/find INC2k ORA ?{
+		POP2
+		( lit2 ) LDAk LIT "; NEQ ?{ !str/<print-ws> }
+		( call ) ;dict/fn-prefix str/<print> !str/<print-ws> }
+	INC2 LDA2 NIP2 !str/<print-ws>
 
 	&nil 00
 
@@ -510,16 +510,14 @@
 @pad-prefab/<emit> ( length* -- )
 	LIT2 "$ 18 DEO
 	u16/<print>
-	#2018 DEO
+	chr/<ws>
 	JMP2r
 
 @string-prefab/<emit> ( str* -- )
 	&>w
-		LDA2k LIT2 "" 00 NEQ2 ?{
-			POP POP2 #2018 DEO
+		LDA2k LIT2 "" 00 NEQ2 ?{ POP2 chr/<ws>
 			;dict/null !str/<print-ws> }
-		LDAk DUP ?{
-			POP POP2 #2018 DEO
+		LDAk DUP ?{ POP POP2 chr/<ws>
 			JMP2r }
 		DUP #18 DEO
 		#20 NEQ ?{
@@ -554,38 +552,19 @@
 	JMP2r
 
 @stack/<push> ( addr* -- )
-	( | /<debug-a> )
 	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
-
-@stack/<debug-a> ( -- )
-	LIT2 09 18 DEO
-	LIT2 "+ 18 DEO
-	/depth LIT "0 ADD #18 DEO
-	DUP2 !str/<p>
-
-@stack/<debug-b> ( -- )
-	LIT2 09 18 DEO
-	LIT2 "- 18 DEO
-	/depth LIT "0 ADD #18 DEO
-	DUP2 !str/<p>
 
 @stack/pop ( -- addr* )
 	,&ptr LDR2
 	( | clamp )
 	DUP2 ;&buf NEQ2 ?{ POP2 #ffff JMP2r }
 	#0002 SUB2 DUP2 ,&ptr STR2
-	LDA2
-	( | /<debug-b> )
-	JMP2r
+	LDA2 JMP2r
 
 @stack/is-allocator ( -- t )
-	;&buf ,&ptr LDR2 NEQ2 ?{ #00 JMP2r }
-	,&ptr LDR2 #0002 SUB2 LDA2 LDA2 DUP2 LIT2 "-> EQU2 ?{
-		LIT2 "=> EQU2 ?{ #00 JMP2r }
-		#01 JMP2r }
-	POP2 #01 JMP2r
+	,&ptr LDR2 #0002 SUB2 LDA2 LDA2 LIT2 "-> EQU2 JMP2r
 
 (
 @|Stdlib )
@@ -599,21 +578,7 @@
 	LIT "0 SUB #0a LTH JMP2r
 
 @chr/is-opr ( c -- t )
-	DUP LIT "+ EQU ?/t-opr
-	DUP LIT "- EQU ?/t-opr
-	DUP LIT "* EQU ?/t-opr
-	DUP LIT "/ EQU ?/t-opr
-	DUP LIT "% EQU ?/t-opr
-	DUP LIT "= EQU ?/t-opr
-	DUP LIT "! EQU ?/t-opr
-	DUP LIT "< EQU ?/t-opr
-	DUP LIT "> EQU ?/t-opr
-	DUP LIT "& EQU ?/t-opr
-	DUP LIT "| EQU ?/t-opr
-	DUP LIT "^ EQU ?/t-opr
-	DUP LIT ": EQU ?/t-opr
-	POP #00 JMP2r
-	&t-opr POP #01 JMP2r
+	operators/find INC2 ORA JMP2r
 
 @chr/is-lc ( c -- lowercase )
 	LIT "A SUB #1a LTH JMP2r
@@ -680,12 +645,12 @@
 
 @str/<print-ws> ( str* -- )
 	/<print>
-	#2018 DEO
+	chr/<ws>
 	JMP2r
 
 @str/<print-lb> ( str* -- )
 	/<print>
-	#0a18 DEO
+	chr/<lb>
 	JMP2r
 
 @str/<print> ( str* -- )
@@ -697,7 +662,7 @@
 	LIT2 "[ 18 DEO
 	/<print>
 	LIT2 "] 18 DEO
-	#0a18 DEO
+	chr/<lb>
 	JMP2r
 
 @str/print-word ( str* -- end* )
@@ -727,8 +692,51 @@
 	[ LIT "0 ] ADD #18 DEO
 	JMP2r
 
+(
+@|LUTs )
+
+@keywords/find ( token* -- ffff|addr* )
+	STH2
+	;&lutend ;&lut
+	&>l
+		LDA2k STH2kr str/cmp ?{
+			#0004 ADD2 GTH2k ?/>l
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@keywords/lut [4
+	=dict/function =function/<bind> =dict/lambda =lambda/<bind>
+	=dict/comment =comment/<bind> =dict/if =if/<bind>
+	=dict/then =then/<bind> =dict/elseif =elseif/<bind>
+	=dict/else =else/<bind> =dict/close =close/<bind>
+	=dict/vars =vars/<bind> =dict/goto =goto/<bind>
+	=dict/end =end/<bind> &lutend ]
+
+@operators/find ( c -- ffff|addr* )
+	STH
+	;&lutend ;&lut
+	&>l
+		LDAk STHkr EQU ?{
+			#0003 ADD2 GTH2k ?/>l
+		POP2 #ffff }
+	NIP2 POPr JMP2r
+
+@operators/lut [4
+	"+ =dict/add2 "- =dict/sub2
+	"* =dict/mul2 "/ =dict/div2
+	"% =dict/mod2 "| =dict/ora2
+	"& =dict/and2 "^ =dict/eor2
+	"= =dict/equ2-s "! =dict/neq2-s
+	"> =dict/gth2-s "< =dict/lth2-s
+	", =&nil &lutend ]
+	&nil 00
+
+(
+@|Assets )
+
 @dict/comment "comment 00
 	&function "function 00
+	&lambda "lambda 00
 	&vars "vars 00
 	&goto "goto 00
 	&end "end 00
@@ -737,30 +745,23 @@
 	&then "then 00
 	&else "else 00
 	&close "close 00
-	&str2 "STR2 00
-	&sta-s "STA 20 "POP 00
-	&sta2 "STA2 00
-	&deo-s "NIP 20 "DEO 20 "POP 00
-	&deo2 "NIP 20 "DEO2 00
-	&lda2 "LDA2 00
-	&add2 "ADD2 00
-	&sub2 "SUB2 00
-	&mul2 "MUL2 00
-	&div2 "DIV2 00
-	&mod2 "DIV2k 20 "MUL2 20 "SUB2 00
-	&equ2-s "EQU2 20 "#00 20 "SWP 00
-	&neq2-s "NEQ2 20 "#00 20 "SWP 00
-	&gth2-s "GTH2 20 "#00 20 "SWP 00
-	&lth2-s "LTH2 20 "#00 20 "SWP 00
-	&lda-s "LDA 20 "#00 20 "SWP 00
-	&ora2 "ORA2 00
-	&and2 "AND2 00
-	&eor2 "EOR2 00
 	&jmp2r "JMP2r 00
 	&fn-prefix "fn- 00
 	&null "00 00
 	&ws "20 00
 	&absrel-rune ";& 00
+	&anon-jump "!{ 00
+	&deo2 "NIP 20 "DEO2 00
+	&mod2 "DIV2k 20 "MUL2 20 "SUB2 00
+	&equ2-s "EQU2 20 "#00 20 "SWP 00
+	&neq2-s "NEQ2 20 "#00 20 "SWP 00
+	&gth2-s "GTH2 20 "#00 20 "SWP 00
+	&lth2-s "LTH2 20 "#00 20 "SWP 00 [6
+	&str2 "STR2 00 &sta2 "STA2 00
+	&lda2 "LDA2 00 &add2 "ADD2 00
+	&sub2 "SUB2 00 &mul2 "MUL2 00
+	&div2 "DIV2 00 &ora2 "ORA2 00
+	&and2 "AND2 00 &eor2 "EOR2 00 ]
 
 @stack/buf $400
 

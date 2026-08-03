@@ -196,13 +196,7 @@ function Repl(rom, keyword)
 		for (let i = 0; i < query.length; i++)
 			emu.console.input(query.charAt(i).charCodeAt(0), 1)
 		emu.console.input(0x00, 4)
-		emu.console.stdout_body = emu.console.stdout_body.trimEnd()
-		if(emu.console.stdout_body.includes('\n')) {
-			this.popup(emu.console.stdout_body)
-			this.result_el.innerHTML = "Result in new window"
-		} else
-			this.result_el.innerHTML = emu.console.stdout_body
-		// Trim console
+		this.emit(emu.console.stdout_body.trimEnd())
 		const segments = emu.console.stderr_body.trim().split('\n')
 		if(segments.length > 50)
 			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n')
@@ -210,5 +204,13 @@ function Repl(rom, keyword)
 			this.logs_el.innerHTML = segments.join('\n')
 		this.logs_el.scrollTop = this.logs_el.scrollHeight
 		this.editor_el.focus()
+	}
+	
+	this.emit = (res) => {
+		if(res.includes('\n')) {
+			this.popup(res)
+			this.result_el.innerHTML = "Result in new window"
+		} else
+			this.result_el.innerHTML = res
 	}
 }
