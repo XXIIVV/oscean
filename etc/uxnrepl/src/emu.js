@@ -196,14 +196,18 @@ function Repl(rom, keyword)
 		for (let i = 0; i < query.length; i++)
 			emu.console.input(query.charAt(i).charCodeAt(0), 1)
 		emu.console.input(0x00, 4)
-		this.emit(emu.console.stdout_body.trimEnd())
 		const segments = emu.console.stderr_body.trim().split('\n')
 		if(segments.length > 50)
-			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n')
+			this.logs_el.innerHTML += "..\n" + segments.slice(-50).join('\n')
 		else
-			this.logs_el.innerHTML = segments.join('\n')
+			this.logs_el.innerHTML += segments.join('\n')
 		this.logs_el.scrollTop = this.logs_el.scrollHeight
 		this.editor_el.focus()
+		this.postrun(emu.console.stdout_body.trimEnd(), emu.console.stderr_body)
+	}
+	
+	this.postrun = (stdout, stderr) => {
+		this.emit(stdout)
 	}
 	
 	this.emit = (res) => {
@@ -211,6 +215,6 @@ function Repl(rom, keyword)
 			this.popup(res)
 			this.result_el.innerHTML = "Result in new window"
 		} else
-			this.result_el.innerHTML = res
+			this.result_el.innerHTML += res
 	}
 }

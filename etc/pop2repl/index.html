@@ -8,7 +8,7 @@
 	<meta property='og:description' content="By Devine Lu Linvega"/>
 	<meta property='og:logo' content="https://wiki.xxiivv.com/media/services/pop2_icon.png"/>
 	<meta property='og:image' content="https://wiki.xxiivv.com/media/services/pop2_logo.png"/>
-	<meta property="og:url" content="https://wiki.xxiivv.com/site/neur.html"/>
+	<meta property="og:url" content="https://wiki.xxiivv.com/site/pop2.html"/>
 	<meta name="viewport" content="width=device-width" />
 	<link href="../../media/services/pop2_icon.png" type="image/png" rel="shortcut icon">
 	<title>POP-2 Playground</title>
@@ -28,34 +28,24 @@
 	</div>
 	<script type="text/javascript">
 const repl = new Repl(pop2, "Compile").init()
-const logs_el = document.getElementById("logs")
 
-repl.emit = (res) => { 
-	run(res)
+const logs_el = document.getElementById("logs")
+const editor_el = document.getElementById("editor")
+const result_el = document.getElementById("result")
 	
-}
-	
-function run(input) {
-	let res = setup(input)
+repl.postrun = (stdout, stderr) => {
+	// Compile resulting Uxntal
+	let program = new Uint8Array(0x10000)
+	let res = assemble(stdout, program)
 	if(!res) {
 		result_el.innerHTML = "Compilation failed."
-		status(1, "Eval", 0)
 		return
 	}
-	emulator.uxn.eval(0x100)
-	logs_el.innerHTML += emulator.console.stdout_body
-	if(emulator.console.stdout_body)
-		logs_el.scrollTop = logs_el.scrollHeight;
-	result_el.innerHTML = emulator.system.print_wst()
-	status(1, "Restart", "Step")
-}
-
-function setup(input) {
-	let program = new Uint8Array(0x10000)
-	let res = assemble(input, program)
-	emulator = new Emu()
-	emulator.uxn.load(program).init()
-	return res
+	// Eval result
+	let emu_pop = new Emu()
+	emu_pop.uxn.load(program).init()
+	emu_pop.uxn.eval(0x100)
+	logs_el.innerHTML += emu_pop.console.stdout_body
 }
 
 function assemble(query, program) {
@@ -91,7 +81,7 @@ function assemble(query, program) {
 		body.active #logs, body.active #menu, body.active #editor { display:block !important }
 		#run { cursor:pointer; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
 		/* Overrides */
-		body ::selection { background:#72dec2;color:#000 }
+		body ::selection { background:#cbff59;color:#000 }
 		textarea { background:#ddd; color:#000 }
 		div#logs { background:#efefef; color:#000 }
 		div#menu { background:#efefef; color:#fff }

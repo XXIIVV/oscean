@@ -4,8 +4,9 @@ examples.hello_world=`function printHello;
 	0 -> i;
 loop:
 	text{i} -> ch;
-	if cx; then cx => 24, i + 1 -> i, goto loop;
+	if cx; then cx => 23, i + 1 -> i, goto loop;
 	close
 end
 
-printHello();`
+printHello();
+`
