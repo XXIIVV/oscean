@@ -33,7 +33,7 @@ foo := 123; <i style='float:right'>( In Pascal )</i>
 123; -> foo;
 </pre>
 
-<img src='../media/refs/pop2.png' width='200'/>
+<img src='../media/refs/pop2.png' width='200' class='right'/>
 
 <h3>Interpreter</h3>
 
@@ -45,27 +45,107 @@ foo := 123; <i style='float:right'>( In Pascal )</i>
 
 <pre style='margin-bottom:1px'>
 <i>comment This is a comment;</i>
+<b>vars</b> x y; 
 
-<b>vars</b> x y; 2 -> x;
+2 -> x;
 
 <b>if</b> x > 5; 
 	<b>then</b> 10 -> y;
 <b>else</b>
 	20 -> y;
 <b>close</b>
-
 y;
 </pre>
 <pre>20</pre>
 
+<h3>Loops</h3>
+<p>Loops are written with <a href='basic.html'>GOTOs</a>, making it possible to loop without dirtying the stack with iterators.</p>
 
+<pre style='margin-bottom:1px'>
+<i>comment Loop for 10 times;</i>
+<b>vars</b> i;
+<b>loop</b>:
+	<b>if</b> i < 10; 
+	<b>then</b> i + 1 -> i, <b>goto</b> loop;
+	<b>close</b>
+i;
+</pre>
+<pre>10</pre>
 
+<h3>Functions</h3>
+<p>Functions are declared in the typical ALGOL fashion:</p>
+
+<pre style='margin-bottom:1px'>
+<b>function</b> sum x y;
+	x + y;
+<b>end</b>
+
+<b>function</b> double x;
+	x + x;
+<b>end</b>
+
+sum(double(3), 4);
+</pre>
+<pre>10</pre>
+
+<p>Functions can recurse on themselves as they are simply jumps leaving certain items on the stack:</p>
+
+<pre>
+<b>function</b> factRec n;
+	<b>if</b> n = 0; then 1;
+	<b>else</b> n * factRec(n-1);
+	<b>close</b>
+<b>end</b>
+</pre>
 
 <p>Because of the stack-based paradigm, there is no need to distinguish between statements and expressions. These two statements are equal:</p>
 
 <pre>f(x, y, z); 
 x, y, z; f();
 </pre>
+
+<h3>Vars</h3>
+<p>Memory can be allocated using the vars statement and read with the {} synthax. A variable can any length:</p>
+<pre>
+<i>comment The variable foo is 10 bytes:</i>
+<b>vars</b> foo:10;
+
+<i>comment The variable foo is 7 bytes, initialized to "abc def":</i>
+<b>vars</b> foo:"abc def";
+
+<i>comment Write 0x1234 in cells overlapping two variables:</i>
+<b>vars</b> hb:1 lb:2;
+0x1234 -> hb;
+</pre>
+
+<h3>I/O</h3>
+
+<p>The host system being <a href='varvara.html'>Varvara</a>, this implementation deviates a bit from the original POP-2, that used the big arrow(=>) without a destination, this will use this <a href='varvara.html#console'>Console port</a> number(0x17, 0x18) to output the <a href='ascii.html'>ASCII</a> letter "H":</p>
+
+<pre>
+0x48 => 23; <i> Outputs: H</i>
+</pre>
+
+<p>Putting it all together, we can make a string printing function:</p>
+
+<pre>
+<b>function</b> printString s;
+	<b>vars</b> c:1 cells:2 i; 0 -> i;
+<b>loop</b>:
+	{s+i} -> cells;
+	<b>if</b> c; 
+	<b>then</b> c => 23, i + 1 -> i, goto loop;
+	<b>close</b>
+<b>end</b>
+
+<b>vars</b> text:"Hello World!";
+printString(#text);
+</pre>
+
+<!--
+<h3>Quoted Functions</h3>
+<p>TODO</p>
+-->
 
 <ul>
 	<li><a href='../etc/pop2.tal.txt' target='_blank'>Source</a>, Uxntal.</li>

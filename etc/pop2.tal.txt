@@ -75,11 +75,15 @@
 (
 @|BlockFunction )
 
-@function/<bind> ( -- )
+@<bind> ( vector* -- )
 	dict/<reset>
 	stack/<reset>
 	expr/<reset>
-	;&on-console .Console/vector DEO2
+	.Console/vector DEO2
+	JMP2r
+
+@function/<bind> ( -- )
+	;&on-console <bind>
 	;dict/anon-jump str/<print-ws>
 	;&a !str/<print>
 
@@ -103,11 +107,7 @@
 @|BlockVars )
 
 @vars/<bind> ( -- )
-	dict/<reset>
-	stack/<reset>
-	expr/<reset>
-	;&on-console .Console/vector DEO2
-	JMP2r
+	;&on-console !<bind>
 
 @vars/on-console ( -> )
 	.Console/read DEI
@@ -161,11 +161,7 @@
 @|BlockLambda )
 
 @lambda/<bind> ( -- )
-	dict/<reset>
-	stack/<reset>
-	expr/<reset>
-	;&on-console .Console/vector DEO2
-	JMP2r
+	;&on-console <bind>
 
 @lambda/on-console ( -> )
 	.Console/read DEI
@@ -220,8 +216,9 @@
 @|BlockIfElse )
 
 @if/<bind> ( -- )
+	;&on-console <bind>
 	#00 ;&case STA
-	/nest-push ;&on-console .Console/vector DEO2 !expr/<reset>
+	/nest-push !expr/<reset>
 
 @if/on-console ( -> )
 	.Console/read DEI
@@ -258,7 +255,7 @@
 	JMP2r
 
 @elseif/<bind> ( -- )
-	;&on-console .Console/vector DEO2 !expr/<reset>
+	;&on-console <bind> !expr/<reset>
 
 @elseif/on-console ( -> )
 	.Console/read DEI
@@ -280,7 +277,7 @@
 	token/<bind> !if/case-push
 
 @then/<bind> ( -- )
-	;&on-console .Console/vector DEO2 !expr/<reset>
+	;&on-console !<bind>
 
 @then/on-console ( -> )
 	.Console/read DEI
@@ -302,7 +299,7 @@
 	&a "!/cn-c 00
 
 @else/<bind> ( -- )
-	;&on-console .Console/vector DEO2 !expr/<reset>
+	;&on-console !<bind>
 
 @else/on-console ( -> )
 	.Console/read DEI
