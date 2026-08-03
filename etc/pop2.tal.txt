@@ -35,16 +35,6 @@
 	[ LIT2 -&buf _&ptr ] STR
 	JMP2r
 
-@token/<set> ( str* -- )
-	/<reset>
-	( >> )
-
-@token/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/<push>
-		INC2 !/>w
-
 @token/<route-keyword> ( token* -- )
 	DUP2 keywords/find INC2k ORA ?{
 		POP2
@@ -356,8 +346,8 @@
 			chr/<ws> !token/<bind> }
 		/walk-operand
 		( | parens )
-		LDAk LIT "{ NEQ ?{ INC2 ;&nil stack/<push> }
-		LDAk LIT "} NEQ ?{ INC2 stack/pop /<parse-postfix> }
+		LDAk LIT "{ NEQ ?{ INC2 }
+		LDAk LIT "} NEQ ?{ INC2 ;dict/lda2 str/<print-ws> }
 		LDAk LIT "( NEQ ?{ INC2 ;&nil stack/<push> }
 		LDAk LIT ") NEQ ?{
 			INC2 stack/pop /<parse-postfix>
@@ -372,7 +362,6 @@
 		INC2 }
 	DUP2 /is-goto ?/walk-goto
 	DUP2 /is-function ?/walk-function
-	DUP2 /is-position ?/walk-position
 	&>wv
 		LDAk DUP chr/is-an ?{ POP !/<parse-value> }
 		token/<push>
@@ -382,14 +371,6 @@
 	token/<reset>
 	/capture-function ;token/buf dict/alloc stack/<push>
 	;&nil !stack/<push>
-
-@expr/walk-position ( str* -- str* )
-	;dict/absrel-rune token/<set>
-	/capture-function ;&d token/<push-str>
-	;token/buf dict/alloc stack/<push>
-	;&nil !stack/<push>
-
-	&d 20 "ADD2 20 "LDA2 00
 
 @expr/capture-function ( str* -- str* )
 	( | capture name )
@@ -401,10 +382,6 @@
 @expr/is-function ( str* -- t )
 	LDAk chr/is-an ?{ POP2 #01 JMP2r }
 	str/walk-an LDA LIT "( EQU JMP2r
-
-@expr/is-position ( str* -- t )
-	LDAk chr/is-an ?{ POP2 #01 JMP2r }
-	str/walk-an LDA LIT "{ EQU JMP2r
 
 @expr/is-goto ( str* -- t )
 	LDA2k LIT2 "go EQU2 STH
@@ -456,14 +433,12 @@
 	( | handlers )
 	DUP2 str/is-dec ?/<parse-value-dec>
 	DUP2 str/is-hex ?/<parse-value-hex>
-	;&a str/<print>
+	;dict/absrel-rune str/<print>
 	( | raw value )
 	LDAk LIT "# NEQ ?{ INC2 !str/<print-ws> }
 	str/<print-ws>
 	stack/is-allocator ?{ ;dict/lda2 !str/<print-ws> }
 	JMP2r
-
-	&a ";& 00
 
 @expr/<parse-value-dec> ( str* -- )
 	LIT2 "# 18 DEO

@@ -25,6 +25,7 @@
 		<input type="button" id="run" value="Loading..">
 		<span id='result'><a href='../../site/pop2.html' target='_blank'>Read Manual</a></span>
 		<select id="examples"></select>
+		<input type="button" id="tal" class="option" value="Tal">
 	</div>
 	<script type="text/javascript">
 const repl = new Repl(pop2, "Compile").init()
@@ -32,9 +33,16 @@ const repl = new Repl(pop2, "Compile").init()
 const logs_el = document.getElementById("logs")
 const editor_el = document.getElementById("editor")
 const result_el = document.getElementById("result")
-	
+
+let source = "( Press compile first )"
+
+document.getElementById("tal").addEventListener("click", () => {
+	repl.popup(source)
+})
+
 repl.postrun = (stdout, stderr) => {
 	// Compile resulting Uxntal
+	source = stdout
 	let program = new Uint8Array(0x10000)
 	let res = assemble(stdout, program)
 	if(!res) {
@@ -46,6 +54,7 @@ repl.postrun = (stdout, stderr) => {
 	emu_pop.uxn.load(program).init()
 	emu_pop.uxn.eval(0x100)
 	logs_el.innerHTML += emu_pop.console.stdout_body
+	result_el.innerHTML = emu_pop.system.print_wst()
 }
 
 function assemble(query, program) {
@@ -77,6 +86,7 @@ function assemble(query, program) {
 		div#menu select { float:right }
 		div#menu a { text-decoration: none; font-weight:normal }
 		div#menu a:hover { text-decoration: underline }
+		div#menu .option { float:right; margin-right:5px; cursor:pointer }
 		body.active textarea { height:calc(100% - 170px) }
 		body.active #logs, body.active #menu, body.active #editor { display:block !important }
 		#run { cursor:pointer; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
