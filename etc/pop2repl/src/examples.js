@@ -27,6 +27,27 @@ end
 vars string:"POP-2";
 getStringLength(#string);
 `
+examples.nested_function=`comment A function calling another inside a loop;
+
+function row w;
+	vars x; 0 -> x;
+hor:
+	if x < w;
+		then 0x2e => 23, x + 1 -> x, goto hor;
+	close
+	0xa => 23;
+end
+
+function box w h;
+	vars y; 0 -> y;
+ver:
+	if y < h;
+		then row(w), y + 1 -> y, goto ver;
+	close
+end
+
+box(4,5);
+`
 examples.quoted_function=`comment This example shows how to quote a function and apply it;
 
 function double n;

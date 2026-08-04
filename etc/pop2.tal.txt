@@ -58,12 +58,6 @@
 @token/is-label ( -- t )
 	[ LIT2 ff _&ptr ] LDR ADD LDZ LIT ": EQU JMP2r
 
-%chr/<lb> ( -- ) {
-	#0a18 DEO }
-
-%chr/<ws> ( -- ) {
-	#2018 DEO }
-
 (
 @|BlockComment )
 
@@ -98,9 +92,8 @@
 @function/<bind> ( -- )
 	;&on-console <bind>
 	;dict/anon-jump str/<print-ws>
-	;&a !str/<print>
-
-	&a "@fn- 00
+	LIT2 "@ 18 DEO
+	;dict/fn-prefix !str/<print>
 
 @function/on-console ( -> )
 	.Console/read DEI
@@ -138,9 +131,7 @@
 	&>w
 		LDAk DUP ?{
 			POP POP2 /<parse-token>
-			LIT2 "} 18 DEO
-			chr/<lb>
-			JMP2r }
+			LIT2 "} 18 DEO !chr/<lb> }
 		DUP LIT "" NEQ ?{ token/<push>
 			INC2 /<parse-string> !/resume }
 		DUP #20 GTH ?{ POP /<parse-token> !/resume }
@@ -189,8 +180,7 @@
 
 @lambda/<emit-bindings> ( -- )
 	&>web
-		stack/depth ?{ chr/<lb>
-			JMP2r }
+		stack/depth ?{ !chr/<lb> }
 		stack/pop prefab-binding/<emit> !/>web
 
 (
@@ -231,7 +221,7 @@
 @if/<bind> ( -- )
 	;&on-console <bind>
 	#00 ;&case STA
-	/nest-push !expr/<reset>
+	/<push-nesting> !expr/<reset>
 
 @if/on-console ( -> )
 	.Console/read DEI
@@ -242,6 +232,7 @@
 
 @if/<parse> ( -- )
 	expr/<parse>
+	;dict/ora str/<print-ws>
 	;&a str/<print>
 	/<print-nest>
 	chr/<ws>
@@ -249,19 +240,18 @@
 	/<print-nest>
 	chr/<ws> !token/<bind>
 
-	&a "ORA 20 "?/cn- 00
-	&b "!{ 20 "&cn- 00
+	&a "?/if- 00
+	&b "!{ 20 "&if- 00
 
-@if/nest-push ( -- )
-	LIT &nest $1 INC ,&nest STR
+@if/<push-nesting> ( -- )
+	[ LIT &nest ff ] INC ,&nest STR
 	JMP2r
 
 @if/<print-nest> ( -- v )
-	[ LIT2 "@ _&nest ] LDR ADD #18 DEO
-	JMP2r
+	,&nest LDR !chr/<lc>
 
-@if/case-get ( -- v )
-	[ LIT2 "0 _&case ] LDR ADD JMP2r
+@if/<print-case> ( -- )
+	,&case LDR chr/<lc> !chr/<ws>
 
 @if/case-push ( -- )
 	[ LIT &case $1 ] INC ,&case STR
@@ -281,12 +271,10 @@
 	expr/<parse>
 	;if/a str/<print>
 	if/<print-nest>
-	if/case-get #18 DEO
-	chr/<ws>
+	if/<print-case>
 	;if/b str/<print>
 	if/<print-nest>
-	if/case-get #18 DEO
-	chr/<ws>
+	if/<print-case>
 	token/<bind> !if/case-push
 
 @then/<bind> ( -- )
@@ -302,14 +290,12 @@
 @then/<parse> ( -- )
 	expr/<parse>
 	token/<bind>
-	;&a str/<print>
+	LIT2 "! 18 DEO
+	LIT2 "/ 18 DEO
+	;dict/if-prefix str/<print>
 	if/<print-nest>
-	chr/<ws>
-	LIT2 "} 18 DEO
-	chr/<lb>
-	JMP2r
-
-	&a "!/cn-c 00
+	;dict/close str/<print-ws>
+	LIT2 "} 18 DEO !chr/<lb>
 
 @else/<bind> ( -- )
 	;&on-console !<bind>
@@ -326,11 +312,10 @@
 
 @close/<bind> ( -- )
 	chr/<lb>
-	;&a str/<print>
+	LIT2 "& 18 DEO
+	;dict/if-prefix str/<print>
 	if/<print-nest>
-	chr/<ws> !token/<bind>
-
-	&a "&cn-c 00
+	;dict/close str/<print-ws> !token/<bind>
 
 (
 @|BlockExpr )
@@ -470,10 +455,7 @@
 	&a "!/ 00
 
 @prefab-pad/<emit> ( length* -- )
-	LIT2 "$ 18 DEO
-	u16/<print>
-	chr/<ws>
-	JMP2r
+	LIT2 "$ 18 DEO !u16/<print-ws>
 
 @prefab-string/<emit> ( str* -- )
 	INC2
@@ -486,6 +468,7 @@
 @prefab-string/<emit-escape> ( str* -- str* )
 	INC2 LDAk
 	( | handlers )
+	DUP LIT "0 NEQ ?{ #00 u8/<print-ws> }
 	DUP LIT "n NEQ ?{ #0a u8/<print-ws> }
 	DUP LIT "t NEQ ?{ #09 u8/<print-ws> }
 	DUP LIT "s NEQ ?{ #20 u8/<print-ws> }
@@ -500,10 +483,7 @@
 	;dict/fn-prefix str/<print> !str/<print-ws>
 
 @prefab-lithex/<emit> ( u16* -- )
-	LIT2 "# 18 DEO
-	u16/<print>
-	chr/<ws>
-	JMP2r
+	LIT2 "# 18 DEO !u16/<print-ws>
 
 (
 @|Dict )
@@ -583,6 +563,18 @@
 %chr/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
 
+@chr/<lc> ( num -- )
+	LIT "a ADD #18 DEO
+	JMP2r
+
+@chr/<lb> ( -- )
+	#0a18 DEO
+	JMP2r
+
+@chr/<ws> ( -- )
+	#2018 DEO
+	JMP2r
+
 @str/walk-ws ( str* -- str* )
 	&>ww
 		LDAk DUP ?{ POP JMP2r }
@@ -626,14 +618,7 @@
 		INC2 !/>wpu
 
 @str/<print-ws> ( str* -- )
-	/<print>
-	chr/<ws>
-	JMP2r
-
-@str/<print-lb> ( str* -- )
-	/<print>
-	chr/<lb>
-	JMP2r
+	/<print> !chr/<ws>
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -643,9 +628,7 @@
 @str/<p> ( str* -- )
 	LIT2 "[ 18 DEO
 	/<print>
-	LIT2 "] 18 DEO
-	chr/<lb>
-	JMP2r
+	LIT2 "] 18 DEO !chr/<lb>
 
 @str/print-word ( str* -- end* )
 	&>wpw
@@ -675,9 +658,10 @@
 	JMP2r
 
 @u8/<print-ws> ( byte -- )
-	/<print>
-	chr/<ws>
-	JMP2r
+	/<print> !chr/<ws>
+
+@u16/<print-ws> ( byte -- )
+	/<print> !chr/<ws>
 
 (
 @|LUTs )
@@ -733,11 +717,11 @@
 	&then "then 00
 	&else "else 00
 	&close "close 00
-	&jmp2r "JMP2r 00
+	&if-prefix "if- 00
 	&fn-prefix "fn- 00
-	&null "00 00
-	&ws "20 00
 	&anon-jump "!{ 00
+	&ora "ORA 00
+	&jmp2r "JMP2r 00
 	&deo2 "NIP 20 "DEO2 00
 	&mod2 "DIV2k 20 "MUL2 20 "SUB2 00
 	&equ2-s "EQU2 20 "#00 20 "SWP 00
@@ -753,7 +737,7 @@
 
 @stack/buf $400
 
-@dict/buf $800
+@dict/buf $1000
 
 @expr/buf
 
