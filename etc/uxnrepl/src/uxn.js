@@ -28,7 +28,7 @@ function Uxn(emu) {
 	function Ldaz(d, r, o)      { Pu1(r, ram[o & 0xff]); if(d) Pu1(r, ram[(o + 1) & 0xff]) }
 	function Sta(d, o, v)       { if(d) { ram[o & 0xffff] = v >> 8; ram[(o + 1) & 0xffff] = v; } else ram[o & 0xffff] = v }
 	function Staz(d, o, v)      { if(d) { ram[o & 0xff] = v >> 8; ram[(o + 1) & 0xff] = v; } else ram[o & 0xff] = v }
-	function Dei(d, r, i)       { const t = emu.dei(i), tt = d ? emu.dei((i + 1) & 0xff) : 0; Pu1(r, t); if(d) Pu1(r, tt) }
+	function Dei(d, r, i)       { Pu1(r, emu.dei(i)); if(d) Pu1(r, dev[i+1]) }
 	function Deo(d, i, v)       { if(d) dev[i] = v >> 8; emu.deo((i+d) & 0xff, v) }
 
 	this.step = () => {
