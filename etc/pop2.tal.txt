@@ -22,7 +22,9 @@
 	JMP2r
 
 @token/on-console ( -> )
-	.Console/read DEI DUP #20 GTH ?{ POP /<parse>
+	.Console/read DEI
+	( | handlers )
+	DUP #20 GTH ?{ POP /<parse>
 		BRK }
 	/<push>
 	BRK
@@ -198,13 +200,16 @@
 	;&on-console .Console/vector DEO2 !token/<reset>
 
 @goto/on-console ( -> )
-	.Console/read DEI DUP #20 GTH ?{ POP /<parse>
+	.Console/read DEI
+	( | handlers )
+	DUP chr/is-an ?{ POP /<parse>
 		BRK }
 	token/<push>
 	BRK
 
 @goto/<parse> ( -- )
-	;token/buf prefab-jump/<emit> !token/<bind>
+	;token/buf LDAk ?{ POP2 JMP2r }
+	str/walk-ws prefab-jump/<emit> !token/<bind>
 
 (
 @|BlockLabel )
@@ -227,7 +232,7 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push>
+	expr/<push-any>
 	BRK
 
 @if/<parse> ( -- )
@@ -304,7 +309,7 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push>
+	expr/<push-any>
 	BRK
 
 @else/<parse> ( -- )
@@ -339,7 +344,8 @@
 		LDAk ?{
 			POP2 stack/pop /<parse-postfix>
 			chr/<ws> !token/<bind> }
-		/walk-operand
+		LDAk #20 NEQ ?{ str/walk-ws }
+		/walk-operand LDAk #20 NEQ ?{ str/walk-ws }
 		( | parens )
 		LDAk LIT "{ NEQ ?{ INC2 }
 		LDAk LIT "} NEQ ?{ INC2 ;dict/lda2 str/<print-ws> }
@@ -554,6 +560,9 @@
 	DUP LIT "# EQU ?/pt
 	DUP LIT "@ EQU ?/pt
 	DUP LIT ". EQU ?/pt
+	( >> )
+
+@chr/is-an ( c -- t )
 	DUP /is-num ?/pt
 	DUP /is-lc ?/pt
 	DUP /is-uc ?/pt
@@ -676,12 +685,12 @@
 	NIP2 POP2r JMP2r
 
 @keywords/lut [4
-	=dict/function =function/<bind> =dict/lambda =lambda/<bind>
-	=dict/comment =comment/<bind> =dict/if =if/<bind>
-	=dict/then =then/<bind> =dict/elseif =elseif/<bind>
-	=dict/else =else/<bind> =dict/close =close/<bind>
-	=dict/vars =vars/<bind> =dict/goto =goto/<bind>
-	=dict/end =end/<bind> &lutend ]
+	=dict/function =function/<bind> =dict/end =end/<bind>
+	=dict/lambda =lambda/<bind> =dict/vars =vars/<bind>
+	=dict/comment =comment/<bind> =dict/goto =goto/<bind>
+	=dict/if =if/<bind> =dict/then =then/<bind>
+	=dict/elseif =elseif/<bind> =dict/else =else/<bind>
+	=dict/close =close/<bind> &lutend ]
 
 @operators/find ( c -- ffff|addr* )
 	STH
