@@ -32,6 +32,12 @@
 	STZ2
 	JMP2r
 
+@token/push-label ( str* -- str* )
+	&>wpl
+		LDAk DUP chr/is-an ?{ POP JMP2r }
+		/<push>
+		INC2 !/>wpl
+
 @token/<parse> ( -- )
 	.&buf LDZ ?{ JMP2r }
 	;&buf /<route-keyword>
@@ -70,7 +76,7 @@
 @comment/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP LIT "; NEQ ?{
+	chr/not-sc ?{
 		POP ;&b str/<print>
 		token/<bind>
 		BRK }
@@ -99,7 +105,7 @@
 @function/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP LIT "; NEQ ?{
+	chr/not-sc ?{
 		POP
 		( | print name )
 		;expr/buf str/walk-ws str/print-word chr/<ws>
@@ -119,7 +125,7 @@
 @vars/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP LIT "; NEQ ?{
+	chr/not-sc ?{
 		POP ;expr/buf /<parse>
 		token/<bind>
 		BRK }
@@ -173,7 +179,7 @@
 @lambda/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP LIT "; NEQ ?{
+	chr/not-sc ?{
 		POP ;expr/buf vars/<parse>
 		/<emit-bindings>
 		token/<bind>
@@ -229,7 +235,7 @@
 
 @if/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<parse>
+	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
 	expr/<push>
 	BRK
@@ -266,7 +272,7 @@
 
 @elseif/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<parse>
+	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
 	expr/<push>
 	BRK
@@ -288,7 +294,7 @@
 
 @then/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<parse>
+	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
 	expr/<push>
 	BRK
@@ -310,7 +316,7 @@
 
 @else/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<parse>
+	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
 	expr/<push>
 	BRK
@@ -337,7 +343,7 @@
 
 @expr/on-console ( -> )
 	.Console/read DEI
-	( end ) DUP LIT "; NEQ ?{ POP /<parse>
+	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
 	/<push>
 	BRK
@@ -366,28 +372,23 @@
 		INC2 }
 	DUP2 /is-goto ?/walk-goto
 	DUP2 /is-function ?/walk-function
-	&>wv
-		LDAk DUP chr/is-an ?{ POP !/<parse-value> }
-		token/<push>
-		INC2 !/>wv
+	token/push-label !/<parse-value>
 
 @expr/walk-function ( str* -- str* )
 	;token/buf LDA STH
 	token/<reset>
 	STHr LIT "# NEQ ?{ LIT "# token/<push> }
-	/capture-function ;token/buf dict/alloc stack/<push>
+	token/push-label ;token/buf dict/alloc stack/<push>
 	;&nil !stack/<push>
-
-@expr/capture-function ( str* -- str* )
-	( | capture name )
-	&>wwf
-		LDAk DUP chr/is-an ?{ POP JMP2r }
-		token/<push>
-		INC2 !/>wwf
 
 @expr/is-function ( str* -- t )
 	LDAk chr/is-an ?{ POP2 #01 JMP2r }
-	str/walk-an LDA LIT "( EQU JMP2r
+	/walk-label LDA LIT "( EQU JMP2r
+
+@expr/walk-label ( str* -- str* )
+	&>wwa
+		LDAk chr/is-an ?{ JMP2r }
+		INC2 !/>wwa
 
 @expr/is-goto ( str* -- t )
 	LDA2k LIT2 "go EQU2 STH
@@ -395,14 +396,9 @@
 
 @expr/walk-goto ( str* -- str* )
 	token/<reset>
-	#0004 ADD2
-	&>wg
-		LDAk DUP chr/is-an ?{
-			POP LIT2 "! 18 DEO
-			LIT2 "/ 18 DEO
-			;token/buf !str/<print-ws> }
-		token/<push>
-		INC2 !/>wg
+	#0004 ADD2 token/push-label LIT2 "! 18 DEO
+	LIT2 "/ 18 DEO
+	;token/buf !str/<print-ws>
 
 @expr/walk-operand ( str* -- str* )
 	token/<reset>
@@ -421,7 +417,7 @@
 @expr/<push-str> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP LIT "; NEQ ?{ POP POP2 !/<parse> }
+		chr/not-sc ?{ POP POP2 !/<parse> }
 		/<push>
 		INC2 !/>w
 
@@ -559,6 +555,9 @@
 	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
 	( nil ) POP #ff JMP2r
 
+@chr/not-sc ( c -- c t )
+	DUP LIT "; NEQ JMP2r
+
 @chr/is-num ( c -- t )
 	LIT "0 SUB #0a LTH JMP2r
 
@@ -580,11 +579,6 @@
 
 %chr/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
-
-@str/walk-an ( str* -- str* )
-	&>wwa
-		LDAk chr/is-an ?{ JMP2r }
-		INC2 !/>wwa
 
 @str/walk-ws ( str* -- str* )
 	&>ww
