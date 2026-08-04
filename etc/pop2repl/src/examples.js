@@ -13,6 +13,18 @@ end
 vars text:"Hello World!";
 printString(#text);
 `
+examples.quoted_function=`comment This example shows how to quote a function and apply it.
+
+function double n;
+	n + n;
+end
+
+function apply fn n;
+	n <- fn;
+end
+
+apply(@double, 5);
+`
 examples.factorial=`comment Factorial, recursive;
 function factRec n;
 	if n = 0; then 1;

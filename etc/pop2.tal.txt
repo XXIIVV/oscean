@@ -14,7 +14,7 @@
 	( name ) "POP-2 0a
 	( desc ) "A 20 "POP-2 20 "Compiler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "3 20 "Aug 20 "2026 0000
+	( date ) "4 20 "Aug 20 "2026 0000
 
 @token/<bind> ( -- )
 	/<reset>
@@ -32,9 +32,9 @@
 	STZ2
 	JMP2r
 
-@token/push-label ( str* -- str* )
+@token/push-label ( str* -- next* buf* )
 	&>wpl
-		LDAk DUP chr/is-an ?{ POP JMP2r }
+		LDAk DUP chr/is-label ?{ POP ;&buf JMP2r }
 		/<push>
 		INC2 !/>wpl
 
@@ -160,14 +160,14 @@
 	&>wpt
 		LDAk DUP ?{
 			POP POP2 ;token/buf DUP2 dict/alloc stack/<push>
-			sublab-prefab/<emit>
-			#0002 pad-prefab/<emit> !token/<reset> }
+			prefab-sublab/<emit>
+			#0002 prefab-pad/<emit> !token/<reset> }
 		LIT ": NEQ ?{
 			STH2k #00 STH2r STA
 			;token/buf DUP2 dict/alloc stack/<push>
-			sublab-prefab/<emit>
-			INC2 LDAk LIT "" NEQ ?{ string-prefab/<emit> !token/<reset> }
-			str/dec pad-prefab/<emit> !token/<reset> }
+			prefab-sublab/<emit>
+			INC2 LDAk LIT "" NEQ ?{ prefab-string/<emit> !token/<reset> }
+			str/dec prefab-pad/<emit> !token/<reset> }
 		INC2 !/>wpt
 
 (
@@ -191,7 +191,7 @@
 	&>web
 		stack/depth ?{ chr/<lb>
 			JMP2r }
-		stack/pop binding-prefab/<emit> !/>web
+		stack/pop prefab-binding/<emit> !/>web
 
 (
 @|BlockEnd )
@@ -214,7 +214,7 @@
 	BRK
 
 @goto/<parse> ( -- )
-	;token/buf jump-prefab/<emit> !token/<bind>
+	;token/buf prefab-jump/<emit> !token/<bind>
 
 (
 @|BlockLabel )
@@ -368,26 +368,22 @@
 @expr/walk-value ( str* -- str* )
 	token/<reset>
 	LDAk ?{ JMP2r }
-	LDAk LIT "# NEQ ?{ LIT "# token/<push>
-		INC2 }
 	DUP2 /is-goto ?/walk-goto
 	DUP2 /is-function ?/walk-function
 	token/push-label !/<parse-value>
 
 @expr/walk-function ( str* -- str* )
-	;token/buf LDA STH
 	token/<reset>
-	STHr LIT "# NEQ ?{ LIT "# token/<push> }
-	token/push-label ;token/buf dict/alloc stack/<push>
+	token/push-label dict/alloc stack/<push>
 	;&nil !stack/<push>
 
 @expr/is-function ( str* -- t )
-	LDAk chr/is-an ?{ POP2 #01 JMP2r }
+	LDAk chr/is-label ?{ POP2 #01 JMP2r }
 	/walk-label LDA LIT "( EQU JMP2r
 
 @expr/walk-label ( str* -- str* )
 	&>wwa
-		LDAk chr/is-an ?{ JMP2r }
+		LDAk chr/is-label ?{ JMP2r }
 		INC2 !/>wwa
 
 @expr/is-goto ( str* -- t )
@@ -396,9 +392,7 @@
 
 @expr/walk-goto ( str* -- str* )
 	token/<reset>
-	#0004 ADD2 token/push-label LIT2 "! 18 DEO
-	LIT2 "/ 18 DEO
-	;token/buf !str/<print-ws>
+	#0004 ADD2 token/push-label !prefab-jump/<emit>
 
 @expr/walk-operand ( str* -- str* )
 	token/<reset>
@@ -430,41 +424,30 @@
 	STA2
 	JMP2r
 
-@expr/<parse-value> ( -- )
-	;token/buf
+@expr/<parse-value> ( str* -- )
 	( | handlers )
 	DUP2 str/is-dec ?/<parse-value-dec>
 	DUP2 str/is-hex ?/<parse-value-hex>
-	;dict/absrel-rune str/<print>
 	( | raw value )
-	LDAk LIT "# NEQ ?{ INC2 !str/<print-ws> }
-	str/<print-ws>
+	LDAk LIT "# NEQ ?{ INC2 !prefab-refrel/<emit> }
+	LDAk LIT "@ NEQ ?{ INC2 !prefab-refabs/<emit> }
+	prefab-refrel/<emit>
 	stack/is-allocator ?{ ;dict/lda2 !str/<print-ws> }
 	JMP2r
 
 @expr/<parse-value-dec> ( str* -- )
-	LIT2 "# 18 DEO
-	str/dec u16/<print>
-	chr/<ws>
-	JMP2r
+	str/dec !prefab-lithex/<emit>
 
 @expr/<parse-value-hex> ( str* -- )
-	LIT2 "# 18 DEO
-	INC2 INC2 str/hex u16/<print>
-	chr/<ws>
-	JMP2r
+	INC2 INC2 str/hex !prefab-lithex/<emit>
 
 @expr/<parse-postfix> ( str* -- )
 	LDAk ?{ POP2 JMP2r }
 	LDA2k LIT2 "-> NEQ2 ?{ POP2 ;dict/sta2 !str/<print-ws> }
 	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
+	LDA2k LIT2 "<- NEQ2 ?{ POP2 ;dict/jsr2 !str/<print-ws> }
 	LDAk operators/find INC2k ORA ?{
 		POP2
-		( lit2 ) LDAk LIT "# NEQ ?{
-			;dict/absrel-rune str/<print>
-			INC2 str/<print-ws>
-			;dict/lda2 str/<print-ws>
-			;dict/jsr2 !str/<print-ws> }
 		( call ) ;dict/fn-prefix str/<print> !str/<print-ws> }
 	INC2 LDA2 NIP2 !str/<print-ws>
 
@@ -473,38 +456,54 @@
 (
 @|Prefabs )
 
-@sublab-prefab/<emit> ( str* -- )
+@prefab-sublab/<emit> ( str* -- )
 	LIT2 "& 18 DEO !str/<print-ws>
 
-@binding-prefab/<emit> ( str* -- )
-	;&a str/<print>
-	str/<print-ws>
+@prefab-binding/<emit> ( str* -- )
+	LIT2 ", 18 DEO
+	prefab-sublab/<emit>
 	;dict/str2 !str/<print-ws>
 
-	&a ",& 00
-
-@jump-prefab/<emit> ( str* -- )
+@prefab-jump/<emit> ( str* -- )
 	;&a str/<print> !str/<print-ws>
 
 	&a "!/ 00
 
-@pad-prefab/<emit> ( length* -- )
+@prefab-pad/<emit> ( length* -- )
 	LIT2 "$ 18 DEO
 	u16/<print>
 	chr/<ws>
 	JMP2r
 
-@string-prefab/<emit> ( str* -- )
+@prefab-string/<emit> ( str* -- )
+	INC2
 	&>w
-		LDA2k LIT2 "" 00 NEQ2 ?{ POP2 chr/<ws>
-			;dict/null !str/<print-ws> }
-		LDAk DUP ?{ POP POP2 chr/<ws>
-			JMP2r }
-		DUP #18 DEO
-		#20 NEQ ?{
-			;dict/ws str/<print-ws>
-			LIT2 "" 18 DEO }
-		INC2 !/>w
+		LDAk LIT "" NEQ ?{ INC2 }
+		LDAk ?{ POP2 #00 !u8/<print-ws> }
+		LDAk LIT "\ EQU ?/<emit-escape>
+		LDAk u8/<print-ws> &resume INC2 !/>w
+
+@prefab-string/<emit-escape> ( str* -- str* )
+	INC2 LDAk
+	( | handlers )
+	DUP LIT "n NEQ ?{ #0a u8/<print-ws> }
+	DUP LIT "t NEQ ?{ #09 u8/<print-ws> }
+	DUP LIT "s NEQ ?{ #20 u8/<print-ws> }
+	POP !/resume
+
+@prefab-refrel/<emit> ( str* -- )
+	[ LIT2 "; 18 ] DEO
+	[ LIT2 "& 18 ] DEO !str/<print-ws>
+
+@prefab-refabs/<emit> ( str* -- )
+	[ LIT2 "; 18 ] DEO
+	;dict/fn-prefix str/<print> !str/<print-ws>
+
+@prefab-lithex/<emit> ( u16* -- )
+	LIT2 "# 18 DEO
+	u16/<print>
+	chr/<ws>
+	JMP2r
 
 (
 @|Dict )
@@ -570,12 +569,16 @@
 @chr/is-uc ( c -- uppercase )
 	LIT "a SUB #1a LTH JMP2r
 
-@chr/is-an ( c -- t )
-	DUP /is-num ?/t-an
-	DUP /is-lc ?/t-an
-	DUP /is-uc ?/t-an
+@chr/is-label ( c -- t )
+	DUP LIT "_ EQU ?/pt
+	DUP LIT "# EQU ?/pt
+	DUP LIT "@ EQU ?/pt
+	DUP LIT ". EQU ?/pt
+	DUP /is-num ?/pt
+	DUP /is-lc ?/pt
+	DUP /is-uc ?/pt
 	POP #00 JMP2r
-	&t-an POP #01 JMP2r
+	&pt POP #01 JMP2r
 
 %chr/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
@@ -671,6 +674,11 @@
 	[ LIT "0 ] ADD #18 DEO
 	JMP2r
 
+@u8/<print-ws> ( byte -- )
+	/<print>
+	chr/<ws>
+	JMP2r
+
 (
 @|LUTs )
 
@@ -729,7 +737,6 @@
 	&fn-prefix "fn- 00
 	&null "00 00
 	&ws "20 00
-	&absrel-rune ";& 00
 	&anon-jump "!{ 00
 	&deo2 "NIP 20 "DEO2 00
 	&mod2 "DIV2k 20 "MUL2 20 "SUB2 00
