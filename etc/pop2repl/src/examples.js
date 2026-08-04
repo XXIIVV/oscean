@@ -44,8 +44,10 @@ loop:
 	else
 		printNumber(i);
 	close
+	0xa => 23;
+	i + 1 -> i;
 	if i < 100; 
-		then i + 1 -> i, goto loop;
+		then goto loop;
 	close
 end
 
@@ -54,7 +56,6 @@ function printNumber n;
 		then n/10  % 10 + 0x30 => 23; 
 	close
 	n % 10 + 0x30 => 23;
-	0xa => 23;
 end
 
 function printString s;
@@ -64,7 +65,6 @@ loop:
 	{s+i} -> cells;
 	if c; then c => 23, i + 1 -> i, goto loop;
 	close
-	0xa => 23;
 end
 
 fizzbuzz();

@@ -6,8 +6,15 @@
 |100
 
 @on-reset ( -> )
+	;meta #06 DEO2
 	token/<bind>
 	BRK
+
+@meta $1
+	( name ) "POP-2 0a
+	( desc ) "A 20 "POP-2 20 "Compiler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "3 20 "Aug 20 "2026 0000
 
 @token/<bind> ( -- )
 	/<reset>
@@ -365,7 +372,9 @@
 		INC2 !/>wv
 
 @expr/walk-function ( str* -- str* )
+	;token/buf LDA STH
 	token/<reset>
+	STHr LIT "# NEQ ?{ LIT "# token/<push> }
 	/capture-function ;token/buf dict/alloc stack/<push>
 	;&nil !stack/<push>
 
@@ -455,7 +464,11 @@
 	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
 	LDAk operators/find INC2k ORA ?{
 		POP2
-		( lit2 ) LDAk LIT "; NEQ ?{ !str/<print-ws> }
+		( lit2 ) LDAk LIT "# NEQ ?{
+			;dict/absrel-rune str/<print>
+			INC2 str/<print-ws>
+			;dict/lda2 str/<print-ws>
+			;dict/jsr2 !str/<print-ws> }
 		( call ) ;dict/fn-prefix str/<print> !str/<print-ws> }
 	INC2 LDA2 NIP2 !str/<print-ws>
 
@@ -698,9 +711,10 @@
 	"* =dict/mul2 "/ =dict/div2
 	"% =dict/mod2 "| =dict/ora2
 	"& =dict/and2 "^ =dict/eor2
-	"= =dict/equ2-s "! =dict/neq2-s
-	"> =dict/gth2-s "< =dict/lth2-s
-	", =&nil &lutend ]
+	"~ =dict/jsr2 "= =dict/equ2-s
+	"! =dict/neq2-s "> =dict/gth2-s
+	"< =dict/lth2-s ", =&nil
+	&lutend ]
 	&nil 00
 
 (
@@ -733,7 +747,8 @@
 	&lda2 "LDA2 00 &add2 "ADD2 00
 	&sub2 "SUB2 00 &mul2 "MUL2 00
 	&div2 "DIV2 00 &ora2 "ORA2 00
-	&and2 "AND2 00 &eor2 "EOR2 00 ]
+	&and2 "AND2 00 &eor2 "EOR2 00
+	&jsr2 "JSR2 00 ]
 
 @stack/buf $400
 
