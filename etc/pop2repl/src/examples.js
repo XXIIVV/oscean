@@ -25,6 +25,20 @@ end
 
 apply(@double, 5);
 `
+examples.string_length=`comment Get the length of a string;
+
+function getStringLength s;
+	vars start; s -> start;
+loop:
+	if {s} & 0xff; 
+		then s + 1 -> s, goto loop; 
+	close
+	s - start + 1;
+end
+
+vars string:"POP-2";
+getStringLength(#string);
+`
 examples.factorial=`comment Factorial, recursive;
 function factRec n;
 	if n = 0; then 1;
