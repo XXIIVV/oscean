@@ -2,12 +2,13 @@
 
 function Uxn(emu) {
 	const ram = new Uint8Array(0x10000)
+	const dev = new Uint8Array(0x100)
 	const ptr = new Uint8Array(2)
 	const stk = [new Uint8Array(0x100), new Uint8Array(0x100)]
 	const pc = new Uint16Array(1)
 	const Sig = n => (n << 24) >> 24
 
-	this.dev = new Uint8Array(0x100)
+	this.dev = dev
 	this.get_ptr = (id) => ptr[id]
 	this.get_stk = (id) => stk[id]
 	this.get_ram = () => ram
@@ -28,7 +29,7 @@ function Uxn(emu) {
 	function Sta(d, o, v)       { if(d) { ram[o & 0xffff] = v >> 8; ram[(o + 1) & 0xffff] = v; } else ram[o & 0xffff] = v }
 	function Staz(d, o, v)      { if(d) { ram[o & 0xff] = v >> 8; ram[(o + 1) & 0xff] = v; } else ram[o & 0xff] = v }
 	function Dei(d, r, i)       { const t = emu.dei(i), tt = d ? emu.dei((i + 1) & 0xff) : 0; Pu1(r, t); if(d) Pu1(r, tt) }
-	function Deo(d, i, v)       { if(d) emu.deo(i, v >> 8); emu.deo(d ? (i + 1) & 0xff : i, v) }
+	function Deo(d, i, v)       { if(d) dev[i] = v >> 8; emu.deo((i+d) & 0xff, v) }
 
 	this.step = () => {
 		const ins = ram[pc[0]++]
