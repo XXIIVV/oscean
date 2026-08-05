@@ -108,7 +108,7 @@
 		lambda/<emit-bindings>
 		token/<bind>
 		BRK }
-	expr/<push-any>
+	expr/<push>
 	BRK
 
 (
@@ -124,7 +124,7 @@
 		POP ;expr/buf /<parse>
 		token/<bind>
 		BRK }
-	expr/<push-any>
+	expr/<push>
 	BRK
 
 @vars/<parse> ( expr* -- )
@@ -177,7 +177,7 @@
 		/<emit-bindings>
 		token/<bind>
 		BRK }
-	expr/<push-any>
+	expr/<push>
 	BRK
 
 @lambda/<emit-bindings> ( -- )
@@ -232,7 +232,7 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push-any>
+	expr/<push>
 	BRK
 
 @if/<parse> ( -- )
@@ -274,6 +274,7 @@
 
 @elseif/<parse> ( -- )
 	expr/<parse>
+	;dict/ora str/<print-ws>
 	;if/a str/<print>
 	if/<print-nest>
 	if/<print-case>
@@ -309,7 +310,7 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push-any>
+	expr/<push>
 	BRK
 
 @else/<parse> ( -- )
@@ -383,7 +384,7 @@
 
 @expr/walk-goto ( str* -- str* )
 	token/<reset>
-	#0004 ADD2 token/push-label !prefab-jump/<emit>
+	#0004 ADD2 str/walk-ws token/push-label !prefab-jump/<emit>
 
 @expr/walk-operand ( str* -- str* )
 	token/<reset>
@@ -407,10 +408,6 @@
 		INC2 !/>w
 
 @expr/<push> ( c -- )
-	DUP #20 GTH ?{ POP JMP2r }
-	( >> )
-
-@expr/<push-any> ( c -- )
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA2
 	JMP2r
