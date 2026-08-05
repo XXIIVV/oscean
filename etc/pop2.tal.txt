@@ -14,7 +14,7 @@
 	( name ) "POP-2 0a
 	( desc ) "A 20 "POP-2 20 "Compiler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Aug 20 "2026 0000
+	( date ) "5 20 "Aug 20 "2026 0000
 
 @token/<bind> ( -- )
 	/<reset>
@@ -34,11 +34,23 @@
 	STZ2
 	JMP2r
 
+@token/<push-str> ( str* -- )
+	&>wps
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>wps
+
 @token/push-label ( str* -- next* buf* )
 	&>wpl
 		LDAk DUP chr/is-label ?{ POP ;&buf JMP2r }
 		/<push>
 		INC2 !/>wpl
+
+@token/push-operand ( str* -- next* buf* )
+	&>wpo
+		LDAk DUP chr/is-operand ?{ POP ;&buf JMP2r }
+		/<push>
+		INC2 !/>wpo
 
 @token/<parse> ( -- )
 	.&buf LDZ ?{ JMP2r }
@@ -232,7 +244,10 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push>
+	expr/push-until-keyword ?{ BRK }
+	expr/realloc-keyword /<parse>
+	token/<push-str>
+	token/<parse>
 	BRK
 
 @if/<parse> ( -- )
@@ -269,7 +284,10 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push>
+	expr/push-until-keyword ?{ BRK }
+	expr/realloc-keyword /<parse>
+	token/<push-str>
+	token/<parse>
 	BRK
 
 @elseif/<parse> ( -- )
@@ -290,7 +308,10 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push>
+	expr/push-until-keyword ?{ BRK }
+	expr/get-last-word ;dict/goto str/cmp ?{ expr/realloc-keyword /<parse>
+		token/<push-str>
+		token/<parse> }
 	BRK
 
 @then/<parse> ( -- )
@@ -310,7 +331,10 @@
 	.Console/read DEI
 	( end ) chr/not-sc ?{ POP /<parse>
 		BRK }
-	expr/<push>
+	expr/push-until-keyword ?{ BRK }
+	expr/realloc-keyword /<parse>
+	token/<push-str>
+	token/<parse>
 	BRK
 
 @else/<parse> ( -- )
@@ -330,7 +354,9 @@
 	/<reset>
 	stack/<reset>
 	dict/<reset>
-	;&on-console .Console/vector DEO2 !/<push-str>
+	;&on-console .Console/vector DEO2
+	/<push-str>
+	#20 !/<push>
 
 @expr/on-console ( -> )
 	.Console/read DEI
@@ -340,33 +366,61 @@
 	BRK
 
 @expr/<parse> ( -- )
-	;&buf /walk-value stack/pop /<parse-postfix>
+	;&buf
 	&>wp
-		LDAk ?{
-			POP2 stack/pop /<parse-postfix>
-			chr/<ws> !token/<bind> }
-		LDAk #20 NEQ ?{ str/walk-ws }
-		/walk-operand LDAk #20 NEQ ?{ str/walk-ws }
-		( | parens )
-		LDAk LIT "{ NEQ ?{ INC2 }
-		LDAk LIT "} NEQ ?{ INC2 ;dict/lda2 str/<print-ws> }
-		LDAk LIT "( NEQ ?{ INC2 ;&nil stack/<push> }
-		LDAk LIT ") NEQ ?{
-			INC2 stack/pop /<parse-postfix>
-			stack/pop /<parse-postfix> }
-		LDAk LIT ", NEQ ?{ INC2 ;&nil stack/<push> }
-		/walk-value stack/pop /<parse-postfix> !/>wp
+		str/walk-ws LDAk ?{ POP2 !token/<bind> }
+		/walk-fragment !/>wp
 
-@expr/<parse-value> ( str* -- )
+@expr/walk-fragment ( str* -- str* )
+	str/walk-ws LDAk ?{ JMP2r }
+	( | Main )
+	LDAk chr/is-label ?/walk-label
+	LDAk chr/is-operand ?/walk-operator
+	( | Special )
+	LDAk LIT "{ NEQ ?{
+		INC2 ;dict/backarrow stack/<push>
+		;&nil !stack/<push> }
+	LDAk LIT "} NEQ ?{ INC2 stack/pop !/<parse-postfix> }
+	LDAk LIT "( NEQ ?{ INC2 ;&nil !stack/<push> }
+	LDAk LIT ") NEQ ?{
+		INC2 stack/pop /<parse-postfix>
+		stack/pop !/<parse-postfix> }
+	JMP2r
+
+@expr/walk-label ( str* -- str* )
+	/walk-label-core
+	( | Post label )
+	stack/depth ?{ JMP2r }
+	stack/pop !/<parse-postfix>
+
+@expr/walk-label-core ( str* -- str* )
+	str/walk-ws LDAk ?{ JMP2r }
+	token/<reset>
+	token/push-label
 	( | handlers )
+	DUP2 ;dict/goto str/cmp ?/<parse-goto>
 	DUP2 str/is-dec ?/<parse-value-dec>
 	DUP2 str/is-hex ?/<parse-value-hex>
-	( | raw value )
 	LDAk LIT "# NEQ ?{ INC2 !prefab-refrel/<emit> }
 	LDAk LIT "@ NEQ ?{ INC2 !prefab-refabs/<emit> }
+	( | function )
+	OVR2 LDA LIT "( NEQ ?{ dict/alloc stack/<push>
+		;&nil !stack/<push> }
 	prefab-refrel/<emit>
 	stack/is-allocator ?{ ;dict/lda2 !str/<print-ws> }
 	JMP2r
+
+@expr/<parse-goto> ( str* token* -- str* )
+	( pop goto ) POP2
+	( walk to label ) str/walk-ws
+	( write jump ) token/<reset>
+	token/push-label !prefab-jump/<emit>
+
+@expr/walk-operator ( str* -- str* )
+	str/walk-ws LDAk ?{ JMP2r }
+	LDAk LIT ", NEQ ?{ INC2 JMP2r }
+	token/<reset>
+	token/push-operand dict/alloc !stack/<push>
 
 @expr/<parse-value-dec> ( str* -- )
 	str/dec !prefab-lithex/<emit>
@@ -377,54 +431,15 @@
 @expr/<parse-postfix> ( str* -- )
 	LDAk ?{ POP2 JMP2r }
 	LDA2k LIT2 "-> NEQ2 ?{ POP2 ;dict/sta2 !str/<print-ws> }
+	LDA2k LIT2 "<- NEQ2 ?{ POP2 ;dict/lda2 !str/<print-ws> }
 	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
-	LDA2k LIT2 "<- NEQ2 ?{ POP2 ;dict/jsr2 !str/<print-ws> }
+	LDA2k LIT2 "<> NEQ2 ?{ POP2 ;dict/jsr2 !str/<print-ws> }
 	LDAk operators/find INC2k ORA ?{
 		POP2
 		( call ) ;dict/fn-prefix str/<print> !str/<print-ws> }
 	INC2 LDA2 NIP2 !str/<print-ws>
 
 	&nil 00
-
-@expr/walk-value ( str* -- str* )
-	token/<reset>
-	str/walk-ws LDAk ?{ JMP2r }
-	DUP2 /is-goto ?/walk-goto
-	DUP2 /is-function ?/walk-function
-	token/push-label !/<parse-value>
-
-@expr/walk-function ( str* -- str* )
-	token/<reset>
-	str/walk-ws token/push-label dict/alloc stack/<push>
-	;&nil !stack/<push>
-
-@expr/walk-label ( str* -- str* )
-	str/walk-ws
-	&>wwa
-		LDAk chr/is-label ?{ JMP2r }
-		INC2 !/>wwa
-
-@expr/walk-goto ( str* -- str* )
-	token/<reset>
-	str/walk-ws #0004 ADD2 str/walk-ws token/push-label !prefab-jump/<emit>
-
-@expr/walk-operand ( str* -- str* )
-	token/<reset>
-	str/walk-ws
-	&>wo
-		LDAk DUP chr/is-opr ?{
-			POP ;token/buf LDAk ?{ POP2 JMP2r }
-			dict/alloc !stack/<push> }
-		token/<push>
-		INC2 !/>wo
-
-@expr/is-function ( str* -- t )
-	LDAk chr/is-label ?{ POP2 #01 JMP2r }
-	/walk-label LDA LIT "( EQU JMP2r
-
-@expr/is-goto ( str* -- t )
-	LDA2k LIT2 "go EQU2 STH
-	INC2 INC2 LDA2 LIT2 "to EQU2 STHr AND JMP2r
 
 @expr/<reset> ( -- )
 	#0000 ;&buf STA2
@@ -442,6 +457,22 @@
 	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 	STA2
 	JMP2r
+
+@expr/push-until-keyword ( c -- reached )
+	/<push>
+	/get-last-word keywords/find INC2 ORA JMP2r
+
+@expr/realloc-keyword ( -- dict* )
+	/get-last-word STH2k dict/alloc
+	( cap ) #0000 STH2r STA2
+	JMP2r
+
+@expr/get-last-word ( -- str* )
+	;&buf ,&ptr LDR2
+	&>l
+		NEQ2k ?{ POP2 JMP2r }
+		#0001 SUB2 LDAk #20 GTH ?/>l
+	NIP2 INC2 JMP2r
 
 (
 @|Prefabs )
@@ -545,7 +576,7 @@
 @chr/is-num ( c -- t )
 	LIT "0 SUB #0a LTH JMP2r
 
-@chr/is-opr ( c -- t )
+@chr/is-operand ( c -- t )
 	operators/find INC2 ORA JMP2r
 
 @chr/is-lc ( c -- lowercase )
@@ -590,6 +621,7 @@
 		INC2 !/>ww
 
 @str/is-dec ( str* -- t )
+	LDAk ?{ POP2 #00 JMP2r }
 	LDAk [ LIT "- ] NEQ ?{
 		INC2 LDAk chr/is-dec ?{ POP2 #00 JMP2r } }
 	&>wid
@@ -728,6 +760,7 @@
 	&if-prefix "if- 00
 	&fn-prefix "fn- 00
 	&anon-jump "!{ 00
+	&backarrow "<- 00
 	&ora "ORA 00
 	&jmp2r "JMP2r 00
 	&deo2 "NIP 20 "DEO2 00
