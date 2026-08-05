@@ -357,61 +357,6 @@
 		LDAk LIT ", NEQ ?{ INC2 ;&nil stack/<push> }
 		/walk-value stack/pop /<parse-postfix> !/>wp
 
-@expr/walk-value ( str* -- str* )
-	token/<reset>
-	LDAk ?{ JMP2r }
-	DUP2 /is-goto ?/walk-goto
-	DUP2 /is-function ?/walk-function
-	token/push-label !/<parse-value>
-
-@expr/walk-function ( str* -- str* )
-	token/<reset>
-	token/push-label dict/alloc stack/<push>
-	;&nil !stack/<push>
-
-@expr/is-function ( str* -- t )
-	LDAk chr/is-label ?{ POP2 #01 JMP2r }
-	/walk-label LDA LIT "( EQU JMP2r
-
-@expr/walk-label ( str* -- str* )
-	&>wwa
-		LDAk chr/is-label ?{ JMP2r }
-		INC2 !/>wwa
-
-@expr/is-goto ( str* -- t )
-	LDA2k LIT2 "go EQU2 STH
-	INC2 INC2 LDA2 LIT2 "to EQU2 STHr AND JMP2r
-
-@expr/walk-goto ( str* -- str* )
-	token/<reset>
-	#0004 ADD2 str/walk-ws token/push-label !prefab-jump/<emit>
-
-@expr/walk-operand ( str* -- str* )
-	token/<reset>
-	&>wo
-		LDAk DUP chr/is-opr ?{
-			POP ;token/buf LDAk ?{ POP2 JMP2r }
-			dict/alloc !stack/<push> }
-		token/<push>
-		INC2 !/>wo
-
-@expr/<reset> ( -- )
-	#0000 ;&buf STA2
-	;&buf ,&ptr STR2
-	JMP2r
-
-@expr/<push-str> ( str* -- )
-	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		chr/not-sc ?{ POP POP2 !/<parse> }
-		/<push>
-		INC2 !/>w
-
-@expr/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
-
 @expr/<parse-value> ( str* -- )
 	( | handlers )
 	DUP2 str/is-dec ?/<parse-value-dec>
@@ -440,6 +385,63 @@
 	INC2 LDA2 NIP2 !str/<print-ws>
 
 	&nil 00
+
+@expr/walk-value ( str* -- str* )
+	token/<reset>
+	str/walk-ws LDAk ?{ JMP2r }
+	DUP2 /is-goto ?/walk-goto
+	DUP2 /is-function ?/walk-function
+	token/push-label !/<parse-value>
+
+@expr/walk-function ( str* -- str* )
+	token/<reset>
+	str/walk-ws token/push-label dict/alloc stack/<push>
+	;&nil !stack/<push>
+
+@expr/walk-label ( str* -- str* )
+	str/walk-ws
+	&>wwa
+		LDAk chr/is-label ?{ JMP2r }
+		INC2 !/>wwa
+
+@expr/walk-goto ( str* -- str* )
+	token/<reset>
+	str/walk-ws #0004 ADD2 str/walk-ws token/push-label !prefab-jump/<emit>
+
+@expr/walk-operand ( str* -- str* )
+	token/<reset>
+	str/walk-ws
+	&>wo
+		LDAk DUP chr/is-opr ?{
+			POP ;token/buf LDAk ?{ POP2 JMP2r }
+			dict/alloc !stack/<push> }
+		token/<push>
+		INC2 !/>wo
+
+@expr/is-function ( str* -- t )
+	LDAk chr/is-label ?{ POP2 #01 JMP2r }
+	/walk-label LDA LIT "( EQU JMP2r
+
+@expr/is-goto ( str* -- t )
+	LDA2k LIT2 "go EQU2 STH
+	INC2 INC2 LDA2 LIT2 "to EQU2 STHr AND JMP2r
+
+@expr/<reset> ( -- )
+	#0000 ;&buf STA2
+	;&buf ,&ptr STR2
+	JMP2r
+
+@expr/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		chr/not-sc ?{ POP POP2 !/<parse> }
+		/<push>
+		INC2 !/>w
+
+@expr/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
 
 (
 @|Prefabs )
