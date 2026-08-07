@@ -14,7 +14,7 @@
 	( name ) "POP-2 0a
 	( desc ) "A 20 "POP-2 20 "Compiler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "5 20 "Aug 20 "2026 0000
+	( date ) "7 20 "Aug 20 "2026 0000
 
 @<bind> ( vector* -- )
 	.Console/vector DEO2
@@ -173,7 +173,7 @@
 			LITr 00 STH2k STAr
 			;token/buf DUP2 dict/alloc stack/<push>
 			prefab-sublab/<emit>
-			INC2 LDAk LIT "" NEQ ?{ prefab-string/<emit> !token/<reset> }
+			INC2 LDAk LIT "" NEQ ?{ prefab-string/emit POP2 !token/<reset> }
 			str/dec prefab-pad/<emit> !token/<reset> }
 		INC2 !/>wpt
 
@@ -365,7 +365,11 @@
 	LDAk LIT ") NEQ ?{
 		INC2 stack/pop /<parse-postfix>
 		stack/pop !/<parse-postfix> }
-	JMP2r
+	LDAk LIT "" EQU ?/walk-string
+	( | Unknown )
+	;dict/err-unknown-expr err/<print>
+	DUP2 err/<print-lb>
+	INC2 JMP2r
 
 @expr/walk-label ( str* -- str* )
 	/walk-label-core
@@ -389,6 +393,13 @@
 	prefab-refrel/<emit>
 	stack/is-allocator ?{ ;dict/lda2 !str/<print-ws> }
 	JMP2r
+
+@expr/walk-string ( str* -- str* )
+	LIT2 "{ 18 DEO
+	chr/<ws>
+	prefab-string/emit LIT2 "} 18 DEO
+	chr/<ws>
+	INC2 ;dict/sth2r !str/<print-ws>
 
 @expr/<parse-goto> ( str* token* -- str* )
 	( pop goto ) POP2
@@ -471,11 +482,11 @@
 @prefab-pad/<emit> ( length* -- )
 	LIT2 "$ 18 DEO !u16/<print-ws>
 
-@prefab-string/<emit> ( str* -- )
+@prefab-string/emit ( str* -- )
 	INC2
 	&>w
-		LDAk LIT "" NEQ ?{ INC2 }
-		LDAk ?{ POP2 #00 !u8/<print-ws> }
+		LDAk DUP LIT "" NEQ ?{ INC2 POP #00 }
+		?{ #00 !u8/<print-ws> }
 		LDAk LIT "\ EQU ?/<emit-escape>
 		LDAk u8/<print-ws> &resume INC2 !/>w
 
@@ -612,7 +623,7 @@
 		LDAk DUP ?{ POP POP2 JMP2r }
 		LIT &a $1 NEQ ?{
 			LITr &b $1 STH2k STAr }
-		INC2 !&>wsc
+		INC2 !/>wsc
 
 @str/is-dec ( str* -- t )
 	LDAk ?{ POP2 #00 JMP2r }
@@ -676,6 +687,16 @@
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?/d
 		INC2 INC2r !/>wc
+
+@err/<print-lb> ( str* -- )
+	/<print>
+	#0a19 DEO
+	JMP2r
+
+@err/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !/<print>
 
 @u16/<print> ( u16* -- )
 	SWP u8/<print>
@@ -750,12 +771,14 @@
 	&then "then 00
 	&else "else 00
 	&close "close 00
+	&err-unknown-expr "Unknown 20 "expression: 20 00
 	&if-prefix "if- 00
 	&fn-prefix "fn- 00
 	&anon-jump "!{ 00
 	&backarrow "<- 00
 	&ora "ORA 00
 	&jmp2r "JMP2r 00
+	&sth2r "STH2r 00
 	&deo2 "NIP 20 "DEO2 00
 	&mod2 "DIV2k 20 "MUL2 20 "SUB2 00
 	&equ2-s "EQU2 20 "#00 20 "SWP 00

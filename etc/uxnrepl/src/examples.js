@@ -349,6 +349,155 @@ examples.fizzbuzz=`( 54K . Fizzbuzz
 	INC GTHk ?fizzbuzz
 	POP2 BRK
 `
+examples.double_trans=`( 54K . Double Transposition Encoder )
+
+@dt/on-reset ( -> )
+	;&key1 t1/<set-key>
+	;&key2 t2/<set-key>
+	;&msg t1/<set-buf>
+	t1/<extend>
+	t1/<encode>
+	t2/<extend>
+	t2/<encode>
+	BRK
+
+	&key1 "malignant 00
+	&key2 "rabbit 00
+	&msg "green_hands_at_dawn 00
+
+(
+@|t1 )
+
+@t1/<set-key> ( key* -- )
+	DUP2 str/<print-ln>
+	&>wsk
+		LDAk DUP ?{
+			POP POP2 ;&key str/make-key !str/<print-ln> }
+		[ LIT2 &kptr =&key ] INC2k ,&kptr STR2
+		STA
+		INC2 !/>wsk
+
+@t1/<set-buf> ( str* -- )
+	&>wsb
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>wsb
+
+@t1/get-buflen ( -- length* )
+	,&ptr LDR2 ;&buf SUB2 JMP2r
+
+@t1/get-keylen ( -- length* )
+	,&kptr LDR2 ;&key SUB2 JMP2r
+
+@t1/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@t1/<extend> ( -- )
+	( rows ) /get-buflen STH2k /get-keylen STH2k DIV2 INC2 DUP2 ,&rows STR2
+	( rows * keylen max ) STH2r MUL2 STH2r SUB2 SUB
+	&>le
+		DUP ?{ POP JMP2r }
+		( fill ) LIT "_ /<push>
+		INC !/>le
+
+@t1/<encode> ( -- )
+	/get-buflen #0000
+	&>l
+		DUP2
+		( y ) DUP2 [ LIT2 &rows $2 ] STH2k DIV2k MUL2 SUB2
+		( x ) SWP2 STH2r DIV2 ;&key SWP2 str/get-x SWP2 /get-keylen [ LIT2r =&buf ] MUL2 ADD2 STH2r ADD2 LDA t2/<push>
+		INC2 GTH2k ?/>l
+	POP2 POP2 JMP2r
+
+(
+@|t2 )
+
+@t2/<set-key> ( key* -- )
+	DUP2 str/<print-ln>
+	&>wsk
+		LDAk DUP ?{
+			POP POP2 ;&key str/make-key !str/<print-ln> }
+		[ LIT2 &kptr =&key ] INC2k ,&kptr STR2
+		STA
+		INC2 !/>wsk
+
+@t2/<push> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@t2/get-buflen ( -- length* )
+	,&ptr LDR2 ;&buf SUB2 JMP2r
+
+@t2/get-keylen ( -- length* )
+	,&kptr LDR2 ;&key SUB2 JMP2r
+
+@t2/<extend> ( -- )
+	( rows ) /get-buflen STH2k /get-keylen STH2k DIV2 INC2 DUP2 ,&rows STR2
+	( rows * keylen max ) STH2r MUL2 STH2r SUB2 SUB
+	&>le
+		DUP ?{ POP JMP2r }
+		( fill ) LIT "_ /<push>
+		INC !/>le
+
+@t2/<encode> ( -- )
+	;&buf str/<print-ln>
+	/get-buflen #0000
+	&>l
+		DUP2
+		( y ) DUP2 [ LIT2 &rows $2 ] STH2k DIV2k MUL2 SUB2
+		( x ) SWP2 STH2r DIV2 ;&key SWP2 str/get-x SWP2 /get-keylen [ LIT2r =&buf ] MUL2 ADD2 STH2r ADD2 LDA
+		( print ) #18 DEO
+		INC2 GTH2k ?/>l
+	POP2 POP2 #0a18 DEO
+	JMP2r
+
+(
+@|Stdlib )
+
+@str/get-x ( buf* id* -- x* )
+	LIT "1 ADD STH
+	POP DUP2
+	&>wg
+		LDAk STHkr EQU ?{ INC2 LDAk ?/>wg }
+	SWP2 SUB2 POPr JMP2r
+
+@str/make-key ( buf* -- buf* )
+	STH2
+	[ LIT2 "1 _&id ] STR
+	LIT2 "za
+	&>l
+		DUP ,&t STR
+		STH2kr
+		&>w
+			LDAk [ LIT &t $1 ] NEQ ?{
+				DUP2 [ LIT &id "1 ] INCk ,&id STR
+				ROT ROT STA }
+			INC2 LDAk ?/>w
+		POP2 INC GTHk ?/>l
+	POP2 STH2r JMP2r
+
+@str/<print-ln> ( str* -- )
+	/<print>
+	#0a18 DEO
+	JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@t1/key $10
+
+@t1/buf $100
+
+@t2/key $10
+
+@t2/buf
+
+`
 examples.subleq=`( 54K . -leq )
 
 @subleq/on-reset ( -> )
