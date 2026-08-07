@@ -16,10 +16,13 @@
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "5 20 "Aug 20 "2026 0000
 
+@<bind> ( vector* -- )
+	.Console/vector DEO2
+	dict/<reset>
+	stack/<reset> !expr/<reset>
+
 @token/<bind> ( -- )
-	/<reset>
-	;&on-console .Console/vector DEO2
-	JMP2r
+	;&on-console .Console/vector DEO2 !/<reset>
 
 @token/on-console ( -> )
 	.Console/read DEI
@@ -66,7 +69,9 @@
 	DUP2 keywords/find INC2k ORA ?{
 		POP2
 		( label: ) /is-label ?label/<bind>
-		!expr/<bind-token> }
+		expr/<bind>
+		expr/<push-str>
+		#20 !expr/<push> }
 	NIP2 INC2 INC2 LDA2 JMP2
 
 @token/is-label ( -- t )
@@ -96,28 +101,19 @@
 (
 @|BlockFunction )
 
-@<bind> ( vector* -- )
-	dict/<reset>
-	stack/<reset>
-	expr/<reset>
-	.Console/vector DEO2
-	JMP2r
-
 @function/<bind> ( -- )
 	;&on-console <bind>
-	;dict/anon-jump str/<print-ws>
-	LIT2 "@ 18 DEO
-	;dict/fn-prefix !str/<print>
+	;dict/anon-jump !str/<print-ws>
 
 @function/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
+	DUP #20 GTH ?{
+		POP ;expr/buf prefab-label/<emit>
+		vars/<bind-bindings>
+		BRK }
 	chr/not-sc ?{
-		POP
-		( | print name )
-		;expr/buf str/walk-ws str/print-word chr/<ws>
-		vars/<parse>
-		lambda/<emit-bindings>
+		POP ;expr/buf prefab-label/<emit>
 		token/<bind>
 		BRK }
 	expr/<push>
@@ -127,6 +123,11 @@
 @|BlockVars )
 
 @vars/<bind> ( -- )
+	[ LIT2 01 _&bindings ] STR
+	;&on-console !<bind>
+
+@vars/<bind-bindings> ( -- )
+	[ LIT2 00 _&bindings ] STR
 	;&on-console !<bind>
 
 @vars/on-console ( -> )
@@ -134,6 +135,7 @@
 	( | handlers )
 	chr/not-sc ?{
 		POP ;expr/buf /<parse>
+		LIT &bindings $1 ?{ /<emit-bindings> }
 		token/<bind>
 		BRK }
 	expr/<push>
@@ -168,31 +170,14 @@
 			prefab-sublab/<emit>
 			#0002 prefab-pad/<emit> !token/<reset> }
 		LIT ": NEQ ?{
-			STH2k #00 STH2r STA
+			LITr 00 STH2k STAr
 			;token/buf DUP2 dict/alloc stack/<push>
 			prefab-sublab/<emit>
 			INC2 LDAk LIT "" NEQ ?{ prefab-string/<emit> !token/<reset> }
 			str/dec prefab-pad/<emit> !token/<reset> }
 		INC2 !/>wpt
 
-(
-@|BlockLambda )
-
-@lambda/<bind> ( -- )
-	;&on-console <bind>
-
-@lambda/on-console ( -> )
-	.Console/read DEI
-	( | handlers )
-	chr/not-sc ?{
-		POP ;expr/buf vars/<parse>
-		/<emit-bindings>
-		token/<bind>
-		BRK }
-	expr/<push>
-	BRK
-
-@lambda/<emit-bindings> ( -- )
+@vars/<emit-bindings> ( -- )
 	&>web
 		stack/depth ?{ !chr/<lb> }
 		stack/pop prefab-binding/<emit> !/>web
@@ -350,13 +335,8 @@
 (
 @|BlockExpr )
 
-@expr/<bind-token> ( token* -- )
-	/<reset>
-	stack/<reset>
-	dict/<reset>
-	;&on-console .Console/vector DEO2
-	/<push-str>
-	#20 !/<push>
+@expr/<bind> ( -- )
+	;&on-console !<bind>
 
 @expr/on-console ( -> )
 	.Console/read DEI
@@ -434,9 +414,7 @@
 	LDA2k LIT2 "<- NEQ2 ?{ POP2 ;dict/lda2 !str/<print-ws> }
 	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
 	LDA2k LIT2 "<> NEQ2 ?{ POP2 ;dict/jsr2 !str/<print-ws> }
-	LDAk operators/find INC2k ORA ?{
-		POP2
-		( call ) ;dict/fn-prefix str/<print> !str/<print-ws> }
+	LDAk operators/find INC2k ORA ?{ POP2 !prefab-scope/<emit> }
 	INC2 LDA2 NIP2 !str/<print-ws>
 
 	&nil 00
@@ -514,12 +492,18 @@
 	[ LIT2 "; 18 ] DEO
 	[ LIT2 "& 18 ] DEO !str/<print-ws>
 
-@prefab-refabs/<emit> ( str* -- )
-	[ LIT2 "; 18 ] DEO
-	;dict/fn-prefix str/<print> !str/<print-ws>
-
 @prefab-lithex/<emit> ( u16* -- )
 	LIT2 "# 18 DEO !u16/<print-ws>
+
+@prefab-label/<emit> ( str* -- )
+	LIT2 "@ 18 DEO !prefab-scope/<emit>
+
+@prefab-refabs/<emit> ( str* -- )
+	[ LIT2 "; 18 ] DEO
+	( >> )
+
+@prefab-scope/<emit> ( str* -- )
+	LIT2 "./ str/swap-chars ;dict/fn-prefix str/<print> !str/<print-ws>
 
 (
 @|Dict )
@@ -586,10 +570,10 @@
 	LIT "a SUB #1a LTH JMP2r
 
 @chr/is-label ( c -- t )
-	DUP LIT "_ EQU ?/pt
 	DUP LIT "# EQU ?/pt
 	DUP LIT "@ EQU ?/pt
 	DUP LIT ". EQU ?/pt
+	DUP LIT "_ EQU ?/pt
 	( >> )
 
 @chr/is-an ( c -- t )
@@ -619,6 +603,16 @@
 		LDAk DUP ?{ POP JMP2r }
 		#21 LTH ?{ JMP2r }
 		INC2 !/>ww
+
+@str/swap-chars ( str* a b -- str* )
+	,&b STR
+	,&a STR
+	DUP2
+	&>wsc
+		LDAk DUP ?{ POP POP2 JMP2r }
+		LIT &a $1 NEQ ?{
+			LITr &b $1 STH2k STAr }
+		INC2 !&>wsc
 
 @str/is-dec ( str* -- t )
 	LDAk ?{ POP2 #00 JMP2r }
@@ -717,11 +711,11 @@
 
 @keywords/lut [4
 	=dict/function =function/<bind> =dict/end =end/<bind>
-	=dict/lambda =lambda/<bind> =dict/vars =vars/<bind>
-	=dict/comment =comment/<bind> =dict/goto =goto/<bind>
-	=dict/if =if/<bind> =dict/then =then/<bind>
-	=dict/elseif =elseif/<bind> =dict/else =else/<bind>
-	=dict/close =close/<bind> &lutend ]
+	=dict/vars =vars/<bind> =dict/comment =comment/<bind>
+	=dict/goto =goto/<bind> =dict/if =if/<bind>
+	=dict/then =then/<bind> =dict/elseif =elseif/<bind>
+	=dict/else =else/<bind> =dict/close =close/<bind>
+	&lutend ]
 
 @operators/find ( c -- ffff|addr* )
 	STH
@@ -748,7 +742,6 @@
 
 @dict/comment "comment 00
 	&function "function 00
-	&lambda "lambda 00
 	&vars "vars 00
 	&goto "goto 00
 	&end "end 00
