@@ -14,7 +14,7 @@
 	( name ) "POP-2 0a
 	( desc ) "A 20 "POP-2 20 "Compiler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Aug 20 "2026 0000
+	( date ) "8 20 "Aug 20 "2026 0000
 
 @<bind> ( vector* -- )
 	.Console/vector DEO2
@@ -223,13 +223,10 @@
 @if/<bind> ( -- )
 	;&on-console <bind>
 	#00 ;&case STA
-	/<push-nesting> !expr/<reset>
+	/<push> !expr/<reset>
 
 @if/on-console ( -> )
-	.Console/read DEI
-	( end ) chr/not-sc ?{ POP /<parse>
-		BRK }
-	expr/push-until-keyword ?{ BRK }
+	.Console/read DEI expr/push-until-keyword ?{ BRK }
 	expr/realloc-keyword /<parse>
 	token/<push-str>
 	token/<parse>
@@ -248,28 +245,31 @@
 	&a "?/if- 00
 	&b "!{ 20 "&if- 00
 
-@if/<push-nesting> ( -- )
-	[ LIT &nest ff ] INC ,&nest STR
-	JMP2r
-
-@if/<print-nest> ( -- v )
-	,&nest LDR !chr/<lc>
-
 @if/<print-case> ( -- )
 	,&case LDR chr/<lc> !chr/<ws>
 
-@if/case-push ( -- )
+@if/<case-inc> ( -- )
 	[ LIT &case $1 ] INC ,&case STR
+	JMP2r
+
+@if/<print-nest> ( -- v )
+	,&ptr LDR2 #0001 SUB2 LDA !chr/<lc>
+
+@if/<push> ( -- )
+	[ LIT &nest 00 ] INCk ,&nest STR
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+@if/<pop> ( -- )
+	,&ptr LDR2 #0001 SUB2 ,&ptr STR2
 	JMP2r
 
 @elseif/<bind> ( -- )
 	;&on-console <bind> !expr/<reset>
 
 @elseif/on-console ( -> )
-	.Console/read DEI
-	( end ) chr/not-sc ?{ POP /<parse>
-		BRK }
-	expr/push-until-keyword ?{ BRK }
+	.Console/read DEI expr/push-until-keyword ?{ BRK }
 	expr/realloc-keyword /<parse>
 	token/<push-str>
 	token/<parse>
@@ -284,7 +284,7 @@
 	;if/b str/<print>
 	if/<print-nest>
 	if/<print-case>
-	token/<bind> !if/case-push
+	token/<bind> !if/<case-inc>
 
 @then/<bind> ( -- )
 	;&on-console !<bind>
@@ -313,10 +313,7 @@
 	;&on-console !<bind>
 
 @else/on-console ( -> )
-	.Console/read DEI
-	( end ) chr/not-sc ?{ POP /<parse>
-		BRK }
-	expr/push-until-keyword ?{ BRK }
+	.Console/read DEI expr/push-until-keyword ?{ BRK }
 	expr/realloc-keyword /<parse>
 	token/<push-str>
 	token/<parse>
@@ -330,6 +327,7 @@
 	LIT2 "& 18 DEO
 	;dict/if-prefix str/<print>
 	if/<print-nest>
+	if/<pop>
 	;dict/close str/<print-ws> !token/<bind>
 
 (
@@ -348,7 +346,8 @@
 @expr/<parse> ( -- )
 	;&buf
 	&>wp
-		str/walk-ws LDAk ?{ POP2 !token/<bind> }
+		str/walk-ws LDAk ?{ &end POP2 !token/<bind> }
+		LDAk LIT "; EQU ?/end
 		/walk-fragment !/>wp
 
 @expr/walk-fragment ( str* -- str* )
@@ -374,7 +373,6 @@
 @expr/walk-label ( str* -- str* )
 	/walk-label-core
 	( | Post label )
-	stack/depth ?{ JMP2r }
 	stack/pop !/<parse-postfix>
 
 @expr/walk-label-core ( str* -- str* )
@@ -399,7 +397,8 @@
 	chr/<ws>
 	prefab-string/emit LIT2 "} 18 DEO
 	chr/<ws>
-	INC2 ;dict/sth2r !str/<print-ws>
+	INC2 ;dict/sth2r str/<print-ws>
+	stack/pop !/<parse-postfix>
 
 @expr/<parse-goto> ( str* token* -- str* )
 	( pop goto ) POP2
@@ -791,6 +790,8 @@
 	&div2 "DIV2 00 &ora2 "ORA2 00
 	&and2 "AND2 00 &eor2 "EOR2 00
 	&jsr2 "JSR2 00 ]
+
+@if/buf $100
 
 @stack/buf $400
 
