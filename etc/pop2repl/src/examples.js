@@ -122,3 +122,27 @@ end
 
 fizzbuzz();
 `
+examples.proquints=`comment Convert a short to a proquint word;
+
+function printVowel id;
+	vars arr:"aiou";
+	{#arr + (id & 0x3)}/0x100 => 23;
+end
+
+function printConsonant id;
+	vars arr:"bdfghjklmnprstvz";
+	{#arr + (id & 0xf)}/0x100 => 23;
+end
+
+function printProquint hb lb;
+	vars combined; 
+	hb * 0x100 | lb -> combined;
+	printConsonant(combined/0x1000);
+	printVowel(combined/0x400);
+	printConsonant(combined/0x40);
+	printVowel(combined/0x10);
+	printConsonant(combined);
+end
+
+printProquint(128, 30);
+`
