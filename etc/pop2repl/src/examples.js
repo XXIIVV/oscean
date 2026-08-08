@@ -11,8 +11,7 @@ loop:
 	close
 end
 
-vars text:"Hello World!";
-printString(#text);
+printString("Hello World!");
 `
 examples.string_length=`comment Get the length of a string;
 
@@ -84,15 +83,14 @@ end
 fact(5);
 `
 examples.fizzbuzz=`function fizzbuzz;
-	vars i f:"Fizz" b:"Buzz" fb:"FizzBuzz";
-	1 -> i;
+	vars i; 1 -> i;
 loop:
 	if i % 15 = 0 
-		then printString(#fb);
+		then printString("FizzBuzz");
 	elseif i % 5 = 0
-		then printString(#b);
+		then printString("Buzz");
 	elseif i % 3 = 0
-		then printString(#f);
+		then printString("Fizz");
 	else
 		printNumber(i);
 	close
@@ -122,7 +120,9 @@ end
 
 fizzbuzz();
 `
-examples.proquints=`comment Convert a short to a proquint word;
+examples.proquints=`comment Convert four bytes into proquints;
+
+printProquints(128, 30, 52, 45);
 
 function printVowel id;
 	vars arr:"aiou";
@@ -144,5 +144,9 @@ function printProquint hb lb;
 	printConsonant(combined);
 end
 
-printProquint(128, 30);
+function printProquints a b c d;
+	printProquint(a, b);
+	0x2d => 23;
+	printProquint(c, d);
+end
 `
