@@ -93,10 +93,8 @@ loop:
 	else
 		printNumber(i);
 	close
-	0xa => 23;
-	i + 1 -> i;
 	if i < 100
-		then goto loop
+		then 0xa => 23, i + 1 -> i, goto loop
 	close
 end
 
@@ -108,8 +106,7 @@ function printNumber n;
 end
 
 function printString s;
-	vars c:1 cells:2 i;
-	0 -> i;
+	vars c:1 cells:2 i; 0 -> i;
 loop:
 	{s+i} -> cells;
 	if c
