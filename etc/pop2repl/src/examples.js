@@ -116,6 +116,35 @@ end
 
 fizzbuzz();
 `
+examples.sierpinski=`comment Draw the Sierpiński Triangle;
+
+sierpinski(16);
+
+function sierpinski size;
+	vars x y; size - 1 -> y;
+	row:
+		0 -> x;
+		pad(y);
+		col:
+			x & y = 0 * 10 + 0x20 => 23;
+			0x20 => 23;
+			x + 1 -> x;
+			if x+y < size then goto col;
+		close
+		0x0a => 23;
+		y - 1 -> y;
+		if y then goto row;
+	close
+end
+
+function pad n;
+	vars i; 0 -> i;
+	loop:
+		0x20 => 23;
+		i + 1 -> i;
+		if i < n then goto loop close
+end
+`
 examples.proquints=`comment Convert four bytes into proquints;
 
 printProquints(128, 30, 52, 45);
