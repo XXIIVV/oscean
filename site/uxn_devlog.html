@@ -15,8 +15,25 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="events.html">events</a></li><li><a href="blog.html">blog</a></li><li><a href="devlog.html" class="parent">devlog</a></li><li><a href="now.html">now</a></li></ul><ul><li><a href="uxn_devlog.html" class="self">uxn devlog</a></li><li><a href="uxntal_devlog.html">uxntal devlog</a></li><li><a href="varvara_devlog.html">varvara devlog</a></li><li><a href="now_lie_in_it.html">now lie in it</a></li></ul><ul></ul></nav>
+<nav><ul><li><a href="events.html">events</a></li><li><a href="blog.html">blog</a></li><li><a href="devlog.html" class="parent">devlog</a></li><li><a href="now.html">now</a></li></ul><ul><li><a href="uxn_devlog.html" class="self">uxn devlog</a></li></ul><ul><li><a href="uxntal_devlog.html">uxntal devlog</a></li><li><a href="varvara_devlog.html">varvara devlog</a></li><li><a href="now_lie_in_it.html">now lie in it</a></li></ul></nav>
 <main><h2>A virtual machine without registers</h2>
+
+<p>Below are thoughts on the creation of a <i>clean-slate computing
+stack</i> based on the <a href='permacomputing.html'>universal virtual
+machine</a> strategy for digital preservation of software projects and
+documentation for <a href='hundred_rabbits.html'>Hundred Rabbits</a>. The
+content of the devlog was presented in front of an audience during <a
+href='https://100r.ca/site/weathering_software_winter.html'
+target='_blank'>Weathering Software Winter</a>.</p>
+
+<img src='../media/generic/uxn.apu.png' width='240' class='right'/>
+
+<ul>
+	<li><b>Part 1</b>: <a href='uxn_devlog.html'>A virtual machine</a></li>
+	<li><b>Part 2</b>: <a href='varvara_devlog.html'>A personal computer</a></li>
+	<li><b>Part 3</b>: <a href='uxntal_devlog.html'>A programming language</a></li>
+	<li><b>Part 4</b>: <a href='now_lie_in_it.html'>Closing Thoughts</a></li>
+</ul>
 
 <p><b>Emulation</b> is the reproduction of the behavior of a physical computer's
 circuitry with software. Given that an emulator can translate the actions of
@@ -183,7 +200,359 @@ re-implementation instead of adoption.</p>
 <ul>
 	<li>See the <a href='../etc/uxn.napkin.txt' target='_blank'>napkin definition</a></li>
 </ul>
-<ul></ul><p><b>incoming: </b><a href="devlog.html" class="parent">devlog</a> <a href="2022.html">2022</a> </p></main>
+<h2>A programming language without names</h2>
+
+<p>A <i>binding error</i> happens when a name outlives its value or when a reference is shared between two things that should not have shared it, like when a variable initialized in one context is read in another.</p>
+
+<pre>
+char *buf = malloc(64);
+free(buf);
+buf[0] = 'x';
+</pre>
+
+<img src='../media/generic/potato.png' width='100' class="right"/>
+
+<p>The majority of what we call progress and think of as the signs of a good programming language(garbage collection, borrow checkers, static analysis, null safety..) seems like the side-effects of managing the fallout from the decision to name things.<br /><br />So let's not even go <a href='2026.html#20D'>there</a>.</p>
+
+<pre style='margin-bottom:1px'>
+MOV R0, 12
+MOV R1, 34
+SUB R2, R1, R0 <i>( uh oh )</i>
+DIV R3, R0, R2
+</pre>
+<pre>
+#12 #34 OVR SUB DIV
+</pre>
+
+<article>
+	<p>The correctness of the final result depends on nothing having touched R0 in between SUB and DIV. In the stack version, OVR copies the value to the top so it can be used twice, there is no name holding the reference open.</p>
+</article>
+
+<p>In stack machine assembly there are no variables, no registers, no scope and no environment, unlike other languages where linearity is enforced by tooling and runtime checks, aliasing is altogether not expressible in the model. The consequence is that the entire family of bugs caused by names cannot be written.</p>
+
+<h3>I. Programming without names</h3>
+
+<p>Lacking named variables, the natural description of a word's behavior is its effect on the stack. Type inference in Uxntal is done by
+checking the stack effect declarations of words, against the sum of stack
+changes predicted to occur based on the arity of each token in their
+bodies:</p>
+
+<pre>
+@add ( a* b* -: c* ) <i>Warning: Imbalance in @add of +2</i>
+	DUP2 ADD2 <b>JMP2r</b>
+</pre>
+
+<p>The system extends naturally to branching. Each branch of a conditional must produce the same stack effect as the other, words that fail to balance generate a warning, which catches a meaningful proportion of invalid programs:</p>
+
+<pre>
+@routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
+	EQUk <b>?&sub-routine</b>
+	POP2 #0a JMP2r
+	&sub-routine ( a b -: c*</b> )
+		POP2 #000b JMP2r
+</pre>
+
+<p>This is a very basic and permissive type system by the standards of academic type theory, but it is the type system that fits a machine whose defining property is the absence of names. It takes minutes to understand, seconds to check, and costs nothing at runtime.</p>
+
+<!--
+<article>
+	<p>A label marks a position in memory, not a value. It cannot be reassigned and cannot go stale.</p>
+</article>
+-->
+
+<h3>II. Algebraic Reduction</h3>
+
+<p>Because operations have no hidden dependencies through variable names, sequences of stack operations can be reasoned about purely algebraically. Any permutation that produces the same stack transformation as another is a valid rewrite. This makes a class of optimizations mechanical. Redundant permutations collapse to simpler ones, for example:</p>
+
+<pre>
+#12 #34 <b>SWP POP</b> -> NIP 
+</pre>
+
+<p>Tail-call optimization happen where jumps to subroutines are followed by
+subroutine returns and can be replaced instead by a single jump:</p>
+
+<pre>
+@routine ( a b -: c )
+	SWP ;function <b>JSR2 JMP2r</b> -> JMP2
+</pre>
+
+<p>Going one step further, routines that would otherwise terminate in a tail-call could even be relocated before their tail's location in memory and
+do away with the ending jump altogether. We leave here a comment
+marker to indicate to the stack-effect checker that the routine's tail will
+fall-through.</p>
+
+<pre>
+@routine ( a b -: c )
+	SWP <b>;function JMP2</b> -> ( >> )
+
+@function ( b a -: c )
+	DIV JMP2r
+</pre>
+
+<p>What makes these rewrites reliable is precisely the absence of names. In a language with variables, any of these transformations might be invalid because a name could introduce a dependency invisible to the optimizer. When there are no names there are no invisible dependencies. The sequence of operations is all there is, and what can be said about it algebraically is everything that can be said about it.</p>
+
+<img src='../media/generic/varvara.potato.png' width='200'/>
+
+<ul>
+	<li>See the <a href='../etc/uxntal.bnf.txt' target='_blank'>BNF definition</a></li>
+</ul>
+<h2>A personal computer</h2>
+
+<p><i>What are computers for, anyway?</i> I think of a computer as a lens through which I can observe and listen to the
+natural world. Some mathematicians are of the opinion that the doing of
+mathematics is closer to discovery than invention. Mathematical beauty is the
+aesthetic pleasure derived from the abstractness, or orderliness of
+mathematics. Similarly to how one might enjoy spending time studying venation
+patterns, we can imagine a device to explore procedural music and parametric
+illustration.</p>
+
+<p>That romantic vision of the potentially
+emancipating, power of computing was, since its inception, smothered by military drones,
+surveillance hardware and the advertisement machinery. To most of my friends, computing evokes either encroaching social networks or the drudgery of data entry.</p>
+
+<img src='../media/refs/hello.png' alt='Hello, on Macintosh.' width='100'/>
+
+<p>So I wandered back through history and down the stack, looking for something I could build that no one could take from me. As it turns out, large address spaces and high definition graphics don't play much of a role in getting there.</p>
+
+<img src='../media/refs/de_pictura.png' alt='De Pictura, Leon Battista Alberti. 1963' width='400'/>
+
+<h3>I. Personal</h3>
+
+<p>Let's consider the whole enterprise of designing and documenting this
+fictional computer to be a sort of <i>model</i> that others could adapt to
+their own <a href='marvelous_pursuit.html'>designs</a>, a call to encourage
+individuals to conjure up <b>their own vision of a computing machine</b>,
+tailored to suit their own needs; And Varvara, a demonstration of the potential of
+personal computing systems, and not as a platform that should be adopted and
+adapted to fit broader computing needs.</p>
+
+<p>The purpose of this document is not to gather would be users, but instead
+review potential portable computing skills that are not platform-specific, and
+to serve as a reminder that the key to permaculture's resilience is achieved
+through a diversification of methods.</p>
+
+<img src='../media/refs/house.png' width='400'/>
+
+<p>I'm certain that making something unique by way of customization is
+necessary for care. I often think back on how, in the movie
+Hackers(1995), each character had their own laptop launch sequence reflecting
+their aesthetics. &mdash; A far cry from today's <a
+href='commodity.html'>disposable laptops</a>, each equally adorned of
+<i>proprietary services</i> stickers.</p>
+
+<p>For mending to even be envisaged, one must be able to generally understand
+that which needs to be mended; a venture which, thanks to the ever
+complexifying <a href='stack.html'>stack</a> upon which modern computing is
+built, will have you promptly laughed out of the room. But just for the sake of
+this article, the required understanding of a system shall end at its
+bytecode bedrock.</p>
+
+<img src='../media/generic/varvara.chill.png' width="200" />
+
+<p>A side-effect of working from within unique computing environments is that
+looking for generic solutions is often more impractical than solving the
+problem head on. By that, I mean by that the solution needs to be adapted to
+the specifics of the virtual system, and this in turn develops understanding
+and care.</p>
+
+<h3>II. Computer</h3>
+
+<p>The computer in this case is the sum of potential I/O communications with
+the underlying virtual machine. In this case, the VM can communicate with up to
+16 devices at once, but has no knowledge of what a screen or a keyboard might
+be, these devices are what make up the <i>computer</i>.</p>
+
+<q>Uxn is to Varvara, what the 6502 is to the Classic Nintendo.</q>
+
+<p>When it came time to find out how I might want to interact with this
+computer, I started with a terminal, it seemed as good a place as any to start
+off from, by terminal I mean a console to send and receive bytes of data. The
+terminal communication allows me to leverage the power of the host OS to
+further develop the system.</p>
+
+<img src='../media/generic/uxn.devices.png' width='350'/>
+
+<p>As the system begins to <a href='varvara_changelog.html'>take shape</a>, I consider that possibly someday I may
+lose my sight, or the use of my hands, or I may become deaf. I wonder how I
+might replace one device for another in the future, and how I might adapt each
+device to my changing needs. I leave some blank spaces to be filled at a later
+time, should I need them.</p>
+
+<h2>Now lie in it.</h2>
+
+<p>Autumn is just around the corner, and when the leaves begin to fall, it will
+have been four years since the <a href='uxn_devlog.html'>early sketches</a> of a
+personal computing system which became <a href='uxn.html'>Uxn</a>. I thought it
+would be interesting to look back and see what has happened since.</p>
+
+<q>What problem was it supposed to address?</q>
+
+<p>Uxn was designed explicitly to be a minimal bytecode target capable of
+preserving a handful of <a href='https://100r.ca/site/oquonie'
+target='_blank'>our projects</a>, and to be flexible enough to accommodate the
+ones we had yet to make, in a way that would be portable and robust <a
+href='https://100r.ca/site/story.html' target='_blank'>against bitrot</a>.</p>
+
+<p>In regard to preservation, time will tell if it was a success, but I can say
+that it has taken 3 years for the <a href='uxntal_reference.html'>ISA</a> to be
+<a href='kelvin_versioning.html'>frozen</a>, and the tail end of that period only saw <a
+href='https://lists.sr.ht/~rabbits/uxn' target='_blank'>subtle</a> changes that
+did not impact the projects made in the first two. The remaining work during
+that time was primarily finding, documenting and testing against the remaining
+undefined behaviors.</p>
+
+<p>During these four years, I have seen countless developers <a
+href='https://github.com/hundredrabbits/awesome-uxn'
+target='_blank'>successfully implement</a> the <a
+href='varvara.html'>runtime</a> from scratch without my help; this is giving me
+hope that for as long as the documentation survives, developers can create new
+emulators as the hardware platforms and operating systems continue to
+evolve.</p>
+
+<img src='../media/generic/varvara.uxn.png' style="width: 80%;margin: 0 auto 30px;display: block;"/>
+
+<q>It is probably power hungry</q>
+
+<p>Uxn, in part, was meant to help us reconcile the power-hungry tools we used
+with the energy we could harvest from the solar generated aboard our <a
+href='pino.html'>small boat</a>. It is commonly understood that virtual
+machines are inefficient, I went ahead knowing that it might be self-defeating
+to target a virtual machine in which transformations are so granular that it
+would be hard for the host machine to optimize for.</p>
+
+<p>In that way, Uxn is tolerably impractical, but it is also only one part of a
+larger gesture towards reducing the strain on that resource, which requires
+more than just putting a virtual machine at the center of it all; what was
+possible to do on paper, outside the browser, or natively, was thereafter done
+that way, but a few of our projects were still inextricably linked to portable
+graphical applications.</p>
+
+<p>Uxn might have helped a bit, but only so much; for instance, the <a
+href='left.html'>text-editor</a> with which I am typing this article and use to
+do near every <i>computery-thing</i>, uses dramatically <a
+href='https://news.ycombinator.com/item?id=40805267' target='_blank'>less
+energy than what I used previously</a>. But I wouldn't attribute any noticeable
+power gain to the application running as a rom or natively. As a target, it shines
+most brightly in helping me to reduce the cost of iterating during software
+development itself, say we compare the minuscule drain of assembling a rom in
+comparison to rebuilding a native graphical application or reloading a
+webapp.</p>
+
+<q>It doesn't solve a real problem</q>
+
+<p>I am not convinced that computers solve any real problems either. Asking a
+room full of software creators "<a
+href='https://forum.merveilles.town/thread/35/what-are-computers-for%2c-anyway%3f-39/'
+target='_blank'>what are computers for anyways?</a>" will get you little beyond
+vague suggestions of bureaucratic utility, which leads me to question whether
+bureaucracy is solving any real problems, and so on, <i>ad absurdum</i>.</p>
+
+<p>But if we are to put any value in preserving digital art, music, video games
+and other distractions from the very real problems that basic needs demand, it
+might be worthwhile to address the problem head-on, and to encourage piracy at
+a massive scale, by duplicating digital content locally, to give data a
+chance to survive moving forward. Cloud platforms have all to win by making us
+forget that we can utilize a specific length of bytes without their saying so,
+and emulation is just <a href='permacomputing.html'>one of many ways</a> of
+exploring this issue.</p>
+
+<q>The problems it is trying to solve are self-inflicted</q>
+
+<p>There is a <a href='https://www.gypsy-traveller.org/policy-publications/'
+target='_blank'>time immemorial tradition</a> of discriminating against the
+various flavors of nomadic vagabonds living in tents, cars, canal boats &mdash;
+we are not exempt from that. On discussion forums, the economics of living on
+the water without a permanent address seem to <a
+href='https://news.ycombinator.com/item?id=41136598' target='_blank'>elude most
+people</a>, leaving them to believe that this way of life is something only the
+wealthy can do, that being in it is necessarily a deliberate choice untied from
+economic realities and that we somehow reside outside the boundary of whom
+deserve to be heard.</p>
+
+<p>I don't think that our changing reality was what catalyzed my search for
+alternatives, but it might have precipitated it. At that time, browsers hadn't
+started force-feeding AI assistants, but it was already many years into Apple
+devising new ways to sabotage the repair of devices; it was becoming obvious
+that my choice to target the modern web browser for my little graphical toys
+was a vote against decentralized general purpose computing, and one for its
+homogenization by companies that were increasingly antagonistic to
+our situation.</p>
+
+<p>Four years ago, had our situation been different, I don't know that I would
+have decided to stay with either iOS or web development. But even now, being
+more familiar with the landscape, I am not sure that making use of pre-existing
+systems would have been viable solutions for where we were trying to go.</p>
+
+<img src='../media/refs/turnipile.png' style="width:60%;margin: 0 auto 30px;display: block;"/>
+
+<q>It is too complicated, or not complicated enough</q>
+
+<p>I noticed that Uxn attracts both esoteric and practical individuals. The
+esoteric crowd looking at the Uxn specifications are rapid to point at <a
+href='https://dercuano.github.io/notes/uvc-archiving.html'
+target='_blank'>various alternatives</a> for which very little software exists,
+and the practical ones, at the limitations and ways in which it is deficient,
+"the memory is too small," "the opcodes too few," "stack machines are too
+slow", and so on.</p>
+
+<pre>
+  c         00:00.998458
+  haskell   00:02.870586
+  gforth    00:13.428614
+> uxntal    00:15.861439
+  lua       00:16.727872
+  ruby      00:21.418707
+  python    00:32.362443 <i style='float:right'>tak()</i>
+</pre>
+
+<p>Fortunately, I have seen people come around after looking back at the typical
+projects that they enjoy doing, and how they can do them comfortably with less
+means, but there is no denying that Uxn has a specific scope in mind which does
+not accommodate all projects. That was never really its intended purpose, it
+has many times over been successful in, not acquiring users, but getting
+developers to explore their <a href='http://wastingmoves.com/laki.html'
+target='_blank'>own visions</a> and finding joy there.</p>
+
+<q>Was it all worth it?</q>
+
+<p>Is it worth it to spend hundreds of hours to save what must amount to much,
+<i>much</i>, less? It depends, if you think too much about where you're going,
+you might lose respect for where you are. I have friends who were complaining
+about a tool in 2020, they still are today; their throughput would not be much
+improved had they spent a years detouring to rebuild a whole tech stack. For
+others, who see their ideals and tools diverge, it might be encouraging to see
+prior explorations in that space; to those, I can only say that it is very
+unlikely that you will see building an environment that respects your values
+and idiosyncrasies as a waste of time, it might even bring you closer to others
+sharing in your struggles and who might become your friends.</p>
+
+<p>Four years ago, I had doubts that it would work out, but time flies when
+you're having fun!</p>
+
+<ul>
+	<li><b>Frozen Specification</b>: Uxn is implicitly frozen at <a href='kelvin_versioning.html'>0 Kelvin</a>, it can be implemented in a hundred lines in most languages.</li>
+	<li><b>Zero Dependencies</b>: The toolchain is entirely <a href='uxntal_bootstrap.html'>bootstrappable</a>, no dependency on host OS semantics beyond I/O abstraction.</li>
+	<li><b>Minimal Conventions</b>: <a href='varvara.html'>Varvara</a> is the current baseline specification, but is not frozen.</li>
+	<li><b>Archival Format Contract</b>: Uxntal has a standard for <a href='metadata.html'>ROM metadata</a>, but is not frozen.</li>
+	<li><b>Operational Correctness</b>: <a href='../etc/opctest.tal.txt'>Opctest</a> is an extensive test suite that validates every single opcode, passing the test yields a compatible implementation. Correctness is defined operationally, Uxn has no undefined behaviors and cannot error.</li>
+	<li><b>Independent Redundancy</b>: Uxn, by way of Varvara, has open source emulation for dozens of architectures already.</li>
+	<li><b>Artifact friendliness</b>: Deterministic execution model is inspectable step-by-step, accessible <a href='symbols.html'>symbol files</a>.</li>
+	<li><b>Cultural Preservation Efforts</b>: The ecosystem features its own <a href='uxntal_reference.html'>sign-language and glyph system</a>, but currently lacks multilingual documentation.</li>
+</ul>
+
+<img src='../media/refs/turnipclub.png' style="width:80%;margin: 0 auto 30px;display: block;"/>
+
+<h3>Acknowledgments</h3>
+
+<p>The realization of this project is largely due to the work of the community,
+with special thanks to Rek, Andy Alderwick, Sigrid Solveig Haflínudóttir, Andrew
+Richards, badd10de, Bellinitte, Eiríkr, Tbsp, Wim,
+zzo38, Kragen, Kira, Snufkin, Virgil, SL, Sejo, gustav, soxfox, and everyone else who contributed ideas and shared their knowledge
+with me, without which Uxn could not have become what it is now. </p>
+
+<q>The wide world is all about you; you can fence yourselves in, but you cannot fence it out.</q>
+<cite>J. R. R. Tolkien</cite>
+<ul></ul><p><b>incoming: </b><a href="uxn.html">uxn</a> <a href="devlog.html" class="parent">devlog</a> <a href="uxn_devlog.html" class="self">uxn devlog</a> <a href="now_lie_in_it.html">now lie in it</a> <a href="2022.html">2022</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
 	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
