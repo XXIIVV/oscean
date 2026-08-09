@@ -15,7 +15,7 @@
 </head>
 <body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/xxiivv_cursive.png" width="200"></a></header>
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="self">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li><li><a href="rejoice.html">rejoice</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html" class="self">concatenative</a></li><li><a href="rewriting.html">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="uxn.html">uxn</a></li><li><a href="rejoice.html">rejoice</a></li><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li></ul></nav>
 <main><h2>Concatenative languages use juxtaposition of expressions for function composition.</h2>
 
 <img src="../media/refs/chesshire_head.png" width='140' class="nodark right">
@@ -86,6 +86,341 @@ structure of a monoid.</li>
 to do with the problem domain, like <i>pop</i>, <i>swap</i>, and <i>dup</i>;
 are the <i>let</i> and label tokens.</p>
 -->
+<h2>Uxn is the ordinator living at the heart of the Hundred Rabbits ecosystem.</h2>
+
+<img src='../media/identity/uxn_eyes.png' width='200' style='float:right'/>
+
+<p>The <b>virtual machine</b>, programmable in <a href='uxntal.html'>Uxntal</a>,
+is a <a href='devlog.html'>portability layer</a> and an attempt at crafting a comfortable amber for software that is capable of hosting a variety of small interactive graphical programs. It is powering this <a
+href='about.html'>wiki</a>.</p>
+
+<ul>
+	<li><b>Uxntal Language</b>: <a href='uxntal.html'>Reference</a></li>
+	<li><b>Varvara Devices</b>: <a href='varvara.html'>Reference</a></li>
+	<li><b>Emulators</b>: <a href='../etc/uxn11.c.txt' target='_blank'>x11</a>, <a href='../etc/uxn2.c.txt' target='_blank'>sdl2</a>, <a href='https://github.com/randrew/uxn32' target='_blank'>win32</a>, <a href='https://git.sr.ht/~rabbits/uxn5' target='_blank'>html5</a>, <a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>etc..</a></li>
+</ul>
+
+<h3 id='setup'>Quick Setup</h3>
+
+<p>To get started, equip yourself with an assembler to convert tal source files
+into rom binary files, and an emulator to evaluate the rom files. The
+system below includes the <a href='varvara.html#console'>Console
+device</a>:</p>
+
+<pre>
+<i># Build emulator</i>
+<b>cc</b> <a href='../etc/uxnmin.c.txt'>uxnmin.c</a> -o uxnmin
+
+<i># Build assembler(<a href='drifblim.html'>info</a>)</i>
+<b>cat</b> <a href='../etc/drifloon.rom.txt'>drifloon.rom.txt</a> | <b>uxnmin</b> <a href='../etc/xh.txt'>xh.txt</a> > drifloon.rom
+
+<i># Assemble binary</i>
+<b>cat</b> <a href='../etc/tictactoe.tal.txt'>tictactoe.tal</a> | <b>uxnmin</b> drifloon.rom > tictactoe.rom
+
+<i># Run binary</i>
+<b>uxnmin</b> tictactoe.rom
+</pre>
+
+<h3 id='summary'>Summary</h3>
+<p>See the <a href='../etc/uxn.napkin.txt'>complete definition</a>.</p>
+<pre>
+           00                PC:0
+       a'  20            a'? PC+:M[PC]" PC+:2
+           40                PC+:M[PC]" PC+:2
+           60  .PC"          PC+:M[PC]" PC+:2
+           
+           80  M[PC]'        PC+:1
+           a0  M[PC]"        PC+:2
+           c0  .M[PC]'       PC+:1
+           e0  .M[PC]"       PC+:2
+           
+        a  01  a+1
+        a  02
+      a b  03  b
+      a b  04  b a
+    a b c  05  b c a
+        a  06  a a
+      a b  07  a b a
+      a b  08  a=b'
+      a b  09  a≠b'
+      a b  0a  a&gt;b'
+      a b  0b  a&lt;b'
+        a  0c                PC±:a
+     a' b  0d            a'? PC±:b
+        a  0e  .PC"          PC±:a
+        a  0f  .a
+       a'  10  M[a']
+     a b'  11                M[b']:a
+       a'  12  M[PC±a']
+     a b'  13                M[PC±b']:a
+       a"  14  M[a"]
+     a b"  15                M[b"]:a
+       a'  16  D[a']
+     a b'  17                D[b']:a
+      a b  18  a+b
+      a b  19  a-b
+      a b  1a  a×b
+      a b  1b  a÷b|0
+      a b  1c  a&b
+      a b  1d  a|b
+      a b  1e  a^b
+    a hl'  1f  a»l«h
+</pre>
+
+<img src='../media/generic/varvara.chill.png' width='180' style='float:left;margin-right:30px'/>
+
+<ul>
+	<li><b>Communities</b>: 
+		<a href='https://lists.sr.ht/~rabbits/uxn' target='_blank'>Mailing List</a> &bull;
+		<a href='https://llllllll.co/t/uxn-virtual-computer/46103' target='_blank'>Forum</a> 
+	</li>
+	<li><b>Chat</b>: 
+		#uxn on irc.libera.chat &bull;  <a href='https://discord.gg/QKapkAxsg9' target='_blank'>Catlang Discord</a> 
+	</li>
+	<li>Original illustrations by <a href='https://kokorobot.ca/' target='_blank'>Rekka Bellum</a>.</li>
+</ul>
+<h2>Rejoice!</h2>
+
+<p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language in which logic and arithmetic emerge entirely from the application of fractions. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
+
+<h3>Basics</h3>
+
+<ul>
+	<li>The <b>program state</b> is a bag of unordered things where elements are combined by union and <code>^n</code> denotes multiplicity. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag is represented as <code>[]</code>.</li>
+	<li><b>Symbols</b> are things in the bag written as either numeric decimal integers or names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[8 ball^2]</code> and <code>[2^3 ball ball]</code> are equal.</li>
+	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/cat^2</code> means to replace two <code>cats</code> with one <code>owl</code>.</li>
+</ul>
+
+<iframe src="../etc/rejoicerepl/index.html" height='450'></iframe>
+
+<p>A program is a sequence of instructions, separated by spaces, written in the <a href='notation.html'>postfix notation</a>. Each instruction is a fraction that corresponds to an exchange of resources on a <a href='multisets.html'>list of unsorted symbols</a>. The empty bag <code>[]</code> is identity; <code>x/[]</code> always applies, and <code>[]/x</code> only applies when <code>x</code> is found in the bag.</p>
+
+<pre>
+3 4 + 2 - . <i style='float:right'>( In Forth )</i>
+</pre>
+<pre style='margin-top:-29px'>
+n^3 n^4 /n^2 .#n<i style='float:right'>( In Rejoice )</i>
+</pre>
+
+<p>Evaluation consists of applying each fraction in a sequence, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added to the bag; otherwise the fraction is skipped having had no effect.</p>
+
+<!-- a * b/a = b -->
+<pre>
+[cat bat rat^2]      <i>( I have 1 cat, 1 bat and 2 rats )</i>
+    [cat bat^3]/rat  <i>( If I have 1 rat, I replace it with 1 cat & 3 bats )</i>
+    /[rat cat^2]     <i>( If I have 1 rat and 2 cats, I discard them )</i>
+    yak/bat^cat      <i>( If I have at least as many bats as cats..
+                          .. I replace the amount of cats in bats with 1 yak )</i>
+[bat^4 yak]          <i>( I am left with 4 bats and 1 yak )</i>
+</pre>
+
+<p>Execution walks through the program in order, each instruction is attempted and the program halts when the program counter reaches the end of the program.</p>
+
+<h3 id='logic'>Logic</h3>
+
+<p>Logic is implemented by sequencing fractions for each possible state of the gate. The fractions consume a dedicated symbol, which we'll call a <i>sentinel</i>, to ensure only one clause fires. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
+<pre>
+false not
+	true/[not false]
+	false/[not true]
+</pre>
+<pre style='margin-top:-29px'>
+[false not] true/[not false]
+[true] false/[not true]
+[true] 
+</pre>
+
+<p>The different cases are sequenced one after the other, here is a <b>OR</b> gate. Note the need for a <i>sentinel</i> symbol, <code>or</code>, that persists through each case, without which, the false case could not be reached.</p>
+<pre>
+x y or
+	true/[or x y]
+	true/[or x]
+	true/[or y]
+	false/or
+</pre>
+
+<p>Lastly, here is an <b>AND</b> gate which also needs a sentinel symbol to capture the state when both inputs aren't present in the bag.</p>
+
+<pre>
+x y and
+	true/[and x y]
+	false/and x]
+	false/[and y]
+	false/and
+</pre>
+
+<img src='../media/refs/fraction_and.png' width='150'/>
+
+<h3 id='exponents'>Variable Exponents</h3>
+
+<p>Numbers are stored as counts, for example, <code>x^5</code> indicates five instances of x. Variable exponents are symbols used as the exponent value in a fraction. For a fraction containing x^y, the value of y is read as the number of instances of the symbol y in the bag resolved when the fraction is evaluated. When a symbol used as an exponent is absent from the bag, its value is zero. For example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
+
+<pre>
+x^2 y^5 add
+	x^y/[add y^y] <i>( Copy ys onto x, drain ys: )</i>
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^5] x^y/y^y
+[x^7] 
+</pre>
+
+<p>To find the <b>difference</b> between two values, the program removes as many instances of <code>x</code> as there are of <code>y</code>:</p>
+<pre>
+x^5 y^2 sub
+	/[sub x^y y^y] <i>( Remove as many xs as there are ys, drain ys: )</i>
+</pre>
+<pre style='margin-top:-29px'>
+[x^5 y^2 sub] /[sub x^y y^y]
+[x^3] 
+</pre>
+
+<p>All variable exponents within a single bracket are resolved simultaneously against an atomic read of the bag. No symbol inside a bracket can observe the effects of any other symbol in the same bracket. For example, a single fraction can find whether <code>x</code> is <b>equal</b> to <code>y</code>:</p>
+<pre>
+x^6 y^6 equ?
+	true/[equ? x^y y^x] <i>( Fire when x and y are equal, drain both: )</i>
+</pre>
+<pre style='margin-top:-29px'>
+[x^6 y^6 equ?] true/[equ? x^y y^x]
+[true] 
+</pre>
+
+<ul>
+	<li><b>False?</b>: <code>( a -- true|a ) true/nil^a</code></li>
+	<li><b>Equal?</b>: <code>( a b -- true|[a b] ) true/[a^b b^a]</code></li>
+	<li><b>Greater?</b>: <code>( a b -- [true a^diff]|[a b] ) true/[a^b b^b]</code></li>
+</ul>
+
+<img src='../media/refs/creative_coding_privacy.png' width='300'/>
+
+<h3>Labels</h3>
+
+<p>A @label is a special syntax that represents position in the program. After each instruction, if a symbol matching the name of an existing label is present in the bag, the symbol is consumed, and execution jumps immediately to that label position. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
+<pre>
+x^2 y^3
+
+<b>@Mul</b> <i>( x y -- res )</i>
+	[Mul res^x]/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^3] [Mul res^x]/y 
+[x^2 y^2 res^2] [Mul res^x]/y 
+[x^2 y res^4] [Mul res^x]/y 
+[x^2 res^6] [Mul res^x]/y 
+[x^2 res^6] 
+</pre>
+
+<p>When two labels enter the bag at the same time, one is picked at random. For example, a program that returns the result of a coin toss:</p>
+
+<pre>
+<i>( flip a coin )</i> [Head Tail] 
+
+<b>@Head</b> head End
+<b>@Tail</b> tail 
+<b>@End</b>
+</pre>
+
+<h3>Anonymous Functions</h3>
+
+<p>A common operation is to loop over a fraction until exhaustion. Anonymous functions are syntactic sugar so that fractions that are repeatedly applied until exhaustion don't need to be named. For example, here is a program to find the <b>quotient</b>:</p>
+
+<pre>
+x^24 y^6 'res/x^y
+</pre>
+<pre style='margin-top:-29px'>
+[x^24 y^6] 'res/x^y 
+[x^18 y^6 res] 'res/x^y 
+[x^12 y^6 res^2] 'res/x^y 
+[x^6 y^6 res^3] 'res/x^y 
+[y^6 res^4] 'res/x^y 
+[y^6 res^4] 
+</pre>
+
+<p>The <b>Fibonacci</b> numbers can be found with a single anonymous function, by swapping <code>x</code> and <code>y</code> while a counter <code>n</code> is present:</p>
+<pre>
+n^6 y <i>( n y -- n.fib y )</i>
+	'[y^x x^y]/[x^x n]
+</pre>
+<pre style='margin-top:-29px'>
+[n^6 y] '[y^x x^y]/[x^x n] 
+[n^5 y x] '[y^x x^y]/[x^x n] 
+[n^4 y^2 x] '[y^x x^y]/[x^x n] 
+[n^3 y^3 x^2] '[y^x x^y]/[x^x n] 
+[n^2 y^5 x^3] '[y^x x^y]/[x^x n] 
+[n y^8 x^5] '[y^x x^y]/[x^x n] 
+[y^13 x^8] '[y^x x^y]/[x^x n] 
+[y^13 x^8] 
+</pre>
+
+<ul>
+	<li><b>Square</b>: <code>( x -- r=x*x ) 'r^x/x</code></li>
+	<li><b>Multiplication</b>: <code>( x y -- x r=x*y ) 'r^x/y</code></li>
+	<li><b>Division</b>: <code>( x y -- y r=x/y ) 'r/x^y</code></li>
+	<li><b>Modulo</b>: <code>( x y -- x=x%y y ) '/x^y</code></li>
+</ul>
+
+<h3>I/O</h3>
+<p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.hello^3</code> will emit <code>hellohellohello</code>.</p>
+
+<pre>
+pigs^3
+	<i>( print the word "pigs:" )</i> .pigs:
+	<i>( print the number of pigs in decimal )</i> .#pigs 
+</pre>
+<pre style='margin-top:-29px'>
+pigs:3</pre>
+
+<p>The supported escape sequences are: <code>\t</code>(tab), <code>\s</code>(space) and <code>\n</code>(linebreak). Input is done by adding special symbols in the bag before evaluation.</p>
+
+<h3>Example: Seeing the Absence</h3>
+
+<p>There's a special trick to catch the absence of a value using <code>unused^target</code>, here is the implementation of Factorial in about 3 fractions where the first fraction breaks out of the loop on the absence of <code>acc</code>:</p>
+<pre>
+n^6 
+
+<b>@Fac</b> <i>( n -- n )</i>
+	acc^n /acc
+	<b>@Loop</b> <i>( n acc -- n )</i>
+		End/nil^acc              <i>( if acc == 0: goto End )</i>
+			't^acc/n               <i>( t = acc * n, n = 0 )</i>
+			[Loop n^t]/[acc t^t]   <i>( if acc--: t = 0, n = t, goto Loop )</i>
+		<b>@End</b>
+</pre>
+
+<h3>Example: FizzBuzz</h3>
+<p>And lastly, this would not be complete without an example of FizzBuzz:</p>
+
+<pre>
+<b>@Loop</b> <i>( -- f b )</i>
+	[num f b]
+	End/num^100
+		[Loop .FizzBuzz\n]/[f^3 b^5]
+		[Loop .Fizz\n]/f^3
+		[Loop .Buzz\n]/b^5
+		[Loop .#num .\n]
+	<b>@End</b>
+</pre>
+<pre style='margin-top:-29px'>
+1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz ..</pre>
+
+<article>
+	<p>Argument binding might be the original sin of sequential thinking, it exists purely to route arguments into operands. Tacit programing removes that indirection by using order instead of names.</p>
+	<p>Finally, multiset programming gets rid of order itself.</p>
+</article>
+
+<p>To dive deeper, have a look at the <a href='rejoice_devlog.html'>Rejoice devlog</a>.</p>
+
+<ul>
+	<li><a href='../etc/rejoice.tal.txt' target='_blank'>Source</a>, Uxntal.</li>
+	<li><a href='https://git.sr.ht/~rabbits/rejoice' target='_blank'>Repository</a>, Uxntal.</li>
+	<li>Read a translation <a href='gaud.html'>in Peano's Latin Sin Flexion</a>.</li>
+	<li><a href='https://lists.sr.ht/~rabbits/horadric' target='_blank'>Rewriting Mailing list</a></li>
+</ul>
+
+<q>[] es nihil, identitat. 
+/n es predecesor.<br />
+n es sucesor.</q>
+
+<img src='../media/generic/rrrr.png' width='170'/>
 <h2>Forth is a programming language that uses two stacks and a dictionary of words.</h2>
 
 <p>A Forth environment combines the compiler with an interactive shell, where the user defines and runs subroutines called words. Words can be tested, redefined, and debugged as the source is entered without recompiling or restarting the whole program.</p>
@@ -664,249 +999,7 @@ showpage
 	<li><a href='https://www.math.ubc.ca/~cass/graphics/manual/' target='_blank'>tutorials</a></li>
 </ul>
 
-<h2>Rejoice!</h2>
-
-<p><b>Rejoice</b> is a <a href='concatenative.html'>concatenative</a> programming language in which logic and arithmetic emerge entirely from the application of fractions. Think <a href='fractran.html'>Fractran</a>, without the rule-searching, or <a href='forth.html'>Forth</a> without a stack.</p>
-
-<h3>Basics</h3>
-
-<ul>
-	<li>The <b>program state</b> is a bag of unordered things where elements are combined by union and <code>^n</code> denotes multiplicity. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag is represented as <code>[]</code>.</li>
-	<li><b>Symbols</b> are things in the bag written as either numeric decimal integers or names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[8 ball^2]</code> and <code>[2^3 ball ball]</code> are equal.</li>
-	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/cat^2</code> means to replace two <code>cats</code> with one <code>owl</code>.</li>
-</ul>
-
-<iframe src="../etc/rejoicerepl/index.html" height='450'></iframe>
-
-<p>A program is a sequence of instructions, separated by spaces, written in the <a href='notation.html'>postfix notation</a>. Each instruction is a fraction that corresponds to an exchange of resources on a <a href='multisets.html'>list of unsorted symbols</a>. The empty bag <code>[]</code> is identity; <code>x/[]</code> always applies, and <code>[]/x</code> only applies when <code>x</code> is found in the bag.</p>
-
-<pre>
-3 4 + 2 - . <i style='float:right'>( In Forth )</i>
-</pre>
-<pre style='margin-top:-29px'>
-n^3 n^4 /n^2 .#n<i style='float:right'>( In Rejoice )</i>
-</pre>
-
-<p>Evaluation consists of applying each fraction in a sequence, when the contents of the denominator are found in the bag: these are removed from the bag and the contents of the numerator are added to the bag; otherwise the fraction is skipped having had no effect.</p>
-
-<!-- a * b/a = b -->
-<pre>
-[cat bat rat^2]      <i>( I have 1 cat, 1 bat and 2 rats )</i>
-    [cat bat^3]/rat  <i>( If I have 1 rat, I replace it with 1 cat & 3 bats )</i>
-    /[rat cat^2]     <i>( If I have 1 rat and 2 cats, I discard them )</i>
-    yak/bat^cat      <i>( If I have at least as many bats as cats..
-                          .. I replace the amount of cats in bats with 1 yak )</i>
-[bat^4 yak]          <i>( I am left with 4 bats and 1 yak )</i>
-</pre>
-
-<p>Execution walks through the program in order, each instruction is attempted and the program halts when the program counter reaches the end of the program.</p>
-
-<h3 id='logic'>Logic</h3>
-
-<p>Logic is implemented by sequencing fractions for each possible state of the gate. The fractions consume a dedicated symbol, which we'll call a <i>sentinel</i>, to ensure only one clause fires. For example, here is the implementation of a <b>NOT</b> logic gate:</p>
-<pre>
-false not
-	true/[not false]
-	false/[not true]
-</pre>
-<pre style='margin-top:-29px'>
-[false not] true/[not false]
-[true] false/[not true]
-[true] 
-</pre>
-
-<p>The different cases are sequenced one after the other, here is a <b>OR</b> gate. Note the need for a <i>sentinel</i> symbol, <code>or</code>, that persists through each case, without which, the false case could not be reached.</p>
-<pre>
-x y or
-	true/[or x y]
-	true/[or x]
-	true/[or y]
-	false/or
-</pre>
-
-<p>Lastly, here is an <b>AND</b> gate which also needs a sentinel symbol to capture the state when both inputs aren't present in the bag.</p>
-
-<pre>
-x y and
-	true/[and x y]
-	false/and x]
-	false/[and y]
-	false/and
-</pre>
-
-<img src='../media/refs/fraction_and.png' width='150'/>
-
-<h3 id='exponents'>Variable Exponents</h3>
-
-<p>Numbers are stored as counts, for example, <code>x^5</code> indicates five instances of x. Variable exponents are symbols used as the exponent value in a fraction. For a fraction containing x^y, the value of y is read as the number of instances of the symbol y in the bag resolved when the fraction is evaluated. When a symbol used as an exponent is absent from the bag, its value is zero. For example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
-
-<pre>
-x^2 y^5 add
-	x^y/[add y^y] <i>( Copy ys onto x, drain ys: )</i>
-</pre>
-<pre style='margin-top:-29px'>
-[x^2 y^5] x^y/y^y
-[x^7] 
-</pre>
-
-<p>To find the <b>difference</b> between two values, the program removes as many instances of <code>x</code> as there are of <code>y</code>:</p>
-<pre>
-x^5 y^2 sub
-	/[sub x^y y^y] <i>( Remove as many xs as there are ys, drain ys: )</i>
-</pre>
-<pre style='margin-top:-29px'>
-[x^5 y^2 sub] /[sub x^y y^y]
-[x^3] 
-</pre>
-
-<p>All variable exponents within a single bracket are resolved simultaneously against an atomic read of the bag. No symbol inside a bracket can observe the effects of any other symbol in the same bracket. For example, a single fraction can find whether <code>x</code> is <b>equal</b> to <code>y</code>:</p>
-<pre>
-x^6 y^6 equ?
-	true/[equ? x^y y^x] <i>( Fire when x and y are equal, drain both: )</i>
-</pre>
-<pre style='margin-top:-29px'>
-[x^6 y^6 equ?] true/[equ? x^y y^x]
-[true] 
-</pre>
-
-<ul>
-	<li><b>False?</b>: <code>( a -- true|a ) true/nil^a</code></li>
-	<li><b>Equal?</b>: <code>( a b -- true|[a b] ) true/[a^b b^a]</code></li>
-	<li><b>Greater?</b>: <code>( a b -- [true a^diff]|[a b] ) true/[a^b b^b]</code></li>
-</ul>
-
-<img src='../media/refs/creative_coding_privacy.png' width='300'/>
-
-<h3>Labels</h3>
-
-<p>A @label is a special syntax that represents position in the program. After each instruction, if a symbol matching the name of an existing label is present in the bag, the symbol is consumed, and execution jumps immediately to that label position. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
-<pre>
-x^2 y^3
-
-<b>@Mul</b> <i>( x y -- res )</i>
-	[Mul res^x]/y
-</pre>
-<pre style='margin-top:-29px'>
-[x^2 y^3] [Mul res^x]/y 
-[x^2 y^2 res^2] [Mul res^x]/y 
-[x^2 y res^4] [Mul res^x]/y 
-[x^2 res^6] [Mul res^x]/y 
-[x^2 res^6] 
-</pre>
-
-<p>When two labels enter the bag at the same time, one is picked at random. For example, a program that returns the result of a coin toss:</p>
-
-<pre>
-<i>( flip a coin )</i> [Head Tail] 
-
-<b>@Head</b> head End
-<b>@Tail</b> tail 
-<b>@End</b>
-</pre>
-
-<h3>Anonymous Functions</h3>
-
-<p>A common operation is to loop over a fraction until exhaustion. Anonymous functions are syntactic sugar so that fractions that are repeatedly applied until exhaustion don't need to be named. For example, here is a program to find the <b>quotient</b>:</p>
-
-<pre>
-x^24 y^6 'res/x^y
-</pre>
-<pre style='margin-top:-29px'>
-[x^24 y^6] 'res/x^y 
-[x^18 y^6 res] 'res/x^y 
-[x^12 y^6 res^2] 'res/x^y 
-[x^6 y^6 res^3] 'res/x^y 
-[y^6 res^4] 'res/x^y 
-[y^6 res^4] 
-</pre>
-
-<p>The <b>Fibonacci</b> numbers can be found with a single anonymous function, by swapping <code>x</code> and <code>y</code> while a counter <code>n</code> is present:</p>
-<pre>
-n^6 y <i>( n y -- n.fib y )</i>
-	'[y^x x^y]/[x^x n]
-</pre>
-<pre style='margin-top:-29px'>
-[n^6 y] '[y^x x^y]/[x^x n] 
-[n^5 y x] '[y^x x^y]/[x^x n] 
-[n^4 y^2 x] '[y^x x^y]/[x^x n] 
-[n^3 y^3 x^2] '[y^x x^y]/[x^x n] 
-[n^2 y^5 x^3] '[y^x x^y]/[x^x n] 
-[n y^8 x^5] '[y^x x^y]/[x^x n] 
-[y^13 x^8] '[y^x x^y]/[x^x n] 
-[y^13 x^8] 
-</pre>
-
-<ul>
-	<li><b>Square</b>: <code>( x -- r=x*x ) 'r^x/x</code></li>
-	<li><b>Multiplication</b>: <code>( x y -- x r=x*y ) 'r^x/y</code></li>
-	<li><b>Division</b>: <code>( x y -- y r=x/y ) 'r/x^y</code></li>
-	<li><b>Modulo</b>: <code>( x y -- x=x%y y ) '/x^y</code></li>
-</ul>
-
-<h3>I/O</h3>
-<p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.hello^3</code> will emit <code>hellohellohello</code>.</p>
-
-<pre>
-pigs^3
-	<i>( print the word "pigs:" )</i> .pigs:
-	<i>( print the number of pigs in decimal )</i> .#pigs 
-</pre>
-<pre style='margin-top:-29px'>
-pigs:3</pre>
-
-<p>The supported escape sequences are: <code>\t</code>(tab), <code>\s</code>(space) and <code>\n</code>(linebreak). Input is done by adding special symbols in the bag before evaluation.</p>
-
-<h3>Example: Seeing the Absence</h3>
-
-<p>There's a special trick to catch the absence of a value using <code>unused^target</code>, here is the implementation of Factorial in about 3 fractions where the first fraction breaks out of the loop on the absence of <code>acc</code>:</p>
-<pre>
-n^6 
-
-<b>@Fac</b> <i>( n -- n )</i>
-	acc^n /acc
-	<b>@Loop</b> <i>( n acc -- n )</i>
-		End/nil^acc              <i>( if acc == 0: goto End )</i>
-			't^acc/n               <i>( t = acc * n, n = 0 )</i>
-			[Loop n^t]/[acc t^t]   <i>( if acc--: t = 0, n = t, goto Loop )</i>
-		<b>@End</b>
-</pre>
-
-<h3>Example: FizzBuzz</h3>
-<p>And lastly, this would not be complete without an example of FizzBuzz:</p>
-
-<pre>
-<b>@Loop</b> <i>( -- f b )</i>
-	[num f b]
-	End/num^100
-		[Loop .FizzBuzz\n]/[f^3 b^5]
-		[Loop .Fizz\n]/f^3
-		[Loop .Buzz\n]/b^5
-		[Loop .#num .\n]
-	<b>@End</b>
-</pre>
-<pre style='margin-top:-29px'>
-1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz ..</pre>
-
-<article>
-	<p>Argument binding might be the original sin of sequential thinking, it exists purely to route arguments into operands. Tacit programing removes that indirection by using order instead of names.</p>
-	<p>Finally, multiset programming gets rid of order itself.</p>
-</article>
-
-<p>To dive deeper, have a look at the <a href='rejoice_devlog.html'>Rejoice devlog</a>.</p>
-
-<ul>
-	<li><a href='../etc/rejoice.tal.txt' target='_blank'>Source</a>, Uxntal.</li>
-	<li><a href='https://git.sr.ht/~rabbits/rejoice' target='_blank'>Repository</a>, Uxntal.</li>
-	<li>Read a translation <a href='gaud.html'>in Peano's Latin Sin Flexion</a>.</li>
-	<li><a href='https://lists.sr.ht/~rabbits/horadric' target='_blank'>Rewriting Mailing list</a></li>
-</ul>
-
-<q>[] es nihil, identitat. 
-/n es predecesor.<br />
-n es sucesor.</q>
-
-<img src='../media/generic/rrrr.png' width='170'/>
-<ul></ul><p><b>incoming: </b><a href="m_pc.html">m pc</a> <a href="binary.html">binary</a> <a href="pop2.html">pop2</a> <a href="rejoice.html">rejoice</a> <a href="gaud.html">gaud</a> <a href="fractran_devlog.html">fractran devlog</a> <a href="thuesday.html">thuesday</a> <a href="uxntal.html">uxntal</a> <a href="uxn_devlog.html">uxn devlog</a> <a href="2026.html">2026</a> <a href="2024.html">2024</a> <a href="malleable_computing.html">malleable computing</a> </p></main>
+<ul></ul><p><b>incoming: </b><a href="m_pc.html">m pc</a> <a href="binary.html">binary</a> <a href="pop2.html">pop2</a> <a href="uxntal.html">uxntal</a> <a href="rejoice.html">rejoice</a> <a href="gaud.html">gaud</a> <a href="fractran_devlog.html">fractran devlog</a> <a href="thuesday.html">thuesday</a> <a href="uxn_devlog.html">uxn devlog</a> <a href="2026.html">2026</a> <a href="2024.html">2024</a> <a href="malleable_computing.html">malleable computing</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
 	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>
