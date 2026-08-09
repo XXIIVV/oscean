@@ -27,8 +27,11 @@
 @token/on-console ( -> )
 	.Console/read DEI
 	( | handlers )
-	DUP #20 GTH ?{ POP /<parse>
-		BRK }
+	DUP LIT "" NEQ ?{
+		[ LIT2 00 _&string ] LDR EQU ,&string STR }
+	[ LIT &string $1 ] ?{
+		DUP #20 GTH ?{ POP /<parse>
+			BRK } }
 	/<push>
 	BRK
 
@@ -76,6 +79,15 @@
 
 @token/is-label ( -- t )
 	[ LIT2 ff _&ptr ] LDR ADD LDZ LIT ": EQU JMP2r
+
+@token/push-string ( str* -- str* )
+	&>wps2
+		LDAk
+		( | handlers )
+		DUP ?{ POP JMP2r }
+		DUP LIT "" NEQ ?{ !/<push> }
+		/<push>
+		INC2 !/>wps2
 
 (
 @|BlockComment )
@@ -149,18 +161,9 @@
 			POP POP2 /<parse-token>
 			LIT2 "} 18 DEO !chr/<lb> }
 		DUP LIT "" NEQ ?{ token/<push>
-			INC2 /<parse-string> !/resume }
+			INC2 token/push-string !/resume }
 		DUP #20 GTH ?{ POP /<parse-token> !/resume }
 		token/<push> &resume INC2 !/>w
-
-@vars/<parse-string> ( str* -- str* )
-	&>wps
-		LDAk
-		( | handlers )
-		DUP ?{ POP JMP2r }
-		DUP LIT "" NEQ ?{ !token/<push> }
-		token/<push>
-		INC2 !/>wps
 
 @vars/<parse-token> ( -- )
 	;token/buf LDAk ?{ POP2 JMP2r }
@@ -223,30 +226,22 @@
 @if/<bind> ( -- )
 	;&on-console <bind>
 	#00 ;&case STA
+	#00 ;&else STA
 	/<push> !expr/<reset>
 
 @if/on-console ( -> )
 	.Console/read DEI expr/push-until-keyword ?{ BRK }
-	expr/realloc-keyword /<parse>
+	expr/realloc-keyword expr/<parse>
 	token/<push-str>
 	token/<parse>
 	BRK
 
-@if/<parse> ( -- )
-	expr/<parse>
-	;dict/ora str/<print-ws>
-	;&a str/<print>
-	/<print-nest>
-	chr/<ws>
-	;&b str/<print>
-	/<print-nest>
-	chr/<ws> !token/<bind>
-
-	&a "?/if- 00
-	&b "!{ 20 "&if- 00
-
 @if/<print-case> ( -- )
 	,&case LDR chr/<lc> !chr/<ws>
+
+@if/<inc-else> ( -- )
+	[ LIT &else $1 ] INC ,&else STR
+	JMP2r
 
 @if/<case-inc> ( -- )
 	[ LIT &case $1 ] INC ,&case STR
@@ -265,70 +260,73 @@
 	,&ptr LDR2 #0001 SUB2 ,&ptr STR2
 	JMP2r
 
+@if/<emit-case> ( -- )
+	;dict/ora str/<print-ws>
+	;&a str/<print>
+	/<print-nest>
+	/<print-case>
+	;&b str/<print>
+	/<print-nest>
+	/<print-case> !/<case-inc>
+
+@if/<emit-jump> ( -- )
+	;&c str/<print>
+	/<print-nest>
+	;dict/close str/<print-ws>
+	LIT2 "} 18 DEO !chr/<lb>
+
+@if/<emit-close-label> ( -- )
+	chr/<lb>
+	;&d str/<print>
+	/<print-nest>
+	/<pop>
+	;dict/close !str/<print-ws>
+
+	&a "?/if- 00
+	&c "!/if- 00
+	&b "!{ 20
+	&d "&if- 00
+
 @elseif/<bind> ( -- )
-	;&on-console <bind> !expr/<reset>
+	;&on-console <bind>
+	if/<inc-else> !if/<emit-jump>
 
 @elseif/on-console ( -> )
 	.Console/read DEI expr/push-until-keyword ?{ BRK }
-	expr/realloc-keyword /<parse>
+	expr/realloc-keyword expr/<parse>
 	token/<push-str>
 	token/<parse>
 	BRK
 
-@elseif/<parse> ( -- )
-	expr/<parse>
-	;dict/ora str/<print-ws>
-	;if/a str/<print>
-	if/<print-nest>
-	if/<print-case>
-	;if/b str/<print>
-	if/<print-nest>
-	if/<print-case>
-	token/<bind> !if/<case-inc>
-
 @then/<bind> ( -- )
+	if/<emit-case>
 	;&on-console !<bind>
 
 @then/on-console ( -> )
 	.Console/read DEI
-	( end ) chr/not-sc ?{ POP /<parse>
+	( end ) chr/not-sc ?{ POP expr/<parse>
 		BRK }
 	expr/push-until-keyword ?{ BRK }
-	expr/get-last-word ;dict/goto str/cmp ?{ expr/realloc-keyword /<parse>
+	expr/get-last-word ;dict/goto str/cmp ?{ expr/realloc-keyword expr/<parse>
 		token/<push-str>
 		token/<parse> }
 	BRK
 
-@then/<parse> ( -- )
-	expr/<parse>
-	token/<bind>
-	LIT2 "! 18 DEO
-	LIT2 "/ 18 DEO
-	;dict/if-prefix str/<print>
-	if/<print-nest>
-	;dict/close str/<print-ws>
-	LIT2 "} 18 DEO !chr/<lb>
-
 @else/<bind> ( -- )
+	if/<inc-else>
+	if/<emit-jump>
 	;&on-console !<bind>
 
 @else/on-console ( -> )
 	.Console/read DEI expr/push-until-keyword ?{ BRK }
-	expr/realloc-keyword /<parse>
+	expr/realloc-keyword expr/<parse>
 	token/<push-str>
 	token/<parse>
 	BRK
 
-@else/<parse> ( -- )
-	expr/<parse> !token/<bind>
-
 @close/<bind> ( -- )
-	chr/<lb>
-	LIT2 "& 18 DEO
-	;dict/if-prefix str/<print>
-	if/<print-nest>
-	if/<pop>
-	;dict/close str/<print-ws> !token/<bind>
+	;if/else LDA ?{ if/<emit-jump> }
+	if/<emit-close-label> !token/<bind>
 
 (
 @|BlockExpr )
@@ -392,6 +390,12 @@
 	stack/is-allocator ?{ ;dict/lda2 !str/<print-ws> }
 	JMP2r
 
+@expr/<parse-goto> ( str* token* -- str* )
+	( pop goto ) POP2
+	( walk to label ) str/walk-ws
+	( write jump ) token/<reset>
+	token/push-label !prefab-jump/<emit>
+
 @expr/walk-string ( str* -- str* )
 	LIT2 "{ 18 DEO
 	chr/<ws>
@@ -399,12 +403,6 @@
 	chr/<ws>
 	INC2 ;dict/sth2r str/<print-ws>
 	stack/pop !/<parse-postfix>
-
-@expr/<parse-goto> ( str* token* -- str* )
-	( pop goto ) POP2
-	( walk to label ) str/walk-ws
-	( write jump ) token/<reset>
-	token/push-label !prefab-jump/<emit>
 
 @expr/walk-operator ( str* -- str* )
 	str/walk-ws LDAk ?{ JMP2r }

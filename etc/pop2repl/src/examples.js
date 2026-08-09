@@ -24,8 +24,7 @@ loop:
 	s - start + 1;
 end
 
-vars string:"POP-2";
-getStringLength(#string);
+getStringLength("POP-2");
 `
 examples.nested_function=`comment A function calling another inside a loop;
 

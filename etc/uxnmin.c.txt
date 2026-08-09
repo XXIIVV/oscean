@@ -24,16 +24,16 @@ emu_deo(Uint8 port, Uint8 value)
 	}
 }
 
-#define DEc(m) stk[m][--ptr[m]]
-#define INc(m) stk[m][ptr[m]++]
-#define POx(o,m) o = DEc(r); if(m) o |= DEc(r) << 8;
-#define PUx(i,m,s) if(m) c = (i), INc(s) = c >> 8, INc(s) = c; else INc(s) = i;
-#define GOt(o) if(d) o[1] = DEc(r); o[0] = DEc(r);
-#define PUt(i,s) INc(s) = i[0]; if(d) INc(s) = i[1];
-#define POk(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
-#define PEk(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUt(v,r)
-#define IMm a = ram[pc++] << 8, a |= ram[pc++];
-#define MOv pc = d ? (Uint16)a : pc + (Sint8)a;
+#define dec(m) stk[m][--ptr[m]]
+#define inc(m) stk[m][ptr[m]++]
+#define pox(o,m) o = dec(r); if(m) o |= dec(r) << 8;
+#define pux(i,m,s) if(m) c = (i), inc(s) = c >> 8, inc(s) = c; else inc(s) = i;
+#define got(o) if(d) o[1] = dec(r); o[0] = dec(r);
+#define put(i,s) inc(s) = i[0]; if(d) inc(s) = i[1];
+#define pok(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
+#define pek(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; put(v,r)
+#define imm a = ram[pc++] << 8, a |= ram[pc++];
+#define mov pc = d ? (Uint16)a : pc + (Sint8)a;
 
 #define OPC(opc, A, B) {\
 	case 0x00|opc: {Uint8 d=0,r=0;A B} break;\
@@ -52,44 +52,44 @@ uxn_eval(Uint16 pc)
 	for(;;)
 	switch(ram[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: if(DEc(0)) { IMm pc += a; } else pc += 2; break;
-	/* JMI */ case 0x40: IMm pc += a; break;
-	/* JSI */ case 0x60: IMm PUx(pc, 1, 1) pc += a; break;
-	/* LI2 */ case 0xa0: INc(0) = ram[pc++]; /* fall-through */
-	/* LIT */ case 0x80: INc(0) = ram[pc++]; break;
-	/* L2r */ case 0xe0: INc(1) = ram[pc++]; /* fall-through */
-	/* LIr */ case 0xc0: INc(1) = ram[pc++]; break;
-	/* INc */ OPC(0x01,POx(a,d),PUx(a + 1,d,r))
+	/* JCI */ case 0x20: if(dec(0)) { imm pc += a; } else pc += 2; break;
+	/* JMI */ case 0x40: imm pc += a; break;
+	/* JSI */ case 0x60: imm pux(pc, 1, 1) pc += a; break;
+	/* LI2 */ case 0xa0: inc(0) = ram[pc++]; /* fall-through */
+	/* LIT */ case 0x80: inc(0) = ram[pc++]; break;
+	/* L2r */ case 0xe0: inc(1) = ram[pc++]; /* fall-through */
+	/* LIr */ case 0xc0: inc(1) = ram[pc++]; break;
+	/* inc */ OPC(0x01,pox(a,d),pux(a + 1,d,r))
 	/* POP */ OPC(0x02,ptr[r] -= 1 + d;,{})
-	/* NIP */ OPC(0x03,GOt(x) ptr[r] -= 1 + d;,PUt(x,r))
-	/* SWP */ OPC(0x04,GOt(x) GOt(y),PUt(x,r) PUt(y,r))
-	/* ROT */ OPC(0x05,GOt(x) GOt(y) GOt(z),PUt(y,r) PUt(x,r) PUt(z,r))
-	/* DUP */ OPC(0x06,GOt(x),PUt(x,r) PUt(x,r))
-	/* OVR */ OPC(0x07,GOt(x) GOt(y),PUt(y,r) PUt(x,r) PUt(y,r))
-	/* EQU */ OPC(0x08,POx(a,d) POx(b,d),PUx(b == a,0,r))
-	/* NEQ */ OPC(0x09,POx(a,d) POx(b,d),PUx(b != a,0,r))
-	/* GTH */ OPC(0x0a,POx(a,d) POx(b,d),PUx(b > a,0,r))
-	/* LTH */ OPC(0x0b,POx(a,d) POx(b,d),PUx(b < a,0,r))
-	/* JMP */ OPC(0x0c,POx(a,d),MOv)
-	/* JCN */ OPC(0x0d,POx(a,d) POx(b,0),if(b) MOv)
-	/* JSR */ OPC(0x0e,POx(a,d),PUx(pc,1,!r) MOv)
-	/* STH */ OPC(0x0f,GOt(x),PUt(x,!r))
-	/* LDZ */ OPC(0x10,POx(a,0),PEk(a, x, 0xff))
-	/* STZ */ OPC(0x11,POx(a,0) GOt(y),POk(a, y, 0xff))
-	/* LDR */ OPC(0x12,POx(a,0),PEk(pc + (Sint8)a, x, 0xffff))
-	/* STR */ OPC(0x13,POx(a,0) GOt(y),POk(pc + (Sint8)a, y, 0xffff))
-	/* LDA */ OPC(0x14,POx(a,1),PEk(a, x, 0xffff))
-	/* STA */ OPC(0x15,POx(a,1) GOt(y),POk(a, y, 0xffff))
-	/* DEI */ OPC(0x16,POx(a,0),x[0] = emu_dei(a); if(d) x[1] = dev[(a + 1) & 0xff]; PUt(x,r))
-	/* DEO */ OPC(0x17,POx(a,0) GOt(y),if(d) dev[a] =  y[0]; emu_deo(a + d, y[d]);)
-	/* ADD */ OPC(0x18,POx(a,d) POx(b,d),PUx(b + a, d,r))
-	/* SUB */ OPC(0x19,POx(a,d) POx(b,d),PUx(b - a, d,r))
-	/* MUL */ OPC(0x1a,POx(a,d) POx(b,d),PUx(b * a, d,r))
-	/* DIV */ OPC(0x1b,POx(a,d) POx(b,d),PUx(a ? b / a : 0, d,r))
-	/* AND */ OPC(0x1c,POx(a,d) POx(b,d),PUx(b & a, d,r))
-	/* ORA */ OPC(0x1d,POx(a,d) POx(b,d),PUx(b | a, d,r))
-	/* EOR */ OPC(0x1e,POx(a,d) POx(b,d),PUx(b ^ a, d,r))
-	/* SFT */ OPC(0x1f,POx(a,0) POx(b,d),PUx(b >> (a & 0xf) << (a >> 4), d,r))
+	/* NIP */ OPC(0x03,got(x) ptr[r] -= 1 + d;,put(x,r))
+	/* SWP */ OPC(0x04,got(x) got(y),put(x,r) put(y,r))
+	/* ROT */ OPC(0x05,got(x) got(y) got(z),put(y,r) put(x,r) put(z,r))
+	/* DUP */ OPC(0x06,got(x),put(x,r) put(x,r))
+	/* OVR */ OPC(0x07,got(x) got(y),put(y,r) put(x,r) put(y,r))
+	/* EQU */ OPC(0x08,pox(a,d) pox(b,d),pux(b == a,0,r))
+	/* NEQ */ OPC(0x09,pox(a,d) pox(b,d),pux(b != a,0,r))
+	/* GTH */ OPC(0x0a,pox(a,d) pox(b,d),pux(b > a,0,r))
+	/* LTH */ OPC(0x0b,pox(a,d) pox(b,d),pux(b < a,0,r))
+	/* JMP */ OPC(0x0c,pox(a,d),mov)
+	/* JCN */ OPC(0x0d,pox(a,d) pox(b,0),if(b) mov)
+	/* JSR */ OPC(0x0e,pox(a,d),pux(pc,1,!r) mov)
+	/* STH */ OPC(0x0f,got(x),put(x,!r))
+	/* LDZ */ OPC(0x10,pox(a,0),pek(a, x, 0xff))
+	/* STZ */ OPC(0x11,pox(a,0) got(y),pok(a, y, 0xff))
+	/* LDR */ OPC(0x12,pox(a,0),pek(pc + (Sint8)a, x, 0xffff))
+	/* STR */ OPC(0x13,pox(a,0) got(y),pok(pc + (Sint8)a, y, 0xffff))
+	/* LDA */ OPC(0x14,pox(a,1),pek(a, x, 0xffff))
+	/* STA */ OPC(0x15,pox(a,1) got(y),pok(a, y, 0xffff))
+	/* DEI */ OPC(0x16,pox(a,0),x[0] = emu_dei(a); if(d) x[1] = dev[(a + 1) & 0xff]; put(x,r))
+	/* DEO */ OPC(0x17,pox(a,0) got(y),if(d) dev[a] =  y[0]; emu_deo(a + d, y[d]);)
+	/* ADD */ OPC(0x18,pox(a,d) pox(b,d),pux(b + a, d,r))
+	/* SUB */ OPC(0x19,pox(a,d) pox(b,d),pux(b - a, d,r))
+	/* MUL */ OPC(0x1a,pox(a,d) pox(b,d),pux(b * a, d,r))
+	/* DIV */ OPC(0x1b,pox(a,d) pox(b,d),pux(a ? b / a : 0, d,r))
+	/* AND */ OPC(0x1c,pox(a,d) pox(b,d),pux(b & a, d,r))
+	/* ORA */ OPC(0x1d,pox(a,d) pox(b,d),pux(b | a, d,r))
+	/* EOR */ OPC(0x1e,pox(a,d) pox(b,d),pux(b ^ a, d,r))
+	/* SFT */ OPC(0x1f,pox(a,0) pox(b,d),pux(b >> (a & 0xf) << (a >> 4), d,r))
 	} return 0;
 }
 
