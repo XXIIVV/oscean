@@ -47,21 +47,20 @@ since the instructions of one model can be derived from those of another:</p>
 -->
 <h3>WDR Instruction Set</h3>
 
-<p>The WDR paper computer, or Know-how Computer, is an educational model of a
+<p>The WDR paper computer, or Know-how Computer, is an "educational model" of a
 computer consisting only of a pen, a sheet of paper, and individual matches in
 the most simple case. The instruction set of five commands is small but Turing
-complete and therefore enough to represent all mathematical functions:
-incrementing ("inc") or decrementing ("dec") a register, unconditional jump
-("jmp"), conditional jump ("skp", skips next instruction if a register is
-zero), and stopping program execution ("end"). </p>
+complete and enough to represent most mathematical functions. </p>
+
+<p>With such a restricted instruction set, it's in a similar tarpit as <a href='subleq.html'>Subleq</a> and <a href='brainfuck.html'>Brainfuck</a>, and make for a poor educational model. A better candidate is the <a href='cardiac_computer.html'>CARDIAC</a>.</p>
 
 <table border="1">
 	<tr><th>Opcode</th><th>Description</th></tr>
-	<tr><td><b>END</b></td><td>Aborts the execution of your program, so that you can examine the contents of your data registers.</td></tr>
-	<tr><td><b>SKP</b>(r)</td><td>Checks if the data register r is zero. If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</td></tr>
+	<tr><td><b>END</b></td><td>Aborts the execution of your program, so that you can examine the contents of your registers.</td></tr>
+	<tr><td><b>SKP</b>(r)</td><td>Checks if the register r is zero. If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</td></tr>
 	<tr><td><b>JMP</b>(z)</td><td>Sets the program counter to line number z.</td></tr>
-	<tr><td><b>INC</b>(r)</td><td>Increments the contents of the data register r and increases the program counter by 1.</td></tr>
-	<tr><td><b>DEC</b>(r)</td><td>Decrements the contents of the data register r and increases the program counter by 1.</td></tr>
+	<tr><td><b>INC</b>(r)</td><td>Increments the contents of the register r and increases the program counter by 1.</td></tr>
+	<tr><td><b>DEC</b>(r)</td><td>Decrements the contents of the register r and increases the program counter by 1.</td></tr>
 </table>
 
 <p>The instructions can be encoded as a <a href='rejoice.html'>Rejoice program</a>: </p>
@@ -139,17 +138,50 @@ and jump. </p>
 
 <table border="1">
 	<tr><th>Opcode</th><th>Instruction</th><th>Description</th></tr>
+	<tr><td>HRS x</td><td>Halt and reset</td><td>Move bug to the specified cell, then stop program execution.</td></tr>
+	<tr><td>CLA x</td><td>Clear and add</td><td>Clear the accumulator and add the content of a memory cell to the accumulator.</td></tr>
+	<tr><td>STO x</td><td>Store</td><td>Store the content of the accumulator into a specified memory cell.</td></tr>
+	<tr><td>ADD x</td><td>Add</td><td>Add the content of a memory cell to the accumulator.</td></tr>
+	<tr><td>SUB x</td><td>Subtract</td><td>Subtract the contents of a specified memory cell from the accumulator.</td></tr>
+	<tr><td>SFT xy</td><td>Shift</td><td>Shifts the accumulator x places left, then y places right, where x is the upper address digit and y is the lower.</td></tr>
+	<tr><td>JMP x</td><td>Jump</td><td>Jump to a specified memory cell. The current cell number is written in cell 99. This allows for one level of subroutines by having the return be the instruction at cell 99 (which had '8' hardcoded as the first digit.</td></tr>
+	<tr><td>TAC x</td><td>Test accumulator content</td><td>If the content of the accumulator is less than 0, jump to a specified memory cell.</td></tr>
+	<tr>
+	<th colspan='3'>I/O</th></tr>
 	<tr><td>INP</td><td>Input</td><td>take a number from the input card and put it in a specified memory cell.</td></tr>
-	<tr><td>CLA</td><td>Clear and add</td><td>clear the accumulator and add the contents of a memory cell to the accumulator.</td></tr>
-	<tr><td>ADD</td><td>Add</td><td>add the contents of a memory cell to the accumulator.</td></tr>
-	<tr><td>TAC</td><td>Test accumulator contents</td><td>performs a sign test on the contents of the accumulator; if minus, jump to a specified memory cell.</td></tr>
-	<tr><td>SFT</td><td>Shift</td><td>shifts the accumulator x places left, then y places right, where x is the upper address digit and y is the lower.</td></tr>
 	<tr><td>OUT</td><td>Output</td><td>take a number from the specified memory cell and write it on the output card.</td></tr>
-	<tr><td>STO</td><td>Store</td><td>copy the contents of the accumulator into a specified memory cell.</td></tr>
-	<tr><td>SUB</td><td>Subtract</td><td>subtract the contents of a specified memory cell from the accumulator.</td></tr>
-	<tr><td>JMP</td><td>Jump</td><td>jump to a specified memory cell.  The current cell number is written in cell 99.  This allows for one level of subroutines by having the return be the instruction at cell 99 (which had '8' hardcoded as the first digit.</td></tr>
-	<tr><td>HRS</td><td>Halt and reset</td><td>move bug to the specified cell, then stop program execution.</td></tr>
-</table><ul></ul><p><b>incoming: </b><a href="paper_rewriting.html">paper rewriting</a> </p></main>
+</table>
+
+<h3>Devine's Gyo</h3>
+
+<p>The instruction set can be slightly improved by removing the need for the INP and OUT opcodes by mapping INP to the memory cell 98 and OUT to 100. Another valuable modification to the instruction is to add an addressing mode which adds the power of indirection to the CARDIAC:</p>
+
+<ul>
+	<li><kbd>label, i</kbd> is the value in the cell label[i].</li>
+</ul>
+
+<p>Here is a little program that prints the characters in a string using the extra addressing mode:</p>
+
+<pre>
+	CLA zero       <i>; Load 0 in accumulator.</i>
+	STO i          <i>; Set value of accumulator into i.</i>
+<b>loop</b>
+	CLA text, i    <i>; Load text[i] in accumulator.</i>
+	TAC end        <i>; Jump to end if -1.</i>
+	STO 100        <i>; Write to Output.</i>
+	CLA i          <i>; Load i in accumulator.</i>
+	ADD one        <i>; Add i+1 in accumulator.</i>
+	STO i          <i>; Store i+1 in i.</i>
+	JMP loop       <i>; Jump to loop.</i>
+<b>end</b>
+	HRS            <i>; Stop.</i>
+
+<b>zero</b> 0
+<b>one</b>  1
+<b>i</b>    0
+<b>text</b> H e l l o -1
+</pre>
+<ul></ul><p><b>incoming: </b><a href="paper_rewriting.html">paper rewriting</a> </p></main>
 <footer>
 	<a href="uxn.html"><img src="../media/icon/uxn.png" alt="Uxn Powered"/></a> 
 	<a href="ethics.html"><img src="../media/icon/3arrows.png" alt="NoNazis!"/></a>

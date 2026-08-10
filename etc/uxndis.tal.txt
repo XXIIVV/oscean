@@ -5,7 +5,7 @@
 
 |000
 
-	@src/buf $3f &cap $1
+	@src/buf $7f
 	@mode/dict $1
 
 |100
@@ -43,7 +43,7 @@
 	,&ptr LDR2 ;&buf
 	&>l
 		<print-line>
-		INC2 GTH2k ?&>l
+		INC2 GTH2k ?/>l
 	POP2 POP2 JMP2r
 
 @rom/<load> ( src* -- )
@@ -53,7 +53,7 @@
 		;&b .File/read DEO2
 		.File/success-lb DEI ?{ JMP2r }
 		[ LIT &b $1 ] [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-		STA !&>s
+		STA !/>s
 
 (
 @|Sym )
@@ -68,10 +68,10 @@
 @sym/find ( addr* -- sym* )
 	,&t STR2
 	[ LIT &null 01 ] ?{
-		;sym/buf
+		;&buf
 		&>w
 			LDA2k [ LIT2 &t $2 ] NEQ2 ?{ INC2 INC2 JMP2r }
-			INC2 INC2 str/cap INC2 INC2k INC2 LDA ?&>w
+			INC2 INC2 str/cap INC2 INC2k INC2 LDA ?/>w
 		POP2 }
 	#ffff JMP2r
 
@@ -81,9 +81,8 @@
 	( b ) INC2 INC2 LDA2 [ LIT2 "xt ] EQU2 STHr AND JMP2r
 
 @sym/is-dict ( sym* -- sym* )
-	LDA2k [ LIT2 "di ] NEQ2 ?{
-		INC2k INC2 LDA2 [ LIT2 "ct ] EQU2 JMP2r }
-	!/is-txt
+	LDA2k [ LIT2 "di ] NEQ2 ?/is-txt
+	INC2k INC2 LDA2 [ LIT2 "ct ] EQU2 JMP2r
 
 (
 @|print )
@@ -109,28 +108,23 @@
 
 @print-address ( addr* -- )
 	[ LIT2 "| 18 ] DEO
-	#0100 ADD2 hex/<print>
+	#0100 ADD2 u16/<print>
 	#03 !<print-pad>
 
 @<print-1-byte> ( addr* -- addr* )
-	LDAk hex/<print-byte>
+	LDAk u8/<print>
 	#09 !<print-pad>
 
 @<print-2-byte> ( addr* -- addr* )
-	LDAk <print-byte>
-	INC2k LDA <print-byte>
+	LDAk u8/<print-ws>
+	INC2k LDA u8/<print-ws>
 	#05 !<print-pad>
 
 @<print-3-byte> ( addr* -- addr* )
-	LDAk <print-byte>
-	INC2k LDA <print-byte>
-	INC2k INC2 LDA <print-byte>
+	LDAk u8/<print-ws>
+	INC2k LDA u8/<print-ws>
+	INC2k INC2 LDA u8/<print-ws>
 	#02 !<print-pad>
-
-@<print-byte> ( byte -- )
-	hex/<print-byte>
-	#2018 DEO
-	JMP2r
 
 @print-content ( addr* -- addr* )
 	.mode/dict LDZ ?<print-ascii>
@@ -182,14 +176,14 @@
 	LDAk #40 AND ?{
 		( | wst )
 		[ LIT2 "# 18 ] DEO
-		INC2 LDAk hex/<print-byte>
+		INC2 LDAk u8/<print>
 		</c>
 		JMP2r }
 	( | rst )
 	;dict/opcodes str/<print>
 	[ LIT2 "r 18 ] DEO
 	#2018 DEO
-	INC2 LDAk hex/<print-byte>
+	INC2 LDAk u8/<print>
 	</c>
 	JMP2r
 
@@ -200,20 +194,20 @@
 		( | wst, label )
 		INC2 LDA2k sym/find DUP2 #ffff EQU2 ?{
 			[ LIT2 "; 18 ] DEO
-			str/<print> !&end }
+			str/<print> !/end }
 		POP2
 		( | wst, hex )
-		[ LIT2 "# 18 ] DEO !&hex }
+		[ LIT2 "# 18 ] DEO !/hex }
 	( | rst )
 	;dict/opcodes str/<print>
 	LDAk #80 EOR <print-mode>
 	#2018 DEO
 	( | rst, label )
-	INC2 LDA2k sym/find DUP2 #ffff EQU2 ?{ str/<print> !&end }
+	INC2 LDA2k sym/find DUP2 #ffff EQU2 ?{ str/<print> !/end }
 	POP2
 	( >> )
 	&hex ( addr* -- addr* )
-	LDA2k hex/<print>
+	LDA2k u16/<print>
 	( >> )
 	&end ( addr* -- addr* )
 	</c>
@@ -236,7 +230,7 @@
 	#00
 	&>l
 		#2018 DEO
-		INC GTHk ?&>l
+		INC GTHk ?/>l
 	POP2 JMP2r
 
 (
@@ -251,53 +245,57 @@
 @dec/<print> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
 	POP2
 	&>write
-		NIP #30 ADD #18 DEO
-		OVRr ADDr STHkr ?&>write
+		NIP chr/<print-digit>
+		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
-@hex/<print> ( short* -- )
-	SWP /<print-byte>
+@u16/<print> ( short* -- )
+	SWP u8/<print>
 	( >> )
 
-@hex/<print-byte> ( byte -- )
+@u8/<print> ( byte -- )
 	DUP #04 SFT /c
 	&c ( byte -- )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	#0f AND DUP #09 GTH #27 MUL ADD
+	( >> )
+
+@chr/<print-digit> ( u8 -- )
+	[ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@u8/<print-ws> ( byte -- )
+	/<print>
+	#2018 DEO
 	JMP2r
 
 @str/<print> ( str* -- )
 	&>l
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
-		INC2 !&>l
+		INC2 !/>l
 
 @str/cap ( str* -- end* )
 	&>w
 		LDAk ?{ JMP2r }
-		INC2 !&>w
+		INC2 !/>w
 
 (
 @|assets )
 
-@meta $1
-	&body-txt "Uxndis 0a
+@meta 00 "Uxndis 0a
 	( desc ) "Uxntal 20 "Disassembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Nov 20 "2025 $2
+	( date ) "9 20 "Aug 20 "2026 00 00
 
-@dict/usage "usage: 20 "uxndis.rom 20 "input.rom 0a $1
+@dict/usage "usage: 20 "uxndis.rom 20 "input.rom 0a 00
 	&opcodes [
-	"LIT 00 "INC 00 "POP 00 "NIP 00
-	"SWP 00 "ROT 00 "DUP 00 "OVR 00
-	"EQU 00 "NEQ 00 "GTH 00 "LTH 00
-	"JMP 00 "JCN 00 "JSR 00 "STH 00
-	"LDZ 00 "STZ 00 "LDR 00 "STR 00
-	"LDA 00 "STA 00 "DEI 00 "DEO 00
-	"ADD 00 "SUB 00 "MUL 00 "DIV 00
-	"AND 00 "ORA 00 "EOR 00 "SFT 00
+	"LIT 00 "INC 00 "POP 00 "NIP 00 "SWP 00 "ROT 00 "DUP 00 "OVR 00
+	"EQU 00 "NEQ 00 "GTH 00 "LTH 00 "JMP 00 "JCN 00 "JSR 00 "STH 00
+	"LDZ 00 "STZ 00 "LDR 00 "STR 00 "LDA 00 "STA 00 "DEI 00 "DEO 00
+	"ADD 00 "SUB 00 "MUL 00 "DIV 00 "AND 00 "ORA 00 "EOR 00 "SFT 00
 	&brk "BRK 00 ]
 
 @rom/buf $8000

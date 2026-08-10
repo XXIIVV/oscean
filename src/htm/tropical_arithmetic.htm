@@ -10,12 +10,6 @@ Arithmetic</a>.</p>
 	<li>tropical_mul(a, b) = a + b</li>
 </ul>
 
-
-<p>The notation gives a way to rewrite mathematical
-expressions programmatically, which are easier for me to manipulate and reason about.
-Multisets are more natural than sets, counting multiplicities reduces
-everything to integer arithmetic which is a space I like.</p>
-
 <pre>
 + 123   × 153
   260      61
@@ -23,64 +17,55 @@ everything to integer arithmetic which is a space I like.</p>
   263     1b4
 </pre>
 
-<p>The positional encoding does not allow for doing this kind of representation as numbers do not carry over. I could write digits beyond 9 as hex: a=10, b=11 .. but the trick of representing arithmetic like that does not work well, for that reason I'll use a linear <a href='notation.html'>postfix notation</a> where bags are within brackets for the documentation. The multiset representation makes this natural: <code>b^11</code> is simply eleven instances of <code>b</code>, requiring no alphabet beyond the token names themselves.</p>
+<p>This positional encoding does not allow for doing this kind of representation very well as numbers do not carry over. I could write digits beyond 9 as hex: a=10, b=11 .. but the trick of representing arithmetic like that does not scale, for that reason I'll use a linear <a href='notation.html'>postfix notation</a> where bags are within brackets and <code>b^11</code> is simply eleven instances of <code>b</code>, requiring no alphabet beyond the token names themselves.</p>
 
-<h3>Tropical Multisets</h3>
+<h3>Tropical Arithmetic as Multisets</h3>
 
 <p>If you have a bag of items and track how many times each item appears, then
 all the operations you'd want to do on those bags correspond exactly to max,
-min, and addition. So manipulating <a href='multisets.html'>multisets</a> in tropical arithmetic reduces to manipulating plain
-integers.</p>
-
-<p></p>
+min, and addition. So manipulating <a href='multisets.html'>multisets</a> in tropical arithmetic reduces to manipulating plain integers.</p>
 
 <h4>a ∪ b is max</h4>
-<p>You can think of max as the smallest bag that covers both bags, or the <a href='primes.html#lcm'>LCM</a>.</p>
+<p>You can think of max as the smallest bag that covers both bags:</p>
 
 <pre style='margin-bottom:1px'>
-<i>( bag x )</i> [x:cat^4 x:fox]
-<i>( bag y )</i> [y:cat^2 y:fox^2 y:owl]
+a^2 b^6 
 
-@max <i>( :cat :fox :owl -- cat fox owl )</i>
-	'cat/[x:cat y:cat] 'cat/x:cat 'cat/y:cat
-	'fox/[x:fox y:fox] 'fox/x:fox 'fox/y:fox
-	'owl/[x:owl y:owl] 'owl/x:owl 'owl/y:owl
+<i>( a b -- a b max )</i>
+	[max^a a^b]/a^b
+	[max^b b^a]/b^a
 </pre>
 <pre>
-[cat^4 fox^2 owl] 
+a^2 b^6 max^6
 </pre>
 
 <h4>a ∩ b is min</h4>
 <p>To check if a set contains a specific item, it comes down to looking up whether 
-the min of an item is greater than zero, or the <a href='primes.html#gcd'>GCD</a>:</p>
+the min of an item is greater than zero:</p>
 
 <pre style='margin-bottom:1px'>
-<i>( bag x )</i> [x:cat^4 x:fox]
-<i>( bag y )</i> [y:cat^2 y:fox^2 y:owl]
+a^2 b^6 
 
-@min <i>( :cat :fox :owl -- cat fox owl )</i>
-	'cat/[x:cat y:cat]
-	'fox/[x:fox y:fox]
-	'owl/[x:owl y:owl]
+<i>( a b -- a b min )</i>
+	[min^b a^b]/a^b
+	[min^a b^a]/b^a
 </pre>
 <pre>
-[.. cat^2 fox] 
+a^2 b^6 min^2
 </pre>
 
 <h4>a + b is mul</h4>
 <p>To combine two multisets together:</p>
 
 <pre style='margin-bottom:1px'>
-<i>( bag x )</i> [x:cat^4 x:fox]
-<i>( bag y )</i> [y:cat^2 y:fox^2 y:owl]
+a^2 b^6 
 
-@mul <i>( :cat :fox :owl -- cat fox owl )</i>
-	'cat/x:cat 'cat/y:cat
-	'fox/x:fox 'fox/y:fox
-	'owl/x:owl 'owl/y:owl
+<i>( a b -- a b sum )</i>
+	sum^a
+	sum^b
 </pre>
 <pre>
-[cat^6 fox^3 owl] 
+a^2 b^6 sum^8
 </pre>
 
 <p>To dive deeper, see <a href='fractran.html'>Fractran</a> and <a href='rejoice.html'>Rejoice</a>.</p>
