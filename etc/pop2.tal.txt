@@ -14,7 +14,7 @@
 	( name ) "POP-2 0a
 	( desc ) "A 20 "POP-2 20 "Compiler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Aug 20 "2026 0000
+	( date ) "9 20 "Aug 20 "2026 0000
 
 @<bind> ( vector* -- )
 	.Console/vector DEO2
@@ -357,11 +357,9 @@
 	LDAk LIT "{ NEQ ?{
 		INC2 ;dict/backarrow stack/<push>
 		;&nil !stack/<push> }
-	LDAk LIT "} NEQ ?{ INC2 stack/pop !/<parse-postfix> }
+	LDAk LIT "} NEQ ?{ INC2 /<pop-postfix> !/<pop-postfix> }
 	LDAk LIT "( NEQ ?{ INC2 ;&nil !stack/<push> }
-	LDAk LIT ") NEQ ?{
-		INC2 stack/pop /<parse-postfix>
-		stack/pop !/<parse-postfix> }
+	LDAk LIT ") NEQ ?{ INC2 /<pop-postfix> !/<pop-postfix> }
 	LDAk LIT "" EQU ?/walk-string
 	( | Unknown )
 	;dict/err-unknown-expr err/<print>
@@ -371,7 +369,7 @@
 @expr/walk-label ( str* -- str* )
 	/walk-label-core
 	( | Post label )
-	stack/pop !/<parse-postfix>
+	!/<pop-postfix>
 
 @expr/walk-label-core ( str* -- str* )
 	str/walk-ws LDAk ?{ JMP2r }
@@ -401,8 +399,7 @@
 	chr/<ws>
 	prefab-string/emit LIT2 "} 18 DEO
 	chr/<ws>
-	INC2 ;dict/sth2r str/<print-ws>
-	stack/pop !/<parse-postfix>
+	INC2 ;dict/sth2r str/<print-ws> !/<pop-postfix>
 
 @expr/walk-operator ( str* -- str* )
 	str/walk-ws LDAk ?{ JMP2r }
@@ -415,8 +412,8 @@
 @expr/<parse-value-hex> ( str* -- )
 	INC2 INC2 str/hex !prefab-lithex/<emit>
 
-@expr/<parse-postfix> ( str* -- )
-	LDAk ?{ POP2 JMP2r }
+@expr/<pop-postfix> ( -- )
+	stack/pop LDAk ?{ POP2 JMP2r }
 	LDA2k LIT2 "-> NEQ2 ?{ POP2 ;dict/sta2 !str/<print-ws> }
 	LDA2k LIT2 "<- NEQ2 ?{ POP2 ;dict/lda2 !str/<print-ws> }
 	LDA2k LIT2 "=> NEQ2 ?{ POP2 ;dict/deo2 !str/<print-ws> }
