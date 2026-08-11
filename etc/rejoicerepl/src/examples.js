@@ -206,6 +206,29 @@ n^12 ( 12 34 56 ) [b^a a^n c^b]/[a^a b^b c^c n^n]
 ( sub 56 )        []/[a^b b^b c^c]
 ( put )           [.#a a^b b^c]/[a^a b^b c^c]
 `
+examples.roman_addition=`( 1742 ) [ M   D   C^2     X^4     I^2 ]
+( 674  ) [     D   C   L   X^2     I^4 ]
+
+( Add numbers )
+
+V/I^5
+X/V^2
+L/X^5
+C/L^2
+D/C^5
+M/D^2
+
+( Convert to decimal )
+
+'n/I
+'n^5/V
+'n^10/X
+'n^50/L
+'n^100/C
+'n^500/D
+'n^1000/M
+
+`
 examples.binary_logic=`( Put a logic gate and binary states in the bag )
 
 or true false
