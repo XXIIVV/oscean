@@ -433,12 +433,11 @@ href='uxntal_reference.html'>Opcode Reference</a>.</p>
 <p>A label is a non-<a href='uxntal_numbers.html'>numeric</a>, non-<a
 href='uxntal_opcodes.html'>opcode</a>, and non-runic symbol that correspond
 to a number between 0 and 65536. A label name is made of two parts, a scope and
-a sublabel. Sublabels can be added to a scope with the <kbd>&name</kbd> rune,
+a sublabel. A scope can be extended with the <kbd>&name</kbd> rune,
 or by writing the full name, like <kbd>@scope/name</kbd>. Note that a labels
-like <i>bed</i>, <i>add</i> and <i>cafe</i> are considered numeric.</p>
+like <i>@bed</i>, <i>@add</i> and <i>@cafe</i> are considered invalid numeric scope names.</p>
 
-<p><b>Functions</b> are simply labels that will be jumped to, and returned
-from.</p>
+<p><b>Functions</b> are created by assigning labels to locations in the code.</p>
 
 <pre>
 <b>@func</b> <i>( a b -- c )</i>
@@ -452,8 +451,8 @@ execution of the program. They allow to assign a name to a number, making the
 code more readable.</p>
 
 <pre>
-|1400 <b>@text/sz</b>
-|2000 <b>@text/buf</b> $&sz
+|30 <b>@length</b>
+|00 <b>@Struct</b> &field $length
 </pre>
 
 <p><b>Enums</b> are labels with padded members of equal sizes that can be used as
@@ -470,15 +469,6 @@ that maps on a data-structure, they typically space the different members with
 
 <pre>
 |00 <b>@Person</b> &name $2 &age $1 &height $2
-</pre>
-
-<p>Labels can also be used with the padding runes to define a
-global length. For example, if one needs to specify a length of 0x30 for
-multiple members of a struct, a value can be specified as follow:</p>
-
-<pre>
-|30 <b>@length</b>
-|00 <b>@Struct</b> &field $length
 </pre>
 
 <h3 id='scope'>Scope</h3>
@@ -518,6 +508,29 @@ starting at the slash, like <kbd>/method</kbd>:</p>
 <b>@pen/paint</b> <i>( -- )</i>
 	/get-position canvas/draw-line-to
 	JMP2r
+</pre>
+
+<p id='multistack'>Sufficiently complex datastructures might want to encapsulate buffers behind interfaces and do their error handling, these will often be stacks themselves. A common use for the <b>multistack pattern</b> is for nesting hierarchies and editable strings:</p>
+
+<pre>
+<i>( A string object example )</i>
+
+<b>@string/push-string</b> <i>( str* -- )</i>
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/push-char INC2 !/>w
+
+<b>@string/push-char</b> <i>( c -- )</i>
+	#00 [ LIT2 &ptr =&buf ]
+	DUP2 ;&cap NEQ2 ?{
+		<i>( catch overflow )</i>
+	}
+	INC2k ,&ptr STR2 STA2 JMP2r
+
+<b>@string/get-length</b> <i>( -- length* )</i>
+	,&ptr LDR2 ;&buf SUB2 JMP2r
+
+<b>@string/buf</b> $40 &cap
 </pre>
 
 <q>The notion of an interface is what truly characterizes objects - not classes, not inheritance, not mutable state.</q>
