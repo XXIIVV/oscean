@@ -2366,13 +2366,15 @@ Saturday [n] sabbato; (dotw) saturnodie
 January [n] (month) januario
 February [n] (month) februario 
 March [n] (month) martio
+April [n] (month) aprile
 May [n] (month) majo
+June [n] (month) junio
+July [n] (month) julio
 August [n] (month) augusto
 September [n] (month) september
 October [n] (month) octobre
 November [n] (month) novembre
 December [n] (month) decembre
-
 
 color [n] color
 black [adj] (color) atra; ater
