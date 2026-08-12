@@ -24,6 +24,8 @@ emu_deo(Uint8 port, Uint8 value)
 	}
 }
 
+#define imm a = ram[pc++] << 8, a |= ram[pc++];
+#define mov pc = d ? (Uint16)a : pc + (Sint8)a;
 #define dec(m) stk[m][--ptr[m]]
 #define inc(m) stk[m][ptr[m]++]
 #define pox(o,m) o = dec(r); if(m) o |= dec(r) << 8;
@@ -32,10 +34,8 @@ emu_deo(Uint8 port, Uint8 value)
 #define put(i,s) inc(s) = i[0]; if(d) inc(s) = i[1];
 #define pok(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
 #define pek(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; put(v,r)
-#define imm a = ram[pc++] << 8, a |= ram[pc++];
-#define mov pc = d ? (Uint16)a : pc + (Sint8)a;
 
-#define OPC(opc, A, B) {\
+#define OPC(opc,A,B) {\
 	case 0x00|opc: {Uint8 d=0,r=0;A B} break;\
 	case 0x20|opc: {Uint8 d=1,r=0;A B} break;\
 	case 0x40|opc: {Uint8 d=0,r=1;A B} break;\
@@ -81,7 +81,7 @@ uxn_eval(Uint16 pc)
 	/* LDA */ OPC(0x14,pox(a,1),pek(a, x, 0xffff))
 	/* STA */ OPC(0x15,pox(a,1) got(y),pok(a, y, 0xffff))
 	/* DEI */ OPC(0x16,pox(a,0),x[0] = emu_dei(a); if(d) x[1] = dev[(a + 1) & 0xff]; put(x,r))
-	/* DEO */ OPC(0x17,pox(a,0) got(y),if(d) dev[a] =  y[0]; emu_deo(a + d, y[d]);)
+	/* DEO */ OPC(0x17,pox(a,0) got(y),if(d) dev[a] = y[0]; emu_deo(a + d, y[d]);)
 	/* ADD */ OPC(0x18,pox(a,d) pox(b,d),pux(b + a, d,r))
 	/* SUB */ OPC(0x19,pox(a,d) pox(b,d),pux(b - a, d,r))
 	/* MUL */ OPC(0x1a,pox(a,d) pox(b,d),pux(b * a, d,r))
