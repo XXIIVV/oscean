@@ -1220,7 +1220,7 @@ emu_event(void)
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		/* Window */
-		if(event.type == SDL_QUIT || dev[0x0f])
+		if(event.type == SDL_QUIT)
 			return 0;
 		else if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_EXPOSED)
 			screen_reqdraw = 1;
@@ -1331,7 +1331,6 @@ emu_init(void)
 	SDL_StartTextInput();
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-	SDL_SetRenderDrawColor(emu_renderer, 0x00, 0x00, 0x00, 0xff);
 	/* Window */
 	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 	if(emu_full)
@@ -1346,7 +1345,8 @@ emu_init(void)
 		return !fprintf(stderr, "sdl_window: %s\n", SDL_GetError());
 	emu_renderer = SDL_CreateRenderer(emu_window, -1, SDL_RENDERER_ACCELERATED);
 	if(emu_renderer == NULL)
-		return fprintf(stderr, "sdl_renderer: %s\n", SDL_GetError());
+		return !fprintf(stderr, "sdl_renderer: %s\n", SDL_GetError());
+	SDL_SetRenderDrawColor(emu_renderer, 0x00, 0x00, 0x00, 0xff);
 	return 1;
 }
 
@@ -1360,7 +1360,7 @@ emu_run(void)
 	/* game loop */
 	for(;;) {
 		Uint64 now = SDL_GetPerformanceCounter();
-		if(!emu_event())
+		if(dev[0x0f] || !emu_event())
 			break;
 		if(now >= next_refresh) {
 			next_refresh = now + frame_interval;
