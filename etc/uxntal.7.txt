@@ -1,7 +1,7 @@
 .\" Manpage reference for uxntal.
 .\" by Eiríkr Åsheim
 .\" Contact d_m@plastic-idolatry.com to correct errors or typos.
-.TH uxntal 7 "05 Aug 2024" "1.0" "Uxntal Reference Guide"
+.TH uxntal 7 "12 Aug 2026" "1.0" "Uxntal Reference Guide"
 .SH NAME
 uxntal \- assembly language for Varvara virtual machine
 .SH DESCRIPTION
@@ -17,7 +17,7 @@ There are also 256 bytes of device memory, which are used to interact with the v
 
 Instructions deal with unsigned 8-bit values (\fIbytes\fP) and unsigned 16-bit values (\fIshorts\fP). There are no other built-in data types. Occasionally values are treated as signed, such as when loading, storing, or jumping with a relative address.
 
-Short values are stored on the stack in big-endian byte order: the least significant byte will be on the top of the stack. This makes \fB#abcd\fB is equivalent to \fB#ab #cd\fB.
+Short values are stored on the stack in big-endian byte order: the least significant byte will be on the top of the stack. This makes \fB#abcd\fP equivalent to \fB#ab #cd\fP.
 
 .SH INSTRUCTION LAYOUT
 
@@ -120,6 +120,8 @@ Remove the top value of the stack.
 
 Remove the second value of the stack.
 
+Note that \fBNIPk\fP is identical to \fBDUP\fP.
+
 .SS SWP ( x y -- y x )
 
 Swap the top two values of the stack.
@@ -168,7 +170,7 @@ The program counter (\fIpc\fP) is unconditionally updated. When \fIx\fP is a byt
 
 It is common to \fBJMP\fP with boolean bytes (0-1) to handle simple conditionals. For example:
 
-    @max ( x^ y^ -- max^ ) GTHk JMP SWP POP JMP2r
+    \fB@max ( x^ y^ -- max^ ) GTHk JMP SWP POP JMP2r\fP
 
 .SS JCN ( bool^ x -- ; pc <- x if bool )
 
@@ -220,13 +222,17 @@ Store data at an absolute address (\fB0x0000 - 0xffff\fP).
 
 Read data from a device port (\fB0x00 - 0xff\fP).
 
-Reading from some ports may have an effect on the underlying VM; in other cases it will simply read values from device memory. See Varvara device documentation for more details.
+Reading from some ports may have an effect on the underlying VM; in other cases it will simply read values from device memory. For two-byte device ports the effect (if any) is triggered by reading the higher byte (the most significant byte).
+
+See Varvara device documentation for more details.
 
 .SS DEO ( x dev^ -- )
 
 Write data to a device port (\fB0x00 - 0xff\fP).
 
-Writing to some ports may have an effect on the underlying VM; in other cases it will simply write values to device memory. See Varvara device documentation for more details.
+Writing to some ports may have an effect on the underlying VM; in other cases it will simply write values to device memory. For two-byte device ports the effect (if any) is triggered by writing the lower byte (the least significant byte).
+
+See Varvara device documentation for more details.
 
 .SS ADD ( x y -- x+y )
 
@@ -260,11 +266,11 @@ There is no \fIremainder\fP instruction, but the phrase \fBDIVk MUL SUB\fP can b
 
 .SS AND ( x y -- x&y )
 
-Compute the bitwise union of the top two values of the stack.
+Compute the bitwise intersection of the top two values of the stack.
 
 .SS ORA ( x y -- x|y )
 
-Compute the bitwise intersection of the top two values of the stack.
+Compute the bitwise union of the top two values of the stack.
 
 .SS EOR ( x y -- x^y )
 
@@ -272,7 +278,7 @@ Compute the bitwise exclusive-or (\fIxor\fP) of the top two values of the stack.
 
 .SS SFT ( x rl^ -- (x>>l)<<r )
 
-Compute a bit shift of the second value of the stack; the directions and distances are determined by the top value of the stack.
+Compute a bit shift of the second value of the stack; the directions and distances of the shift are determined by the top value of the stack.
 
 Given a byte \fIrl\fP consisting of a low nibble (\fIl\fP) and a high nibble (\fIr\fP), this instruction shifts \fIx\fP left by \fIl\fP and then right by \fIr\fP.
 
@@ -283,6 +289,11 @@ For 16-bit (and 8-bit) values, one nibble (\fB0x0 - 0xf\fP) is sufficient to exp
   Right: \fB#ff #03 SFT\fP evaluates to \fB0x1f\fP
   Left:  \fB#ff #20 SFT\fP evaluates to \fB0xfc\fP
   Both:  \fB#ff #23 SFT\fP evaluates to \fB0x7c\fP
+
+There is no rotation instruction but one-byte rotations can be accomplished with \fBDUP\fP and \fBSFT2\fP:
+
+    \fB#87 DUP #03 SFT2 NIP\fP ( 0x87 rotated right by 3 is 0xf0 )
+    \fB#87 DUP #20 SFT2 POP\fP ( 0x87 rotated left by 2 is 0x1e )
 
 .SH SPECIAL INSTRUCTIONS
 
