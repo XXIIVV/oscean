@@ -38,7 +38,8 @@
 	window/<draw-spacer>
 	input/<bind>
 	bios/<welcome>
-	.Console/type DEI ?{ BRK }
+	.Console/type DEI ?{ project/<load>
+		BRK }
 	loader/<set-instant>
 	BRK
 
@@ -46,7 +47,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Jul 20 "2026 00
+	( date ) "15 20 "Aug 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -71,12 +72,25 @@
 	.Screen/x DEO2 }
 
 (
+@|Project )
+
+@project/<load> ( -- )
+	;&path .File2/name DEO2
+	#0001 .File2/length DEO2
+	&>w
+		;&c .File2/read DEO2
+		.File2/success-lb DEI ?{ JMP2r }
+		[ LIT &c $1 ] input/<handle-input> !/>w
+
+	&path ".m_pc 00
+
+(
 @|Input )
 
 @input/on-controller ( -> )
 	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{
 		POP2
-		( key ) /handle-input
+		( key ) /<handle-input>
 		( button ) POP BRK }
 	( * ) JSR2 POP2 BRK
 
@@ -87,11 +101,13 @@
 	DUP LIT "\ NEQ ?{
 		POP ;&on-console-escape .Console/vector DEO2
 		BRK }
-	/handle-input BRK
+	/<handle-input>
+	BRK
 
 @input/on-console-escape ( -> )
 	.Console/read ] DEI DUP #0a EQU ?{
-		LIT "\ /handle-input DUP /handle-input }
+		LIT "\ /<handle-input>
+		DUP /<handle-input> }
 	;&on-console .Console/vector DEO2
 	BRK
 
@@ -99,7 +115,7 @@
 	;&on-controller .Controller/vector DEO2
 	;&on-console .Console/vector DEO2 !/<redraw>
 
-@input/handle-input ( c -- )
+@input/<handle-input> ( c -- )
 	DUP ?{ POP JMP2r }
 	DUP #08 EQU ?/on-bs
 	DUP #09 EQU ?/on-tab
@@ -339,21 +355,25 @@
 @bios/<use-mov> ( str* -- )
 	input/<push-str>
 	;&cmd-mov !input/<push-str>
+
 	&cmd-mov 20 "mov 00
 
 @bios/<use-icn> ( str* -- )
 	input/<push-str>
 	;&cmd-icn !input/<push-str>
+
 	&cmd-icn 20 "1 20 "icn 00
 
 @bios/<use-run> ( str* -- )
 	input/<push-str>
 	;&cmd-run !input/<push-str>
+
 	&cmd-run 20 "run 00
 
 @bios/<use-txt> ( name* -- )
 	input/<push-str>
 	;&cmd-txt !input/<push-str>
+
 	&cmd-txt 20 "0 20 "txt 00
 
 @symbol/<draw> ( str* unsel -- )
@@ -551,7 +571,8 @@
 	DUP #20 NEQ ?{ /<select-next> }
 	POP .Controller/key DEI DUP ?{ POP BRK }
 	/<leave>
-	input/handle-input BRK
+	input/<handle-input>
+	BRK
 
 @reader/<leave> ( -- )
 	input/<bind> !bios/<redraw>
@@ -619,7 +640,7 @@
 	NIP2 JMP2r
 
 @cmds/lut [ =cmd/api ]
-	&lut-clip [
+	&lut-clip [4
 	=dir/api =mov/api =now/api =run/api
 	=icn/api =txt/api =len/api =put/api
 	=get/api =cpy/api =era/api =ren/api
@@ -1611,8 +1632,9 @@
 
 	&path ".theme 00
 
-(
-@|Assets )
+
+
+( Assets )
 
 @dict/m_pc "M/PC 00
 	&ready2 "Type 20 "<cmd> 20 "to 20 "see 20 "options. 00
@@ -1659,18 +1681,16 @@
 	&err-missing "<missing> 00
 	&err-binary "<binary> 00
 	&months [
-	"Jan $1 "Feb $1 "Mar $1 "Apr $1
-	"May $1 "Jun $1 "Jul $1 "Aug $1
+	"Jan $1 "Feb $1 "Mar $1 "Apr $1 "May $1 "Jun $1 "Jul $1 "Aug $1
 	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
 	&days [
-	"Sun $1 "Mon $1 "Tue $1 "Wed $1
-	"Thu $1 "Fri $1 "Sat $1 ]
+	"Sun $1 "Mon $1 "Tue $1 "Wed $1 "Thu $1 "Fri $1 "Sat $1 ]
 
 @window/wave [ 0000 0000 0070 8807 ]
 
 @input/caret [ 0020 2020 2020 2020 2020 2020 2020 0000 ]
 
-@curtain/out [
+@curtain/out [8
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -1678,7 +1698,7 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0002 0000 0000 0000 0002 ]
-	&out-short [
+	&out-short [8
 	0000 0022 0000 0022 0000 0022 0000 0022
 	0088 0022 0088 0022 0088 0022 0088 0022
 	00aa 00aa 00aa 00aa 00aa 00aa 00aa 00aa
@@ -1690,7 +1710,7 @@
 	bbff ffff bbff ffff bbff ffff bbff ffff
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
-@appicon [
+@appicon [8
 	0000 0000 0000 0001 0000 0000 0000 0000
 	0000 0000 0000 0080 0000 0000 0000 0000
 	0000 0000 0000 0038 0000 0000 0000 0000
@@ -1701,7 +1721,7 @@
 	8300 0000 0000 0000 0000 0000 0000 0000
 	8000 0000 0000 0000 0000 0000 0000 0000 ]
 
-@banner/asset [
+@banner/asset [8
 	000f 3f7f 7fff ffff 00c0 f0f8 f8fc fcfc
 	000e 0e1c 1c38 3870 00ff ffff e0e0 e0e0
 	00f0 fcfc 1e0e 0e1e 001f 7f7f f0e0 e0e0
@@ -1712,7 +1732,7 @@
 
 @meta/no-icon [ cccc 3333 cccc 3333 ]
 
-@font/glyphs [
+@font/glyphs [8
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 1010 1020 2020 2000 4040 0000 0000
 	0000 0050 5000 0000 0000 0000 0000 0000
@@ -1810,7 +1830,7 @@
 	0000 0000 0000 0032 4c00 0000 0000 0000 ]
 	&tab [ 0000 0000 0008 0c7e 0c08 0000 0000 0000 ]
 
-@kbd/glyphs [
+@kbd/glyphs [8
 	0000 0000 0000 0000 0808 1010 1000 2000
 	2448 0000 0000 0000 0a14 7e28 fc50 a000
 	083c 5238 14a8 7020 44a8 4810 242a 4400
@@ -1882,13 +1902,16 @@
 
 @loader/page $&pagelen
 
-@meta/buf $1 &body $&buflen &cap 0000 &icon $90
+@meta/buf $1 &body $&buflen
+	&cap 0000 &icon $90
 
-@path/buf $&buflen &cap 0000
+@path/buf $&buflen
+	&cap 0000
 
 @dir/buf $&buflen 0000
 
-@bios/buf $&buflen &cap 0000
+@bios/buf $&buflen
+	&cap 0000
 
 @dict/buf
 
