@@ -117,6 +117,8 @@ system_deo_expansion(void)
 	} else if(cmd == 1 || cmd == 2) {
 		unsigned int dst_bank = peek2(aptr + 7) * 0x10000;
 		unsigned int dst_addr = peek2(aptr + 9);
+		if(length > 0x10000 - dst_addr)
+			length = 0x10000 - dst_addr;
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
 	} else
@@ -372,7 +374,7 @@ static const Uint8 blend_lut[16][2][4] = {
 	{{3, 2, 3, 1}, {12, 8, 12, 4}},
 	{{3, 3, 1, 2}, {12, 12, 4, 8}}};
 
-void emu_redraw(void), emu_resize(void);
+static void emu_redraw(void), emu_resize(void);
 
 static void
 system_deo_colorize(void)
@@ -583,7 +585,7 @@ controller_key(Uint8 key)
 	}
 }
 
-void
+static void
 controller_deo_vector(void)
 {
 	controller_vector = peek2(&dev[0x80]);
@@ -628,7 +630,7 @@ mouse_scroll(Uint16 x, Uint16 y)
 	poke2(&dev[0x9c], 0);
 }
 
-void
+static void
 mouse_deo_vector(void)
 {
 	mouse_vector = peek2(&dev[0x90]);
@@ -908,11 +910,11 @@ static void fileb_deo_write(void) { poke2(&dev[0xb2], file_write(1, peek2(&dev[0
 
 #include <time.h>
 
-int datetime_busy;
-time_t datetime_seconds;
-struct tm *datetime_t, datetime_zt = {0};
+static int datetime_busy;
+static time_t datetime_seconds;
+static struct tm *datetime_t, datetime_zt = {0};
 
-void
+static void
 datetime_update(void)
 {
 	if(!datetime_busy) {
@@ -1233,7 +1235,7 @@ emu_event(void)
 		break;
 	case KeyPress: {
 		KeySym sym;
-		XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
+		int n = XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
 		switch(sym) {
 		case XK_F1: screen_zoom = (screen_zoom % 3) + 1, screen_reqsize = screen_reqdraw = 1; break;
 		case XK_F2: emu_deo(0xe, 0x1); break;
@@ -1243,8 +1245,8 @@ emu_event(void)
 		}
 		controller_down(get_button(sym));
 		if(sym == XK_Tab)
-			buf[0] = 0x9;
-		controller_key(sym < 0x80 ? sym : (Uint8)buf[0]);
+			buf[0] = 0x9, n = 1;
+		controller_key(sym < 0x80 ? sym : (n > 0 ? (Uint8)buf[0] : 0));
 	} break;
 	case KeyRelease: {
 		KeySym sym;
@@ -1341,7 +1343,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(79K), 15 Aug 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(79K), 16 Aug 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
