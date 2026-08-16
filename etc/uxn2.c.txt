@@ -105,19 +105,22 @@ system_deo_expansion(void)
 {
 	const Uint16 exp = peek2(dev + 2);
 	Uint8 *aptr = ram + exp;
-	Uint16 length = peek2(aptr + 1);
+	unsigned int cmd = ram[exp];
+	unsigned int length = peek2(aptr + 1);
 	unsigned int bank = peek2(aptr + 3) * 0x10000;
 	unsigned int addr = peek2(aptr + 5);
-	if(ram[exp] == 0x0) {
+	if(length > 0x10000 - addr)
+		length = 0x10000 - addr;
+	if(cmd == 0x0) {
 		if(bank < BANKS_CAP)
 			memset(ram + bank + addr, ram[exp + 7], length);
-	} else if(ram[exp] == 1 || ram[exp] == 2) {
+	} else if(cmd == 1 || cmd == 2) {
 		unsigned int dst_bank = peek2(aptr + 7) * 0x10000;
 		unsigned int dst_addr = peek2(aptr + 9);
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
 	} else
-		fprintf(stderr, "Unknown command: %s\n", &ram[exp]);
+		fprintf(stderr, "Unknown command: %02x\n", ram[exp]);
 }
 
 /* clang-format off */
@@ -1014,6 +1017,7 @@ emu_deo(const Uint8 port, const Uint8 value)
 
 /* clang-format off */
 
+
 /*
 @|Uxn --------------------------------------------------------------- */
 
@@ -1393,7 +1397,7 @@ main(int argc, char **argv)
 	if(argc == 1)
 		return !fprintf(stdout, "usage: %s -v | [-f -2] file.rom [args..]\n", argv[0]);
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 30 Jul 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 15 Aug 2026.\n", argv[0]);
 	/* Arguments */
 	if(i < argc && argv[i][0] == '-' && argv[i][1] == 'f')
 		emu_full = 1, i++;
