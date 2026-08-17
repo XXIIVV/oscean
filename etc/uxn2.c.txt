@@ -117,6 +117,8 @@ system_deo_expansion(void)
 	} else if(cmd == 1 || cmd == 2) {
 		unsigned int dst_bank = peek2(aptr + 7) * 0x10000;
 		unsigned int dst_addr = peek2(aptr + 9);
+		if(length > 0x10000 - dst_addr)
+			length = 0x10000 - dst_addr;
 		if(bank < BANKS_CAP && dst_bank < BANKS_CAP)
 			memmove(ram + dst_bank + dst_addr, ram + bank + addr, length);
 	} else
@@ -273,7 +275,6 @@ screen_update(void)
 	if(screen_reqdraw)
 		screen_redraw();
 }
-
 
 static void
 screen_deo_pixel(void)
@@ -1364,7 +1365,7 @@ emu_run(void)
 	/* game loop */
 	for(;;) {
 		Uint64 now = SDL_GetPerformanceCounter();
-		if(dev[0x0f] || !emu_event())
+		if(!emu_event() || dev[0x0f])
 			break;
 		if(now >= next_refresh) {
 			next_refresh = now + frame_interval;
@@ -1393,16 +1394,21 @@ emu_run(void)
 int
 main(int argc, char **argv)
 {
-	int i = 1;
-	if(argc == 1)
-		return !fprintf(stdout, "usage: %s -v | [-f -2] file.rom [args..]\n", argv[0]);
+	int i = 0;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 15 Aug 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 17 Aug 2026.\n", argv[0]);
 	/* Arguments */
-	if(i < argc && argv[i][0] == '-' && argv[i][1] == 'f')
-		emu_full = 1, i++;
-	if(i < argc && argv[i][0] == '-' && argv[i][1] == '2')
-		emu_zoom = 2, i++;
+	while(argv[++i] && argv[i][0] == '-' && argv[i][1] != '\0' && argv[i][2] == '\0') {
+		switch(argv[i][1]) {
+		case 'f': emu_full = 1; break;
+		case '2': emu_zoom = 2; break;
+		case '-': i++; /* fallthrough */
+		default: goto end_argparse; break;
+		}
+	}
+end_argparse:
+	if(i == argc)
+		return !fprintf(stdout, "usage: %s -v | [-f -2] file.rom [args..]\n", argv[0]);
 	if(!system_boot(argv[i], argc > i))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i]);
 	screen_resize(WIDTH, HEIGHT);
