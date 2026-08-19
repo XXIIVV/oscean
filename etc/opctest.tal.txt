@@ -98,9 +98,47 @@
 	( DEI2 ) #ff DEI2 ADD #46 EQU AND ;dict/dev-wrap tests/<print>
 	#0000 DEO
 	#00ff DEO
+	( | PART 15:
+	| Testing that LIT is wrapping )
+	#80 #ffff STA ( LIT ) #d6 #0000 STA ( <d6> )
+	#a0 #0001 STA ( LIT2 ) ;&lt1-return #0002 STA2 ( <hi>,<lo> )
+	#2c #0004 STA ( JMP2 )
+	#ffff JMP2 &lt1-return #d6 EQU ;dict/lt1-wrap tests/<print>
+	( | PART 16:
+	| Testing that LIT2 is wrapping )
+	#a0 #fffe STA ( LIT2 ) #a1 #ffff STA ( <d6> ) #23 #0000 STA ( <76> )
+	#a0 #0001 STA ( LIT2 ) ;&lt2-return #0002 STA2 ( <hi>,<lo> )
+	#2c #0004 STA ( JMP2 )
+	#fffe JMP2 &lt2-return #a123 EQU2 ;dict/lt2-wrap tests/<print>
+	( | PART 17: )
+	( | Testing that JMI is wrapping )
+	#c8  ;dict/jmi-wrap str/<print>
+	#40 #fffe STA ( JMI ) #00 #ffff STA ( <00> ) #01 #0000 STA ( <01> )
+	#01 #0001 STA ( INC )
+	#a0 #0002 STA ( LIT2 ) ;&jmi-return #0003 STA2 ( <hi>,<lo> )
+	#2c #0005 STA ( JMP2 )
+	#fffe JMP2 &jmi-return #c8 EQU tests/<outcome>
+	( | PART 18: )
+	( | Testing that JSI is wrapping )
+	#ea  ;dict/jsi-wrap str/<print>
+	#60 #fffe STA ( JSI ) #00 #ffff STA ( <00> ) #01 #0000 STA ( <01> )
+	#01 #0001 STA ( INC )
+	#a0 #0002 STA ( LIT2 ) ;&jsi-return #0003 STA2 ( <hi>,<lo> )
+	#2c #0005 STA ( JMP2 )
+	#fffe JMP2 &jsi-return POP2r #ea EQU tests/<outcome>
+	( | PART 19: )
+	( | Testing that JSI is wrapping )
+	#8b #01  ;dict/jci-wrap str/<print>
+	#20 #fffe STA ( JCI ) #00 #ffff STA ( <00> ) #01 #0000 STA ( <01> )
+	#01 #0001 STA ( INC )
+	#a0 #0002 STA ( LIT2 ) ;&jci-return #0003 STA2 ( <hi>,<lo> )
+	#2c #0005 STA ( JMP2 )
+	#fffe JMP2 &jci-return POP2r #8b EQU tests/<outcome>
+
 	( | You have a working uxn! )
 	#800f DEO
 	BRK
+
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -118,6 +156,11 @@
 	&dev-wrap "Dev-wrap: 20 $1
 	&opc-test "Opc-test: 20 $1
 	&sentinel "Sentinel: 20 $1
+	&lt1-wrap "Lt1-wrap: 20 $1
+	&lt2-wrap "Lt2-wrap: 20 $1
+	&jci-wrap "Jci-wrap: 20 $1
+	&jmi-wrap "Jmi-wrap: 20 $1
+	&jsi-wrap "Jsi-wrap: 20 $1
 
 (
 @|Relative Distance Bytes )
@@ -144,7 +187,7 @@
 	#01 ;dict/opc-test !tests/<print>
 
 @tests/<print> ( f name* -- )
-	str/<print>
+	str/<print> &<outcome>
 	?{ #010f DEO
 		;dict/fail !str/<print> }
 	;dict/pass !str/<print>
@@ -335,7 +378,10 @@
 	( - ) #20 #20 DIV #01 EQU AND
 	( - ) #34 #01 DIV [ #34 ] EQU AND
 	( - ) #02 #ef DIV #00 EQU AND
-	( - ) #02 #00 DIV #00 EQU AND JMP2r
+	( - ) #02 #00 DIV #00 EQU AND
+	( - ) #00 #00 DIV #00 EQU AND
+	( - ) #fe #02 DIV #7f EQU AND
+	( - ) #03 #fd DIV #00 EQU AND JMP2r
 
 @op-and ( -- pass )
 	( - ) #fc #3f AND [ #3c ] EQU
@@ -492,7 +538,10 @@
 	( - ) #abcd #1234 DIV2 [ #0009 ] EQU2 AND
 	( - ) #8000 #0200 DIV2 [ #0040 ] EQU2 AND
 	( - ) #2222 #0003 DIV2 [ #0b60 ] EQU2 AND
-	( - ) #0202 #0000 DIV2 [ #0000 ] EQU2 AND JMP2r
+	( - ) #0202 #0000 DIV2 [ #0000 ] EQU2 AND
+	( - ) #0000 #0000 DIV2 #0000 EQU2 AND
+	( - ) #fffe #0002 DIV2 #7fff EQU2 AND
+	( - ) #0003 #fffd DIV2 #0000 EQU2 AND JMP2r
 
 @op-and2 ( -- pass )
 	( - ) #f0f0 #00f0 AND2 [ #00f0 ] EQU2
@@ -516,6 +565,8 @@
 	( - ) #ffff #01 SFT2 [ #7fff ] EQU2
 	( - ) #ffff #70 SFT2 [ #ff80 ] EQU2 AND
 	( - ) #ffff #7e SFT2 [ #0180 ] EQU2 AND
+	( - ) #ffff #00 SFT2 [ #ffff ] EQU2 AND
+	( - ) #ffff #ff SFT2 [ #8000 ] EQU2 AND
 	( - ) #ffff #e3 SFT2 [ #c000 ] EQU2 AND JMP2r
 
 (

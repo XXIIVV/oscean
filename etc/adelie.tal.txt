@@ -47,8 +47,7 @@
 	( ) "Adelie 0a
 	( ) "A 20 "Slideshow 20 "Program 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "21 20 "Jun 20 "2026 0a0a
-	( ) "< 20 "slides.txt 00
+	( ) "18 20 "Aug 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -57,6 +56,7 @@
 @manifest/dat _{ =dict/adelie
 	( - ) 40 00 =slides/<prev> =dict/prev-slide
 	( - ) 80 00 =slides/<next> =dict/next-slide
+	( - ) 81 00 =slides/<last> =dict/last-slide
 	( - ) 00 1b =slides/<restart> =dict/restart
 	( - ) 02 00 =slides/<reload> =dict/reload
 	( - ) 01 00 =interface/<toggle> =dict/toggle-interface }
@@ -234,6 +234,9 @@
 	.&id LDZ2 !/<select>
 
 @slides/<select> ( id* -- )
+	.&count LDZ2 LTH2k ?{ #0001 SUB2 SWP2 }
+	POP2
+	( | is clamped )
 	DUP2 .&id STZ2
 	/get-addr
 	( | )
@@ -243,13 +246,15 @@
 	#2018 DEO
 	DUP2 #0005 ADD2 str/<print-ln>
 	DUP2 .slide/addr STZ2
+	cursor/<clear>
 	str/cap INC2 !/<eval>
 
 @slides/<next> ( -- )
-	/is-stop ?{
-		.&id LDZ2 INC2k .&count LDZ2 LTH2 ?{ POP2 JMP2r }
-		INC2 !/<select> }
+	/is-stop ?{ .&id LDZ2 INC2 !/<select> }
 	JMP2r
+
+@slides/<last> ( -- )
+	.&count LDZ2 !/<select>
 
 @slides/<prev> ( -- )
 	.&id LDZ2 ORAk ?{ POP2 JMP2r }
@@ -501,6 +506,7 @@
 	.slide/addr LDZ2 next-word <draw-uf2>
 	;&spacer-txt <draw-uf2>
 	slides/get-addr-next next-word !<draw-uf2>
+
 	&spacer-txt 2020 2020 "> 2020 2020 00
 
 @<draw-dec> ( dec -- )
@@ -732,10 +738,13 @@
 (
 @|theme )
 
-@cursor/<update> ( color addr* -- )
+@cursor/<clear> ( -- )
 	[ LIT2 00 -Screen/auto ] DEO
 	;fill-icn .Screen/addr DEO2
-	#40 /<draw>
+	#40 !/<draw>
+
+@cursor/<update> ( color addr* -- )
+	/<clear>
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
 	.Screen/addr DEO2
@@ -789,6 +798,7 @@
 
 @dict/adelie "Adelie 00
 	&next-slide "Next 20 "Slide 00
+	&last-slide "Last 20 "Slide 00
 	&prev-slide "Previous 20 "Slide 00
 	&toggle-interface "Toggle 20 "Interface 00
 	&restart "Restart 00
@@ -808,14 +818,15 @@
 	&rect "RECT 00
 	&rgb4 "RGB4 00
 	&stop "STOP 00
-	&wait "WAIT 00 &bytes-free 20 "bytes 20 "free. 0a0a 00
+	&wait "WAIT 00
+	&bytes-free 20 "bytes 20 "free. 0a0a 00
 
 @errors/empty "Slides 20 "File 20 "Missing 0a 00
 	&links-max "Links 20 "Limit 20 "Exceeded 0a 00
 	&file-max "File-size 20 "Limit 20 "Exceeded 0a 00
 	&file-missing "!! 20 "File 20 "missing: 20 00
 
-@ops/lut [
+@ops/lut [4
 	=dict/null =op-note =dict/name =op-name
 	=dict/goto =op-goto =dict/pict =op-pict
 	=dict/head =op-head =dict/text =op-text

@@ -370,14 +370,14 @@ blending[4][16] = {
 -->
 <!-- <img src='../media/generic/varvara.blending.png' /> -->
 
-<p>The <b>Screen/auto</b> port automates the incrementation of the position and
-sprite address whenever a drawing command is sent, so the program does not need
-to manually move to the next sprite, or the next position.</p>
+<p>The <b>Screen/auto</b> port automates the movement of the position and
+sprite address when a drawing command is sent, so that the program does not need
+to manually move to the next sprite, or next position.</p>
 
 <pre>
                  3 2 1 0 * A Y X
-Length bit 3 ----+ | | |   | | +---- Auto X
-Length bit 2 ------+ | |   | +------ Auto Y
+Length bit 3 ----+ | | |   | | +---- Auto Col
+Length bit 2 ------+ | |   | +------ Auto Row
 Length bit 1 --------+ |   +-------- Auto Addr
 Length bit 0 ----------+
 </pre>
@@ -385,8 +385,7 @@ Length bit 0 ----------+
 <p>The length nibble controls the number of extra sprites that will be
 drawn in addition to the first, each time the sprite port is written to.
 When set to 0, only a single sprite will be drawn. As many as 16 sprites
-can be drawn at once with a value of 15.</p>
-
+can be drawn at once with a value of 0xf.</p>
 
 <pre>
 @smile/draw <i>( -- )</i>
@@ -402,14 +401,33 @@ can be drawn at once with a value of 15.</p>
 
 	<img src='../media/generic/pixel.smile.png' class="right" width='150'/>
 
-<p>The auto-x and auto-y bits control the increment of the x and y ports
-respectively, as well as the layout of the extra sprites drawn when the length
-nibble is not null. The extra sprites are drawn as columns moving rightward for
-auto-x, and rows moving downward for auto-y. If the flip bits of the sprite
-byte are set, the directions are reversed. If the auto-addr bit is set, the
-address port will be incremented for each sprite drawn by increments of 8 for
-1-bit, and by increments of 16 for 2-bit.</p>
+<p>The auto-column and auto-row bits control where the extra sprites are
+drawn, as well as how the x and y ports are updated once the drawing
+is completed.</p>
 
+<p>When auto-column is set, extra sprites are drawn as a vertical column
+moving down (each sprite will be 8 pixels below the previous one), and
+the x will be incremented from its original value by 8 after the call
+(y will be unchanged).</p>
+
+<p>When auto-row is set, extra sprites are drawn as a horizontal row
+moving right (each sprite will be 8 pixels to the right of the
+previous one), and y will be increment from its original value by 8
+after the call (x will be unchanged).</p>
+
+<p>If the flip bits of the sprite byte are set, the directions are
+reversed:</p>
+
+<ul>
+	<li>x flipped: auto-column moves left, auto-row decrements x</li>
+	<li>y flipped: auto-column decrements y, auto-row moves up</li>
+</ul>
+
+<p>If the auto-addr bit is set, the address port will be incremented for
+each sprite drawn by increments of 8 for 1-bit, and by increments of
+16 for 2-bit. When this is set, each sprite in a row/column will be
+drawn from a different address; when it is unset, auto-column and
+auto-row will repeatedly draw the same sprite.</p>
 
 <ul>
 	<li><a href='../etc/varvara.screen.tal.txt' target='_blank'>Screen Example</a></li>
