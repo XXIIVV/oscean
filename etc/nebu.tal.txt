@@ -47,7 +47,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Jun 20 "2026 00
+	( date ) "20 20 "Aug 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -882,6 +882,7 @@
 	,&addr STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
+
 	&mmu 00 &length $2 0000 &addr $2 00
 
 @str/cap ( str* -- end* )
@@ -1305,12 +1306,12 @@
     OVR2 #8000 LTH2 ?{ u32-negate SWPr } ( y** x** [f* cd*] )
     ROT2 STH2 ROT2 STH2r SWP2r           ( x** y** [cd* f*] )
     STH2r JSR2                           ( f[x,y]** [cd*] )
-    NIPr STHr ?{ u32-negate } JMP2r      ( z** )
+    NIPr STHr ?{ !u32-negate } JMP2r     ( z** )
 
 @x32-prepare-cmp ( x/** y/** -> x/** y/** xp^ yp^ )
     OVR2 #8000 LTH2 ,&yp STR STH4
     OVR2 #8000 LTH2 ,&xp STR STH4r
-    LIT2 [ &xp $1 &yp $1 ] JMP2r
+    [ LIT2 &xp $1 &yp $1 ] JMP2r
 
 ( TODO: test these implementations )
 @x32-lt-old ( x** y** -> x<y^ )
@@ -1373,7 +1374,7 @@
     STH4r u32-mul               ( ry/1000** qy** )
     u32-add                     ( z=qy+ry/1000** )
     DUP2 #0001 AND2 STH2        ( z** [odd*] )
-    #0000 LIT2 [ &r1 $2 ]       ( z** rr** [odd*] )
+    #0000 [ LIT2 &r1 $2 ]       ( z** rr** [odd*] )
     STH2r ADD2 #01f3 ADD2       ( z** rr+odd+499** )
     DENOM32 u32-div             ( z** b=rr+odd+499/1000** )
     !u32-add                    ( z+b** )
@@ -1392,8 +1393,8 @@
     DENOM32 u32-mul                 ( rq** q1000** [ylo* yhi*] )
     u32-add                         ( z=rq+q1000** [ylo* yhi*] )
     DUP ,&e STR                     ( z** ; e<-z3^ [ylo* yhi*] )
-    LIT2 [ &r0 $2 ] LIT2 [ &r1 $2 ] ( z** rr** [ylo* yhi*] )
-    LIT [ &e $1 ] #01 AND           ( z** rr** e^ )
+    [ LIT2 &r0 $2 ] [ LIT2 &r1 $2 ] ( z** rr** [ylo* yhi*] )
+    [ LIT2 01 &e $1 ] AND           ( z** rr** e^ )
     #00 SWP #0000 SWP2              ( z** rr** e** [ylo* yhi*] )
     u32-add                         ( z** w=rr+e** [ylo* yhi*] )
     STH2kr OVR2r STH2r              ( z** w** y** [ylo* yhi*] )
@@ -1403,7 +1404,7 @@
 
 ( print an x32 number to stdout )
 @x32-emit ( x/** -> )
-    ;x32-emit/draw-ch !x32-draw
+    ;&draw-ch !x32-draw
     &draw-ch ( c^ -> ) #18 DEO JMP2r
 
 @x32-draw-nan ( x/** draw-char* -> )
@@ -1471,15 +1472,15 @@
     &trim-0                      ( x^ b^ [c^ b^ a^ "."] ; fix stack )
         POP                      ( x^ [c^ b^ a^ "."] )
     &udraw                       ( x^ [... z^] )
-        STHr LIT2 [ &f $2 ] JSR2 ( x^ [... z^] ; call f[z] )
+        STHr [ LIT2 &f $2 ] JSR2 ( x^ [... z^] ; call f[z] )
         #01 SUB DUP ?/uloop      ( x-1^ [...] )
     POP JMP2r                ( )
 
 ( returns nan [8000 0000] on error )
 @x32-parse ( pos* -> x/** )
     ( negate leading - ; ignore leading + )
-    LDAk LIT "- NEQ ?{ INC2 x32-parse/run !x32-negate } ( pos* )
-    LDAk LIT "+ NEQ ?{ INC2 !x32-parse/run }            ( pos* )
+    LDAk LIT "- NEQ ?{ INC2 /run !x32-negate } ( pos* )
+    LDAk LIT "+ NEQ ?{ INC2 !/run }            ( pos* )
     LDAk #00 EQU ?/error0                               ( pos* )
 &run                                                    ( pos* )
     ( accumulate on rst ; reverse shorts )
@@ -1616,19 +1617,19 @@
 
 ( x < y )
 @u32-lt ( x** y** -> bool^ )
-    ROT2 SWP2 LTH2 ?{ LTH2 JMP2r } GTH2 #00 EQU JMP2r
+    ROT2 GTH2 ?{ LTH2 JMP2r } GTH2 #00 EQU JMP2r
 
 ( x <= y )
 @u32-lteq ( x** y** -> bool^ )
-    ROT2 SWP2 GTH2 ?{ GTH2 #00 EQU JMP2r } LTH2 JMP2r
+    ROT2 LTH2 ?{ GTH2 #00 EQU JMP2r } LTH2 JMP2r
 
 ( x > y )
 @u32-gt ( x** y** -> bool^ )
-    ROT2 SWP2 GTH2 ?{ GTH2 JMP2r } LTH2 #00 EQU JMP2r
+    ROT2 LTH2 ?{ GTH2 JMP2r } LTH2 #00 EQU JMP2r
 
 ( x > y )
 @u32-gteq ( x** y** -> bool^ )
-    ROT2 SWP2 LTH2 ?{ LTH2 #00 EQU JMP2r } GTH2 JMP2r
+    ROT2 GTH2 ?{ LTH2 #00 EQU JMP2r } GTH2 JMP2r
 
 ( -- bitwise operations )
 
@@ -1730,16 +1731,16 @@
     #0000 ,&z1 STR ,&w0 STR ( reset z1 and w0 )
 
     ( x1 * y1 => z1z2 )
-    LIT2 00 [ &x1 $1 ] LIT2 00 [ &y1 $1 ] MUL2 ,&z3 STR ,&z2 STR
+    [ LIT2 00 &x1 $1 ] [ LIT2 00 &y1 $1 ] MUL2 ,&z3 STR ,&z2 STR
 
     ( x0 * y1 => z0z1 )
-    #00 ,&x0 LDR #00 ,&y1 LDR MUL2 ,&z1 LDR2 ADD2 ,&z1 STR2
+    [ LIT2 00 _&x0 ] LDR [ LIT2 00 _&y1 ] LDR MUL2 ,&z1 LDR2 ADD2 ,&z1 STR2
 
     ( x1 * y0 => w1w2 )
-    #00 ,&x1 LDR #00 ,&y0 LDR MUL2 ,&w2 STR ,&w1 STR
+    [ LIT2 00 _&x1 ] LDR [ LIT2 00 _&y0 ] LDR MUL2 ,&w2 STR ,&w1 STR
 
     ( x0 * y0 => w0w1 )
-    LIT2 00 [ &x0 $1 ] LIT2 00 [ &y0 $1 ] MUL2 ,&w0 LDR2 ADD2 ,&w0 STR2
+    [ LIT2 00 &x0 $1 ] [ LIT2 00 &y0 $1 ] MUL2 ,&w0 LDR2 ADD2 ,&w0 STR2
 
     ( add z and a<<8 )
     #00 LIT2 [ &z1 $1 &z2 $1 ] LIT [ &z3 $1 ]

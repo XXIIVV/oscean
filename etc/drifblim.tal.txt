@@ -18,16 +18,16 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;project/on-console .Console/vector DEO2
-	.Console/type DEI ?{ ;meta/usage info/<print> }
-	project/<load>
+	project/load ?{
+		;project/on-console .Console/vector DEO2
+		.Console/type DEI ?{ ;meta/usage info/<print> } }
 	BRK
 
 @meta $1
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Aug 20 "2026 0a0a
+	( date ) "15 20 "Aug 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -51,14 +51,15 @@
 		assembly/<start> !src/<reset> }
 	;dst/<push> ,&fn STR2 !dst/<reset>
 
-@project/<load> ( -- )
+@project/load ( -- succ )
 	;&path .File2/name DEO2
 	#0001 .File2/length DEO2
+	LITr 00
 	&>w
 		;&c .File2/read DEO2
-		.File2/success-lb DEI ?{ JMP2r }
-		#0000 .Console/vector DEO2
-		[ LIT &c $1 ] /<read-char> !/>w
+		.File2/success-lb DEI ?{ STHr JMP2r }
+		[ LIT &c $1 ] /<read-char>
+		INCr !/>w
 
 	&path ".drifblim 00
 
@@ -336,7 +337,7 @@
 	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
-		( ! ) ;dict/exceeded ;dict/Symbol info/<error-token> }
+		( ! ) ;dict/exceeded info/<error-token-sym> }
 	,&+ptr STR
 	STZ2
 	JMP2r
@@ -423,7 +424,8 @@
 	", =&litrel "_ =&rawrel ". =&litzep "- =&rawzep
 	"; =&litabs "= =&rawabs "! =&litjmi "? =&litjci
 	"# =&lithex "" =&rawstr "} =&lambda "~ =&concat
-	"( =&coment ") =&ignore "[ =&ignore "] =&ignore "% =&macros ] 00
+	"( =&coment ") =&ignore "[ =&ignore "] =&ignore
+	"% =&macros ] 00
 
 (
 @|Opcodes )
@@ -480,7 +482,7 @@
 	,&+ptr LDR2
 	( | check underflow )
 	DUP2 ;&mem NEQ2 ?{
-		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
+		( ! ) ;dict/invalid info/<error-token-sym> }
 	#0002 SUB2 LDA2k /name syms/<new>
 	,&+ptr STR2
 	JMP2r
@@ -534,7 +536,7 @@
 	NIP2 DUP2 refs/<record-scope>
 	/is-declared ?{ rom/get-head OVR2 STA2 !/<declare> }
 	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !info/<error-token>
+	( ! ) ;dict/duplicate !info/<error-token-sym>
 
 @syms/<push-sym> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -577,7 +579,7 @@
 @syms/find-addr ( name* -- <addr>* )
 	str/is-hex ?str/hex
 	name/unpack /find-name /is-defined ?{
-		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
+		( ! ) ;dict/invalid info/<error-token-sym> }
 	/use LDA2 NIP2 JMP2r
 
 @syms/<emit> ( -- )
@@ -595,7 +597,7 @@
 
 @syms/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far ;dict/Symbol !info/<error-token>
+	( ! ) ;dict/too-far !info/<error-token-sym>
 
 @syms/is-defined ( sym* -- sym* t )
 	INC2k ORA ?{ #00 JMP2r }
@@ -811,6 +813,10 @@
 	( ref* ref/line* ) DUP2 #0008 ADD2 LDA2
 	( line* ref/scope* ) SWP2 #0006 ADD2 LDA2
 	( line* scope/name* ) #0004 ADD2 !/<print-location>
+
+@info/<error-token-sym> ( adj* -- )
+	;dict/Symbol
+	( >> )
 
 @info/<error-token> ( adj* topic* -- )
 	/<print-ws>

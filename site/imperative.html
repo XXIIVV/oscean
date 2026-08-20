@@ -159,7 +159,6 @@ foo := 123; <i style='float:right'>( In Pascal )</i>
 	<figcaption>Typical POP-2 Programmer</figcaption>
 </figure>
 
-
 <img src='../media/refs/pop2.png' width='200' class='right'/>
 
 <h3>Interpreter</h3>
@@ -190,22 +189,14 @@ sum(5,6) * 2;
 <h3>Vars</h3>
 <p>Variables are allocated inside the vars statement, these can be of any length, by default in a 16-bit system, a variable is made of two 8-bit cells.</p>
 <pre>
+<b>comment</b> <i>These are 3 variables x, y and z;</i>
+<b>vars</b> x y z;
+
 <b>comment</b> <i>The variable foo is 10 bytes long;</i>
 <b>vars</b> foo:10;
 
 <b>comment</b> <i>The variable bar initialized to "abc def", is 7 bytes;</i>
 <b>vars</b> bar:"abc def";
-
-<b>comment</b> <i>Write 0x1234 in cells overlapping two variables;</i>
-<b>vars</b> hb:1 lb:2;
-0x1234 -> hb;
-</pre>
-
-<p>A variable can store an <b>array</b> of cells, each cell is a byte, the position of a reference in memory(a pointer) can be reached with the <kbd>#</kbd> prefix. To store the bytes <code>0x89</code> and <code>0xab</code> in the third and fourth cells of the array:</p>
-
-<pre>
-<b>vars</b> array:10;
-0x89ab -> (#array+2);
 </pre>
 
 <h3>If/Then/Elseif/Else/Close</h3>
@@ -225,7 +216,7 @@ sum(5,6) * 2;
 <pre>2</pre>
 
 <h3>Function/End</h3>
-<p>Functions are declared in the typical ALGOL fashion, recursion simply leaves the arguments on the stack:</p>
+<p>Functions are declared in the typical ALGOL fashion, recursion leaves the arguments on the stack:</p>
 
 <pre>
 <b>function</b> factRec n;
@@ -235,8 +226,10 @@ sum(5,6) * 2;
 		n * factRec(n-1);
 	<b>close</b>
 <b>end</b>
-</pre>
 
+factRec(5);
+</pre>
+<!--
 <p>A function can be quoted with the <kbd>@</kbd> prefix, and applied with the diamond operator:</p>
 
 <pre style='margin-bottom:1px'>
@@ -251,9 +244,10 @@ sum(5,6) * 2;
 apply(@double, 5);
 </pre>
 <pre>10</pre>
+-->
 
 <h3>Goto</h3>
-<p>Loops are written with <a href='basic.html'>GOTOs</a>, making it possible to loop without dirtying the stack with iterators.</p>
+<p>Loops are written with simple <a href='basic.html'>GOTOs</a>, there are no iterators.</p>
 
 <pre style='margin-bottom:1px'>
 <b>comment</b> <i>Loop for 10 times;</i>
@@ -277,12 +271,17 @@ i;
 <p>Putting it all together, we can make a string printing function:</p>
 
 <pre>
+<b>comment</b> <i>The 23 is a port number in Varvara;</i>
+<b>function</b> putChar c;
+	c => 23;
+<b>end</b>
+
 <b>function</b> printString s;
-	<b>vars</b> c:1 hblb:2 i; 0 -> i;
+	<b>vars</b> c:1 i; 0 -> i;
 <b>loop</b>:
-	{s+i} -> hblb;
+	{s+i} >> 8 -> c;
 	<b>if</b> c
-		<b>then</b> c => 23, i + 1 -> i, <b>goto</b> loop
+		<b>then</b> putChar(c), i + 1 -> i, <b>goto</b> loop
 	<b>close</b>
 <b>end</b>
 

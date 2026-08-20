@@ -1,13 +1,16 @@
 let examples={}
 examples.hello_world=`comment Welcome to POP-2;
 
+function putChar c;
+	c => 23;
+end
+
 function printString s;
-	vars c:1 cells:2 i;
-	0 -> i;
+	vars c i; 0 -> i;
 loop:
-	{s+i} -> cells;
-	if c 
-		then c => 23, i + 1 -> i, goto loop
+	{s+i} >> 8 -> c;
+	if c
+		then putChar(c), i + 1 -> i, goto loop
 	close
 end
 

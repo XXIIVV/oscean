@@ -183,7 +183,7 @@
 	[ LIT2 00 &+ptr -&buf ] INCk
 	( | check overflow )
 	DUP .&cap LTH ?{
-		( ! ) ;dict/exceeded ;dict/Symbol info/<error-token> }
+		( ! ) ;dict/exceeded info/<error-token-sym> }
 	,&+ptr STR
 	STZ2
 	JMP2r
@@ -270,7 +270,8 @@
 	", =&litrel "_ =&rawrel ". =&litzep "- =&rawzep
 	"; =&litabs "= =&rawabs "! =&litjmi "? =&litjci
 	"# =&lithex "" =&rawstr "} =&lambda "~ =&concat
-	"( =&coment ") =&ignore "[ =&ignore "] =&ignore "% =&macros ] 00
+	"( =&coment ") =&ignore "[ =&ignore "] =&ignore
+	"% =&macros ] 00
 
 (
 @|Opcodes )
@@ -327,7 +328,7 @@
 	,&+ptr LDR2
 	( | check underflow )
 	DUP2 ;&mem NEQ2 ?{
-		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
+		( ! ) ;dict/invalid info/<error-token-sym> }
 	#0002 SUB2 LDA2k /name syms/<new>
 	,&+ptr STR2
 	JMP2r
@@ -381,7 +382,7 @@
 	NIP2 DUP2 refs/<record-scope>
 	/is-declared ?{ rom/get-head OVR2 STA2 !/<declare> }
 	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !info/<error-token>
+	( ! ) ;dict/duplicate !info/<error-token-sym>
 
 @syms/<push-sym> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -424,7 +425,7 @@
 @syms/find-addr ( name* -- <addr>* )
 	str/is-hex ?str/hex
 	name/unpack /find-name /is-defined ?{
-		( ! ) ;dict/invalid ;dict/Symbol info/<error-token> }
+		( ! ) ;dict/invalid info/<error-token-sym> }
 	/use LDA2 NIP2 JMP2r
 
 @syms/<emit> ( -- )
@@ -442,7 +443,7 @@
 
 @syms/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far ;dict/Symbol !info/<error-token>
+	( ! ) ;dict/too-far !info/<error-token-sym>
 
 @syms/is-defined ( sym* -- sym* t )
 	INC2k ORA ?{ #00 JMP2r }
@@ -658,6 +659,10 @@
 	( ref* ref/line* ) DUP2 #0008 ADD2 LDA2
 	( line* ref/scope* ) SWP2 #0006 ADD2 LDA2
 	( line* scope/name* ) #0004 ADD2 !/<print-location>
+
+@info/<error-token-sym> ( adj* -- )
+	;dict/Symbol
+	( >> )
 
 @info/<error-token> ( adj* topic* -- )
 	/<print-ws>
