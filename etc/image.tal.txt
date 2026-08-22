@@ -32,7 +32,7 @@
 	( ) "Image 0a
 	( ) "An 20 "Image 20 "Viewer 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "19 20 "Jun 20 "2026 00
+	( ) "22 20 "Aug 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) a0 =manifest/dat
@@ -70,12 +70,17 @@
 		INC2 !/>w
 
 @src/<apply> ( -- )
-	#0000 .Console/vector DEO2
 	;&buf path/<set>
-	images/is-valid ?{ #00 !images/<select> }
-	;&buf !image/<draw>
+	images/is-valid ?{ #00 images/<select> !/<reset> }
+	;&buf image/<draw> !/<reset>
+
+@src/<reset> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
+	JMP2r
 
 @src/<push> ( c -- )
+	DUP #0a NEQ ?{ POP !/<apply> }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -104,7 +109,7 @@
 	( | Cap )
 	DUP2
 	&>wc
-		LDAk #0a NEQ ?{ STH2k #00 STH2r STA }
+		LDAk #0a NEQ ?{ LITr 00 STH2k STAr }
 		INC2 LDAk ?/>wc
 	POP2 !images/<scan>
 
@@ -342,7 +347,7 @@
 	&invert "Invert 00
 	&quit "Quit 00
 
-@appicon [
+@appicon [8
 	0000 0001 030c 1010 0000 0000 0000 0000
 	0000 c324 3c00 0000 0000 0000 0000 0000
 	0000 0080 c030 0808 0000 0000 0000 0000
@@ -353,7 +358,7 @@
 	0000 00ff 0000 0000 0000 0000 0000 0000
 	0808 30c0 0000 0000 0000 0000 0000 0000 ]
 
-@images/nil-icn [
+@images/nil-icn [8
 	0000 0001 030c 1010 0000 c324 3c00 0000
 	0609 0182 c032 0808 2020 2020 2020 2020
 	0000 4200 0018 2400 0404 0404 0404 0404
