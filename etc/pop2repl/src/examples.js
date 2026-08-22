@@ -14,7 +14,7 @@ loop:
 	close
 end
 
-printString("Hello World!");
+printString("Hello \\"World\\"!");
 `
 examples.string_length=`comment Get the length of a string;
 
