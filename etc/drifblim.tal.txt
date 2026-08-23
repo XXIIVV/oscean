@@ -18,6 +18,8 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	rom/validate-support ?{ ;dict/unsupported-bank info/<print>
+		error/<set> }
 	project/load ?{
 		;project/on-console .Console/vector DEO2
 		.Console/type DEI ?{ ;meta/usage info/<print> } }
@@ -27,7 +29,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "15 20 "Aug 20 "2026 0a0a
+	( date ) "23 20 "Aug 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -142,14 +144,25 @@
 
 	&mmu-wipe [ 00 ff00 0001 0000 00 ]
 
+@rom/get ( addr* -- byte )
+	,&src STR2
+	;&mmu-get .System/expansion DEO2
+	[ LIT &buf $1 ] JMP2r
+
+	&mmu-put [ 00 0001 0001 &dst $2 &v $1 ]
+	&mmu-get [ 01 0001 0001 &src $2 0000 =&buf ]
+
+@rom/validate-support ( -- )
+	#d6 DUP #dead STH2k /<put>
+	( check ) STH2kr /get EQU
+	( restore ) #00 STH2r
+	( >> )
+
 @rom/<put> ( byte addr* -- )
 	,&dst STR2
 	,&v STR
 	;&mmu-put .System/expansion DEO2
 	JMP2r
-
-	&mmu-put [ 00 0001 0001 &dst $2 &v $1 ]
-	&mmu-get [ 01 0001 0001 &src $2 0000 =&buf ] &buf $1
 
 @rom/<emit> ( -- )
 	;dict/assembled info/<print-ws>
@@ -213,6 +226,7 @@
 
 @dict/path "Path 20 00
 	&sym-ext ".sym 00
+	&unsupported-bank "ERROR: 20 "bank 20 "1 20 "unsupported 0a 00
 
 
 
