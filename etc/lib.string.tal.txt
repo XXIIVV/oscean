@@ -26,7 +26,7 @@
 @|tests )
 
 @tests [
-	=chr/<test> =str/<test> =obj/<test> =ztr/<test> ] &end $2
+	=chr/<test> =str/<test> =obj/<test> =ztr/<test> =coll/<test> ] &end $2
 
 @chr/<test> ( -- value )
 	;&name str/<print>
@@ -56,7 +56,7 @@
 	&name 0a "chr: 20 00
 
 @str/<test> ( -- )
-	;&name /<print>
+	;&name str/<print>
 	( | len )
 	[ { "hello $1 } STH2r ] /len #0005 NEQ2 ?/fail
 	[ { "what $1 } STH2r ] /len #0004 NEQ2 ?/fail
@@ -100,11 +100,6 @@
 	;dict/sub127 /dec-sign #ff81 NEQ2 ?/fail
 	;dict/sub256 /dec-sign #ff00 NEQ2 ?/fail
 	;dict/sub32768 /dec-sign #8000 NEQ2 ?/fail
-	( | index )
-	;dict/sub256 LIT "- /index #0000 NEQ2 ?/fail
-	;dict/sub256 LIT "2 /index #0001 NEQ2 ?/fail
-	;dict/sub256 LIT "5 /index #0002 NEQ2 ?/fail
-	;dict/sub256 LIT "q /index #ffff NEQ2 ?/fail
 	#01 JMP2r
 	&fail #00 JMP2r
 
@@ -168,6 +163,8 @@
 
 @chr/escape ( byte -- byte )
 	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	DUP [ LIT "0 ] NEQ ?{ POP #00 JMP2r }
+	DUP [ LIT "s ] NEQ ?{ POP #20 JMP2r }
 	[ LIT "n ] NEQ ?{ #0a JMP2r }
 	#20 JMP2r
 
@@ -265,14 +262,18 @@
 		LDAk LDAkr STHr NEQ ?/d
 		INC2 INC2r !/>wc
 
-@str/index ( str* c -- pos* )
-	STH
-	DUP2
-	&>wi
-		LDAk DUP ?{
-			POPr POP POP2 POP2 #ffff JMP2r }
-		STHkr EQU ?{ INC2 !/>wi }
-	POPr SWP2 SUB2 JMP2r
+@str/lth ( a* b* -- a>b )
+	STH2
+	&>ll
+		( a.lc ) LDAk chr/lc
+		( b.lc ) LDAkr STHr chr/lc SUBk ?{
+			ORAk #00 EQU ?{ POP2 INC2 INC2r !/>ll } }
+	NIP2 LTH POP2r JMP2r
+
+@str/<print-ln> ( str* -- )
+	/<print>
+	#0a18 DEO
+	JMP2r
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
@@ -322,6 +323,77 @@
 		INC2 !/>wp
 
 (
+@|Collection )
+
+@coll/<test> ( -- res )
+	;&name str/<print>
+	( | sort )
+	;&str4 /<push>
+	;&str2 /<push>
+	;&str3 /<push>
+	;&str1 /<push>
+	/<sort>
+	( 1 ) ;&buf #0000 ADD2 LDA2 ;&str1 str/cmp
+	( 2 ) ;&buf #0002 ADD2 LDA2 ;&str2 str/cmp AND
+	( 3 ) ;&buf #0004 ADD2 LDA2 ;&str3 str/cmp AND
+	( 4 ) ;&buf #0006 ADD2 LDA2 ;&str4 str/cmp AND JMP2r
+
+	&name 0a "coll: 20 $1
+	&str1 "abc 00
+	&str2 "def 00
+	&str3 "ghi 00
+	&str4 "klm 00
+
+@coll/<push> ( str* -- )
+	dict/alloc [ LIT2 &ptr =&buf ]
+	( | catch overflow )
+	DUP2 ;&cap NEQ2 ?{ POP2 POP2 JMP2r }
+	INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@coll/<sort> ( -- )
+	,&ptr LDR2 #0002 SUB2 ;&buf
+	&>ls
+		NEQ2k ?{ POP2 POP2 JMP2r }
+		INC2k INC2 LDA2 OVR2 LDA2 SWP2k str/lth ?{
+			( a [b] . [a] ) STH2
+			( a [b] a . [a] ) OVR2
+			( [b] -> a ) STA2
+			( . [a] b ) INC2 INC2 STH2
+			( [a] -> b ) STA2r
+			;&buf !/>ls }
+	POP2 POP2 INC2 INC2 !/>ls
+
+@coll/<print> ( -- )
+	,&ptr LDR2 ;&buf
+	&>l
+		NEQ2k ?{ POP2 POP2 JMP2r }
+		LDA2k str/<print-ln>
+		INC2 INC2 !/>l
+
+(
+@|Dict )
+
+@dict/alloc ( str* -- buf* )
+	,&ptr LDR2 SWP2
+	( >> )
+
+@dict/<push-str> ( str* -- )
+	&>w
+		LDAk DUP /<push>
+		?{ POP2 JMP2r }
+		INC2 !/>w
+
+@dict/<push> ( c -- )
+	[ LIT2 &ptr =&buf ]
+	( | catch overflow )
+	DUP2 ;&cap NEQ2 ?{ POP2 POP2 JMP2r }
+	INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+(
 @|assets )
 
 @dict/0 "0 00
@@ -346,4 +418,8 @@
 	&sub32768 "-32768 00
 
 @obj/buf $30 &cap
+
+@dict/buf $1000 &cap
+
+@coll/buf $1000 &cap
 
