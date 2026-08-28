@@ -1,7 +1,7 @@
 ( 54K . Win7 )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
@@ -11,23 +11,28 @@
 @|Enums )
 
 |004f @Varvara/version
-|0200 @WIDTH
-|00c0 @header/rows
-|0100 @header/center
-|2000 @path/dirlen
-|2000 @directory/len
+|2000 @directory/buflen
 |0018 @directory/x1pad
 |002a @directory/y1
 |0034 @directory/y1pad
-|0005 @directory/cols
-|002a @scroll/y1
+|002a @scrollbar/y1
+|003a @scrollbar/top
+|0040 @search/buflen
+|0040 @decstr/buflen
+|0012 @status/y1
+|2000 @path/dirbuflen
 |0060 @file/width
 |0038 @file/height
+|0120 @meta/buflen
+|0040 @command/buflen
+|0200 @sel/buflen
+|0200 @rename/buflen
 
 |000
 
-	@path/buf $2 &null $80
+	@path/buf $80 &cap
 	@directory/sel $2
+	@scrollbar/y $2
 
 |100
 
@@ -35,10 +40,9 @@
 	;meta #06 DEO2
 	theme/<load>
 	;dict/home-path path/<set>
-	;WIDTH #0120 window/<set-size>
-	path/<refresh>
-	<redraw-all>
-	header/<bind>
+	directory/<deselect>
+	window/<detect-size>
+	path/<reload>
 	directory/<bind>
 	BRK
 
@@ -53,13 +57,20 @@
 
 @manifest/dat ( . )
 	_{ =dict/win7
-	( - ) 21 00 =directory/<open> =dict/next
+	( - ) 21 00 =directory/<open> =dict/open
 	( - ) 10 00 =directory/<prev-row> =dict/prev-row
 	( - ) 20 00 =directory/<next-row> =dict/next-row
 	( - ) 40 00 =directory/<prev> =dict/prev
 	( - ) 80 00 =directory/<next> =dict/next
 	( - ) 00 08 =directory/<parent> =dict/parent
 	( - ) 00 1b =directory/<deselect> =dict/deselect }
+	_{ =dict/modes
+	( - ) 01 "r =rename/<bind> =dict/rename }
+	_{ =dict/window
+	( - ) 12 00 =window/<dech> =dict/dech
+	( - ) 22 00 =window/<inch> =dict/inch
+	( - ) 42 00 =window/<decw> =dict/decw
+	( - ) 82 00 =window/<incw> =dict/incw }
 	( ) $1
 
 %Screen/<set-pos> ( x* y* -- ) {
@@ -69,29 +80,23 @@
 %u16/mod2 ( x* div* -- res* ) {
 	DIV2k MUL2 SUB2 }
 
-@<redraw-all> ( -- )
-	header/<draw>
-	directory/<redraw>
-	status/<redraw> !scroll/<redraw>
-
-@<draw-times-addr> ( color times addr* auto -- )
-	.Screen/auto DEO
-	,&addr STR2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l
-		[ LIT2 &addr $2 ] .Screen/addr DEO2
-		DEOkr
-		INC DUP ?/>l
-	POP POP2r JMP2r
-
-@cursor/<refocus> ( -- )
-	.Mouse/y DEI2 DUP2 #0013 LTH2 ?{ #002a LTH2 ?{ !directory/<bind> }
-		!status/<bind> }
-	POP2 !header/<bind>
-
 (
 @|Path )
+
+@path/make-parent ( -- str* )
+	/get-depth #02 GTH ?{ ;dict/home JMP2r }
+	[ LIT2 00 _&ptr ] LDR /up /up INC !decstr/make-dir
+
+@path/make-location ( -- str* )
+	/get-depth #01 GTH ?{ ;dict/home JMP2r }
+	[ LIT2 00 _&ptr ] LDR /up INC !decstr/make-dir
+
+@path/get-depth ( -- depth )
+	[ LITr 00 ] [ LIT2 -&buf _&ptr ] LDR
+	&>rgd
+		#01 SUB LDZk [ LIT "/ ] NEQ ?{ INCr }
+		NEQk ?/>rgd
+	POP2 STHr JMP2r
 
 @path/<set> ( path* -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -100,37 +105,34 @@
 @path/<push-str> ( subpath* -- )
 	&>wpu
 		LDAk DUP ?{ POP POP2 JMP2r }
-		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-		STZ2
+		/<push>
 		INC2 !/>wpu
 
-@path/pop ( -- )
-	/nest INC #00 OVR STZ
-	,&ptr STR
+@path/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
 	JMP2r
 
-@path/get-location ( -- str* )
-	#00
-	( >> )
+@path/pop ( -- )
+	;&buf ;dict/home-path str/cmp ?{
+		,&ptr LDR /up INC #00 OVR STZ
+		,&ptr STR }
+	JMP2r
 
-@path/nest ( -- addr )
-	[ LIT2 -&buf _&ptr ] LDR #01 SUB
-	&>rew
-		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?/>rew }
+@path/up ( ptr -- addr )
+	#01 SUB .&buf SWP
+	&>rup
+		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?/>rup }
 	NIP JMP2r
 
-@path/<refresh> ( -- )
+@path/<reload> ( -- )
 	;&buf .File/name DEO2
-	;&dirlen .File/length DEO2
+	;&dirbuflen .File/length DEO2
 	;&dirbuf .File/read DEO2
+	directory/<reset>
+	#0000 scrollbar/<set>
 	/<nullws>
-	/<parse-folders>
-	/<parse-files>
-	header/<draw>
-	directory/<redraw>
-	scroll/<redraw>
-	status/<redraw>
-	JMP2r
+	/<parse-folders> !/<parse-files>
 
 @path/<parse-folders> ( -- )
 	;&dirbuf
@@ -156,6 +158,15 @@
 @path/<print> ( -- )
 	;&buf !str/<print>
 
+@path/<reqload> ( -- )
+	[ LIT2 00 _&reqload ] STR !window/<reqdraw>
+
+@path/<try-load> ( -- )
+	[ LIT &reqload 01 ] ?{
+		/<reload>
+		[ LIT2 01 _&reqload ] STR }
+	JMP2r
+
 (
 @|Status )
 
@@ -165,34 +176,132 @@
 
 @status/on-mouse ( -> )
 	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	#0001 NEQ2 ?{ directory/<parent> }
 	BRK
+
+@status/<set-width> ( width* -- )
+	#03 SFT2 SUB ,&cols STR
+	JMP2r
+
+@status/<draw-length> ( -- )
+	directory/get-length
+	( | empty )
+	ORAk ?{ POP2 ;dict/empty !sans/<draw-center> }
+	;dict/files decstr/make-numstr !sans/<draw-center>
 
 @status/<redraw> ( -- )
 	#0000 .Screen/x DEO2
-	#0012 .Screen/y DEO2
-	[ LIT2 01 -header/rows ] ;&bar-icn #25 <draw-times-addr>
+	;&y1 .Screen/y DEO2
+	[ LIT2 01 &cols $1 ] ;&bar-icn #25 <draw-times-addr>
 	( | left )
 	#0009 #0016 Screen/<set-pos>
-	;&a #01 sans/<draw-left-color>
-	( | center )
+	path/make-parent #01 sans/<draw-left-color>
 	window/get-center #0016 Screen/<set-pos>
-	decstr/<reset>
-	directory/get-length decstr/<push-num>
-	;&b decstr/<push-str>
-	;decstr/buf sans/<draw-center>
+	search/is-active ?/<redraw-search>
+	rename/is-active ?/<redraw-rename>
+	command/is-active ?/<redraw-command>
+	( | center )
+	/<draw-length>
 	( | right )
-	directory/get-sel #ffff NEQ2 ?{ JMP2r }
 	window/get-width #0009 SUB2 #0016 Screen/<set-pos>
-	;&c sans/<draw-right>
+	search/is-active ?search/<draw>
+	!sel/<draw>
+
+@status/<redraw-rename> ( -- )
+	;dict/rename !sans/<draw-center>
+
+@status/<redraw-search> ( -- )
+	;dict/search sans/<draw-center>
+	window/get-width #0009 SUB2 #0016 Screen/<set-pos> !search/<draw>
+
+@status/<redraw-command> ( -- )
+	;dict/command sans/<draw-center>
+	window/get-width #0009 SUB2 #0016 Screen/<set-pos> !command/<draw>
+
+@status/<reqdraw> ( -- )
+	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+
+@status/<try-draw> ( -- )
+	[ LIT &reqdraw 00 ] ?{
+		/<redraw>
+		[ LIT2 01 _&reqdraw ] STR }
 	JMP2r
 
-	&a "Home 00
-	&b 20 "Files 00
-	&c "1 20 "Selected 00
+(
+@|Command )
 
-@status/bar-icn [8
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0000 00ff 00ff ]
+@command/on-button ( -> )
+	.Controller/key DEI /<put>
+	BRK
+
+@command/<reset> ( -- )
+	#0000 ;&buf STA2
+	;&buf ,&ptr STR2
+	JMP2r
+
+@command/is-active ( -- t )
+	;&on-button .Controller/vector DEI2 EQU2 JMP2r
+
+@command/<bind-put> ( c -- )
+	;&on-button .Controller/vector DEO2
+	cursor/<lock>
+	( >> )
+
+@command/<put> ( c -- )
+	DUP ?{ POP JMP2r }
+	DUP #1b EQU ?/<stop>
+	DUP #0d EQU ?/<run>
+	DUP #08 EQU ?/<pop>
+	( >> )
+
+@command/<push> ( c -- )
+	( >> ) #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	( >> )
+
+@command/<update> ( -- )
+	directory/<reqdraw>
+	scrollbar/<reqdraw> !status/<reqdraw>
+
+@command/<pop> ( c -- )
+	POP #0000 ,&ptr LDR2
+	( clamp ) DUP2 ;&buf NEQ2 ?{ POP2 POP2 JMP2r }
+	#0001 SUB2 DUP2 ,&ptr STR2
+	STA2 !/<update>
+
+@command/<draw> ( -- )
+	;&buf !sans/<draw-right>
+
+@command/<send> ( str* -- )
+	.Console/addr DEO2
+	[ LIT2 00 -Console/mode ] DEO
+	[ LIT2 01 -Console/exec ] DEO
+	JMP2r
+
+@command/<stop> ( c -- )
+	POP /<reset>
+	directory/<bind>
+	directory/<reqdraw>
+	scrollbar/<reqdraw> !status/<reqdraw>
+
+@command/<run> ( c -- )
+	POP ;&buf LDA ?{
+		( | no command )
+		!directory/<open> }
+	( | is active )
+	decstr/<reset>
+	( | send )
+	;&buf decstr/<push-str-ws>
+	;&do-filepath sel/<for-each>
+	;decstr/buf /<send>
+	/<reset>
+	directory/<bind>
+	directory/<reqdraw>
+	scrollbar/<reqdraw> !status/<reqdraw>
+
+@command/do-filepath ( str* -- )
+	;path/buf decstr/<push-str> !decstr/<push-str-ws>
 
 (
 @|Directory )
@@ -203,55 +312,92 @@
 	JMP2r
 
 @directory/on-button ( -> )
-	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 !/on-key }
 	( * ) JSR2 POP2 BRK
+
+@directory/on-key ( button key -> )
+	sel/get-length ORA ?{
+		NIP DUP ?{ POP BRK }
+		sel/<reset>
+		search/<bind-put>
+		BRK }
+	NIP DUP ?{ POP BRK }
+	command/<bind-put>
+	BRK
 
 @directory/on-mouse ( -> )
 	cursor/<update>
-	( | get id )
-	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
-	DUP2 #0001 EQU2 ?/on-mouse-touch
-	DUP2 #0002 EQU2 ?/on-mouse-click
-	POP2
-	( | Touch )
+	( | check scroll )
+	.Mouse/sy DEI2 ORAk ?{
+		POP2
+		( | no scroll )
+		[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+		[ LIT2 02 -Controller/button ] DEI EQU ?/on-mouse-alt
+		( | get id )
+		DUP2 #0001 EQU2 ?/on-mouse-touch
+		DUP2 #0002 EQU2 ?/on-mouse-click
+		POP2
+		( | Touch )
+		BRK }
+	scrollbar/<mod>
 	BRK
 
 @directory/on-mouse-touch ( last state -> )
-	POP2 .Mouse/x DEI2 .Mouse/y DEI2 file/pos-id /<select>
+	POP2 .Mouse/x DEI2 .Mouse/y DEI2 file/pos-id /<pick-id>
 	BRK
 
 @directory/on-mouse-click ( last state -> )
-	POP2 .Mouse/x DEI2 .Mouse/y DEI2 file/pos-id /<select>
+	POP2 .Mouse/x DEI2 .Mouse/y DEI2 file/pos-id /<pick-id>
 	/<open>
 	BRK
 
+@directory/on-mouse-alt ( last state -> )
+	ORAk ?{ POP2 BRK }
+	#0001 EQU2 ?{
+		( | on drag )
+		( x ) .Mouse/x DEI2 [ LIT2 &ax $2 ] SUB2 [ LIT2 &w $2 ] ADD2 #33 SFT2
+		( y ) .Mouse/y DEI2 [ LIT2 &ay $2 ] SUB2 [ LIT2 &h $2 ] ADD2 #33 SFT2 window/<set-size>
+		BRK }
+	( | on down )
+	.Mouse/x DEI2 ,&ax STR2
+	.Mouse/y DEI2 ,&ay STR2
+	window/get-width ,&w STR2
+	window/get-height ,&h STR2
+	BRK
+
 @directory/<deselect> ( -- )
+	sel/<reset>
 	#ffff !/<set>
 
 @directory/<next> ( -- )
-	.&sel LDZ2 INC2 !/<select>
+	.&sel LDZ2 INC2 !/<pick-id>
 
 @directory/<next-row> ( -- )
-	.&sel LDZ2 ;&cols ADD2 !/<select>
+	.&sel LDZ2 /get-cols ADD2 !/<pick-id>
 
 @directory/<prev> ( -- )
-	.&sel LDZ2 #0001 SUB2 !/<select>
+	.&sel LDZ2 #0001 SUB2 !/<pick-id>
 
 @directory/<prev-row> ( -- )
-	.&sel LDZ2 ;&cols SUB2 !/<select>
+	.&sel LDZ2 /get-cols SUB2 !/<pick-id>
 
-@directory/<select> ( id* -- )
-	OVR #80 AND ?/<select-first>
+@directory/<pick-id> ( id* -- )
+	OVR #80 AND ?/<pick-first>
 	/get-length LTH2k ?{ #0001 SUB2 SWP2 }
 	POP2
 	( >> )
 
 @directory/<set> ( id* -- )
+	DUP2 /id-to-name sel/<pick>
 	.&sel STZ2
-	status/<redraw>
-	/<redraw> !scroll/<redraw>
+	status/<reqdraw>
+	/<reqdraw> !scrollbar/<reqdraw>
 
-@directory/<select-first> ( id* -- )
+@directory/<soft-set> ( id* -- )
+	;&buf SUB2 #01 SFT2 .&sel STZ2
+	JMP2r
+
+@directory/<pick-first> ( id* -- )
 	POP2 #0000 !/<set>
 
 @directory/push ( desc-name* -- desc-name* )
@@ -259,96 +405,334 @@
 	STA2
 	JMP2r
 
-@directory/get-length ( -- length* )
-	,&ptr LDR2 ;&buf SUB2 #01 SFT2 JMP2r
+@directory/<reset> ( -- )
+	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
+	JMP2r
 
-@directory/get-sel ( -- id* )
+@directory/get-bounds ( -- to* from* )
+	,&ptr LDR2 ;&buf JMP2r
+
+@directory/get-length ( -- length* )
+	/get-bounds SUB2 #01 SFT2 JMP2r
+
+@directory/<hash> ( -- )
+	#0000 ;scrollbar/y1 Screen/<set-pos>
+	;check-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	[ LIT2r 00 -Screen/sprite ]
+	( c ) window/get-width #03 SFT2 #02 SUB SUB
+	( r ) window/get-height #03 SFT2 #05 SUB SUB
+	&>rows
+		OVR
+		&>cols
+			DEOkr
+			INC DUP ?/>cols
+		POP
+		( | next row )
+		#0000 .Screen/x DEO2
+		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC DUP ?/>rows
+	POP2 POP2r JMP2r
+
+@directory/<open> ( -- )
+	sel/get-length ORAk ?{ POP2 JMP2r }
+	#0001 EQU2 ?/<open-one>
+	JMP2r
+
+@directory/<open-one> ( -- )
+	;sel/buf LDA2 file/is-folder ?{ path/<print> !str/<print-ln> }
+	path/<push-str>
+	( | enter folder )
+	/<reset>
+	/<deselect> !path/<reload>
+
+@directory/<parent> ( -- )
+	/<reset>
+	/<deselect>
+	path/pop !path/<reload>
+
+@directory/id-to-name ( id* -- name* )
+	DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r
+
+@directory/get-cols ( -- cols* )
+	[ LIT2 &cols $2 ] JMP2r
+
+@directory/<set-width> ( width* -- )
+	;file/width DIV2 ,&cols STR2
+	JMP2r
+
+@directory/get-id ( -- id* )
 	.&sel LDZ2 JMP2r
+
+@directory/get-name ( -- name* )
+	/get-id !/id-to-name
 
 @directory/<redraw> ( -- )
 	( | Clear )
 	#0000 ;&y1 Screen/<set-pos>
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | Draw )
-	[ LIT2r 0000 ] ,&ptr LDR2 ;&buf
+	[ LIT2r 0000 ] /get-bounds
 	&>l
+		GTH2k ?{ POP2 POP2 POP2r JMP2r }
 		LDA2k STH2kr file/<draw>
-		INC2 INC2 INC2r GTH2k ?/>l
-	POP2 POP2 POP2r JMP2r
+		INC2 INC2 INC2r !/>l
 
-@directory/<open> ( -- )
-	/get-selection file/is-folder ?{ path/<print> !str/<print-ln> }
-	path/<push-str>
-	( | enter folder )
-	/<reset>
-	/<deselect> !path/<refresh>
+@directory/<reqdraw> ( -- )
+	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
 
-@directory/<parent> ( -- )
-	/<reset>
-	/<deselect>
-	path/pop path/<refresh>
+@directory/<try-draw> ( -- )
+	[ LIT &reqdraw 00 ] ?{
+		/<redraw>
+		[ LIT2 01 _&reqdraw ] STR }
 	JMP2r
 
-@directory/<reset> ( -- )
+(
+@|Selection )
+
+@sel/<reset> ( -- )
+	#0000 ;&buf STA2
+	;&buf ,&ptr STR2
+	JMP2r
+
+@sel/<pick> ( filename* -- )
+	[ LIT2 01 -Controller/button ] DEI AND ?{ /<reset> }
+	( >> )
+
+@sel/<push> ( filename* -- )
+	ORAk ?{ POP2 JMP2r }
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@sel/get-bounds ( -- to* from* )
+	,&ptr LDR2 ;&buf JMP2r
+
+@sel/is-selected ( name* -- t )
+	STH2
+	/get-bounds
+	&>l
+		GTH2k ?{
+			POP2 POP2 POP2r #00 JMP2r }
+		LDA2k STH2kr NEQ2 ?{
+			POP2 POP2 POP2r #01 JMP2r }
+		INC2 INC2 !/>l
+
+@sel/get-length ( -- length* )
+	/get-bounds SUB2 #01 SFT2 JMP2r
+
+@sel/<for-each> ( fn* -- )
+	,&fn STR2
+	/get-bounds
+	&>lfe
+		GTH2k ?{ POP2 POP2 JMP2r }
+		LDA2k [ LIT2 &fn $2 ] JSR2 INC2 INC2 !/>lfe
+
+@sel/<draw> ( -- )
+	/get-length ORAk ?{ POP2 JMP2r }
+	DUP2 #0001 NEQ2 ?{
+		POP2 /get-path file/is-folder ?{
+			file/get-size DUP2 #0000 EQU2 ?{ ;dict/bytes decstr/make-numstr !sans/<draw-right> } }
+		POP2 #0001 }
+	;dict/selected decstr/make-numstr !sans/<draw-right>
+
+@sel/<pick-all> ( target* -- )
+	,&t STR2
+	/<reset>
+	directory/get-bounds
+	&>lpa
+		GTH2k ?{ POP2 POP2 JMP2r }
+		LDA2k [ LIT2 &t $2 ] str/match #00 EQU ?{ DUP2 directory/<soft-set>
+			LDA2k /<push> }
+		INC2 INC2 !/>lpa
+
+@sel/get-path ( -- path* )
+	decstr/<reset>
+	;path/buf decstr/<push-str>
+	directory/get-name decstr/<push-str>
+	;decstr/buf JMP2r
+
+(
+@|Search )
+
+@search/on-button ( -> )
+	.Controller/key DEI /<put>
+	BRK
+
+@search/<reset> ( -- )
+	#0000 ;&buf STA2
+	;&buf ,&ptr STR2
+	JMP2r
+
+@search/<bind-put> ( c -- )
+	;&on-button .Controller/vector DEO2
+	cursor/<lock>
+	( >> )
+
+@search/<put> ( c -- )
+	DUP ?{ POP JMP2r }
+	DUP #1b EQU ?/<stop>
+	DUP #0d EQU ?/<stop>
+	DUP #08 EQU ?/<pop>
+	( >> )
+
+@search/<push> ( c -- )
+	( >> ) #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	( >> )
+
+@search/<update> ( -- )
+	;&buf sel/<pick-all>
+	directory/<reqdraw>
+	scrollbar/<reqdraw> !status/<reqdraw>
+
+@search/<pop> ( c -- )
+	POP #0000 ,&ptr LDR2
+	( clamp ) DUP2 ;&buf NEQ2 ?{ POP2 POP2 JMP2r }
+	#0001 SUB2 DUP2 ,&ptr STR2
+	STA2 !/<update>
+
+@search/<stop> ( c -- )
+	POP /<reset>
+	directory/<bind>
+	directory/<reqdraw>
+	scrollbar/<reqdraw> !status/<reqdraw>
+
+@search/is-active ( -- t )
+	;&buf LDA JMP2r
+
+@search/<draw> ( -- )
+	;&buf !sans/<draw-right>
+
+(
+@|Rename )
+
+@rename/<reset> ( -- )
 	;&buf ,&ptr STR2
 	#0000 ;&buf STA2
 	JMP2r
 
-@directory/get-selection ( -- addr* )
-	.&sel LDZ2 DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r
+@rename/<bind> ( -- )
+	sel/get-length #0001 EQU2 ?{ JMP2r }
+	;&on-button .Controller/vector DEO2
+	cursor/<lock>
+	/<reset>
+	status/<reqdraw>
+	directory/get-name /<push-str> !/<reqdraw>
+
+@rename/is-active ( -- t )
+	;&on-button .Controller/vector DEI2 EQU2 JMP2r
+
+@rename/on-button ( -> )
+	.Controller/key DEI /<put>
+	BRK
+
+@rename/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>w
+
+@rename/<put> ( c -- )
+	DUP ?{ POP JMP2r }
+	DUP #0d EQU ?/<done>
+	DUP #08 EQU ?/<pop>
+	DUP #1b EQU ?/<stop>
+	( >> )
+
+@rename/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2 !/<reqdraw>
+
+@rename/<done> ( c -- )
+	POP decstr/<reset>
+	;dict/mv-command decstr/<push-str-ws>
+	( | a )
+	;path/buf decstr/<push-str>
+	directory/get-name decstr/<push-str-ws>
+	( | b )
+	;path/buf decstr/<push-str>
+	;&buf decstr/<push-str>
+	;decstr/buf command/<send>
+	directory/<deselect>
+	directory/<bind> !path/<reqload>
+
+@rename/<stop> ( c -- )
+	POP directory/<bind>
+	status/<reqdraw>
+	directory/<reqdraw> !scrollbar/<reqdraw>
+
+@rename/<pop> ( c -- )
+	POP #0000 ,&ptr LDR2
+	( clamp ) DUP2 ;&buf NEQ2 ?{ POP2 POP2 JMP2r }
+	#0001 SUB2 DUP2 ,&ptr STR2
+	STA2 !/<reqdraw>
+
+@rename/<redraw> ( -- )
+	scrollbar/<reqdraw>
+	directory/<hash>
+	;&buf directory/get-id !file/<draw-focus>
+
+@rename/<reqdraw> ( -- )
+	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+
+@rename/<try-draw> ( -- )
+	[ LIT &reqdraw 01 ] ?{
+		/<redraw>
+		[ LIT2 01 _&reqdraw ] STR }
+	JMP2r
 
 (
 @|File )
 
 @file/<draw> ( name* id* -- )
-	DUP2 /id-pos Screen/<set-pos>
-	OVR2 /<draw-icon>
-	/get-color !sans/<draw-center-color>
+	/id-xy
+	( clamp up ) DUP2 ;status/y1 SUB2 #8000 LTH2 ?{ POP2 POP2 POP2 JMP2r }
+	( clamp down ) DUP2 window/get-height LTH2 ?{ POP2 POP2 POP2 JMP2r }
+	Screen/<set-pos>
+	DUP2 /<draw-icon>
+	DUP2 /get-color sans/<set-color>
+	decstr/make-name !sans/<draw-center>
 
-@file/get-color ( id* -- color )
-	.directory/sel LDZ2 EQU2 ?{ #01 JMP2r }
+@file/<draw-focus> ( name* id* -- )
+	/id-xy Screen/<set-pos>
+	DUP2 /<draw-icon>
+	#04 sans/<set-color> !sans/<draw-center>
+
+@file/get-color ( name* -- color )
+	sel/is-selected ?{ #01 JMP2r }
 	#09 JMP2r
-
-@file/<position> ( id* -- )
-	DUP2 ;directory/cols u16/mod2 #60 SFT2 #0010 ADD2 .Screen/x DEO2
-	;directory/cols DIV2 #60 SFT2 #0030 ADD2 .Screen/y DEO2
-	JMP2r
 
 @file/<draw-icon> ( name* -- )
 	[ LIT2 36 -Screen/auto ] DEO
-	/get-sprite .Screen/addr DEO2
-	#05 .Screen/sprite DEOk DEOk DEOk DEO
+	DUP2 /get-sprite DUP2 .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEOk DEO
 	.Screen/x DEI2k #0010 ADD2 ROT DEO2
-	JMP2r
+	( | Roms )
+	;&rom EQU2 ?{ POP2 JMP2r }
+	decstr/<reset>
+	;path/buf decstr/<push-str>
+	decstr/<push-str>
+	( | Roms Meta )
+	;decstr/buf !meta/<draw-icon>
 
 @file/get-sprite ( name* -- sprite* )
+	LDAk LIT ". EQU ?/get-dot
 	/is-folder ?/get-folder
-	/is-data ?/get-data
-	/is-rom ?/get-rom
-	/is-pict ?/get-pict
+	( | get ext )
+	str/cap #0004 SUB2 DUP2 ;dict/rom-ext str/cmp ?/get-rom
+	INC2k ;dict/md-ext str/cmp ?/get-data
+	DUP2 ;dict/chr-ext str/cmp ?/get-pict
+	DUP2 ;dict/icn-ext str/cmp ?/get-pict
+	DUP2 ;dict/uf2-ext str/cmp ?/get-pict
+	DUP2 ;dict/jpg-ext str/cmp ?/get-pict
+	DUP2 ;dict/png-ext str/cmp ?/get-pict
+	LDAk LIT ". EQU ?/get-data
 	POP2 ;&unknown JMP2r
 
 @file/is-folder ( name* -- name* t )
 	DUP2 str/cap #0001 SUB2 LDA LIT "/ EQU JMP2r
-
-@file/is-rom ( name* -- name* t )
-	DUP2 str/cap #0004 SUB2 ;dict/rom-ext str/cmp JMP2r
-
-@file/is-chr ( name* -- name* t )
-	DUP2 str/cap #0004 SUB2 ;dict/chr-ext str/cmp JMP2r
-
-@file/is-icn ( name* -- name* t )
-	DUP2 str/cap #0004 SUB2 ;dict/icn-ext str/cmp JMP2r
-
-@file/is-uf2 ( name* -- name* t )
-	DUP2 str/cap #0004 SUB2 ;dict/uf2-ext str/cmp JMP2r
-
-@file/is-pict ( name* -- name* t )
-	/is-icn ?{ /is-chr ?{ !/is-uf2 } }
-	#01 JMP2r
-
-@file/is-data ( name* -- name* t )
-	DUP2 str/cap #0004 SUB2 LDA LIT ". NEQ JMP2r
 
 @file/get-folder ( name* -- sprite* )
 	POP2 ;&folder JMP2r
@@ -362,32 +746,108 @@
 @file/get-pict ( name* -- sprite* )
 	POP2 ;&pict JMP2r
 
-@file/id-pos ( id* -- x* y* )
-	( x ) DUP2 ;directory/cols u16/mod2 ;&width MUL2 ;directory/x1pad ADD2
-	( y ) SWP2 ;directory/cols DIV2 ;&height MUL2 ;directory/y1pad ADD2 JMP2r
+@file/get-dot ( name* -- sprite* )
+	POP2 ;&dot JMP2r
+
+@file/id-xy ( id* -- x* y* )
+	( x ) DUP2 directory/get-cols STH2k u16/mod2 ;&width MUL2 ;directory/x1pad ADD2
+	( y ) SWP2 STH2r DIV2 ;&height MUL2 ;directory/y1pad ADD2 scrollbar/get-y SUB2 JMP2r
 
 @file/pos-id ( x* y* -- id* )
-	( y ) ;directory/y1pad SUB2 ;&height DIV2 ;directory/cols MUL2
-	( x ) SWP2 ;&width DIV2 ;directory/cols u16/mod2 ADD2 JMP2r
+	( y ) ;directory/y1pad SUB2 scrollbar/get-y ADD2 ;&height DIV2 directory/get-cols STH2k MUL2
+	( x ) SWP2 ;&width DIV2 STH2r u16/mod2 ADD2 JMP2r
+
+@file/<seek> ( addr* -- )
+	#0100 SUB2 .File/name DEI2k ROT DEO2
+	#0000 INC2k .File/length DEO2
+	&>lf
+		;&b .File/read DEO2
+		INC2 GTH2k ?/>lf
+	POP2 POP2 JMP2r
+	[ LIT &b $1 ]
+
+@file/get-size ( path* -- size* )
+	.File/name DEO2
+	#0004 .File/length DEO2
+	;&statbuf .File/stat DEO2
+	;&statbuf LDAk LIT "? NEQ ?str/hex
+	POP2 #0000 JMP2r
+	&statbuf $4 00
 
 (
-@|Scroll )
+@|Scrollbar )
 
-@scroll/<redraw> ( -- )
+@scrollbar/<mod> ( y* -- )
+	.&y LDZ2 ADD2
+	( >> )
+
+@scrollbar/<set> ( y* -- )
+	( | clamp )
+	DUP2 #8000 AND2 EQU ?{ POP2 #0000 }
+	[ LIT2 &bottom $2 ] LTH2k ?{ SWP2 }
+	POP2
+	( | has changed )
+	DUP2 .&y LDZ2 NEQ2 ?{ POP2 JMP2r }
+	( | set )
+	.&y STZ2
+	directory/<reqdraw>
+	status/<reqdraw> !/<reqdraw>
+
+@scrollbar/<set-height> ( height* -- )
+	DUP2 #0057 SUB2 ,&bottom STR2
+	#03 SFT2 #07 SUB SUB ,&rows STR
+	JMP2r
+
+@scrollbar/<set-width> ( width* -- )
+	#0010 SUB2 ,&x1 STR2
+	JMP2r
+
+@scrollbar/<bind> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@scrollbar/get-y ( -- y* )
+	.&y LDZ2 #30 SFT2 JMP2r
+
+@scrollbar/is-within ( x* -- t )
+	/get-x GTH2 JMP2r
+
+@scrollbar/get-x ( -- x1* )
+	[ LIT2 &x1 $2 ] JMP2r
+
+@scrollbar/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	( | mouse up )
+	ORA ?{ BRK }
+	( | mouse down )
+	.Mouse/y DEI2 ;&top SUB2 /<set>
+	BRK
+
+@scrollbar/<redraw> ( -- )
 	window/get-width #0010 SUB2 ;&y1 Screen/<set-pos>
-	[ LIT2 01 d5 ] ;&bg-icn #16 <draw-times-addr>
+	[ LIT2 01 &rows d5 ] ;&bg-icn #16 <draw-times-addr>
 	( | top )
 	;&y1 .Screen/y DEO2
 	;&arrow-icn .Screen/addr DEO2
-	#01 .Screen/sprite DEOk DEO
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
 	( | middle )
-	#0039 .Screen/y DEO2
+	#0039 .&y LDZ2 ADD2 .Screen/y DEO2
 	;&drag-chr .Screen/addr DEO2
-	#85 .Screen/sprite DEOk DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEO
 	( | bottom )
 	.Screen/height DEI2 #0008 SUB2 .Screen/y DEO2
 	;&arrow-icn .Screen/addr DEO2
-	#21 .Screen/sprite DEOk DEO
+	[ LIT2 21 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@scrollbar/<reqdraw> ( -- )
+	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+
+@scrollbar/<try-draw> ( -- )
+	[ LIT &reqdraw 00 ] ?{
+		/<redraw>
+		[ LIT2 01 _&reqdraw ] STR }
 	JMP2r
 
 (
@@ -397,6 +857,10 @@
 	;&buf ,&ptr STR2
 	#0000 ;&buf STA2
 	JMP2r
+
+@decstr/<push-str-ws> ( num* -- )
+	/<push-str>
+	#20 !/<push>
 
 @decstr/<push-str> ( num* -- )
 	&>w
@@ -419,22 +883,64 @@
 	STA2
 	JMP2r
 
+@decstr/make-numstr ( num* str* -- buf* )
+	/<reset>
+	SWP2 /<push-num>
+	/<push-str>
+	;&buf JMP2r
+
+@decstr/make-name ( str* -- buf* )
+	/<reset>
+	[ LITr 00 ]
+	&>wmn
+		LDAk DUP ?{ &emn POP POPr POP2 ;&buf JMP2r }
+		STHkr #0c NEQ ?{
+			LIT2 ".. /<push>
+			/<push> !/emn }
+		/<push>
+		INC2 INCr !/>wmn
+
+@decstr/make-dir ( str* -- buf* )
+	/<reset>
+	&>wmd
+		LDAk DUP ?{ &emd POP POP2 ;&buf JMP2r }
+		DUP LIT "/ EQU ?/emd
+		/<push>
+		INC2 !/>wmd
+
 (
 @|Stdlib )
 
-@str/<print-ln> ( str* -- )
-	/<print>
-	#0a18 DEO
-	JMP2r
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?/>l
+	POP POP2r JMP2r
 
-@str/<print> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	#18 DEO
-	INC2 !/<print>
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
+@str/hex ( str* -- value* )
+	[ LIT2r 0000 ]
+	&>wh
+		[ LITr 40 ] SFT2r LDAk chr/hex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?/>wh
+	POP2 STH2r JMP2r
 
 @str/cap ( str* -- end* )
 	LDAk ?{ JMP2r }
 	INC2 !/cap
+
+@str/match ( a* b* -- t )
+	LDAk LIT "* EQU ?/cmp-tail
+	( >> )
 
 @str/cmp ( a* b* -- f )
 	STH2
@@ -443,21 +949,57 @@
 		LDAk LDAkr STHr NEQ ?/d
 		INC2 INC2r !/>wc
 
+@str/cmp-tail ( a* b* -- t )
+	INC2 STH2k /len SWP2 /cap SWP2 SUB2 STH2r !/cmp
+
+@str/len ( str* -- len* )
+	STH2k /cap STH2r SUB2 JMP2r
+
+@str/<print-ln> ( str* -- )
+	/<print>
+	#0a18 DEO
+	JMP2r
+
+@str/<print> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !/>w
+
 (
 @|Dict )
 
 @dict/win7 "Win7 00
+	&home "Home 00
 	&next "Next 00
+	&open "Open 00
 	&prev "Previous 00
 	&next-row "Next 20 "Row 00
 	&prev-row "Previous 20 "Row 00
 	&parent "Parent 00
 	&deselect "Deselect 00
+	&selected 20 "Selected 00
+	&rename "Rename 00
+	&command "Command 00
+	&modes "Modes 00
+	&search "Search 00
+	&files 20 "Files 00
+	&mv-command "mv 00
+	&empty "Empty 00
+	&bytes 20 "bytes 00
+	&md-ext ".md 00
 	&chr-ext ".chr 00
 	&icn-ext ".icn 00
 	&uf2-ext ".uf2 00
 	&rom-ext ".rom 00
+	&png-ext ".png 00
+	&jpg-ext ".jpg 00
 	&home-path "./ 00
+	&window "Window 00
+	&incw "Inc. 20 "Width 00
+	&decw "Dec. 20 "Width 00
+	&inch "Inc. 20 "Height 00
+	&dech "Dec. 20 "Height 00
 
 
 
@@ -465,9 +1007,16 @@
 (
 @|Cursor )
 
-@cursor/<update> ( -- )
+@cursor/<lock> ( -- )
+	#0000 .Mouse/vector DEO2
+	( >> )
+
+@cursor/<clear> ( -- )
 	[ LIT2 12 -Screen/auto ] DEO
-	#40 ;fill-icn /<draw>
+	#40 ;fill-icn !/<draw>
+
+@cursor/<update> ( -- )
+	/<clear>
 	[ LIT2 16 -Screen/auto ] DEO
 	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
 	.Mouse/x DEI2 ,&x STR2
@@ -482,6 +1031,21 @@
 	.Screen/sprite DEOk DEO
 	JMP2r
 
+@cursor/<refocus> ( -- )
+	.Mouse/state DEI ?{
+		.Mouse/y DEI2
+		( | is in header )
+		DUP2 #0013 LTH2 ?{
+			( | is in status )
+			#002a LTH2 ?{
+				.Mouse/x DEI2
+				( | is in scrollbar )
+				scrollbar/is-within ?scrollbar/<bind>
+				!directory/<bind> }
+			!status/<bind> }
+		POP2 !header/<bind> }
+	JMP2r
+
 (
 @|Header )
 
@@ -493,7 +1057,7 @@
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
+	DUP2 #0002 NEQ2 ?{ window/<toggle-shade> }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -509,14 +1073,18 @@
 	#0000 .Screen/y DEO2
 	;&button-down-icn !/<draw-button>
 
+@header/<set-width> ( width* -- )
+	#03 SFT2 SUB ,&cols STR
+	JMP2r
+
 @header/<release-quit> ( -- )
 	/outside-quit ?{ #800f DEO }
 	( >> )
 
-@header/<draw> ( -- )
+@header/<redraw> ( -- )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
-	[ LIT2 85 -&rows ] ;&bg-chr #25 <draw-times-addr>
+	[ LIT2 85 &cols $1 ] ;&bg-chr #25 <draw-times-addr>
 	( | 1px right )
 	.Screen/x DEI2k #0001 SUB2 ROT DEO2
 	#000e .Screen/y DEO2
@@ -530,7 +1098,7 @@
 	#000e .Screen/y DEO2
 	[ LIT2 b2 -Screen/pixel ] DEO
 	( | title )
-	path/get-location INC2 /<draw-title>
+	path/make-location /<draw-title>
 	( | button left )
 	#0008 .Screen/x DEO2
 	#0000 .Screen/y DEO2
@@ -544,8 +1112,7 @@
 	JMP2r
 
 @header/<draw-title> ( str* -- )
-	;&center OVR2 chicago/get-str-width #01 SFT2 SUB2
-	( ) #000a SUB2 .Screen/x DEO2
+	window/get-center OVR2 chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
 	#0001 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	#09 ;chicago/color STA
@@ -556,6 +1123,15 @@
 	.Screen/y DEI2k #0001 SUB2 ROT DEO2
 	#81fe ;&bg-chr #15 !<draw-times-addr>
 
+@header/<reqdraw> ( -- )
+	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+
+@header/<try-draw> ( -- )
+	[ LIT &reqdraw 00 ] ?{
+		/<redraw>
+		[ LIT2 01 _&reqdraw ] STR }
+	JMP2r
+
 @utf8/next ( addr* -- addr* )
 	&>w
 		INC2 LDAk #06 SFT #02 EQU ?/>w
@@ -564,28 +1140,91 @@
 (
 @|Window )
 
+@window/on-frame ( -> )
+	path/<try-load>
+	header/<try-draw>
+	directory/<try-draw>
+	status/<try-draw>
+	scrollbar/<try-draw>
+	rename/<try-draw>
+	#0000 .Screen/vector DEO2
+	BRK
+
+@window/<reqdraw> ( -- )
+	;&on-frame .Screen/vector DEO2
+	JMP2r
+
+@window/<redraw-all> ( -- )
+	header/<redraw>
+	directory/<redraw>
+	status/<redraw> !scrollbar/<redraw>
+
+@window/<reqdraw-all> ( -- )
+	header/<reqdraw>
+	directory/<reqdraw>
+	status/<reqdraw> !scrollbar/<reqdraw>
+
 @window/get-center ( -- center* )
 	/get-width #01 SFT2 JMP2r
 
 @window/get-width ( -- width* )
 	[ LIT2 &width $2 ] JMP2r
 
+@window/get-height ( -- width* )
+	[ LIT2 &height $2 ] JMP2r
+
+@window/<detect-size> ( -- )
+	.Screen/width DEI2 .Screen/height DEI2
+	( >> )
+
 @window/<set-size> ( width* height* -- )
+	/validate-size ?{ POP2 POP2 JMP2r }
+	( | has changed )
 	DUP2 ,&height STR2
-	.Screen/height DEO2
+	scrollbar/<set-height>
 	DUP2 ,&width STR2
-	.Screen/width DEO2
+	DUP2 scrollbar/<set-width>
+	DUP2 status/<set-width>
+	DUP2 directory/<set-width>
+	header/<set-width> !/req-resize
+
+@window/validate-size ( w* h* -- w* h* t )
+	DUP2 #0068 LTH2 ?/fail
+	OVR2 #0060 LTH2 ?/fail
+	DUP2 /get-height NEQ2 ?/valid
+	OVR2 /get-width NEQ2 ?/valid
+	&fail ( w* h* -- w* h* t )
+	#00 JMP2r
+
+	&valid ( w* h* -- w* h* t )
+	#01 JMP2r
+
+@window/req-resize ( -- )
+	;&on-frame-resize .Screen/vector DEO2
 	JMP2r
 
-@window/<set-height> ( height* -- )
-	DUP2 ,&height STR2
-	.Screen/height DEO2
-	header/<draw> !<redraw-all>
+@window/on-frame-resize ( -> )
+	/get-width .Screen/width DEO2
+	/get-height .Screen/height DEO2
+	#0000 .Screen/vector DEO2
+	/<redraw-all>
+	BRK
 
-@window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
-	[ LIT2 &height $2 ] .Screen/height DEO2
-	header/<draw> !<redraw-all>
+@window/<toggle-shade> ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<reqdraw> }
+	/get-height .Screen/height DEO2 !/<reqdraw-all>
+
+@window/<decw> ( -- )
+	/get-width #0020 SUB2 /get-height !/<set-size>
+
+@window/<incw> ( -- )
+	/get-width #0020 ADD2 /get-height !/<set-size>
+
+@window/<dech> ( -- )
+	/get-width /get-height #0020 SUB2 !/<set-size>
+
+@window/<inch> ( -- )
+	/get-width /get-height #0020 ADD2 !/<set-size>
 
 @manifest/scan ( but key -- fn* )
 	ORAk ?{ POP2 #ffff JMP2r }
@@ -599,6 +1238,53 @@
 			#0006 ADD2 GTH2k ?/>opt
 		POP2 INC2 LDAk ?/>cat
 	POP2 #ffff JMP2r
+
+(
+@|Meta )
+
+@meta/get-addr ( path* -- addr* )
+	#0000 ,&port-deo2 STR2
+	( | lit2 addr* )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	;&lit2 .File/read DEO2
+	#0002 .File/length DEO2
+	;&addr .File/read DEO2
+	.File/success-lb DEI ?{ #0000 JMP2r }
+	( | lit port-deo2* )
+	#0001 .File/length DEO2
+	;&lit .File/read DEO2
+	#0002 .File/length DEO2
+	;&port-deo2 .File/read DEO2
+	.File/success-lb DEI ?{ #0000 JMP2r }
+	( a ) [ LIT2 &lit2 $1 &lit $1 ] #a080 EQU2
+	( b ) [ LIT2 &port-deo2 $2 ] #0637 EQU2 AND ?{ #0000 JMP2r }
+	[ LIT2 &addr $2 ] JMP2r
+
+@meta/<draw-icon> ( filepath* -- )
+	/get-addr ORAk ?{ POP2 JMP2r }
+	file/<seek>
+	;&buflen .File/length DEO2
+	;&buf .File/read DEO2
+	;&body str/cap INC2
+	( | parse fields )
+	LDAk #00 SWP #0003 MUL2 OVR2 INC2 ADD2 SWP2 INC2
+	&>l
+		LDAk #83 NEQ ?{
+			( | Load icon )
+			INC2k LDA2 file/<seek>
+			#0090 .File/length DEO2
+			;&icon .File/read DEO2
+			[ LIT2 90 -File/success-lb ] DEI NEQ ?{
+				( | Draw icon )
+				.Screen/x DEI2 DUP2 #0018 SUB2 .Screen/x DEO2
+				.Screen/y DEI2k #0018 SUB2 ROT DEO2
+				;&icon .Screen/addr DEO2
+				[ LIT2 26 -Screen/auto ] DEO
+				[ LIT2 85 -Screen/sprite ] DEOk DEOk DEO
+				.Screen/x DEO2 } }
+		#0003 ADD2 GTH2k ?/>l
+	POP2 POP2 JMP2r
 
 (
 @|Theme )
@@ -663,7 +1349,8 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	&>wsc
 		/<draw-utf8>
-		utf8/next LDAk ?/>wsc &end POP2 JMP2r
+		utf8/next LDAk ?/>wsc
+	POP2 JMP2r
 
 @sans/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
@@ -717,7 +1404,8 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	&>wsc
 		/<draw-utf8>
-		utf8/next LDAk ?/>wsc &end POP2 JMP2r
+		utf8/next LDAk ?/>wsc
+	POP2 JMP2r
 
 @chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
@@ -747,14 +1435,18 @@
 	ffff ffff ffff ffff ffff ffff ffff ffff
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
-@scroll/arrow-icn [8
+@status/bar-icn [8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00ff 00ff ]
+
+@scrollbar/arrow-icn [8
 	4040 4040 4040 4041 0000 0000 0000 c0e0
 	4340 4040 4040 407f f000 0000 0000 00ff ]
 
-@scroll/bg-icn [8
+@scrollbar/bg-icn [8
 	556a 556a 556a 556a 55aa 55aa 55aa 55aa ]
 
-@scroll/drag-chr [8
+@scrollbar/drag-chr [8
 	7f40 4040 4340 4340 003f 3f3f 3c3f 3c3f
 	ff00 0000 f000 f000 00ff ffff 0fff 0fff
 	4340 4340 4040 7f00 3c3f 3c3f 3f3f 0000
@@ -845,6 +1537,16 @@
 	0000 0000 0000 0000 2020 2020 2020 2020
 	0000 0000 0000 0000 1806 0100 0000 0000
 	0000 8060 1806 0100 2020 2020 2020 a060 ]
+
+@file/dot [8
+	1024 0120 0020 0020 0000 0040 1004 0100
+	0000 0000 0000 0040 0000 0000 0000 0000
+	0020 0020 0020 0020 0000 0000 0000 0000
+	1004 0100 0000 0000 0000 0040 0020 0020
+	0020 0020 0802 0000 0000 0000 0000 8020
+	0000 0000 0000 0000 0020 0020 0020 0020
+	0000 0000 0000 0000 0802 0000 0000 0000
+	0000 8020 0802 0000 0020 0020 0020 8000 ]
 
 @chicago/widths [
 	0406 070a 070b 0a03 0505 0707 0407 0407 0808 0808 0808 0808 0808 0404 0608 0608
@@ -1128,9 +1830,20 @@
 (
 @|Buffers )
 
-@path/dirbuf $&dirlen
+@directory/buf $&buflen
 
-@directory/buf $&len
+@rename/buf $&buflen
 
-@decstr/buf $40
+@decstr/buf $&buflen
+
+@search/buf $&buflen
+
+@path/dirbuf $&dirbuflen
+
+@command/buf $&buflen
+
+@sel/buf $&buflen
+
+@meta/buf $1 &body $&buflen
+	&cap 0000 &icon $90
 

@@ -510,27 +510,28 @@ starting at the slash, like <kbd>/method</kbd>:</p>
 	JMP2r
 </pre>
 
-<p id='multistack'>Sufficiently complex datastructures might want to encapsulate buffers behind interfaces and do their error handling, these will often be stacks themselves. A common use for the <b>multistack pattern</b> is for nesting hierarchies and editable strings:</p>
+<p id='multistack'>Sufficiently complex datastructures might want to encapsulate data behind interfaces and do their own error handling, these will often be stacks themselves. A common use for the <b>multistack pattern</b> is for nesting hierarchies and editable strings:</p>
 
 <pre>
-<i>( A string object example )</i>
+<i>( Copy the content of one stack into another )</i>
 
-<b>@string/push-string</b> <i>( str* -- )</i>
+stack-a/get-buf
+	stack-b/push-str
+BRK
+
+<b>@stack-b/push-str</b> <i>( str -- )</i>
 	&>w
-		LDAk DUP ?{ POP POP2 JMP2r }
-		/push-char INC2 !/>w
+		LDAk DUP /push-char ?{ POP2 JMP2r }
+		INC2 !/>w
 
-<b>@string/push-char</b> <i>( c -- )</i>
-	#00 [ LIT2 &ptr =&buf ]
-	DUP2 ;&cap NEQ2 ?{
-		<i>( catch overflow )</i>
+<b>@stack-b/push-char</b> <i>( c -- )</i>
+	[ LIT2 00 &ptr -&buf ]
+	DUP .&cap NEQ ?{
+		( catch overflow for stack b )
 	}
-	INC2k ,&ptr STR2 STA2 JMP2r
+	INCk ,&ptr STR STZ2 JMP2r
 
-<b>@string/get-length</b> <i>( -- length* )</i>
-	,&ptr LDR2 ;&buf SUB2 JMP2r
-
-<b>@string/buf</b> $40 &cap
+<b>|00 @stack-b/buf</b> $40 &cap
 </pre>
 
 <q>The notion of an interface is what truly characterizes objects - not classes, not inheritance, not mutable state.</q>
