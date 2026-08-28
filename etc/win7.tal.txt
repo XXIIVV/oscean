@@ -27,6 +27,8 @@
 |0040 @command/buflen
 |0200 @sel/buflen
 |0200 @rename/buflen
+|0200 @mkdir/buflen
+|1000 @copy/buflen
 
 |000
 
@@ -64,8 +66,12 @@
 	( - ) 80 00 =directory/<next> =dict/next
 	( - ) 00 08 =directory/<parent> =dict/parent
 	( - ) 00 1b =directory/<deselect> =dict/deselect }
+	_{ =dict/edit
+	( - ) 01 "c =copy/<apply> =dict/copy
+	( - ) 01 "v =paste/<apply> =dict/paste }
 	_{ =dict/modes
-	( - ) 01 "r =rename/<bind> =dict/rename }
+	( - ) 01 "r =rename/<bind> =dict/rename
+	( - ) 01 "n =mkdir/<bind> =dict/mkdir }
 	_{ =dict/window
 	( - ) 12 00 =window/<dech> =dict/dech
 	( - ) 22 00 =window/<inch> =dict/inch
@@ -131,6 +137,7 @@
 	;&dirbuf .File/read DEO2
 	directory/<reset>
 	#0000 scrollbar/<set>
+	header/<reqdraw>
 	/<nullws>
 	/<parse-folders> !/<parse-files>
 
@@ -159,7 +166,8 @@
 	;&buf !str/<print>
 
 @path/<reqload> ( -- )
-	[ LIT2 00 _&reqload ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqload ] STR
+	header/<reqdraw> !window/<reqdraw>
 
 @path/<try-load> ( -- )
 	[ LIT &reqload 01 ] ?{
@@ -201,6 +209,7 @@
 	search/is-active ?/<redraw-search>
 	rename/is-active ?/<redraw-rename>
 	command/is-active ?/<redraw-command>
+	mkdir/is-active ?/<redraw-mkdir>
 	( | center )
 	/<draw-length>
 	( | right )
@@ -210,6 +219,9 @@
 
 @status/<redraw-rename> ( -- )
 	;dict/rename !sans/<draw-center>
+
+@status/<redraw-mkdir> ( -- )
+	;dict/create !sans/<draw-center>
 
 @status/<redraw-search> ( -- )
 	;dict/search sans/<draw-center>
@@ -276,8 +288,7 @@
 @command/<send> ( str* -- )
 	.Console/addr DEO2
 	[ LIT2 00 -Console/mode ] DEO
-	[ LIT2 01 -Console/exec ] DEO
-	JMP2r
+	[ LIT2 01 -Console/exec ] DEO !path/<reqload>
 
 @command/<stop> ( c -- )
 	POP /<reset>
@@ -292,7 +303,8 @@
 	( | is active )
 	decstr/<reset>
 	( | send )
-	;&buf decstr/<push-str-ws>
+	;&buf decstr/<push-str>
+	#20 decstr/<push>
 	;&do-filepath sel/<for-each>
 	;decstr/buf /<send>
 	/<reset>
@@ -301,7 +313,9 @@
 	scrollbar/<reqdraw> !status/<reqdraw>
 
 @command/do-filepath ( str* -- )
-	;path/buf decstr/<push-str> !decstr/<push-str-ws>
+	;path/buf decstr/<push-esc>
+	decstr/<push-esc>
+	#20 !decstr/<push>
 
 (
 @|Directory )
@@ -367,6 +381,7 @@
 
 @directory/<deselect> ( -- )
 	sel/<reset>
+	path/<reload>
 	#ffff !/<set>
 
 @directory/<next> ( -- )
@@ -647,16 +662,16 @@
 
 @rename/<done> ( c -- )
 	POP decstr/<reset>
-	;dict/mv-command decstr/<push-str-ws>
+	;dict/mv-command decstr/<push-str>
 	( | a )
 	;path/buf decstr/<push-str>
 	directory/get-name decstr/<push-str-ws>
 	( | b )
 	;path/buf decstr/<push-str>
-	;&buf decstr/<push-str>
+	;&buf decstr/<push-esc>
+	( | send )
 	;decstr/buf command/<send>
-	directory/<deselect>
-	directory/<bind> !path/<reqload>
+	directory/<deselect> !directory/<bind>
 
 @rename/<stop> ( c -- )
 	POP directory/<bind>
@@ -681,6 +696,118 @@
 	[ LIT &reqdraw 01 ] ?{
 		/<redraw>
 		[ LIT2 01 _&reqdraw ] STR }
+	JMP2r
+
+(
+@|Mkdir )
+
+@mkdir/<reset> ( -- )
+	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
+	JMP2r
+
+@mkdir/<bind> ( -- )
+	;&on-button .Controller/vector DEO2
+	cursor/<lock>
+	/<reset>
+	status/<reqdraw>
+	;dict/new-folder /<push-str> !/<reqdraw>
+
+@mkdir/is-active ( -- t )
+	;&on-button .Controller/vector DEI2 EQU2 JMP2r
+
+@mkdir/on-button ( -> )
+	.Controller/key DEI /<put>
+	BRK
+
+@mkdir/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>w
+
+@mkdir/<put> ( c -- )
+	DUP ?{ POP JMP2r }
+	DUP #0d EQU ?/<done>
+	DUP #08 EQU ?/<pop>
+	DUP #1b EQU ?/<stop>
+	( >> )
+
+@mkdir/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2 !/<reqdraw>
+
+@mkdir/<done> ( c -- )
+	POP decstr/<reset>
+	;dict/mkdir-command decstr/<push-str>
+	( | a )
+	;path/buf decstr/<push-str>
+	;&buf decstr/<push-esc>
+	( | send )
+	;decstr/buf command/<send>
+	directory/<deselect> !directory/<bind>
+
+@mkdir/<stop> ( c -- )
+	POP directory/<bind>
+	status/<reqdraw>
+	directory/<reqdraw> !scrollbar/<reqdraw>
+
+@mkdir/<pop> ( c -- )
+	POP #0000 ,&ptr LDR2
+	( clamp ) DUP2 ;&buf NEQ2 ?{ POP2 POP2 JMP2r }
+	#0001 SUB2 DUP2 ,&ptr STR2
+	STA2 !/<reqdraw>
+
+@mkdir/<redraw> ( -- )
+	scrollbar/<reqdraw>
+	directory/<hash>
+	;&buf directory/get-length !file/<draw-focus>
+
+@mkdir/<reqdraw> ( -- )
+	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+
+@mkdir/<try-draw> ( -- )
+	[ LIT &reqdraw 01 ] ?{
+		/<redraw>
+		[ LIT2 01 _&reqdraw ] STR }
+	JMP2r
+
+(
+@|Copy )
+
+@paste/<apply> ( -- )
+	;path/buf copy/<push-str>
+	directory/<reqdraw>
+	status/<reqdraw>
+	scrollbar/<reqdraw>
+	;copy/buf !command/<send>
+
+@copy/<apply> ( -- )
+	/<reset>
+	;&do-filepath sel/<for-each>
+	JMP2r
+
+@copy/do-filepath ( str* -- )
+	decstr/<reset>
+	;path/buf decstr/<push-esc>
+	decstr/<push-esc>
+	#20 decstr/<push>
+	;decstr/buf !/<push-str>
+
+@copy/<reset> ( -- )
+	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
+	;dict/cp-command !/<push-str>
+
+@copy/<push-str> ( num* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>w
+
+@copy/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
 	JMP2r
 
 (
@@ -868,6 +995,13 @@
 		/<push>
 		INC2 !/>w
 
+@decstr/<push-esc> ( num* -- )
+	&>we
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #20 NEQ ?{ LIT "\ /<push> }
+		/<push>
+		INC2 !/>we
+
 @decstr/<push-num> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read
@@ -976,15 +1110,23 @@
 	&prev "Previous 00
 	&next-row "Next 20 "Row 00
 	&prev-row "Previous 20 "Row 00
+	&mkdir "Create 20 "Folder 00
 	&parent "Parent 00
 	&deselect "Deselect 00
 	&selected 20 "Selected 00
 	&rename "Rename 00
+	&copy "Copy 00
+	&paste "Paste 00
+	&edit "Edit 00
+	&new-folder "New 20 "Folder 00
+	&create "Create 20 "Folder 00
 	&command "Command 00
 	&modes "Modes 00
 	&search "Search 00
 	&files 20 "Files 00
-	&mv-command "mv 00
+	&mv-command "mv 20 00
+	&mkdir-command "mkdir 20 00
+	&cp-command "cp 20 00
 	&empty "Empty 00
 	&bytes 20 "bytes 00
 	&md-ext ".md 00
@@ -1147,6 +1289,7 @@
 	status/<try-draw>
 	scrollbar/<try-draw>
 	rename/<try-draw>
+	mkdir/<try-draw>
 	#0000 .Screen/vector DEO2
 	BRK
 
@@ -1832,15 +1975,19 @@
 
 @directory/buf $&buflen
 
+@command/buf $&buflen
+
 @rename/buf $&buflen
 
 @decstr/buf $&buflen
 
 @search/buf $&buflen
 
+@mkdir/buf $&buflen
+
 @path/dirbuf $&dirbuflen
 
-@command/buf $&buflen
+@copy/buf $&buflen
 
 @sel/buf $&buflen
 
