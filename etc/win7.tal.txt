@@ -52,8 +52,9 @@
 	( ) "Win7 0a
 	( ) "A 20 "windowing 20 "interface 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "21 20 "Aug 20 "2026 00
-	( 2 ) 02
+	( ) "28 20 "Aug 20 "2026 00
+	( > ) 03
+	( - ) 83 =appicon
 	( - ) 56 =Varvara/version
 	( - ) a0 =manifest/dat
 
@@ -167,7 +168,7 @@
 
 @path/<reqload> ( -- )
 	[ LIT2 00 _&reqload ] STR
-	header/<reqdraw> !window/<reqdraw>
+	header/<reqdraw> !window/<bind-screen>
 
 @path/<try-load> ( -- )
 	[ LIT &reqload 01 ] ?{
@@ -232,7 +233,7 @@
 	window/get-width #0009 SUB2 #0016 Screen/<set-pos> !command/<draw>
 
 @status/<reqdraw> ( -- )
-	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqdraw ] STR !window/<bind-screen>
 
 @status/<try-draw> ( -- )
 	[ LIT &reqdraw 00 ] ?{
@@ -269,18 +270,13 @@
 
 @command/<push> ( c -- )
 	( >> ) #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	( >> )
-
-@command/<update> ( -- )
-	directory/<reqdraw>
-	scrollbar/<reqdraw> !status/<reqdraw>
+	STA2 !window/<reqdraw-body>
 
 @command/<pop> ( c -- )
 	POP #0000 ,&ptr LDR2
 	( clamp ) DUP2 ;&buf NEQ2 ?{ POP2 POP2 JMP2r }
 	#0001 SUB2 DUP2 ,&ptr STR2
-	STA2 !/<update>
+	STA2 !window/<reqdraw-body>
 
 @command/<draw> ( -- )
 	;&buf !sans/<draw-right>
@@ -292,9 +288,7 @@
 
 @command/<stop> ( c -- )
 	POP /<reset>
-	directory/<bind>
-	directory/<reqdraw>
-	scrollbar/<reqdraw> !status/<reqdraw>
+	directory/<bind> !window/<reqdraw-body>
 
 @command/<run> ( c -- )
 	POP ;&buf LDA ?{
@@ -308,9 +302,7 @@
 	;&do-filepath sel/<for-each>
 	;decstr/buf /<send>
 	/<reset>
-	directory/<bind>
-	directory/<reqdraw>
-	scrollbar/<reqdraw> !status/<reqdraw>
+	directory/<bind> !window/<reqdraw-body>
 
 @command/do-filepath ( str* -- )
 	;path/buf decstr/<push-esc>
@@ -404,9 +396,7 @@
 
 @directory/<set> ( id* -- )
 	DUP2 /id-to-name sel/<pick>
-	.&sel STZ2
-	status/<reqdraw>
-	/<reqdraw> !scrollbar/<reqdraw>
+	.&sel STZ2 !window/<reqdraw-body>
 
 @directory/<soft-set> ( id* -- )
 	;&buf SUB2 #01 SFT2 .&sel STZ2
@@ -495,7 +485,7 @@
 		INC2 INC2 INC2r !/>l
 
 @directory/<reqdraw> ( -- )
-	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqdraw ] STR !window/<bind-screen>
 
 @directory/<try-draw> ( -- )
 	[ LIT &reqdraw 00 ] ?{
@@ -598,9 +588,7 @@
 	( >> )
 
 @search/<update> ( -- )
-	;&buf sel/<pick-all>
-	directory/<reqdraw>
-	scrollbar/<reqdraw> !status/<reqdraw>
+	;&buf sel/<pick-all> !window/<reqdraw-body>
 
 @search/<pop> ( c -- )
 	POP #0000 ,&ptr LDR2
@@ -610,9 +598,7 @@
 
 @search/<stop> ( c -- )
 	POP /<reset>
-	directory/<bind>
-	directory/<reqdraw>
-	scrollbar/<reqdraw> !status/<reqdraw>
+	directory/<bind> !window/<reqdraw-body>
 
 @search/is-active ( -- t )
 	;&buf LDA JMP2r
@@ -661,22 +647,23 @@
 	STA2 !/<reqdraw>
 
 @rename/<done> ( c -- )
-	POP decstr/<reset>
+	POP
+	( | not empty )
+	;&buf str/walk-ws LDAk ?{ POP2 JMP2r }
+	decstr/<reset>
 	;dict/mv-command decstr/<push-str>
 	( | a )
 	;path/buf decstr/<push-str>
 	directory/get-name decstr/<push-str-ws>
 	( | b )
 	;path/buf decstr/<push-str>
-	;&buf decstr/<push-esc>
+	decstr/<push-esc>
 	( | send )
 	;decstr/buf command/<send>
 	directory/<deselect> !directory/<bind>
 
 @rename/<stop> ( c -- )
-	POP directory/<bind>
-	status/<reqdraw>
-	directory/<reqdraw> !scrollbar/<reqdraw>
+	POP directory/<bind> !window/<reqdraw-body>
 
 @rename/<pop> ( c -- )
 	POP #0000 ,&ptr LDR2
@@ -690,7 +677,7 @@
 	;&buf directory/get-id !file/<draw-focus>
 
 @rename/<reqdraw> ( -- )
-	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqdraw ] STR !window/<bind-screen>
 
 @rename/<try-draw> ( -- )
 	[ LIT &reqdraw 01 ] ?{
@@ -738,19 +725,20 @@
 	STA2 !/<reqdraw>
 
 @mkdir/<done> ( c -- )
-	POP decstr/<reset>
+	POP
+	( | not empty )
+	;&buf str/walk-ws LDAk ?{ POP2 JMP2r }
+	decstr/<reset>
 	;dict/mkdir-command decstr/<push-str>
 	( | a )
 	;path/buf decstr/<push-str>
-	;&buf decstr/<push-esc>
+	decstr/<push-esc>
 	( | send )
 	;decstr/buf command/<send>
 	directory/<deselect> !directory/<bind>
 
 @mkdir/<stop> ( c -- )
-	POP directory/<bind>
-	status/<reqdraw>
-	directory/<reqdraw> !scrollbar/<reqdraw>
+	POP directory/<bind> !window/<reqdraw-body>
 
 @mkdir/<pop> ( c -- )
 	POP #0000 ,&ptr LDR2
@@ -764,7 +752,7 @@
 	;&buf directory/get-length !file/<draw-focus>
 
 @mkdir/<reqdraw> ( -- )
-	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqdraw ] STR !window/<bind-screen>
 
 @mkdir/<try-draw> ( -- )
 	[ LIT &reqdraw 01 ] ?{
@@ -778,14 +766,13 @@
 @paste/<apply> ( -- )
 	;path/buf copy/<push-str>
 	directory/<reqdraw>
-	status/<reqdraw>
 	scrollbar/<reqdraw>
-	;copy/buf !command/<send>
+	status/<reqdraw>
+	;copy/buf command/<send> !copy/<reset>
 
 @copy/<apply> ( -- )
 	/<reset>
-	;&do-filepath sel/<for-each>
-	JMP2r
+	;&do-filepath !sel/<for-each>
 
 @copy/do-filepath ( str* -- )
 	decstr/<reset>
@@ -916,9 +903,7 @@
 	( | has changed )
 	DUP2 .&y LDZ2 NEQ2 ?{ POP2 JMP2r }
 	( | set )
-	.&y STZ2
-	directory/<reqdraw>
-	status/<reqdraw> !/<reqdraw>
+	.&y STZ2 !window/<reqdraw-body>
 
 @scrollbar/<set-height> ( height* -- )
 	DUP2 #0057 SUB2 ,&bottom STR2
@@ -969,7 +954,7 @@
 	JMP2r
 
 @scrollbar/<reqdraw> ( -- )
-	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqdraw ] STR !window/<bind-screen>
 
 @scrollbar/<try-draw> ( -- )
 	[ LIT &reqdraw 00 ] ?{
@@ -1089,6 +1074,12 @@
 @str/len ( str* -- len* )
 	STH2k /cap STH2r SUB2 JMP2r
 
+@str/walk-ws ( str* -- str* )
+	&>ww
+		LDAk DUP ?{ POP JMP2r }
+		#21 LTH ?{ JMP2r }
+		INC2 !/>ww
+
 @str/<print-ln> ( str* -- )
 	/<print>
 	#0a18 DEO
@@ -1200,14 +1191,22 @@
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
 	DUP2 #0002 NEQ2 ?{ window/<toggle-shade> }
-	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
+	DUP2 #0001 NEQ2 ?{
+		( | buttons )
+		/outside-quit ?{ /<press-quit> }
+		/outside-expand ?{ window/<expand> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
 	POP BRK
 
 @header/outside-quit ( -- f )
-	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
-		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
+	.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{
+		.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@header/outside-expand ( -- f )
+	.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{
+		.Mouse/x DEI2 window/get-width #0016 SUB2 SUB2 #000c GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
 @header/<press-quit> ( -- )
@@ -1231,16 +1230,16 @@
 	.Screen/x DEI2k #0001 SUB2 ROT DEO2
 	#000e .Screen/y DEO2
 	[ LIT2 a2 -Screen/pixel ] DEO
-	( | button right )
-	window/get-width #001a SUB2 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	;&collapse-icn /<draw-button>
 	( | 1px left )
 	#0001 .Screen/x DEO2
 	#000e .Screen/y DEO2
 	[ LIT2 b2 -Screen/pixel ] DEO
 	( | title )
 	path/make-location /<draw-title>
+	( | button right )
+	window/get-width #001a SUB2 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	;&collapse-icn /<draw-button>
 	( | button left )
 	#0008 .Screen/x DEO2
 	#0000 .Screen/y DEO2
@@ -1266,7 +1265,7 @@
 	#81fe ;&bg-chr #15 !<draw-times-addr>
 
 @header/<reqdraw> ( -- )
-	[ LIT2 00 _&reqdraw ] STR !window/<reqdraw>
+	[ LIT2 00 _&reqdraw ] STR !window/<bind-screen>
 
 @header/<try-draw> ( -- )
 	[ LIT &reqdraw 00 ] ?{
@@ -1293,7 +1292,7 @@
 	#0000 .Screen/vector DEO2
 	BRK
 
-@window/<reqdraw> ( -- )
+@window/<bind-screen> ( -- )
 	;&on-frame .Screen/vector DEO2
 	JMP2r
 
@@ -1304,8 +1303,11 @@
 
 @window/<reqdraw-all> ( -- )
 	header/<reqdraw>
+	( >> )
+
+@window/<reqdraw-body> ( -- )
 	directory/<reqdraw>
-	status/<reqdraw> !scrollbar/<reqdraw>
+	scrollbar/<reqdraw> !status/<reqdraw>
 
 @window/get-center ( -- center* )
 	/get-width #01 SFT2 JMP2r
@@ -1315,6 +1317,15 @@
 
 @window/get-height ( -- width* )
 	[ LIT2 &height $2 ] JMP2r
+
+@window/<expand> ( -- )
+	directory/get-length STH2
+	#0001
+	&>l
+		DUP2k MUL2 INC2 STH2kr GTH2 ?{ INC2 !/>l }
+	POP2r
+	( w ) DUP2 ;file/width MUL2 #0010 ADD2
+	( h ) SWP2 ;file/height MUL2 ;scrollbar/y1 ADD2 #0010 ADD2 !/<set-size>
 
 @window/<detect-size> ( -- )
 	.Screen/width DEI2 .Screen/height DEI2
@@ -1482,7 +1493,10 @@
 	( >> )
 
 @sans/<draw-center> ( text* -- )
-	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2 !/<draw-left>
+	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2
+	( | Clamp left )
+	DUP2 #8000 LTH2 ?{ POP2 #0000 }
+	.Screen/x DEO2 !/<draw-left>
 
 @sans/<draw-left-color> ( text* color -- )
 	,&color STR
@@ -1594,6 +1608,17 @@
 	ff00 0000 f000 f000 00ff ffff 0fff 0fff
 	4340 4340 4040 7f00 3c3f 3c3f 3f3f 0000
 	f000 f000 0000 ff00 0fff 0fff ffff 0000 ]
+
+@appicon [8
+	0000 0007 1810 1010 0000 0000 070f 0f0f
+	0000 0000 f00f 0000 0000 0000 00f0 ffff
+	0000 0018 e808 0812 0000 0000 10f0 f0e0
+	1010 1010 1010 1010 0f0f 0f0f 0f0f 0f0f
+	8181 0808 1842 3c00 7e7e f7f7 e7bd c3ff
+	0808 0808 0812 0808 f0f0 f0f0 f0e0 f0f0
+	1017 1800 0000 0000 0f08 0000 0000 0000
+	0000 f00f 0000 0000 ffff 0f00 0000 0000
+	0818 e000 0000 0000 f0e0 0000 0000 0000 ]
 
 @header/bg-chr [8
 	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
