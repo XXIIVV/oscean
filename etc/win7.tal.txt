@@ -20,10 +20,11 @@
 |0040 @search/buflen
 |0040 @decstr/buflen
 |0012 @status/y1
-|2000 @path/dirbuflen
+|2000 @path/memlen
 |0060 @file/width
 |0038 @file/height
-|0120 @meta/buflen
+|0120 @meta/memlen
+|0090 @meta/iconlen
 |0040 @command/buflen
 |0200 @sel/buflen
 |0200 @rename/buflen
@@ -52,7 +53,7 @@
 	( ) "Win7 0a
 	( ) "A 20 "windowing 20 "interface 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "28 20 "Aug 20 "2026 00
+	( ) "29 20 "Aug 20 "2026 00
 	( > ) 03
 	( - ) 83 =appicon
 	( - ) 56 =Varvara/version
@@ -69,7 +70,8 @@
 	( - ) 00 1b =directory/<deselect> =dict/deselect }
 	_{ =dict/edit
 	( - ) 01 "c =copy/<apply> =dict/copy
-	( - ) 01 "v =paste/<apply> =dict/paste }
+	( - ) 01 "v =paste/<apply> =dict/paste
+	( - ) 01 "d =duplicate/<apply> =dict/duplicate }
 	_{ =dict/modes
 	( - ) 01 "r =rename/<bind> =dict/rename
 	( - ) 01 "n =mkdir/<bind> =dict/mkdir }
@@ -116,7 +118,13 @@
 		INC2 !/>wpu
 
 @path/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -&buf ]
+	( | clamp )
+	.&cap LTHk ?{
+		( | TODO: Warn overflow )
+		SWP }
+	POP
+	( ) INCk ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -134,8 +142,8 @@
 
 @path/<reload> ( -- )
 	;&buf .File/name DEO2
-	;&dirbuflen .File/length DEO2
-	;&dirbuf .File/read DEO2
+	;&memlen .File/length DEO2
+	;&mem .File/read DEO2
 	directory/<reset>
 	#0000 scrollbar/<set>
 	header/<reqdraw>
@@ -143,21 +151,21 @@
 	/<parse-folders> !/<parse-files>
 
 @path/<parse-folders> ( -- )
-	;&dirbuf
+	;&mem
 	&>wfo
 		LDAk ?{ POP2 JMP2r }
 		LDAk LIT "- NEQ ?{ directory/push }
 		#0005 ADD2 str/cap INC2 !/>wfo
 
 @path/<parse-files> ( -- )
-	;&dirbuf
+	;&mem
 	&>wfi
 		LDAk ?{ POP2 JMP2r }
 		LDAk LIT "- EQU ?{ directory/push }
 		#0005 ADD2 str/cap INC2 !/>wfi
 
 @path/<nullws> ( -- )
-	;&dirbuf
+	;&mem
 	&>wnw
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#1f GTH ?{ LITr 00 STH2k STAr }
@@ -263,13 +271,20 @@
 
 @command/<put> ( c -- )
 	DUP ?{ POP JMP2r }
-	DUP #1b EQU ?/<stop>
-	DUP #0d EQU ?/<run>
 	DUP #08 EQU ?/<pop>
+	DUP #0d EQU ?/<run>
+	DUP #1b EQU ?/<stop>
+	DUP #7f EQU ?/<stop>
 	( >> )
 
 @command/<push> ( c -- )
-	( >> ) #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	( >> ) #00 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k ,&ptr STR2
 	STA2 !window/<reqdraw-body>
 
 @command/<pop> ( c -- )
@@ -406,7 +421,13 @@
 	POP2 #0000 !/<set>
 
 @directory/push ( desc-name* -- desc-name* )
-	DUP2 #0005 ADD2 [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	DUP2 #0005 ADD2 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -507,7 +528,13 @@
 
 @sel/<push> ( filename* -- )
 	ORAk ?{ POP2 JMP2r }
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	[ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -577,13 +604,21 @@
 
 @search/<put> ( c -- )
 	DUP ?{ POP JMP2r }
-	DUP #1b EQU ?/<stop>
-	DUP #0d EQU ?/<stop>
 	DUP #08 EQU ?/<pop>
+	DUP #09 EQU ?/<stop>
+	DUP #0d EQU ?/<stop>
+	DUP #1b EQU ?/<stop>
+	DUP #7f EQU ?/<stop>
 	( >> )
 
 @search/<push> ( c -- )
-	( >> ) #00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	( >> ) #00 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k ,&ptr STR2
 	STA2
 	( >> )
 
@@ -637,13 +672,21 @@
 
 @rename/<put> ( c -- )
 	DUP ?{ POP JMP2r }
-	DUP #0d EQU ?/<done>
 	DUP #08 EQU ?/<pop>
+	DUP #09 EQU ?/<stop>
+	DUP #0d EQU ?/<done>
 	DUP #1b EQU ?/<stop>
+	DUP #7f EQU ?/<stop>
 	( >> )
 
 @rename/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	#00 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k ,&ptr STR2
 	STA2 !/<reqdraw>
 
 @rename/<done> ( c -- )
@@ -715,13 +758,21 @@
 
 @mkdir/<put> ( c -- )
 	DUP ?{ POP JMP2r }
-	DUP #0d EQU ?/<done>
 	DUP #08 EQU ?/<pop>
+	DUP #09 EQU ?/<done>
+	DUP #0d EQU ?/<stop>
 	DUP #1b EQU ?/<stop>
+	DUP #7f EQU ?/<stop>
 	( >> )
 
 @mkdir/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	#00 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k ,&ptr STR2
 	STA2 !/<reqdraw>
 
 @mkdir/<done> ( c -- )
@@ -763,11 +814,22 @@
 (
 @|Copy )
 
-@paste/<apply> ( -- )
+@duplicate/<apply> ( -- )
+	sel/get-length #0001 EQU2 ?{ JMP2r }
+	copy/<reset>
 	;path/buf copy/<push-str>
-	directory/<reqdraw>
-	scrollbar/<reqdraw>
-	status/<reqdraw>
+	directory/get-name copy/<push-str>
+	#20 copy/<push>
+	;path/buf copy/<push-str>
+	directory/get-name copy/<push-str>
+	;dict/dup-suffix copy/<push-str>
+	window/<reqdraw-body>
+	;copy/buf command/<send> !copy/<reset>
+
+@paste/<apply> ( -- )
+	;copy/buf LDA ?{ JMP2r }
+	;path/buf copy/<push-str>
+	window/<reqdraw-body>
 	;copy/buf command/<send> !copy/<reset>
 
 @copy/<apply> ( -- )
@@ -793,7 +855,13 @@
 		INC2 !/>w
 
 @copy/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	#00 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -998,7 +1066,13 @@
 	POP2r JMP2r
 
 @decstr/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	#00 [ LIT2 &ptr =&buf ]
+	( | clamp )
+	;&bufend LTH2k ?{
+		( TODO: Warn ) SWP2 }
+	POP2
+	( | save )
+	INC2k ,&ptr STR2
 	STA2
 	JMP2r
 
@@ -1108,6 +1182,7 @@
 	&rename "Rename 00
 	&copy "Copy 00
 	&paste "Paste 00
+	&duplicate "Duplicate 00
 	&edit "Edit 00
 	&new-folder "New 20 "Folder 00
 	&create "Create 20 "Folder 00
@@ -1120,6 +1195,7 @@
 	&cp-command "cp 20 00
 	&empty "Empty 00
 	&bytes 20 "bytes 00
+	&dup-suffix "_2 00
 	&md-ext ".md 00
 	&chr-ext ".chr 00
 	&icn-ext ".icn 00
@@ -1418,16 +1494,16 @@
 @meta/<draw-icon> ( filepath* -- )
 	/get-addr ORAk ?{ POP2 JMP2r }
 	file/<seek>
-	;&buflen .File/length DEO2
+	;&memlen .File/length DEO2
 	;&buf .File/read DEO2
-	;&body str/cap INC2
+	;&mem str/cap INC2
 	( | parse fields )
 	LDAk #00 SWP #0003 MUL2 OVR2 INC2 ADD2 SWP2 INC2
 	&>l
 		LDAk #83 NEQ ?{
 			( | Load icon )
 			INC2k LDA2 file/<seek>
-			#0090 .File/length DEO2
+			;&iconlen .File/length DEO2
 			;&icon .File/read DEO2
 			[ LIT2 90 -File/success-lb ] DEI NEQ ?{
 				( | Draw icon )
@@ -1998,24 +2074,23 @@
 (
 @|Buffers )
 
-@directory/buf $&buflen
+@directory/buf $&buflen &bufend
 
-@command/buf $&buflen
+@command/buf $&buflen &bufend
 
-@rename/buf $&buflen
+@rename/buf $&buflen &bufend
 
-@decstr/buf $&buflen
+@decstr/buf $&buflen &bufend
 
-@search/buf $&buflen
+@search/buf $&buflen &bufend
 
-@mkdir/buf $&buflen
+@mkdir/buf $&buflen &bufend
 
-@path/dirbuf $&dirbuflen
+@copy/buf $&buflen &bufend
 
-@copy/buf $&buflen
+@sel/buf $&buflen &bufend
 
-@sel/buf $&buflen
+@path/mem $&memlen
 
-@meta/buf $1 &body $&buflen
-	&cap 0000 &icon $90
+@meta/buf $1 &mem $&memlen 0000 &icon $&iconlen
 
