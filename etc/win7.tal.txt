@@ -36,15 +36,16 @@
 	@path/buf $80 &cap
 	@directory/sel $2
 	@scrollbar/y $2
+	@window/width $2 &height $2
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	;dict/home-path path/<set>
+	path/<init>
+	window/<init>
 	directory/<deselect>
-	window/<detect-size>
 	path/<reload>
 	directory/<bind>
 	BRK
@@ -91,6 +92,11 @@
 
 (
 @|Path )
+
+@path/<init> ( -- )
+	.&buf LDZ ?{ ;dict/home-path !/<set> }
+	;&buf str/cap ,&ptr STR
+	POP JMP2r
 
 @path/make-parent ( -- str* )
 	/get-depth #02 GTH ?{ ;dict/home JMP2r }
@@ -145,8 +151,6 @@
 	;&memlen .File/length DEO2
 	;&mem .File/read DEO2
 	directory/<reset>
-	#0000 scrollbar/<set>
-	header/<reqdraw>
 	/<nullws>
 	/<parse-folders> !/<parse-files>
 
@@ -175,14 +179,17 @@
 	;&buf !str/<print>
 
 @path/<reqload> ( -- )
-	[ LIT2 00 _&reqload ] STR
+	[ LIT2 f0 _&timer ] STR
 	header/<reqdraw> !window/<bind-screen>
 
-@path/<try-load> ( -- )
-	[ LIT &reqload 01 ] ?{
+@path/<delay-load> ( -- )
+	[ LIT &timer 00 ] DUP ?{ POP JMP2r }
+	( | is active )
+	INC DUP ?{
+		( | is complete )
 		/<reload>
-		[ LIT2 01 _&reqload ] STR }
-	JMP2r
+		window/<reqdraw-all> }
+	,&timer STR !window/<bind-screen>
 
 (
 @|Status )
@@ -306,7 +313,10 @@
 	directory/<bind> !window/<reqdraw-body>
 
 @command/<run> ( c -- )
-	POP ;&buf LDA ?{
+	POP
+	( | has input )
+	directory/<bind>
+	;&buf LDA ?{
 		( | no command )
 		!directory/<open> }
 	( | is active )
@@ -316,8 +326,7 @@
 	#20 decstr/<push>
 	;&do-filepath sel/<for-each>
 	;decstr/buf /<send>
-	/<reset>
-	directory/<bind> !window/<reqdraw-body>
+	/<reset> !window/<reqdraw-body>
 
 @command/do-filepath ( str* -- )
 	;path/buf decstr/<push-esc>
@@ -471,12 +480,15 @@
 	path/<push-str>
 	( | enter folder )
 	/<reset>
-	/<deselect> !path/<reload>
+	/<deselect>
+	#0000 scrollbar/<set>
+	path/<reload> !header/<reqdraw>
 
 @directory/<parent> ( -- )
 	/<reset>
 	/<deselect>
-	path/pop !path/<reload>
+	path/pop #0000 scrollbar/<set>
+	path/<reload> !header/<reqdraw>
 
 @directory/id-to-name ( id* -- name* )
 	DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r
@@ -1357,15 +1369,20 @@
 (
 @|Window )
 
+@window/<init> ( -- )
+	/get-width ORAk ?{ POP2 !/<detect-size> }
+	/get-height !/<force-size>
+
 @window/on-frame ( -> )
-	path/<try-load>
+	#0000 .Screen/vector DEO2
+	/<try-resize>
+	path/<delay-load>
 	header/<try-draw>
 	directory/<try-draw>
 	status/<try-draw>
 	scrollbar/<try-draw>
 	rename/<try-draw>
 	mkdir/<try-draw>
-	#0000 .Screen/vector DEO2
 	BRK
 
 @window/<bind-screen> ( -- )
@@ -1389,10 +1406,10 @@
 	/get-width #01 SFT2 JMP2r
 
 @window/get-width ( -- width* )
-	[ LIT2 &width $2 ] JMP2r
+	.&width LDZ2 JMP2r
 
 @window/get-height ( -- width* )
-	[ LIT2 &height $2 ] JMP2r
+	.&height LDZ2 JMP2r
 
 @window/<expand> ( -- )
 	directory/get-length STH2
@@ -1409,10 +1426,13 @@
 
 @window/<set-size> ( width* height* -- )
 	/validate-size ?{ POP2 POP2 JMP2r }
+	( >> )
+
+@window/<force-size> ( width* height* -- )
 	( | has changed )
-	DUP2 ,&height STR2
+	DUP2 .&height STZ2
 	scrollbar/<set-height>
-	DUP2 ,&width STR2
+	DUP2 .&width STZ2
 	DUP2 scrollbar/<set-width>
 	DUP2 status/<set-width>
 	DUP2 directory/<set-width>
@@ -1429,16 +1449,16 @@
 	&valid ( w* h* -- w* h* t )
 	#01 JMP2r
 
-@window/req-resize ( -- )
-	;&on-frame-resize .Screen/vector DEO2
+@window/<try-resize> ( -- )
+	[ LIT &reqresize 01 ] ?{
+		/get-width .Screen/width DEO2
+		/get-height .Screen/height DEO2
+		/<reqdraw-all>
+		[ LIT2 01 _&reqresize ] STR }
 	JMP2r
 
-@window/on-frame-resize ( -> )
-	/get-width .Screen/width DEO2
-	/get-height .Screen/height DEO2
-	#0000 .Screen/vector DEO2
-	/<redraw-all>
-	BRK
+@window/req-resize ( -- )
+	[ LIT2 00 _&reqresize ] STR !/<bind-screen>
 
 @window/<toggle-shade> ( -- )
 	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<reqdraw> }
