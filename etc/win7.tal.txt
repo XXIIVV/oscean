@@ -68,7 +68,9 @@
 	( - ) 40 00 =directory/<prev> =dict/prev
 	( - ) 80 00 =directory/<next> =dict/next
 	( - ) 00 08 =directory/<parent> =dict/parent
-	( - ) 00 1b =directory/<deselect> =dict/deselect }
+	( - ) 00 1b =directory/<deselect> =dict/deselect
+	( - ) 01 "i =sel/<invert> =dict/invert
+	( - ) 01 "a =sel/<all> =dict/select-all }
 	_{ =dict/edit
 	( - ) 01 "c =copy/<apply> =dict/copy
 	( - ) 01 "v =paste/<apply> =dict/paste
@@ -540,6 +542,9 @@
 
 @sel/<push> ( filename* -- )
 	ORAk ?{ POP2 JMP2r }
+	DUP2 /find INC2k ORA ?/<unpush>
+	POP2
+	( | Unique )
 	[ LIT2 &ptr =&buf ]
 	( | clamp )
 	;&bufend LTH2k ?{
@@ -550,8 +555,44 @@
 	STA2
 	JMP2r
 
+@sel/find ( filename* -- index* )
+	,&tf STR2
+	/get-bounds
+	&>lf
+		NEQ2k ?{
+			POP2 #ffff &end NIP2 JMP2r }
+		LDA2k [ LIT2 &tf $2 ] EQU2 ?/end
+		INC2 INC2 !/>lf
+
+@sel/<do-unpush> ( filename* index* -- )
+	NIP2
+	( >> )
+
+@sel/<unpush> ( index* -- )
+	STH2
+	/get-bounds ;&buf ,&ptr STR2
+	&>lu
+		NEQ2k ?{ POP2 POP2 POP2r JMP2r }
+		DUP2 STH2kr EQU2 ?{ LDA2k /<push> }
+		INC2 INC2 !/>lu
+
 @sel/get-bounds ( -- to* from* )
 	,&ptr LDR2 ;&buf JMP2r
+
+@sel/<invert> ( -- )
+	,&ptr LDR2 /<all>
+	,&ptr LDR2 SWP2 ;&buf ,&ptr STR2
+	&>li
+		GTH2k ?{ POP2 POP2 !window/<reqdraw-body> }
+		LDA2k /<push>
+		INC2 INC2 !/>li
+
+@sel/<all> ( -- )
+	directory/get-bounds
+	&>lsa
+		NEQ2k ?{ POP2 POP2 !window/<reqdraw-body> }
+		LDA2k /is-selected ?{ LDA2k /<pick> }
+		INC2 INC2 !/>lsa
 
 @sel/is-selected ( name* -- t )
 	STH2
@@ -1194,6 +1235,8 @@
 	&rename "Rename 00
 	&copy "Copy 00
 	&paste "Paste 00
+	&invert "Invert 00
+	&select-all "Select 20 "All 00
 	&duplicate "Duplicate 00
 	&edit "Edit 00
 	&new-folder "New 20 "Folder 00
