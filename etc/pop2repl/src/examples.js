@@ -109,7 +109,7 @@ function printNumber n;
 end
 
 function printString s;
-	vars c:1 cells:2 i; 0 -> i;
+	vars c[1] cells[2] i; 0 -> i;
 loop:
 	{s+i} -> cells;
 	if c

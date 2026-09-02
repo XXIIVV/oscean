@@ -14,7 +14,7 @@
 	( name ) "POP-2 0a
 	( desc ) "A 20 "POP-2 20 "Compiler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "24 20 "Aug 20 "2026 0000
+	( date ) "2 20 "Sep 20 "2026 0000
 
 @<bind> ( vector* -- )
 	.Console/vector DEO2
@@ -157,17 +157,24 @@
 @vars/<parse-token> ( -- )
 	;token/buf LDAk ?{ POP2 JMP2r }
 	&>wpt
-		LDAk DUP ?{
-			POP POP2 ;token/buf DUP2 dict/alloc stack/<push>
-			prefab-sublab/<emit>
-			#0002 prefab-pad/<emit> !token/<reset> }
-		LIT ": NEQ ?{
-			LITr 00 STH2k STAr
-			;token/buf DUP2 dict/alloc stack/<push>
-			prefab-sublab/<emit>
-			INC2 LDAk LIT "" NEQ ?{ prefab-string/emit POP2 !token/<reset> }
-			str/dec prefab-pad/<emit> !token/<reset> }
+		LDAk ?{ POP2 #0002 !/<parse-token-size> }
+		LDAk LIT "[ EQU ?/<parse-token-byte>
+		LDAk LIT "{ EQU ?/<parse-token-short>
 		INC2 !/>wpt
+
+@vars/<parse-token-short> ( str* -- )
+	LITr 00 STH2k STAr
+	INC2 str/dec DUP2 ADD2 !/<parse-token-size>
+
+@vars/<parse-token-byte> ( str* -- )
+	LITr 00 STH2k STAr
+	INC2 str/dec
+	( >> )
+
+@vars/<parse-token-size> ( size* -- )
+	;token/buf DUP2 dict/alloc stack/<push>
+	prefab-sublab/<emit>
+	prefab-pad/<emit> !token/<reset>
 
 @vars/<emit-bindings> ( -- )
 	&>web
