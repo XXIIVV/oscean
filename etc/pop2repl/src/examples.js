@@ -2,7 +2,7 @@ let examples={}
 examples.hello_world=`comment Welcome to POP-2;
 
 function putChar c;
-	c => 23;
+	c => stdout;
 end
 
 function printString s;
@@ -35,9 +35,9 @@ function row w;
 	vars x; 0 -> x;
 hor:
 	if x < w
-		then 0x2e => 23, x + 1 -> x, goto hor
+		then 0x2e => stdout, x + 1 -> x, goto hor
 	close
-	0xa => 23;
+	0xa => stdout;
 end
 
 function box w h;
@@ -129,12 +129,12 @@ function sierpinski size;
 		0 -> x;
 		pad(y);
 		col:
-			x & y = 0 * 10 + 0x20 => 23;
-			0x20 => 23;
+			x & y = 0 * 10 + 0x20 => stdout;
+			0x20 => stdout;
 			x + 1 -> x;
 			if x+y < size then goto col;
 		close
-		0x0a => 23;
+		0x0a => stdout;
 		y - 1 -> y;
 		if y then goto row;
 	close
@@ -143,7 +143,7 @@ end
 function pad n;
 	vars i; 0 -> i;
 	loop:
-		0x20 => 23;
+		0x20 => stdout;
 		i + 1 -> i;
 		if i < n then goto loop close
 end

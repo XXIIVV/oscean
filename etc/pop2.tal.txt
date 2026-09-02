@@ -7,6 +7,9 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	( | Prefabs )
+	#0018 ;dict/stdout constants/<push-name>
+	#0019 ;dict/stderr constants/<push-name>
 	token/<bind>
 	BRK
 
@@ -372,6 +375,9 @@
 	token/<reset>
 	token/push-label
 	( | handlers )
+	DUP2 constants/find INC2k ORA ?/<parse-constant>
+	POP2
+	( | handlers )
 	DUP2 ;dict/goto str/cmp ?/<parse-goto>
 	DUP2 str/is-dec ?/<parse-value-dec>
 	DUP2 str/is-hex ?/<parse-value-hex>
@@ -383,6 +389,9 @@
 	prefab-refrel/<emit>
 	stack/is-allocator ?{ ;dict/lda2 !str/<print-ws> }
 	JMP2r
+
+@expr/<parse-constant> ( str* id* -- )
+	NIP2 INC2 INC2 LDA2 !prefab-lithex/<emit>
 
 @expr/<parse-goto> ( str* token* -- str* )
 	( pop goto ) POP2
@@ -507,6 +516,27 @@
 
 @prefab-scope/<emit> ( str* -- )
 	LIT2 "./ str/swap-chars ;dict/fn-prefix str/<print> !str/<print-ws>
+
+(
+@|Constants )
+
+@constants/find ( str* -- addr* )
+	,&t STR2
+	,&ptr LDR2 ;&buf
+	&>l
+		NEQ2k ?{
+			POP2 #ffff &end NIP2 JMP2r }
+		LDA2k [ LIT2 &t $2 ] str/cmp ?&end
+		#0004 ADD2 !&>l
+
+@constants/<push-name> ( value* name* -- )
+	/<push>
+	( >> )
+
+@constants/<push> ( short* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
 
 (
 @|Dict )
@@ -762,6 +792,8 @@
 	&then "then 00
 	&else "else 00
 	&close "close 00
+	&stdout "stdout 00
+	&stderr "stderr 00
 	&err-unknown-expr "Unknown 20 "expression: 20 00
 	&fn-prefix "fn- 00
 	&anon-jump "!{ 00
@@ -789,6 +821,8 @@
 @stack/buf $400
 
 @dict/buf $1000
+
+@constants/buf $800
 
 @expr/buf
 
