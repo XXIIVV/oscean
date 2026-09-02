@@ -163,7 +163,14 @@
 		LDAk ?{ POP2 #0002 !/<parse-token-size> }
 		LDAk LIT "[ EQU ?/<parse-token-byte>
 		LDAk LIT "{ EQU ?/<parse-token-short>
+		LDA2k LIT2 ":" EQU2 ?/<parse-token-string>
 		INC2 !/>wpt
+
+@vars/<parse-token-string> ( str* -- )
+	LITr 00 STH2k STAr
+	;token/buf DUP2 dict/alloc stack/<push>
+	prefab-sublab/<emit>
+	INC2 prefab-string/emit POP2 !token/<reset>
 
 @vars/<parse-token-short> ( str* -- )
 	LITr 00 STH2k STAr
@@ -482,7 +489,7 @@
 @prefab-pad/<emit> ( length* -- )
 	LIT2 "$ 18 DEO !u16/<print-ws>
 
-@prefab-string/emit ( str* -- )
+@prefab-string/emit ( str* -- str* )
 	INC2
 	&>w
 		LDAk DUP LIT "" NEQ ?{ INC2 POP #00 }
@@ -526,8 +533,8 @@
 	&>l
 		NEQ2k ?{
 			POP2 #ffff &end NIP2 JMP2r }
-		LDA2k [ LIT2 &t $2 ] str/cmp ?&end
-		#0004 ADD2 !&>l
+		LDA2k [ LIT2 &t $2 ] str/cmp ?/end
+		#0004 ADD2 !/>l
 
 @constants/<push-name> ( value* name* -- )
 	/<push>
