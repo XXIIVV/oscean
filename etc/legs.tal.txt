@@ -1,0 +1,669 @@
+( .. )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $4 &scrollx $2 &scrolly
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|004f @Varvara/version
+|000f @world/size
+|1000 @world/buflen
+|1000 @wireworld/buflen
+
+|000
+
+	@sel/pos &x $1 &y $1 &z $1 &color $1 &type $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	theme/<load>
+	#0200 .Screen/width DEO2
+	#0180 .Screen/height DEO2
+	( | setup tools )
+	world/<load>
+	#8f0f world/<set-brick>
+	#9f0f world/<set-brick>
+	#af0f world/<set-brick>
+	#bf0f world/<set-brick>
+	world/<draw>
+	sel/<init>
+	BRK
+
+@meta $1
+	( ) "Legs 0a
+	( ) "A 20 "brick 20 "brush 0a
+	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( ) "5 20 "Sep 20 "2026 00
+	( > ) 03
+	( - ) 83 =appicon
+	( - ) 56 =Varvara/version
+	( - ) a0 =manifest/dat
+
+@manifest/dat ( . )
+	_{ =dict/legs
+	( - ) 10 00 =sel/<dec-x> =dict/movu
+	( - ) 20 00 =sel/<inc-x> =dict/movd
+	( - ) 40 00 =sel/<inc-y> =dict/movl
+	( - ) 80 00 =sel/<dec-y> =dict/movr
+	( - ) 14 00 =sel/<inc-z> =dict/movuz
+	( - ) 24 00 =sel/<dec-z> =dict/movdz
+	( - ) 01 00 =sel/<put-brick> =dict/put
+	( - ) 02 00 =sel/<remove-brick> =dict/rem
+	( - ) 00 20 =wireworld/<step> =dict/wire
+	( - ) 00 "1 =sel/<color1> =dict/color1
+	( - ) 00 "2 =sel/<color2> =dict/color2
+	( - ) 00 "3 =sel/<color3> =dict/color3
+	( - ) 00 "4 =sel/<color4> =dict/color4 }
+	( ) $1
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
+%Screen/<set-pos> ( x* y* -- ) {
+	.Screen/y DEO2
+	.Screen/x DEO2 }
+
+(
+@|World )
+
+%world/xy-unpack ( xy -- xy* ) {
+	DUP #04 SFT SWP #0f AND }
+
+@world/get-pos ( x y -- isox* isoy* )
+	( y ) ADDk STH
+	( x ) SUB .&size ADD #00 SWP
+	( offsetx ) #40 SFT2
+	( offsety ) #00 STHr #30 SFT2 #0080 ADD2 JMP2r
+
+@world/<set-brick> ( xyzt* -- )
+	DUP #0f AND .sel/type LDZ ORA
+	( ) ROT ROT #04 SFT2 ;&buf ADD2 STA
+	JMP2r
+
+@world/<remove-brick> ( xyzt* -- )
+	#00
+	( ) ROT ROT #04 SFT2 ;&buf ADD2 STA
+	JMP2r
+
+@world/get-shadow ( 0xyz* -- t )
+	DUP2 #0f ORA SWP2 INC2
+	&>lgs
+		NEQ2k ?{ POP2 POP2 #00 JMP2r }
+		DUP2 ;&buf ADD2 LDA ?{ INC2 !/>lgs }
+	POP2 POP2 #01 JMP2r
+
+@world/get-bounds ( -- to* from* )
+	;&bufend ;&buf JMP2r
+
+@world/<draw-bricks> ( -- )
+	/get-bounds
+	&>l
+		LDAk #00 EQU ?{
+			DUP2 ;&buf SUB2 DUP2 /get-shadow STH
+			#40 SFT2 /<set-pos>
+			LDAk DUP #0f AND STHr ROT brick/<call-draw> }
+		INC2 GTH2k ?/>l
+	POP2 POP2 JMP2r
+
+@world/<set-pos> ( 0xyz* -- )
+	( z ) #00 SWP #04 SFT #0016 MUL2 STH2
+	( xy ) /xy-unpack /get-pos #0018 SUB2 STH2r SUB2 Screen/<set-pos>
+	JMP2r
+
+@world/<draw-base> ( -- )
+	[ LIT2 36 -Screen/auto ] DEO
+	( | ground )
+	[ LIT2 -&size 00 ]
+	&>v
+		STHk [ LIT2 -&size 00 ]
+		&>h
+			DUP STHkr /get-pos Screen/<set-pos>
+			;pin/color0 pin/<draw>
+			INC GTHk ?/>h
+		POP2 POPr INC GTHk ?/>v
+	POP2 JMP2r
+
+@world/<redraw> ( -- )
+	#0000 DUP2 Screen/<set-pos>
+	[ LIT2 80 -Screen/pixel ] DEO
+	( >> )
+
+@world/<draw> ( -- )
+	/<draw-base>
+	/<draw-bricks> !/<draw-tools>
+
+@world/get-height ( x y -- height )
+	SWP #40 SFT ORA ,&xy STR
+	#0010
+	&>lgh
+		#01 SUB [ LIT &xy $1 ] OVR #40 SFT #04 SFT2 ;&buf ADD2 LDA ?{
+			NEQk ?/>lgh
+		POP2 #00 JMP2r }
+	NIP INC JMP2r
+
+@world/<draw-tools> ( -- )
+	( | color )
+	#3f /<set-pos-tool>
+	;pin/color0 pin/<draw>
+	#4f /<set-pos-tool>
+	;pin/color1 pin/<draw>
+	#5f /<set-pos-tool>
+	;pin/color2 pin/<draw>
+	#6f /<set-pos-tool>
+	;pin/color3 pin/<draw>
+	( | types )
+	#8f /<set-pos-block>
+	.sel/color LDZ #00 type1/<draw>
+	#9f /<set-pos-block>
+	.sel/color LDZ #00 type2/<draw>
+	#af /<set-pos-block>
+	.sel/color LDZ #00 type3/<draw>
+	#bf /<set-pos-block>
+	.sel/color LDZ #00 !type4/<draw>
+
+@world/<set-pos-tool> ( -- )
+	( xy ) /xy-unpack /get-pos Screen/<set-pos>
+	JMP2r
+
+@world/<set-pos-block> ( -- )
+	( xy ) /xy-unpack /get-pos #0018 SUB2 Screen/<set-pos>
+	JMP2r
+
+@world/<load> ( -- )
+	;&path .File/name DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/read DEO2
+	JMP2r
+
+@world/<save> ( -- )
+	;&path .File/name DEO2
+	;&buflen .File/length DEO2
+	;&buf .File/write DEO2
+	JMP2r
+
+	&path "world.legs 00
+
+(
+@|Sel )
+
+@sel/<init> ( -- )
+	#10 /<set-type>
+	#0a /<set-color>
+	;&on-button .Controller/vector DEO2
+	#0707 .&pos STZ2 !/<redraw>
+
+@sel/on-button ( -> )
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{ POP2 POP2 BRK }
+	( * ) JSR2 POP2 BRK
+
+@sel/<set-type> ( type -- )
+	.&type STZ
+	JMP2r
+
+@sel/<color1> ( -- )
+	#00 !/<set-color>
+
+@sel/<color2> ( -- )
+	#05 !/<set-color>
+
+@sel/<color3> ( -- )
+	#0a !/<set-color>
+
+@sel/<color4> ( -- )
+	#0f !/<set-color>
+
+@sel/<set-color> ( type -- )
+	.&color STZ !world/<redraw>
+
+@sel/<dec-x> ( -- )
+	#ff !/<mod-x>
+
+@sel/<inc-x> ( -- )
+	#01
+	( >> )
+
+@sel/<mod-x> ( mod -- )
+	/<clear>
+	.&x LDZ ADD #0f AND .&x STZ
+	.&pos LDZ2 world/get-height !/<set-z>
+
+@sel/<dec-y> ( -- )
+	#ff !/<mod-y>
+
+@sel/<inc-y> ( -- )
+	#01
+	( >> )
+
+@sel/<mod-y> ( mod -- )
+	/<clear>
+	.&y LDZ ADD #0f AND .&y STZ
+	.&pos LDZ2 world/get-height !/<set-z>
+
+@sel/<dec-z> ( -- )
+	#ff !/<mod-z>
+
+@sel/<inc-z> ( -- )
+	#01
+	( >> )
+
+@sel/<mod-z> ( mod -- )
+	/<clear>
+	.&z LDZ ADD
+	( >> )
+
+@sel/<set-z> ( z -- )
+	/<clear>
+	#0f AND .&z STZ
+	( >> )
+
+@sel/<redraw> ( -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	.&pos LDZ2 /<set-pos>
+	;&sprite .Screen/addr DEO2
+	[ LIT2 c5 -Screen/sprite ] DEO
+	JMP2r
+
+@sel/<clear> ( -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	.&pos LDZ2 /<set-pos>
+	;fill-icn .Screen/addr DEO2
+	[ LIT2 40 -Screen/sprite ] DEO
+	JMP2r
+
+@sel/<set-pos> ( xy* -- )
+	world/get-pos [ LIT2 00 -&z ] LDZ #0016 MUL2 SUB2 #0002 SUB2 .Screen/y DEO2
+	#000c ADD2 .Screen/x DEO2
+	JMP2r
+
+@sel/pack ( -- 0xyz* )
+	( hb ) .&x LDZ #40 SFT .&y LDZ ORA
+	( lb ) SWP .&z LDZ #40 SFT ORA JMP2r
+
+@sel/<put-brick> ( -- )
+	[ LIT2 0f -&y ] LDZ EQU ?/<select-tool>
+	/<clear>
+	.&color LDZ /pack world/<set-brick>
+	world/<save>
+	world/<redraw>
+	#01 !/<mod-z>
+
+@sel/<remove-brick> ( -- )
+	/<clear>
+	[ LIT2 ff -&z ] LDZ ADD #0f AND .&z STZ
+	#00 /pack world/<remove-brick>
+	world/<save>
+	world/<redraw>
+	.&pos LDZ2 world/get-height !/<set-z>
+
+@sel/<select-tool> ( -- )
+	.&x LDZ
+	( | handlers )
+	DUP #03 NEQ ?{ #00 /<set-color> }
+	DUP #04 NEQ ?{ #05 /<set-color> }
+	DUP #05 NEQ ?{ #0a /<set-color> }
+	DUP #06 NEQ ?{ #0f /<set-color> }
+	DUP #08 NEQ ?{ #10 /<set-type> }
+	DUP #09 NEQ ?{ #20 /<set-type> }
+	DUP #0a NEQ ?{ #30 /<set-type> }
+	DUP #0b NEQ ?{ #40 /<set-type> }
+	POP JMP2r
+
+(
+@|Bricks )
+
+@brick/<call-draw> ( color shadow type -- )
+	#00 SWP #14 SFT2 ;&lut ADD2 LDA2 JMP2
+
+	&lut [
+	=type0/<draw> =type1/<draw> =type2/<draw> =type3/<draw> =type4/<draw> ]
+
+@type0/<draw> ( color shadow -- )
+	POP2 JMP2r
+
+@type1/<draw> ( color shadow -- )
+	[ LITr -Screen/y ] DEI2kr ROTr [ LIT2 36 -Screen/auto ] DEO
+	;&fill .Screen/addr DEO2
+	OVR [ LIT -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
+	DEO2kr
+	?{
+		;&cap .Screen/addr DEO2
+		[ LIT2 00 -Screen/sprite ] DEOk DEOk DEO
+		DEO2kr }
+	POP ;&outline .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
+	DEO2r
+	JMP2r
+
+@type2/<draw> ( color shadow -- )
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	[ LITr -Screen/y ] DEI2kr ROTr [ LIT2 36 -Screen/auto ] DEO
+	;&fill .Screen/addr DEO2
+	OVR [ LIT -Screen/sprite ] DEOk DEOk DEO
+	DEO2kr
+	?{
+		;&cap .Screen/addr DEO2
+		[ LIT2 00 -Screen/sprite ] DEOk DEOk DEO
+		DEO2kr }
+	POP ;&outline .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEO
+	DEO2r
+	JMP2r
+
+@type3/<draw> ( color shadow -- )
+	[ LITr -Screen/y ] DEI2kr ROTr [ LIT2 36 -Screen/auto ] DEO
+	;&fill .Screen/addr DEO2
+	OVR [ LIT -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
+	DEO2kr
+	?{
+		;&cap .Screen/addr DEO2
+		[ LIT2 00 -Screen/sprite ] DEOk DEO
+		DEO2kr }
+	POP ;&outline .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
+	DEO2r
+	JMP2r
+
+@type4/<draw> ( color shadow -- )
+	[ LITr -Screen/y ] DEI2kr ROTr [ LIT2 36 -Screen/auto ] DEO
+	;&fill .Screen/addr DEO2
+	OVR [ LIT -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
+	DEO2kr
+	?{
+		;&cap .Screen/addr DEO2
+		[ LIT2 00 -Screen/sprite ] DEOk DEOk DEO
+		DEO2kr }
+	POP ;&outline .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEOk DEOk DEOk DEO
+	DEO2r
+	JMP2r
+
+@pin/<draw> ( addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	[ LIT2 85 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+(
+@|Wireworld )
+
+@wireworld/<step> ( -- )
+	[ LIT2r =&buf ] world/get-bounds
+	&>l
+		/apply STH2kr STA
+		INC2 INC2r GTH2k ?/>l
+	POP2 POP2 POP2r
+	( | move )
+	;&copy-mmu .System/expansion DEO2 !world/<redraw>
+
+	&copy-mmu [ 01 =&buflen 0000 =&buf 0000 =world/buf ]
+
+@wireworld/apply ( addr* -- addr* cell )
+	LDAk DUP ?{ JMP2r }
+	( . type ) DUP #f0 AND STH
+	#0f AND
+	( | head )
+	DUP #0f NEQ ?{
+		POP #0a STHr ORA JMP2r }
+	( | tail )
+	DUP #0a NEQ ?{
+		POP #00 STHr ORA JMP2r }
+	( | conductor )
+	DUP ?{
+		STH
+		/has-neighbors ?{ ORAr STHr JMP2r }
+		POPr #0f STHr ORA JMP2r }
+	( type . ) STHr ORA JMP2r
+
+%wireworld/not-head ( addr* -- addr* t ) {
+	LDA #0f AND #0f NEQ }
+
+@wireworld/has-neighbors ( addr* -- addr* t )
+	[ LITr ff ]
+	( | z-1 )
+	( -1,-1,-1 ) DUP2 #feef ADD2 /not-head ?{ INCr }
+	( -1, 0,-1 ) DUP2 #feff ADD2 /not-head ?{ INCr }
+	( -1,+1,-1 ) DUP2 #ff0f ADD2 /not-head ?{ INCr }
+	( .0,-1,-1 ) DUP2 #ffef ADD2 /not-head ?{ INCr }
+	( .0, 0,-1 ) DUP2 #ffff ADD2 /not-head ?{ INCr }
+	( .0,+1,-1 ) DUP2 #000f ADD2 /not-head ?{ INCr }
+	( +1,-1,-1 ) DUP2 #00ef ADD2 /not-head ?{ INCr }
+	( +1, 0,-1 ) DUP2 #00ff ADD2 /not-head ?{ INCr }
+	( +1,+1,-1 ) DUP2 #010f ADD2 /not-head ?{ INCr }
+	( | z+0 )
+	( -1,-1, 0 ) DUP2 #fef0 ADD2 /not-head ?{ INCr }
+	( -1, 0, 0 ) DUP2 #ff00 ADD2 /not-head ?{ INCr }
+	( -1,+1, 0 ) DUP2 #ff10 ADD2 /not-head ?{ INCr }
+	( .0,-1, 0 ) DUP2 #fff0 ADD2 /not-head ?{ INCr }
+	( .0,+1, 0 ) DUP2 #0010 ADD2 /not-head ?{ INCr }
+	( +1,-1, 0 ) DUP2 #00f0 ADD2 /not-head ?{ INCr }
+	( +1, 0, 0 ) DUP2 #0100 ADD2 /not-head ?{ INCr }
+	( +1,+1, 0 ) DUP2 #0110 ADD2 /not-head ?{ INCr }
+	( | z+1 )
+	( -1,-1,+1 ) DUP2 #fef1 ADD2 /not-head ?{ INCr }
+	( -1, 0,+1 ) DUP2 #ff01 ADD2 /not-head ?{ INCr }
+	( -1,+1,+1 ) DUP2 #ff11 ADD2 /not-head ?{ INCr }
+	( .0,-1,+1 ) DUP2 #fff1 ADD2 /not-head ?{ INCr }
+	( .0, 0,+1 ) DUP2 #0001 ADD2 /not-head ?{ INCr }
+	( .0,+1,+1 ) DUP2 #0011 ADD2 /not-head ?{ INCr }
+	( +1,-1,+1 ) DUP2 #00f1 ADD2 /not-head ?{ INCr }
+	( +1, 0,+1 ) DUP2 #0101 ADD2 /not-head ?{ INCr }
+	( +1,+1,+1 ) DUP2 #0111 ADD2 /not-head ?{ INCr }
+	STHr #02 LTH JMP2r
+
+(
+@|Theme )
+
+@theme/<reset> ( -- )
+	#f0af #f0c6 #f0b2
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
+
+	&path ".theme $1
+
+(
+@|Assets )
+
+@dict/legs "Legs 00
+	&movu "Up 00
+	&movd "Down 00
+	&movl "Left 00
+	&movr "Right 00
+	&movuz "Above 00
+	&movdz "Below 00
+	&put "Put 00
+	&rem "Remove 00
+	&wire "Wire 00
+	&color1 "Color1 00
+	&color2 "Color2 00
+	&color3 "Color3 00
+	&color4 "Color4 00
+
+@fill-icn [8
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff ]
+
+@sel/sprite [8
+	1824 24e7 8142 2418 0018 1818 7e3c 1800 ]
+
+@appicon
+
+@type1/fill [8
+	0000 0000 0001 071f 0001 071f 7fff ffff
+	0080 e0f8 feff ffff 0000 0000 0080 e0f8
+	7fff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff feff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	7f1f 0701 0000 0000 ffff ffff 7f1f 0701
+	ffff ffff fef8 e080 fef8 e080 0000 0000 ]
+	&outline [8
+	0000 0000 0001 0618 0001 061b 6c90 2020
+	0080 60d8 3609 0404 0000 0000 0080 6018
+	6080 a098 8681 8080 302c 2310 0c83 6018
+	0c34 c408 30c1 0618 0601 0519 6181 0101
+	8080 8080 8080 8080 0601 0000 0000 0000
+	6080 0000 0000 0000 0101 0101 0101 0101
+	8080 8080 8080 8080 0000 0000 0000 0000
+	0000 0000 0000 0000 0101 0101 0101 0101
+	6018 0601 0000 0000 0000 0080 6018 0601
+	0000 0001 0618 6080 0618 6080 0000 0000 ]
+	&cap [8
+	0000 0000 0001 071f 0001 071f 7fff ffff
+	0080 e0f8 feff ffff 0000 0000 0080 e0f8
+	7f7f 3f1f 0701 0000 ffef e3f0 fcff 7f1f
+	fff7 c70f 3fff fef8 fefe fcf8 e080 0000
+	0000 0000 0000 0000 0701 0000 0000 0000
+	e080 0000 0000 0000 0000 0000 0000 0000 ]
+
+@type2/outline [8
+	0000 0000 0001 0618 0001 0618 6080 0000
+	0080 6018 0601 0000 0000 0000 0080 6018
+	6080 a098 8681 8080 0000 0000 0080 6018
+	0000 0000 0001 0618 0601 0519 6181 0101
+	6018 0601 0000 0000 0601 0080 6018 0601
+	6080 0001 0618 6080 0618 6080 0000 0000 ]
+	&fill [8
+	0000 0000 0001 071f 0001 071f 7fff ffff
+	0080 e0f8 feff ffff 0000 0000 0080 e0f8
+	7fff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff feff ffff ffff ffff
+	7f1f 0701 0000 0000 ffff ffff 7f1f 0701
+	ffff ffff fef8 e080 fef8 e080 0000 0000 ]
+	&cap [8
+	0000 0000 0001 071f 0001 071f 7fff ffff
+	0080 e0f8 feff ffff 0000 0000 0080 e0f8
+	7f7f 1f07 0100 0000 ffff ffff ff7f 1f07
+	ffff ffff fffe f8e0 fefe f8e0 8000 0000
+	0000 0000 0000 0000 0100 0000 0000 0000
+	8000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@type3/outline [8
+	0000 0000 0001 0618 0001 0618 6080 0000
+	0080 6018 0601 0519 0000 0000 0000 0000
+	6080 a098 8681 8080 0001 0618 6080 4040
+	6080 0000 0000 0000 8080 8040 4040 2020
+	8080 8080 8080 8080 4020 2020 1010 1008
+	0000 0000 0000 0000 2010 1010 0808 0804
+	8080 8080 8080 8080 0808 0404 0402 0202
+	0000 0000 0000 0000 0404 0202 0201 0101
+	6018 0601 0000 0000 0101 0180 6018 0601
+	0000 0081 8698 6080 0618 6080 0000 0000 ]
+	&fill [8
+	0000 0000 0001 071f 0001 071f 7fff ffff
+	0080 e0f8 feff ffff 0000 0000 0000 0000
+	7fff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff 8080 80c0 c0c0 e0e0
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff e0f0 f0f0 f8f8 f8fc
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff fcfc fefe feff ffff
+	7f1f 0701 0000 0000 ffff ffff 7f1f 0701
+	ffff ffff fef8 e080 fef8 e080 0000 0000 ]
+	&cap [8
+	0000 0000 0001 071f 0001 071f 7fff ffff
+	0080 e0f8 fefe fcf8 0000 0000 0000 0000
+	7f7f 3f1f 0701 0000 ffff fef8 e080 0000
+	e080 0000 0000 0000 0000 0000 0000 0000 ]
+
+@type4/outline [8
+	0000 0001 0608 1020 0007 7883 0c10 2020
+	00e0 1ec1 3008 0404 0000 0080 6010 0804
+	2040 4040 4050 4846 302c 2310 0c03 0000
+	0c34 c408 30c0 0000 0402 0202 020a 1262
+	4140 4040 4040 4040 8078 0700 0000 0000
+	011e e000 0000 0000 8202 0202 0202 0202
+	4040 4040 4040 4020 0000 0000 0000 0000
+	0000 0000 0000 0000 0202 0202 0202 0204
+	2010 0806 0100 0000 0000 0000 8078 0700
+	0000 0000 011e e000 0408 1060 8000 0000 ]
+	&fill [8
+	0000 0001 070f 1f3f 0007 7fff ffff ffff
+	00e0 feff ffff ffff 0000 0080 e0f0 f8fc
+	3f7f 7f7f 7f7f 7f7f ffff ffff ffff ffff
+	ffff ffff ffff ffff fcfe fefe fefe fefe
+	7f7f 7f7f 7f7f 7f7f ffff ffff ffff ffff
+	ffff ffff ffff ffff fefe fefe fefe fefe
+	7f7f 7f7f 7f7f 7f3f ffff ffff ffff ffff
+	ffff ffff ffff ffff fefe fefe fefe fefc
+	3f1f 0f07 0100 0000 ffff ffff ff7f 0700
+	ffff ffff fffe e000 fcf8 f0e0 8000 0000 ]
+	&cap [8
+	0000 0001 070f 1f3f 0007 7fff ffff ffff
+	00e0 feff ffff ffff 0000 0080 e0f0 f8fc
+	3f7f 7f7f 3f1f 0f07 ffef e3f0 fcff ffff
+	fff7 c70f 3fff ffff fcfe fefe fcf8 f0e0
+	0100 0000 0000 0000 ff7f 0700 0000 0000
+	fffe e000 0000 0000 8000 0000 0000 0000 ]
+
+@pin/color0 [8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0003 0c10 2020 0000 0000 0000 0000
+	0000 00c0 3008 0404 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	302c 2310 0c03 0000 0000 0000 0000 0000
+	0c34 c408 30c0 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	&color1 [8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0003 0c10 2020 0000 0000 0000 0000
+	0000 00c0 3008 0404 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	303c 3f1f 0f03 0000 0000 0000 0000 0000
+	0c3c fcf8 f0c0 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	&color2 [8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0003 0c10 2020 0000 0000 0000 0000
+	0000 00c0 3008 0404 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	302c 2310 0c03 0000 0010 1c0f 0300 0000
+	0c34 c408 30c0 0000 0008 38f0 c000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	&color3 [8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0003 0c10 2020 0000 0000 0000 0000
+	0000 00c0 3008 0404 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	303c 3f1f 0f03 0000 0010 1c0f 0300 0000
+	0c3c fcf8 f0c0 0000 0008 38f0 c000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+(
+@|Buffers )
+
+|8000 @world/buf $&buflen &bufend
+
+@wireworld/buf $&buflen &bufend
+
