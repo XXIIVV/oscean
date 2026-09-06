@@ -10,9 +10,10 @@
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 |0100 @WIDTH
 |00f0 @WIDTH-10
-|2000 @dir/SZ
-|2000 @folders/SZ
-|4000 @tracks/SZ
+|2000 @dir/buflen
+|2000 @folders/buflen
+|4000 @tracks/buflen
+|0100 @search/buflen
 
 |000
 
@@ -32,27 +33,20 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	;WIDTH #0080 window/<set-size>
-	message/<new>
-	;dict/mpg-cmd .Console/addr DEO2
-	[ LIT2 03 -Console/mode ] DEO
-	[ LIT2 01 -Console/exec ] DEO
-	[ LIT2 00 -controls/playing ] STZ
-	;dict/home-path path/<set>
-	dir/<refresh>
 	prng/<init>
-	#05 controls/<set-volume>
-	( | unlock )
-	;on-mouse-body .Mouse/vector DEO2
-	;on-control .Controller/vector DEO2
-	;on-console .Console/vector DEO2
+	;WIDTH #0080 window/<set-size>
+	controls/<init>
+	;dict/home-path path/<set>
+	.Console/type DEI ?{ message/<bind>
+		BRK }
+	path/<bind>
 	BRK
 
 @meta $1
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "21 20 "Jun 20 "2026 00
+	( date ) "6 20 "Sep 20 "2026 00
 	( . ) 02
 	( - ) 83 =appicon
 	( - ) a0 =manifest/dat
@@ -105,13 +99,6 @@
 
 (
 @|vectors )
-
-@on-console ( -> )
-	[ LIT2 01 -Console/type ] DEI EQU ?{ BRK }
-	[ LIT2 0a -Console/read ] DEI EQUk ?{ message/<push>
-		POP BRK }
-	POP2 message/<parse>
-	BRK
 
 @on-mouse-locked ( -> )
 	.Mouse/state DEI ?{ ;on-mouse-body .Mouse/vector DEO2 }
@@ -171,6 +158,25 @@
 
 (
 @|message )
+
+@message/<bind> ( -- )
+	dir/<refresh>
+	( | Setup extension )
+	;dict/mpg-cmd .Console/addr DEO2
+	[ LIT2 03 -Console/mode ] DEO
+	[ LIT2 01 -Console/exec ] DEO
+	( | unlock )
+	;on-mouse-body .Mouse/vector DEO2
+	;on-control .Controller/vector DEO2
+	;&on-console .Console/vector DEO2
+	search/<auto-select> !/<new>
+
+@message/on-console ( -> )
+	[ LIT2 01 -Console/type ] DEI EQU ?{ BRK }
+	[ LIT2 0a -Console/read ] DEI EQUk ?{ /<push>
+		POP BRK }
+	POP2 /<parse>
+	BRK
 
 @message/<parse> ( -- )
 	#00 /<push>
@@ -412,6 +418,11 @@
 (
 @|Controls )
 
+@controls/<init> ( -- )
+	[ LIT2 00 -controls/playing ] STZ
+	[ LIT2 05 -&volume ] STZ
+	JMP2r
+
 @controls/<draw-prev> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
 	#0058 .Screen/x DEO2
@@ -645,6 +656,14 @@
 	.lines/tracks LDZ INC .lines/tracks STZ
 	JMP2r
 
+@tracks/find ( name* -- id )
+	,&t STR2
+	[ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2 ;&buf ADD2 ;&buf
+	&>lf
+		GTH2k ?{ POP2 POP2 #ff JMP2r }
+		DUP2 [ LIT2 &t $2 ] str/cmp ?{ #0080 ADD2 !/>lf }
+	;&buf SUB2 #07 SFT2 NIP JMP2r
+
 @track/<draw> ( text* color -- )
 	STH
 	.tracks/prefix LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
@@ -659,7 +678,7 @@
 
 @dir/<refresh> ( -- )
 	;path/buf .File/name DEO2
-	;&SZ .File/length DEO2
+	;&buflen .File/length DEO2
 	;&buf .File/read DEO2
 	( | clean )
 	[ LIT2 00 -lines/folders ] STZ
@@ -693,6 +712,25 @@
 (
 @|path )
 
+@path/<bind> ( -- )
+	;&on-console .Console/vector DEO2
+	JMP2r
+
+@path/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI EQU ?{
+		( | Done reading )
+		/<validate>
+		message/<bind>
+		BRK }
+	( | Stream )
+	.Console/read DEI /<push>
+	BRK
+
+@path/<validate> ( -- )
+	[ LIT2 ff _&ptr ] LDR ADD LDZ LIT "/ NEQ ?{ JMP2r }
+	( | Direct filepath )
+	#00 /nest INC search/<set> !/pop
+
 @path/<set> ( path* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	( >> )
@@ -700,9 +738,13 @@
 @path/<push-str> ( subpath* -- )
 	&>wpu
 		LDAk DUP ?{ POP POP2 JMP2r }
-		[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-		STZ2
+		/<push>
 		INC2 !/>wpu
+
+@path/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
 
 @path/pop ( -- )
 	/nest INC #00 OVR STZ
@@ -718,6 +760,33 @@
 	&>rew
 		#01 SUB LDZk [ LIT "/ ] EQU ?{ NEQk ?/>rew }
 	NIP JMP2r
+
+(
+@|Search )
+
+@search/<reset> ( -- )
+	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
+	JMP2r
+
+@search/<set> ( str* -- )
+	/<reset>
+	( >> )
+
+@search/<push-str> ( str* -- )
+	&>wp
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>wp
+
+@search/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@search/<auto-select> ( -- )
+	;&buf tracks/find DUP #ff NEQ ?{ POP JMP2r }
+	selection/<pick-track> !/<reset>
 
 (
 @|Misc )
@@ -969,6 +1038,13 @@
 			JMP2r }
 		LDAk #00 STH2kr STA2
 		INC2r INC2 !/>wcl
+
+@str/cmp ( a* b* -- f )
+	STH2
+	&>wcmp
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?/d
+		INC2 INC2r !/>wcmp
 
 @str/lth ( a* b* -- a>b )
 	STH2
@@ -2471,6 +2547,7 @@
 @tmp/buf $100
 @message/buf $200 &cap
 
-@dir/buf $&SZ
-@folders/buf $&SZ
-@tracks/buf $&SZ
+@search/buf $&buflen
+@dir/buf $&buflen
+@folders/buf $&buflen
+@tracks/buf $&buflen &bufend
