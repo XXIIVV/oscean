@@ -6,12 +6,12 @@
 |4000 @types/prim
 |6000 @types/cons
 |8000 @types/clos
-|a000 @types/nil
 
 |000
 
 	@err $2
 	@tru $2
+	@nil $2
 	@env $2
 	@token/buf $40
 
@@ -23,7 +23,7 @@
 @meta 00 "HEOL! 0a
 	( details ) "A 20 "Lisp 20 "interpreter 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "15 20 "Jun 20 "2026 $2
+	( date ) "7 20 "Sep 20 "2026 $2
 
 (
 @|Box )
@@ -35,10 +35,10 @@
 	#1fff AND2 }
 
 %not ( box* -- t ) {
-	#a000 EQU2 }
+	.nil LDZ2 EQU2 }
 
 %not-nil ( box* -- t ) {
-	#a000 NEQ2 }
+	.nil LDZ2 NEQ2 }
 
 %atom ( str* -- cell* ) {
 	sym/find-alloc ;types/atom ORA2 }
@@ -153,12 +153,12 @@
 	&list ( -- cell* )
 	token/scan
 	( | handlers )
-	.token/buf LDZ LIT ") NEQ ?{ ;types/nil JMP2r }
+	.token/buf LDZ LIT ") NEQ ?{ .nil LDZ2 JMP2r }
 	.token/buf LDZ2 LIT2 ". 00 NEQ2 ?{ read !token/scan }
 	parse /list SWP2 !cons
 
 	&quote ( -- cell* )
-	;types/nil read cons ;dict/quote atom !cons
+	.nil LDZ2 read cons ;dict/quote atom !cons
 
 (
 @|Core )
@@ -206,14 +206,14 @@
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
 	DUP2 tag ;types/cons EQU2 ?/cons
-	POP2 POP2 ;types/nil JMP2r
+	POP2 POP2 .nil LDZ2 JMP2r
 
 	&cons ( env* t* -- res* )
 	OVR2 OVR2 car eval STH2
 	cdr evlis STH2r !cons
 
 @bool ( t -- cell* )
-	?{ ;types/nil JMP2r }
+	?{ .nil LDZ2 JMP2r }
 	.tru LDZ2 JMP2r
 
 (
@@ -225,7 +225,9 @@
 @prim/<boot> ( -- )
 	;dict/err atom .err STZ2
 	;dict/tru atom .tru STZ2
-	;types/nil .tru LDZ2 .tru LDZ2 pair .env STZ2
+	;dict/nil-list atom .nil STZ2
+	.nil LDZ2 .tru LDZ2 .tru LDZ2 pair .env STZ2
+	.nil LDZ2 .nil LDZ2 pair .env STZ2
 	;&lutend ;&lut [ LIT2r 0000 ]
 	&>l
 		LDA2k atom .env LDZ2 STH2kr ;types/prim ORA2 ROT2 pair .env STZ2
@@ -332,7 +334,7 @@
 
 	&seg ( env* -- env* )
 	DUP2 .env LDZ2 EQU2 ?{ JMP2r }
-	POP2 ;types/nil JMP2r
+	POP2 .nil LDZ2 JMP2r
 
 @f-print ( env* t* -- res* )
 	[ LIT2 18 _<emit>/port ] STR
@@ -394,8 +396,7 @@
 
 @<print> ( box* -- )
 	DUP2 tag
-	( | handlers )
-	DUP2 ;types/nil NEQ2 ?{ POP2 POP2 ;dict/nil-list !str/<print> }
+	( | Handlers )
 	DUP2 ;types/atom NEQ2 ?{ POP2 ord !str/<print> }
 	DUP2 ;types/prim NEQ2 ?{ POP2 !prim/<print> }
 	DUP2 ;types/cons NEQ2 ?{ POP2 !<print-list> }
@@ -476,7 +477,8 @@
 		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
-@dict/err "ERR 00 &pair 20 ". 20 00
+@dict/err "ERR 00
+	&pair 20 ". 20 00
 	&tru "#t 00
 	&nil-list "() 00
 	&lambda "lambda 00
@@ -500,7 +502,7 @@
 	&/ "/ 00
 	&< "< 00
 
-@prim/lut [
+@prim/lut [4
 	=dict/eval &lut+2 =f-eval =dict/quote
 	=f-quote =dict/print =f-print =dict/cons
 	=f-cons =dict/car =f-car =dict/cdr
