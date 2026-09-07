@@ -35,7 +35,7 @@
 	( ) "Legs 0a
 	( ) "A 20 "brick 20 "brush 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "5 20 "Sep 20 "2026 00
+	( ) "7 20 "Sep 20 "2026 00
 	( > ) 03
 	( - ) 83 =appicon
 	( - ) 56 =Varvara/version
@@ -51,6 +51,7 @@
 	( - ) 24 00 =sel/<dec-z> =dict/movdz
 	( - ) 01 00 =sel/<put-brick> =dict/put
 	( - ) 02 00 =sel/<remove-brick> =dict/rem
+	( - ) 04 00 =grid/<toggle> =dict/toggle
 	( - ) 00 20 =wireworld/<step> =dict/wire
 	( - ) 00 "1 =sel/<color1> =dict/color1
 	( - ) 00 "2 =sel/<color2> =dict/color2
@@ -122,26 +123,13 @@
 	( xy ) /xy-unpack /get-pos #0018 SUB2 STH2r SUB2 Screen/<set-pos>
 	JMP2r
 
-@world/<draw-base> ( -- )
-	[ LIT2 36 -Screen/auto ] DEO
-	( | ground )
-	[ LIT2 -&size 00 ]
-	&>v
-		STHk [ LIT2 -&size 00 ]
-		&>h
-			DUP STHkr /get-pos Screen/<set-pos>
-			;pin/color0 pin/<draw>
-			INC GTHk ?/>h
-		POP2 POPr INC GTHk ?/>v
-	POP2 JMP2r
-
 @world/<redraw> ( -- )
 	#0000 DUP2 Screen/<set-pos>
 	[ LIT2 80 -Screen/pixel ] DEO
 	( >> )
 
 @world/<draw> ( -- )
-	/<draw-base>
+	grid/<draw>
 	/<draw-bricks> !/<draw-tools>
 
 @world/get-height ( x y -- height )
@@ -194,6 +182,27 @@
 	JMP2r
 
 	&path "world.legs 00
+
+(
+@|Grid )
+
+@grid/<draw> ( -- )
+	[ LIT &skip $1 ] ?{
+		[ LIT2 36 -Screen/auto ] DEO
+		( | ground )
+		[ LIT2 -world/size 00 ]
+		&>v
+			STHk [ LIT2 -world/size 00 ]
+			&>h
+				DUP STHkr world/get-pos Screen/<set-pos>
+				;pin/color0 pin/<draw>
+				INC GTHk ?/>h
+			POP2 POPr INC GTHk ?/>v
+		POP2 }
+	JMP2r
+
+@grid/<toggle> ( -- )
+	[ LIT2 00 _&skip ] LDR EQU ,&skip STR !world/<redraw>
 
 (
 @|Sel )
@@ -496,8 +505,9 @@
 	&movr "Right 00
 	&movuz "Above 00
 	&movdz "Below 00
-	&put "Put 00
-	&rem "Remove 00
+	&toggle "Toggle 20 "Grid 00
+	&put "Put 20 "Brick 00
+	&rem "Remove 20 "Brick 00
 	&wire "Wire 00
 	&color1 "Color1 00
 	&color2 "Color2 00
