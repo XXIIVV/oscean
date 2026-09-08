@@ -2,10 +2,9 @@
 | Uh Oh My )
 
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
-|2000 @types/atom
-|4000 @types/prim
-|6000 @types/cons
-|8000 @types/clos
+|4000 @types/atom
+|8000 @types/cons
+|c000 @types/clos
 
 |000
 
@@ -29,10 +28,10 @@
 @|Box )
 
 %tag ( box* -- tag* ) {
-	#e000 AND2 }
+	#c000 AND2 }
 
 %ord ( box* -- ord* ) {
-	#1fff AND2 }
+	#3fff AND2 }
 
 %not ( box* -- t ) {
 	.nil LDZ2 EQU2 }
@@ -181,11 +180,15 @@
 	STH2k car OVR2r STH2r car pair STH2r cdr STH2r cdr !bind
 
 @reduce ( env* t* f* -- res* )
-	STH2k /seg ROT2 ROT2 evlis STH2kr car car bind STH2r car cdr !eval
+	STH2k STH2kr car tag ;types/cons NEQ2 ?/prim-apply
+	/seg ROT2 ROT2 evlis STH2kr car car bind STH2r car cdr !eval
 
 	&seg ( cell* -- cell* )
 	cdr DUP2 not ?{ JMP2r }
 	POP2 .env LDZ2 JMP2r
+
+	&prim-apply ( env* t* f* -- res* )
+	POP2r car #20 SFT2 ;prim/lut+2 ADD2 LDA2 JMP2
 
 @eval ( env* box* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
@@ -196,7 +199,7 @@
 	( e x.cdr ) STH2k cdr
 	( e x.car eval ) OVR2 STH2r car eval
 	( | apply )
-	DUP2 tag ;types/prim EQU2 ?/prim
+	( | apply )
 	DUP2 tag ;types/clos EQU2 ?reduce
 	POP2 POP2 POP2 .err LDZ2 JMP2r
 
@@ -219,9 +222,6 @@
 (
 @|Primitives )
 
-@prim/<print> ( box* -- )
-	ord #20 SFT2 ;&lut ADD2 LDA2 !str/<print>
-
 @prim/<boot> ( -- )
 	;dict/err atom .err STZ2
 	;dict/tru atom .tru STZ2
@@ -230,7 +230,7 @@
 	.nil LDZ2 .nil LDZ2 pair .env STZ2
 	;&lutend ;&lut [ LIT2r 0000 ]
 	&>l
-		LDA2k atom .env LDZ2 STH2kr ;types/prim ORA2 ROT2 pair .env STZ2
+		LDA2k atom .env LDZ2 .nil LDZ2 STH2kr cons ord ;types/clos ORA2 ROT2 pair .env STZ2
 		INC2r #0004 ADD2 GTH2k ?/>l
 	POP2 POP2 POP2r
 	( | listen )
@@ -398,7 +398,6 @@
 	DUP2 tag
 	( | Handlers )
 	DUP2 ;types/atom NEQ2 ?{ POP2 ord !str/<print> }
-	DUP2 ;types/prim NEQ2 ?{ POP2 !prim/<print> }
 	DUP2 ;types/cons NEQ2 ?{ POP2 !<print-list> }
 	DUP2 ;types/clos NEQ2 ?{ POP2 ord !dec/<print> }
 	POP2 ord !dec/<print>
@@ -446,7 +445,7 @@
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
 		ADD2r INC2 LDAk #30 SUB #0a LTH ?/>wn
 	POP2 ROTr STHr ?{ STH2r JMP2r }
-	#0000 STH2r SUB2 #1fff AND2 JMP2r
+	#0000 STH2r SUB2 #3fff AND2 JMP2r
 
 @s16/lth ( a* b* -- t )
 	#1000 EOR2 SWP2 #1000 EOR2 GTH2 JMP2r
