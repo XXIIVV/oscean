@@ -29,25 +29,16 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Sep 20 "2026 0000
+	( date ) "8 20 "Sep 20 "2026 0000
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
-
-%u16/not-divisible ( u16* div* -- t ) {
-	u16/mod ORA }
 
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
 
 %syms/get-name ( id* -- str* ) {
 	DUP2 ADD2 ;syms/buf ADD2 LDA2 }
-
-%label/get-addr ( id* -- addr* ) {
-	DUP2 ADD2 ;label/buf ADD2 }
-
-%label/get ( id* -- addr* ) {
-	label/get-addr LDA2 }
 
 %item/next ( item* -- next* ) {
 	#0004 ADD2 }
@@ -57,7 +48,8 @@
 
 @token/on-console-interactive ( -> )
 	.Console/read DEI DUP /<append>
-	#0a NEQ ?{ world/<eval> }
+	#0a NEQ ?{ world/<eval>
+		#010e DEO }
 	BRK
 
 @token/on-console ( -> )
@@ -100,7 +92,7 @@
 	[ LIT &+depth $1 ] ?{
 		DUP #20 GTH ?{ POP /<parse> !/<reset> } }
 	[ LIT2 00 &+ptr -&+buf ] INCk
-	( clamp ) .&+buf-end LTHk ?{ ;dict/err-buffer ;dict/token err/<set>
+	( clamp ) .&+buf-end LTHk ?{ ;dict/token err/<set-buf>
 		SWP }
 	POP ,&+ptr STR
 	STZ2
@@ -129,6 +121,12 @@
 	INC
 	( den bag ) item/parse-any-push world/<pop-scope>
 	POP JMP2r
+
+%label/get-addr ( id* -- addr* ) {
+	DUP2 ADD2 ;label/buf ADD2 }
+
+%label/get ( id* -- addr* ) {
+	label/get-addr LDA2 }
 
 @label/<parse-quote> ( ztr -- )
 	#0001 ;&quote-name syms/find-alloc DUP2 /<create>
@@ -171,7 +169,6 @@
 	( >> )
 
 @item/parse-push ( ztr -- ztr )
-	LDZk char/is-dec ?/parse-num-push
 	LDZk [ LIT "[ ] EQU ?/parse-empty
 	( | not numeric )
 	[ LIT2 -&+buf _&+ptr ] STR
@@ -182,7 +179,7 @@
 
 @item/<push> ( c -- )
 	[ LIT2 00 &+ptr -&+buf ] INCk
-	( clamp ) .&+buf-end LTHk ?{ ;dict/err-buffer ;dict/item err/<set>
+	( clamp ) .&+buf-end LTHk ?{ ;dict/item err/<set-buf>
 		SWP }
 	POP ,&+ptr STR
 	STZ2
@@ -197,36 +194,11 @@
 		NIP2 INC2k INC2 syms/find-alloc SWP2 }
 	syms/find-alloc !world/<push-count-id>
 
-@item/parse-num-push ( ztr -- ztr )
-	dec-ztr/walk-u16
-	( | check if not number 1 )
-	DUP2 #0001 NEQ2 ?{ POP2 !world/<push-identity> }
-	( | check if not already prime )
-	DUP2 primes/find-id DUP ?/parse-prime
-	POP
-	( | factorize )
-	( value ) [ LIT2r 0002 ]
-	&>wpn
-		DUP2 #0001 GTH2 ?{ POP2r POP2 JMP2r }
-		DUP2 STH2kr u16/not-divisible ?{
-			STH2kr
-			( | Drain factor )
-			[ LITr 00 ]
-			&>wpf
-				OVR2 OVR2 u16/mod ORA ?{
-					INCr STH2k DIV2 STH2r !/>wpf }
-			primes/find-id #00 SWP #00 STHr SWP2 world/<push-count-id> }
-		INC2r !/>wpn
-
 @item/parse-empty ( ztr -- ztr )
 	&>wpe
 		LDZk LIT "] NEQ ?{ INC JMP2r }
 		INC LDZk ?/>wpe
 	JMP2r
-
-@item/parse-prime ( ztr u16* id -- ztr )
-	STH
-	POP2 /walk-count #00 STHr !world/<push-count-id>
 
 @item/parse-wrap-push ( ztr -- ztr )
 	( walk [ ) INC ztr/walk-ws
@@ -296,7 +268,7 @@
 
 @world/<push> ( short* -- )
 	[ LIT2 &+ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/world err/<set>
+	( clamp ) ;&buf-end LTH2k ?{ ;dict/world err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -340,7 +312,7 @@
 @goto/<push> ( addr* -- )
 	[ LIT &+count $1 ] INC ,&+count STR
 	[ LIT2 &+ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/goto err/<set>
+	( clamp ) ;&buf-end LTH2k ?{ ;dict/goto err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -486,7 +458,7 @@
 
 @queue/<push> ( value* -- )
 	[ LIT2 &+ptr =&+buf ] INC2k INC2
-	( clamp ) ;&+buf-end LTH2k ?{ ;dict/err-buffer ;dict/queue err/<set>
+	( clamp ) ;&+buf-end LTH2k ?{ ;dict/queue err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -512,16 +484,6 @@
 (
 @|Dict )
 
-%primes/get-prime ( id* -- prime* ) {
-	;primes/lut ADD2 LDA2 }
-
-@primes/find-id ( prime* -- id )
-	STH2
-	#0000
-	&>l
-		DUP2k ADD2 /get-prime STH2kr EQU2 ?{ INC DUP ?/>l }
-	POP2r NIP JMP2r
-
 @symbol/is-spacer ( c -- t )
 	DUP LIT 21 LTH ?{
 		DUP LIT "[ EQU ?{
@@ -544,7 +506,7 @@
 
 @symbol/<push> ( c -- )
 	#00 [ LIT2 &+ptr =&+buf ] INC2k
-	( clamp ) ;&+buf-end LTH2k ?{ ;dict/err-buffer ;dict/symbol err/<set>
+	( clamp ) ;&+buf-end LTH2k ?{ ;dict/symbol err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -573,16 +535,14 @@
 		( ptr* str* ) ,&+ptr LDR2 OVR2 dict/alloc
 		( | push )
 		[ LIT2 &+ptr =&buf ] INC2k INC2
-		( clamp ) ;&buf-end LTH2k ?{ ;dict/err-buffer ;dict/syms err/<set>
+		( clamp ) ;&buf-end LTH2k ?{ ;dict/syms err/<set-buf>
 			SWP2 }
 		POP2 ,&+ptr STR2
 		STA2 }
 	NIP2 ;&buf SUB2 #01 SFT2 JMP2r
 
 @syms/<print-count-id> ( id* -- )
-	STH2k /get-name ORAk ?{
-		POP2 DUP2r ADD2r STH2r primes/get-prime !u16/<print-dec> }
-	POP2r
+	/get-name
 	( | quoted )
 	LDAk LIT "' NEQ ?str/<print>
 	LDA !char/<print>
@@ -611,6 +571,10 @@
 	&queue "Queue 00
 	&syms "Syms 00
 	&symbol "Symbol 00
+
+@err/<set-buf> ( name* -- )
+	;dict/err-buffer SWP2
+	( >> )
 
 @err/<set> ( err* name* -- )
 	str/<print>
@@ -709,40 +673,6 @@
 
 (
 @|Buffers )
-
-@primes/lut [8
-	0001 0002 0003 0005 0007 000b 000d 0011
-	0013 0017 001d 001f 0025 0029 002b 002f
-	0035 003b 003d 0043 0047 0049 004f 0053
-	0059 0061 0065 0067 006b 006d 0071 007f
-	0083 0089 008b 0095 0097 009d 00a3 00a7
-	00ad 00b3 00b5 00bf 00c1 00c5 00c7 00d3
-	00df 00e3 00e5 00e9 00ef 00f1 00fb 0101
-	0107 010d 010f 0115 0119 011b 0125 0133
-	0137 0139 013d 014b 0151 015b 015d 0161
-	0167 016f 0175 017b 017f 0185 018d 0191
-	0199 01a3 01a5 01af 01b1 01b7 01bb 01c1
-	01c9 01cd 01cf 01d3 01df 01e7 01eb 01f3
-	01f7 01fd 0209 020b 021d 0223 022d 0233
-	0239 023b 0241 024b 0251 0257 0259 025f
-	0265 0269 026b 0277 0281 0283 0287 028d
-	0293 0295 02a1 02a5 02ab 02b3 02bd 02c5
-	02cf 02d7 02dd 02e3 02e7 02ef 02f5 02f9
-	0301 0305 0313 031d 0329 032b 0335 0337
-	033b 033d 0347 0355 0359 035b 035f 036d
-	0371 0373 0377 038b 038f 0397 03a1 03a9
-	03ad 03b3 03b9 03c7 03cb 03d1 03d7 03df
-	03e5 03f1 03f5 03fb 03fd 0407 0409 040f
-	0419 041b 0425 0427 042d 043f 0443 0445
-	0449 044f 0455 045d 0463 0469 047f 0481
-	048b 0493 049d 04a3 04a9 04b1 04bd 04c1
-	04c7 04cd 04cf 04d5 04e1 04eb 04fd 04ff
-	0503 0509 050b 0511 0515 0517 051b 0527
-	0529 052f 0551 0557 055d 0565 0577 0581
-	058f 0593 0595 0599 059f 05a7 05ab 05ad
-	05b3 05bf 05c9 05cb 05cf 05d1 05d5 05db
-	05e7 05f3 05fb 0607 060d 0611 0617 061f
-	0623 062b 062f 063d 0641 0647 0649 064d ]
 
 @symbol/+buf ( str[], 00.. )
 	$40 &+buf-end
