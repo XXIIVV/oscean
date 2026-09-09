@@ -203,9 +203,6 @@
 	DUP2 tag ;types/clos EQU2 ?reduce
 	POP2 POP2 POP2 .err LDZ2 JMP2r
 
-	&prim ( env* t* f* -- res* )
-	ord #20 SFT2 ;prim/lut+2 ADD2 LDA2 JMP2
-
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
 	DUP2 tag ;types/cons EQU2 ?/cons
@@ -336,6 +333,23 @@
 	DUP2 .env LDZ2 EQU2 ?{ JMP2r }
 	POP2 .nil LDZ2 JMP2r
 
+@f-dotimes ( env* t* -- res* )
+	( env* . t* env* ) OVR2 OVR2 [ STH2 STH2 ]
+	( to* from* ) car cdr car eval #0000
+	&>l
+		( env* count* . env* t* ) STH2kr OVR2 SWP2r
+		( env* count* t/name* ) STH2kr car car
+		( count*.t/name* ) pair
+		( count*.t/name* t* ) STH2kr cdr car eval POP2
+		( . t* env* ) SWP2r
+		( next ) INC2 GTH2k ?/>l
+	POP2 POP2
+	( | return 3rd-opt )
+	POP2r STH2r car cdr cdr
+	( | check for nil )
+	DUP2 .nil LDZ2 NEQ2 ?{ JMP2r }
+	car JMP2r
+
 @f-print ( env* t* -- res* )
 	[ LIT2 18 _<emit>/port ] STR
 	car eval DUP2 <pretty-print>
@@ -448,7 +462,7 @@
 	#0000 STH2r SUB2 #3fff AND2 JMP2r
 
 @s16/lth ( a* b* -- t )
-	#1000 EOR2 SWP2 #1000 EOR2 GTH2 JMP2r
+	#2000 EOR2 SWP2 #2000 EOR2 GTH2 JMP2r
 
 @s16/div ( a* b* -- res* )
 	/normalize STH
@@ -461,7 +475,7 @@
 	#0000 SWP2 SUB2 #0fff AND2 #10 JMP2r
 
 %dec/is-pos ( short* -- short* t ) {
-	DUP2 #1000 AND2 EQU }
+	DUP2 #2000 AND2 EQU }
 
 @dec/<print> ( short* -- )
 	/is-pos ?{
@@ -495,24 +509,36 @@
 	&not "not 00
 	&or "or 00
 	&if "if 00
+	&dotimes "dotimes 00
 	&+ "+ 00
 	&- "- 00
 	&* "* 00
 	&/ "/ 00
 	&< "< 00
 
-@prim/lut [4
-	=dict/eval &lut+2 =f-eval =dict/quote
-	=f-quote =dict/print =f-print =dict/cons
-	=f-cons =dict/car =f-car =dict/cdr
-	=f-cdr =dict/eq? =f-eq =dict/pair?
-	=f-pair =dict/if =f-if =dict/let*
-	=f-leta =dict/lambda =f-lambda =dict/define
-	=f-define =dict/< =f-lt =dict/or
-	=f-or =dict/and =f-and =dict/not
-	=f-not =dict/+ =f-add =dict/-
-	=f-sub =dict/* =f-mul =dict//
-	=f-div ] &lutend
+@prim/lut [2
+	=dict/eval &lut+2
+	=f-eval =dict/quote
+	=f-quote =dict/print
+	=f-print =dict/cons
+	=f-cons =dict/car
+	=f-car =dict/cdr
+	=f-cdr =dict/eq?
+	=f-eq =dict/pair?
+	=f-pair =dict/if
+	=f-if =dict/let*
+	=f-leta =dict/lambda
+	=f-lambda =dict/define
+	=f-define =dict/<
+	=f-lt =dict/or
+	=f-or =dict/and
+	=f-and =dict/not
+	=f-not =dict/+
+	=f-add =dict/-
+	=f-sub =dict/*
+	=f-mul =dict//
+	=f-div =dict/dotimes
+	=f-dotimes ] &lutend
 
 @sym/mem
 |1ff0 @cons/mem

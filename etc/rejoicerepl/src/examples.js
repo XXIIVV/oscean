@@ -13,6 +13,21 @@ take ."It's " [True Fool]/[take gold]
 
 @Fool  .pyrite.. End
 @True  .gold! @End`
+examples.fractions=`( A whole number, equal to 7/1 )
+7
+
+( A proper fraction, less than 1 )
+3/7
+
+( An improper fraction, greater than 1 )
+[3 5]/3
+
+( An unreduced fraction, a factor is present on both sides )
+3/[5 3]
+
+( The previous fraction, reduced )
+11/3
+`
 examples.primes=`( Check if number n, is prime )
 
 n^23 .#n
@@ -26,21 +41,6 @@ i^2 pow^4
 	[Loop i pow^i pow^i pow]/rem
 
 ." is not prime" @End
-`
-examples.fractions=`( A whole number, equal to 7/1 )
-7
-
-( A proper fraction, less than 1 )
-3/7
-
-( An improper fraction, greater than 1 )
-5/2
-
-( An unreduced fraction, a factor is present on both sides )
-[5 3]/[2 3]
-
-( The previous fraction, reduced )
-5/2
 `
 examples.multisets=`( Put a marble in the bag )
 
@@ -143,7 +143,8 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
-n^10 y 
+n^10 y
+
 @fibonacci ( n y -- x y )
 	'[y^x x^y .#x .\\s]/[x^x n]
 `

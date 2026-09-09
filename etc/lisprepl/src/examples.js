@@ -14,12 +14,13 @@ examples.hello_world=`; This is a comment
 examples.fibonacci=`; Print the fibonacci numbers
 
 (define fib
-  (lambda (n)
-    (if (< n 2)
-      n
-      (+ (fib (- n 1)) (fib (- n 2))))))
+	(lambda (n)
+		(if (< n 2)
+			n
+		 	(+ (fib (- n 1)) (fib (- n 2))))))
 
-(print (fib 9))`
+(print (fib 9))
+`
 examples.factorial=`; Print the factorial numbers
 
 (define fac 
@@ -49,20 +50,21 @@ examples.fizzbuzz=`; Print the FizzBuzz sequence
 
 (fizzbuzz 1 1 1)`
 examples.map=`(define print-ln
-  (lambda (s)
-    (and (print s) (print '\\s))))
+	(lambda (s)
+		(and (print s) (print '\\s))))
 
 (define map
-  (lambda (f lst)
-    (if (eq? lst '())
-      '()
-      (cons (f (car lst)) (map f (cdr lst))))))
+	(lambda (f lst)
+		(if (eq? lst '())
+			'()
+			(cons (f (car lst)) (map f (cdr lst))))))
 
 (define double (lambda (x) (* x 2)))
-(define add1   (lambda (x) (+ x 1)))
+(define add1 (lambda (x) (+ x 1)))
 
 (print-ln (map double '(1 2 3 4 5)))
-(print-ln (map add1   '(1 2 3 4 5)))`
+(print-ln (map add1 '(1 2 3 4 5)))
+`
 examples.combinators=`; Church numerals from combinatory logic
 
 (define I (lambda (a) a))
