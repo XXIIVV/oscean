@@ -5,12 +5,12 @@
 |4000 @types/atom
 |8000 @types/cons
 |c000 @types/clos
+|4109 @prefab/nil
+|410c @prefab/tru
 
 |000
 
 	@err $2
-	@tru $2
-	@nil $2
 	@env $2
 	@token/buf $40
 
@@ -19,7 +19,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2 !prim/<boot>
 
-@sym/mem
+@sym/mem "() 00 "#t 00 &mempre
 |3ffe @cons/mem
 |4000 @meta 00 "HEOL! 0a
 	( details ) "A 20 "Lisp 20 "interpreter 0a
@@ -36,10 +36,10 @@
 	#3fff AND2 }
 
 %not ( box* -- t ) {
-	.nil LDZ2 EQU2 }
+	;prefab/nil EQU2 }
 
 %not-nil ( box* -- t ) {
-	.nil LDZ2 NEQ2 }
+	;prefab/nil NEQ2 }
 
 %atom ( str* -- cell* ) {
 	sym/find-alloc ;types/atom ORA2 }
@@ -154,12 +154,12 @@
 	&list ( -- cell* )
 	token/scan
 	( | handlers )
-	.token/buf LDZ LIT ") NEQ ?{ .nil LDZ2 JMP2r }
+	.token/buf LDZ LIT ") NEQ ?{ ;prefab/nil JMP2r }
 	.token/buf LDZ2 LIT2 ". 00 NEQ2 ?{ read !token/scan }
 	parse /list SWP2 !cons
 
 	&quote ( -- cell* )
-	.nil LDZ2 read cons ;dict/quote atom !cons
+	;prefab/nil read cons ;dict/quote atom !cons
 
 (
 @|Core )
@@ -193,8 +193,9 @@
 	POP2r car #20 SFT2 ;prim/lut+2 ADD2 LDA2 JMP2
 
 @eval ( env* box* -- res* )
-	DUP2 tag ;types/atom EQU2 ?assoc
-	DUP2 tag ;types/cons EQU2 ?/cons
+	DUP2 ;prefab/tru EQU2 ?{
+		DUP2 tag ;types/atom EQU2 ?assoc
+		DUP2 tag ;types/cons EQU2 ?/cons }
 	NIP2 JMP2r
 
 	&cons ( env* box* -- res* )
@@ -208,28 +209,26 @@
 @evlis ( env* t* -- res* )
 	DUP2 tag ;types/atom EQU2 ?assoc
 	DUP2 tag ;types/cons EQU2 ?/cons
-	POP2 POP2 .nil LDZ2 JMP2r
+	POP2 POP2 ;prefab/nil JMP2r
 
 	&cons ( env* t* -- res* )
 	OVR2 OVR2 car eval STH2
 	cdr evlis STH2r !cons
 
 @bool ( t -- cell* )
-	?{ .nil LDZ2 JMP2r }
-	.tru LDZ2 JMP2r
+	?{ ;prefab/nil JMP2r }
+	;prefab/tru JMP2r
 
 (
 @|Primitives )
 
 @prim/<boot> ( -- )
 	;dict/err atom .err STZ2
-	;dict/tru atom .tru STZ2
-	;dict/nil-list atom .nil STZ2
-	.nil LDZ2 .tru LDZ2 .tru LDZ2 pair .env STZ2
-	.nil LDZ2 .nil LDZ2 pair .env STZ2
+	;prefab/nil ;prefab/tru DUP2 pair .env STZ2
+	;prefab/nil DUP2 pair .env STZ2
 	;&lutend ;&lut [ LIT2r 0000 ]
 	&>l
-		LDA2k atom .env LDZ2 .nil LDZ2 STH2kr cons ord ;types/clos ORA2 ROT2 pair .env STZ2
+		LDA2k atom .env LDZ2 ;prefab/nil STH2kr cons ord ;types/clos ORA2 ROT2 pair .env STZ2
 		INC2r #0004 ADD2 GTH2k ?/>l
 	POP2 POP2 POP2r
 	( | listen )
@@ -321,14 +320,14 @@
 	car !eval
 
 @f-and ( env* t* -- res* )
-	[ LITr -tru ] LDZ2r
+	[ LIT2r =prefab/tru ]
 	&>w
 		DUP2 not ?{
 			OVR2 OVR2 car eval POP2r STH2k not ?{ cdr !/>w } }
 	POP2 POP2 STH2r JMP2r
 
 @f-or ( env* t* -- res* )
-	[ LITr -tru ] LDZ2r
+	[ LIT2r =prefab/tru ]
 	&>w
 		DUP2 not ?{
 			OVR2 OVR2 car eval POP2r STH2k not-nil ?{ cdr !/>w } }
@@ -341,7 +340,7 @@
 
 	&seg ( env* -- env* )
 	DUP2 .env LDZ2 EQU2 ?{ JMP2r }
-	POP2 .nil LDZ2 JMP2r
+	POP2 ;prefab/nil JMP2r
 
 @f-dotimes ( env* t* -- res* )
 	( env* . t* env* ) OVR2 OVR2 [ STH2 STH2 ]
@@ -357,7 +356,7 @@
 	( | return 3rd-opt )
 	POP2r STH2r car cdr cdr
 	( | check for nil )
-	DUP2 .nil LDZ2 NEQ2 ?{ JMP2r }
+	DUP2 ;prefab/nil NEQ2 ?{ JMP2r }
 	car JMP2r
 
 @f-print ( env* t* -- res* )
@@ -394,7 +393,7 @@
 		INC2 !/>w
 
 @sym/<push> ( char -- )
-	[ LIT2 &+ptr =&mem ] INC2k ,&+ptr STR2
+	[ LIT2 &+ptr =&mempre ] INC2k ,&+ptr STR2
 	STA
 	JMP2r
 
@@ -502,8 +501,6 @@
 
 @dict/err "ERR 00
 	&pair 20 ". 20 00
-	&tru "#t 00
-	&nil-list "() 00
 	&lambda "lambda 00
 	&define "define 00
 	&quote "quote 00

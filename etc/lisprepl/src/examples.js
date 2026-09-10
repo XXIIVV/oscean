@@ -46,7 +46,8 @@ examples.fizzbuzz=`; Print the FizzBuzz sequence
 					(print-ln 'Buzz)
 					(print-ln n))))))
 
-(dotimes (i 100) (fizzbuzz (+ i 1)))
+(dotimes (i 100)
+	(fizzbuzz (+ i 1)))
 `
 examples.map=`(define print-ln
 	(lambda (s)
