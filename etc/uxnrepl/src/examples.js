@@ -226,7 +226,7 @@ examples.reverse_string=`( Reverse a string and print it )
 @str/buf "wonderland 00
 `
 examples.fibonacci=`( 54K . Fibonacci Short
-| 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
+  0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22 )
 
 #0009 u16/fib BRK
 
@@ -234,6 +234,44 @@ examples.fibonacci=`( 54K . Fibonacci Short
 	#0001 GTH2k ?{ POP2 JMP2r }
 	SUB2k /fib STH2
 	INC2 SUB2 /fib STH2r ADD2 JMP2r
+`
+examples.print_binary=`( 54K . Print binary )
+
+@on-reset ( -> )
+	#0123 u16/<print-binary>
+	BRK
+
+@u16/<print-binary> ( short* -- )
+	#10
+	&>w 
+		#01 SUB
+		SFT2k NIP /<print-bit>
+		DUP ?/>w
+	POP	POP2 JMP2r
+
+@u16/<print-bit> ( low -- )
+	#01 AND LIT "0 ADD #18 DEO
+	JMP2r
+`
+examples.print_hexadecimal=`( 54K . Print hexadecimal )
+
+@on-reset ( -> )
+	#1234 u16/<print>
+	BRK
+
+@u16/<print> ( short* -- )
+	SWP u8/<print>
+	( >> )
+
+@u8/<print> ( byte -- )
+	DUP #04 SFT /<print-nibble>
+	( >> )
+	&<print-nibble> ( byte -- )
+	#0f AND DUP #09 GTH #27 MUL ADD
+	( >> )
+	&<print-digit> ( d -- )
+	[ LIT "0 ] ADD #18 DEO
+	JMP2r
 `
 examples.print_date=`( 54K . Print date as.. Day, 1 Jan 2026 )
 
@@ -361,9 +399,12 @@ examples.double_trans=`( 54K . Double Transposition Encoder )
 	t2/<encode>
 	BRK
 
-	&key1 "malignant 00
-	&key2 "rabbit 00
-	&msg "green_hands_at_dawn 00
+	&key1 "starfish 00
+	&key2 "cloud 00
+	&msg "whataprettyrabbit 00
+
+%u16/mod ( x* y* -- x%y* ) {
+	DIV2k MUL2 SUB2 }
 
 (
 @|t1 )
@@ -406,7 +447,7 @@ examples.double_trans=`( 54K . Double Transposition Encoder )
 	/get-buflen #0000
 	&>l
 		DUP2
-		( y ) DUP2 [ LIT2 &rows $2 ] STH2k DIV2k MUL2 SUB2
+		( y ) DUP2 [ LIT2 &rows $2 ] STH2k u16/mod
 		( x ) SWP2 STH2r DIV2 ;&key SWP2 str/get-x SWP2 /get-keylen [ LIT2r =&buf ] MUL2 ADD2 STH2r ADD2 LDA t2/<push>
 		INC2 GTH2k ?/>l
 	POP2 POP2 JMP2r
@@ -447,7 +488,7 @@ examples.double_trans=`( 54K . Double Transposition Encoder )
 	/get-buflen #0000
 	&>l
 		DUP2
-		( y ) DUP2 [ LIT2 &rows $2 ] STH2k DIV2k MUL2 SUB2
+		( y ) DUP2 [ LIT2 &rows $2 ] STH2k u16/mod
 		( x ) SWP2 STH2r DIV2 ;&key SWP2 str/get-x SWP2 /get-keylen [ LIT2r =&buf ] MUL2 ADD2 STH2r ADD2 LDA
 		( print ) #18 DEO
 		INC2 GTH2k ?/>l

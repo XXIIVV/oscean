@@ -23,14 +23,14 @@ typedef unsigned short Uint16;
 typedef void (*deo_handler)(void);
 typedef Uint8 (*dei_handler)(void);
 
-static Uint8 *ram, dev[0x100], ptr[2], stk[2][0x100];
+#define BANKS 0x10
+#define BANKS_CAP (BANKS * 0x10000)
+
+static Uint8 ram[BANKS_CAP], dev[0x100], ptr[2], stk[2][0x100];
 static unsigned int uxn_eval(Uint16 pc);
 static int rL1, rL2;
 
 /* clang-format off */
-
-#define BANKS 0x10
-#define BANKS_CAP (BANKS * 0x10000)
 
 static inline Uint16 peek2(const Uint8 *d) { return ((Uint16)d[0] << 8) | d[1]; }
 static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
@@ -68,10 +68,9 @@ system_load(const char *rom_path)
 static unsigned int
 system_boot(char *rom_path, const unsigned int has_args)
 {
-	ram = (Uint8 *)calloc(BANKS_CAP, sizeof(Uint8));
 	system_boot_path = rom_path;
 	dev[0x17] = has_args;
-	return ram && system_load(rom_path);
+	return system_load(rom_path);
 }
 
 static void
