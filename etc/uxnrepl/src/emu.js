@@ -174,7 +174,7 @@ function Repl(rom, keyword)
 		let addr = (rom[1] << 8 | rom[2]) - 0xff
 		let str = ""
 		while(rom[addr])
-			str +=  String.fromCharCode(rom[addr++]);
+			str += String.fromCharCode(rom[addr++]);
 		console.log(str)
 	}
 
@@ -189,21 +189,31 @@ function Repl(rom, keyword)
 	}
 
 	this.run = () => {
-		const query = this.editor_el.value+'\n'
-		const emu = new Emu()
-		emu.uxn.dev[0x17] = 1
-		emu.uxn.load(rom).eval(0x0100)
-		for (let i = 0; i < query.length; i++)
-			emu.console.input(query.charAt(i).charCodeAt(0), 1)
-		emu.console.input(0x00, 4)
-		const segments = emu.console.stderr_body.trim().split('\n')
+		const query = this.editor_el.value + '\n';
+		const encoder = new TextEncoder();
+		const queryBytes = encoder.encode(query);
+		const emu = new Emu();
+		emu.uxn.dev[0x17] = 1;
+		emu.uxn.load(rom).eval(0x0100);
+		for (let i = 0; i < queryBytes.length; i++) 
+			emu.console.input(queryBytes[i], 1);
+		emu.console.input(0x00, 4);
+		const segments = mojibake(emu.console.stderr_body.trim()).split('\n');
 		if(segments.length > 50)
-			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n')
+			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n');
 		else
-			this.logs_el.innerHTML = segments.join('\n')
-		this.logs_el.scrollTop = this.logs_el.scrollHeight
-		this.editor_el.focus()
-		this.postrun(emu.console.stdout_body.trimEnd(), emu.console.stderr_body)
+			this.logs_el.innerHTML = segments.join('\n');
+		this.logs_el.scrollTop = this.logs_el.scrollHeight;
+		this.editor_el.focus();
+		this.postrun(emu.console.stdout_body.trimEnd(), emu.console.stderr_body);
+	}
+	
+	function mojibake(brokenStr) {
+	const bytes = new Uint8Array(brokenStr.length);
+	for (let i = 0; i < brokenStr.length; i++) 
+		bytes[i] = brokenStr.charCodeAt(i) & 0xFF;
+		const decoder = new TextDecoder('utf-8');
+		return decoder.decode(bytes);
 	}
 	
 	this.postrun = (stdout, stderr) => {

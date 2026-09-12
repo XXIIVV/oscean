@@ -4,6 +4,8 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|7fff @inf
+|cf89 @inf/glyph
 
 |000
 
@@ -29,7 +31,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Sep 20 "2026 0000
+	( date ) "12 20 "Sep 20 "2026 0000
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -48,8 +50,7 @@
 
 @token/on-console-interactive ( -> )
 	.Console/read DEI DUP /<append>
-	#0a NEQ ?{ world/<eval>
-		#010e DEO }
+	#0a NEQ ?{ world/<eval> }
 	BRK
 
 @token/on-console ( -> )
@@ -209,6 +210,7 @@
 @item/walk-count ( ztr -- ztr count* )
 	LDZk LIT "^ NEQ ?{
 		INC LDZk char/is-dec ?dec-ztr/walk-u16
+		LDZ2k ;inf/glyph NEQ2 ?{ INC2 INC2 ;inf JMP2r }
 		DUP symbol/walk
 		( ref reg ) #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
 	( def reg ) #0001 JMP2r
@@ -330,9 +332,6 @@
 %tote/has-item ( count* id* -- t ) {
 	tote/get-addr LDA2 ADD2 POP #80 AND }
 
-%tote/<mod-item> ( count* id* -- ) {
-	tote/get-addr LDA2k ROT2 ADD2 SWP2 STA2 }
-
 @tote/get-register ( item* -- item* value* )
 	INC2k INC2 LDA2 OVR #80 AND ?{ JMP2r }
 	#7fff AND2 /get-addr LDA2 JMP2r
@@ -417,7 +416,14 @@
 	POP2 POP2 JMP2r
 
 @queue/<take> ( item* -- )
-	LDA2k /find INC2k ORA ?{
+	LDA2k ORAk ?{
+		( zero ) POP2
+		( id ) POP2 JMP2r }
+	( | Handle inf )
+	DUP2 tote/get-addr LDA2 ;inf NEQ2 ?{
+		OVR2 INC2 INC2 LDA2 ;inf EQU2 ?{ POP2 POP2 JMP2r } }
+	( | Handle dec )
+	/find INC2k ORA ?{
 		POP2
 		( | Not null )
 		tote/get-register ORAk ?{ POP2 POP2 JMP2r }
@@ -430,7 +436,11 @@
 	POP2 JMP2r
 
 @queue/<put> ( item* -- item* )
-	LDA2k /find INC2k ORA ?{
+	LDA2k
+	( | Handle inf )
+	DUP2 tote/get-addr LDA2 ;inf NEQ2 ?{ POP2 POP2 JMP2r }
+	( | Handle inc )
+	/find INC2k ORA ?{
 		POP2
 		( | Not null )
 		tote/get-register ORAk ?{ POP2 POP2 JMP2r }
@@ -452,7 +462,8 @@
 	,&+ptr LDR2 ;&+buf
 	&>l
 		EQU2k ?{
-			INC2k INC2 LDA2 STH2kr s16/mul OVR2 LDA2 tote/<mod-item>
+			INC2k INC2 LDA2 STH2kr MUL2 OVR2 LDA2 tote/get-addr LDA2k ROT2 ADD2
+			( new-value* item* ) SWP2 STA2
 			item/next !/>l }
 	POP2 POP2 POP2r JMP2r
 
@@ -570,7 +581,7 @@
 	&goto "Goto 00
 	&queue "Queue 00
 	&syms "Syms 00
-	&symbol "Symbol 00
+	&symbol "Symbol 00 &inf =inf/glyph 00
 
 @err/<set-buf> ( name* -- )
 	;dict/err-buffer SWP2
@@ -637,12 +648,8 @@
 		LDAk LDAkr STHr NEQ ?/d
 		INC2 INC2r !/>wc
 
-@s16/mul ( val* mul* -- res* )
-	STH2
-	OVR #80 AND ?{ STH2r MUL2 JMP2r }
-	#0000 DUP2 ROT2 SUB2 STH2r MUL2 SUB2 JMP2r
-
 @u16/<print-dec> ( u16* -- )
+	DUP2 ;inf NEQ2 ?{ POP2 ;dict/inf !str/<print> }
 	[ LIT2r ff00 ]
 	&>read
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
