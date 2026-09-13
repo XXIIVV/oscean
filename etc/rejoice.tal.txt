@@ -10,9 +10,9 @@
 |000
 
 	@token/+buf ( str[], 00.. )
-	$7e &+buf-end $2
+	$7e &+bufend $2
 	@item/+buf ( str[], 00.. )
-	$7e &+buf-end $2
+	$7e &+bufend $2
 
 |100
 
@@ -31,7 +31,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Sep 20 "2026 0000
+	( date ) "13 20 "Sep 20 "2026 0000
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -93,7 +93,7 @@
 	[ LIT &+depth $1 ] ?{
 		DUP #20 GTH ?{ POP /<parse> !/<reset> } }
 	[ LIT2 00 &+ptr -&+buf ] INCk
-	( clamp ) .&+buf-end LTHk ?{ ;dict/token err/<set-buf>
+	( clamp ) .&+bufend LTHk ?{ ;dict/token err/<set-buf>
 		SWP }
 	POP ,&+ptr STR
 	STZ2
@@ -180,7 +180,7 @@
 
 @item/<push> ( c -- )
 	[ LIT2 00 &+ptr -&+buf ] INCk
-	( clamp ) .&+buf-end LTHk ?{ ;dict/item err/<set-buf>
+	( clamp ) .&+bufend LTHk ?{ ;dict/item err/<set-buf>
 		SWP }
 	POP ,&+ptr STR
 	STZ2
@@ -270,7 +270,7 @@
 
 @world/<push> ( short* -- )
 	[ LIT2 &+ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k ?{ ;dict/world err/<set-buf>
+	( clamp ) ;&bufend LTH2k ?{ ;dict/world err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -314,7 +314,7 @@
 @goto/<push> ( addr* -- )
 	[ LIT &+count $1 ] INC ,&+count STR
 	[ LIT2 &+ptr =&buf ] INC2k INC2
-	( clamp ) ;&buf-end LTH2k ?{ ;dict/goto err/<set-buf>
+	( clamp ) ;&bufend LTH2k ?{ ;dict/goto err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -391,7 +391,7 @@
 
 @tote/get-range ( -- to* from* )
 	( from* ) ;&buf
-	( from* to-ptr* ) DUP2 syms/get-length ADD2 ;&buf-end
+	( from* to-ptr* ) DUP2 syms/get-length ADD2 ;&bufend
 	( from* min* ) [ LTH2k JMP SWP2 POP2 ]
 	( to* from* ) SWP2 JMP2r
 
@@ -437,8 +437,6 @@
 
 @queue/<put> ( item* -- item* )
 	LDA2k
-	( | Handle inf )
-	DUP2 tote/get-addr LDA2 ;inf NEQ2 ?{ POP2 POP2 JMP2r }
 	( | Handle inc )
 	/find INC2k ORA ?{
 		POP2
@@ -470,7 +468,7 @@
 
 @queue/<push> ( value* -- )
 	[ LIT2 &+ptr =&+buf ] INC2k INC2
-	( clamp ) ;&+buf-end LTH2k ?{ ;dict/queue err/<set-buf>
+	( clamp ) ;&+bufend LTH2k ?{ ;dict/queue err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -518,7 +516,7 @@
 
 @symbol/<push> ( c -- )
 	#00 [ LIT2 &+ptr =&+buf ] INC2k
-	( clamp ) ;&+buf-end LTH2k ?{ ;dict/symbol err/<set-buf>
+	( clamp ) ;&+bufend LTH2k ?{ ;dict/symbol err/<set-buf>
 		SWP2 }
 	POP2 ,&+ptr STR2
 	STA2
@@ -547,7 +545,7 @@
 		( ptr* str* ) ,&+ptr LDR2 OVR2 dict/alloc
 		( | push )
 		[ LIT2 &+ptr =&buf ] INC2k INC2
-		( clamp ) ;&buf-end LTH2k ?{ ;dict/syms err/<set-buf>
+		( clamp ) ;&bufend LTH2k ?{ ;dict/syms err/<set-buf>
 			SWP2 }
 		POP2 ,&+ptr STR2
 		STA2 }
@@ -563,7 +561,7 @@
 	,&+ptr LDR2 SWP2
 	&>w
 		LDAk DUP [ LIT2 &+ptr =&buf ] INC2k
-		( clamp ) ;&buf-end LTH2k ?{ ;&err-buffer ;&dict err/<set>
+		( clamp ) ;&bufend LTH2k ?{ ;&err-buffer ;&dict err/<set>
 			SWP2 }
 		POP2 ,&+ptr STR2
 		STA
@@ -683,27 +681,27 @@
 @|Buffers )
 
 @symbol/+buf ( str[], 00.. )
-	$40 &+buf-end
+	$40 &+bufend
 
 @syms/buf ( dict*, dict*, dict*, dict*.. )
-	$200 &buf-end
+	$200 &bufend
 
 @tote/buf ( length*, length*, length*.. )
-	$200 &buf-end
+	$200 &bufend
 
 @goto/buf ( addr*, addr*.. )
-	$200 &buf-end
+	$200 &bufend
 
 @label/buf ( addr*, addr*, addr*, addr*.. )
-	$200 &buf-end
-
-@dict/buf ( str[], 00, str[], 00.. )
-	$400 &buf-end
+	$200 &bufend
 
 @queue/+buf ( id*, count*, id*, count*.. )
-	$80 &+buf-end
+	$80 &+bufend
+
+@dict/buf ( str[], 00, str[], 00.. )
+	$1000 &bufend
 
 @world/buf ( id*, count*, id*, count*.. )
 
 
-|fffe &buf-end 
+|fffe &bufend 

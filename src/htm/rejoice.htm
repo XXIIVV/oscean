@@ -83,6 +83,10 @@ x^ω /x^ω   =  []       <i>( Infinity can be removed from infinity )</i>
 
 <p>Adding infinity to infinity also equals infinity. To remove an infinity from the bag, the size to remove must also be that of infinity, this deviates from Cantor's infinity which is undefined. In a 16-bit Rejoice system, infinity is any number equal or higher than 32767.</p>
 
+<ul>
+	<li><b>Saturate</b> <code>( a -- a^a|a^ω ) a^ω/a</code></li>
+</ul>
+
 <h3 id='exponents'>Variable Exponents</h3>
 
 <p>The caret notation is used to represent multiple instances of a symbol: for example, <code>x^5</code> indicates five instances of x. Rejoice is a higher-order multiset programming language, this means that symbol references may be used as the exponent value. For a fraction containing x^y, the value of y is read as the number of instances of the symbol y in the bag resolved when the fraction is evaluated. When a symbol used as an exponent is absent from the bag, its value is zero.</p>
@@ -119,39 +123,12 @@ x^6 y^6 equ?
 </pre>
 
 <ul>
-	<li><b>False?</b>: <code>( a -- true|a ) true/nil^a</code></li>
-	<li><b>Equal?</b>: <code>( a b -- true|[a b] ) true/[a^b b^a]</code></li>
-	<li><b>Greater?</b>: <code>( a b -- [true a^diff]|[a b] ) true/[a^b b^b]</code></li>
+	<li><b>False?</b> <code>( a -- true|a ) true/nil^a</code></li>
+	<li><b>Equal?</b> <code>( a b -- true|[a b] ) true/[a^b b^a]</code></li>
+	<li><b>Greater?</b> <code>( a b -- [true a^diff]|[a b] ) true/[a^b b^b]</code></li>
 </ul>
 
 <img src='../media/refs/creative_coding_privacy.png' width='300'/>
-
-<h3>Labels</h3>
-
-<p>A @label is a special syntax that represents position in the program. After each instruction, if a symbol matching the name of an existing label is present in the bag, the symbol is consumed, and execution jumps immediately to that label position. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
-<pre>
-x^2 y^3
-
-<b>@Mul</b> <i>( x y -- res )</i>
-	[Mul res^x]/y
-</pre>
-<pre style='margin-top:-29px'>
-[x^2 y^3] [Mul res^x]/y 
-[x^2 y^2 res^2] [Mul res^x]/y 
-[x^2 y res^4] [Mul res^x]/y 
-[x^2 res^6] [Mul res^x]/y 
-[x^2 res^6] 
-</pre>
-
-<p>When two labels enter the bag at the same time, one is picked at random. For example, a program that returns the result of a coin toss:</p>
-
-<pre>
-<i>( flip a coin )</i> [Head Tail] 
-
-<b>@Head</b> head End
-<b>@Tail</b> tail 
-<b>@End</b>
-</pre>
 
 <h3>Anonymous Functions</h3>
 
@@ -186,11 +163,38 @@ n^6 y <i>( n y -- n.fib y )</i>
 </pre>
 
 <ul>
-	<li><b>Square</b>: <code>( x -- r=x*x ) 'r^x/x</code></li>
-	<li><b>Multiplication</b>: <code>( x y -- x r=x*y ) 'r^x/y</code></li>
-	<li><b>Division</b>: <code>( x y -- y r=x/y ) 'r/x^y</code></li>
-	<li><b>Modulo</b>: <code>( x y -- x=x%y y ) '/x^y</code></li>
+	<li><b>Square</b> <code>( x -- r=x*x ) 'r^x/x</code></li>
+	<li><b>Multiplication</b> <code>( x y -- x r=x*y ) 'r^x/y</code></li>
+	<li><b>Division</b> <code>( x y -- y r=x/y ) 'r/x^y</code></li>
+	<li><b>Modulo</b> <code>( x y -- x=x%y y ) '/x^y</code></li>
 </ul>
+
+<h3>Labels</h3>
+
+<p>A @label is a special syntax that represents position in the program. After each instruction, if a symbol matching the name of an existing label is present in the bag, the symbol is consumed, and execution jumps immediately to that label position. The capitalization of labels is merely a convention. For example, here is a program to find the <b>product</b>:</p>
+<pre>
+x^2 y^3
+
+<b>@Mul</b> <i>( x y -- res )</i>
+	[Mul res^x]/y
+</pre>
+<pre style='margin-top:-29px'>
+[x^2 y^3] [Mul res^x]/y 
+[x^2 y^2 res^2] [Mul res^x]/y 
+[x^2 y res^4] [Mul res^x]/y 
+[x^2 res^6] [Mul res^x]/y 
+[x^2 res^6] 
+</pre>
+
+<p>When two labels enter the bag at the same time, one is picked at random. For example, a program that returns the result of a coin toss:</p>
+
+<pre>
+<i>( flip a coin )</i> [Head Tail] 
+
+<b>@Head</b> head End
+<b>@Tail</b> tail 
+<b>@End</b>
+</pre>
 
 <h3>I/O</h3>
 <p>Symbols that start with <kbd>.</kbd> will be emitted as text and immediately removed from the bag. Symbols that start with <kbd>.#</kbd> will emit the number of instances of that symbol in the bag. For example: A token like <code>.hello^3</code> will emit <code>hellohellohello</code>.</p>
