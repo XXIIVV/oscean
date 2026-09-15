@@ -70,6 +70,8 @@
 	( | special )
 	[ LIT "( ] seeing ?/special
 	[ LIT ") ] seeing ?/special
+	[ LIT "[ ] seeing ?/special
+	[ LIT "] ] seeing ?/special
 	[ LIT "' ] seeing ?/special
 	( | body )
 	&>w
@@ -77,6 +79,8 @@
 		( | handlers )
 		[ LIT "( ] seeing ?/cap
 		[ LIT ") ] seeing ?/cap
+		[ LIT "[ ] seeing ?/cap
+		[ LIT "] ] seeing ?/cap
 		[ LIT 20 ] seeing ?/cap
 		!/>w
 
@@ -147,6 +151,7 @@
 @parse ( -- cell* )
 	.token/buf LDZ LIT "( EQU ?/list
 	.token/buf LDZ LIT "' EQU ?/quote
+	.token/buf LDZ LIT "[ EQU ?/data
 	( | atomic )
 	;token/buf DUP2 str/is-dec ?str/to-dec
 	atom JMP2r
@@ -160,6 +165,12 @@
 
 	&quote ( -- cell* )
 	;prefab/nil read cons ;dict/quote atom !cons
+
+	&data ( -- cell* )
+	data/new
+	&>data-loop
+		token/scan .token/buf LDZ LIT "] NEQ ?{ JMP2r }
+		;token/buf str/hex data/<push> !/>data-loop
 
 (
 @|Core )
@@ -365,6 +376,9 @@
 	POP cdr car STHr DEO2
 	;prefab/tru JMP2r
 
+@f-block ( env* t* -- res* )
+	evlis car ;data/bufmap SWP2 DUP2 ADD2 ADD2 LDA2 JMP2r
+
 @f-print ( env* t* -- res* )
 	[ LIT2 18 _<emit>/port ] STR
 	car eval DUP2 <pretty-print>
@@ -401,6 +415,20 @@
 @sym/<push> ( char -- )
 	[ LIT2 &+ptr =&mempre ] INC2k ,&+ptr STR2
 	STA
+	JMP2r
+
+(
+@|Data )
+
+@data/new ( -- id* )
+	,&ptr LDR2 [ LIT2 &ptrmap =&bufmap ] INC2k INC2 ,&ptrmap STR2
+	STA2
+	[ LIT2 &count 0000 ] INC2k ,&count STR2
+	JMP2r
+
+@data/<push> ( s* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
 	JMP2r
 
 (
@@ -443,6 +471,11 @@
 	[ LIT "n ] NEQ ?{ #0a JMP2r }
 	#20 JMP2r
 
+@chr/hex ( c -- val )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
 @str/<print> ( str* -- )
 	&>wp
 		LDAk DUP ?{ POP POP2 JMP2r }
@@ -457,6 +490,13 @@
 			INC2 INC2r LDAk ?/>wc
 		LDA LDAr STHr #0000 EQU2 JMP2r }
 	POP2 POP2r #00 JMP2r
+
+@str/hex ( str* -- value* )
+	[ LIT2r 0000 ]
+	&>wh
+		[ LITr 40 ] SFT2r LDAk chr/hex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?/>wh
+	POP2 STH2r JMP2r
 
 @str/is-dec ( str* -- t )
 	LDAk [ LIT "- ] NEQ ?{
@@ -523,6 +563,7 @@
 	&or "or 00
 	&if "if 00
 	&deo "deo 00
+	&block "block* 00
 	&dotimes "dotimes 00
 	&+ "+ 00
 	&- "- 00
@@ -555,5 +596,8 @@
 	=f-div =dict/%
 	=f-mod =dict/dotimes
 	=f-dotimes =dict/deo
-	=f-deo ] &lutend
+	=f-deo =dict/block
+	=f-block ] &lutend
+
+@data/bufmap $200 &buf
 
