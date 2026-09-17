@@ -7,9 +7,7 @@
 |80 @Controller &vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|0050 @Varvara/version ( @|Constants )
-
-
+|0050 @Varvara/version
 |0080 @rule/length
 |1c90 @project/buflen
 |0400 @symbols/buflen
@@ -32,14 +30,8 @@
 |100
 
 @on-reset ( -> )
-	( | meta )
 	;meta #06 DEO2
-	( | theme )
-	#f0cf .System/r DEO2
-	#f0ca .System/g DEO2
-	#f0b5 .System/b DEO2
-	Theme/<read>
-	( | size )
+	theme/<load>
 	#026c #0198 <set-size>
 	( | autofill )
 	#01 ;rules STA
@@ -57,7 +49,7 @@
 	( ) "Tote 0a
 	( ) "A 20 "Multiset 20 "Playground 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "15 20 "Jun 20 "2026 $1
+	( ) "17 20 "Sep 20 "2026 $1
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -466,8 +458,9 @@
 	( erase ) ORAk ?{ symbol/<erase> }
 	( snarf ) DUP2 #0100 NEQ2 ?{ snarf/<write> }
 	( paste ) DUP2 #0200 NEQ2 ?{ snarf/<read> }
-	( dir ) DUP2 #0500 NEQ2 ?{ symbol/<change-dir> }
-	( hide ) DUP2 #0600 NEQ2 ?{ symbol/<toggle-hide> }
+	( dir ) DUP2 #0400 NEQ2 ?{ symbol/<change-dir> }
+	( hide ) DUP2 #0500 NEQ2 ?{ symbol/<toggle-hide> }
+	( lock ) DUP2 #0600 NEQ2 ?{ symbol/<toggle-emit> }
 	( lock ) DUP2 #0700 NEQ2 ?{ symbol/<toggle-lock> }
 	POP2 POP2 [ LIT2 00 -Mouse/state ] DEO
 	BRK
@@ -859,17 +852,27 @@
 
 	&txt ".snarf $1
 
-@Theme/<read> ( -- )
+(
+@|Theme )
+
+@theme/<reset> ( -- )
+	#f0ad #f0ef #f0be
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU ?{
-		[ LIT2 &r $2 ] .System/r DEO2
-		[ LIT2 &g $2 ] .System/g DEO2
-		[ LIT2 &b $2 ] .System/b DEO2 }
-	JMP2r
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
 
 	&path ".theme $1
 
@@ -929,6 +932,9 @@
 @symbol/<toggle-lock> ( -- )
 	selected-mask LDAk #01 EOR ROT ROT STA !<reqdraw-paint>
 
+@symbol/<toggle-emit> ( -- )
+	selected-mask LDAk #08 EOR ROT ROT STA !<reqdraw-paint>
+
 (
 @|drawing )
 
@@ -955,8 +961,10 @@
 	;copy-icn #0020 #00a0 <draw-icon-at>
 	;paste-icn #0030 #00a0 <draw-icon-at>
 	;dir-icn selected-mask LDA #06 SFT #00 SWP #50 SFT2 ADD2
-	( ) #0060 #00a0 <draw-icon-at>
+	( ) #0050 #00a0 <draw-icon-at>
 	;visible-icn selected-mask LDA #04 AND ?{ #0020 ADD2 }
+	#0060 #00a0 <draw-icon-at>
+	;emit-icn selected-mask LDA #08 AND ?{ #0020 ADD2 }
 	#0070 #00a0 <draw-icon-at>
 	;lock-icn selected-mask LDA #01 AND ?{ #0020 ADD2 }
 	#0080 #00a0 <draw-icon-at>
@@ -1272,7 +1280,7 @@
 
 ( tote/assets )
 
-@symbols/table [
+@symbols/table [4
 	=&tri =&lozenge =&square =&hexagon
 	=&circle =&left =&quad4 =&quad3
 	=&num1 =&num2 =&num3 =&num4
@@ -1282,43 +1290,45 @@
 	=&num1-neg =&num2-neg =&num3-neg =&num4-neg
 	=&rabbit-right =&dog-right =&blank2 =&transmute ]
 
-@appicon [
-	0000 0000 0003 0404 0000 0000 0000 0000
-	0000 0000 0000 ffff 0000 0000 0000 0000
-	0000 0000 0000 80c0 0000 0000 0000 0000
-	0300 0001 0303 0303 0000 0000 0000 0000
-	0000 00ff ff00 0000 0000 0000 0000 0000
-	c0c0 c0c0 8000 00c0 0000 0000 0000 0000
-	0301 0000 0000 0000 0000 0000 0000 0000
-	ffff 0000 0000 0000 0000 0000 0000 0000
-	e0e0 c000 0000 0000 0000 0000 0000 0000 ]
+@appicon [8
+	0718 2040 4083 8787 0007 1f3f 3f7c 7b7b
+	ff00 0000 0000 ffff 00ff ffff ffff 0000
+	e018 0402 0201 81c1 00e0 f8fc fcfe 7e3e
+	8380 8081 8383 8383 7c7f 7f7e 7c7c 7c7c
+	0000 00ff ff00 0000 ffff ff00 00ff ffff
+	c1c1 c1c1 8101 01c1 3e3e 3e3e 7efe fe3e
+	8381 8040 4020 1807 7c7e 7f3f 3f1f 0700
+	ffff 0000 0000 00ff 0000 ffff ffff ff00
+	e1e1 c102 0204 18e0 1e1e 3efc fcf8 e000 ]
 
 @dotted-icn [ 0100 0100 0100 0100 ]
 
-@pixel-icn [ 0000 0010 0000 0000 7cfe fefe fefe 7c00 ]
+@pixel-icn [8
+	0000 0010 0000 0000 7cfe fefe fefe 7c00 ]
 
-@frill-chr [ 2020 2040 8080 8040 c0c0 c080 0000 0080 ]
+@frill-chr [8
+	2020 2040 8080 8040 c0c0 c080 0000 0080 ]
 
-@frill-toggle-chr [
+@frill-toggle-chr [8
 	3c02 0101 0101 0101 c0fc fefe fefe fefe
 	0101 0101 0151 5151 fefe fefe feae aeae
 	5151 5101 0101 0101 aeae aefe fefe fefe
 	0101 0101 0101 0101 fefe fefe fefe fefe
 	023c 4080 8080 4020 fcc0 8000 0000 80c0 ]
 
-@drag-chr [
+@drag-chr [8
 	0007 0f0f 0703 0100 0000 0707 0301 0000
 	00e0 f0f0 e0c0 8000 0000 e0e0 c080 0000 ]
 
-@drop-chr [
+@drop-chr [8
 	0007 0808 0402 0100 0000 0707 0301 0000
 	00e0 1010 2040 8000 0000 e0e0 c080 0000 ]
 
-@valid-icn [
+@valid-icn [8
 	0000 0000 0000 0000 0000 0000 3038 3c3e
 	0000 0000 0000 0000 3e3c 3830 0000 0000 ]
 
-@arrows-icn [
+@arrows-icn [8
 	0000 0000 0000 003f 0000 0000 3038 3cfe
 	3f00 0000 0000 0000 fe3c 3830 0000 0000
 	0000 0000 3038 3c3f 0000 0000 0000 00fe
@@ -1328,31 +1338,31 @@
 	0000 0000 0000 0036 0000 0000 3038 3cfe
 	3600 0000 0000 0000 fe3c 3830 0000 0000 ]
 
-@close-icn [
+@close-icn [8
 	0000 0018 1c0e 0703 0000 0018 3870 e0c0
 	0307 0e1c 1800 0000 c0e0 7038 1800 0000 ]
 
-@organize-icn [
+@organize-icn [8
 	0000 0012 0000 1200 0000 0048 0000 4800
 	0012 0000 1200 0000 0048 0000 4800 0000 ]
 
-@erase-icn [
+@erase-icn [8
 	003f 2021 2522 2c22 00fc 0404 4484 6484
 	2521 2020 2020 3f00 4404 7c48 5060 c000 ]
 
-@clear-icn [
+@clear-icn [8
 	0102 1f20 3f10 1010 8040 f804 fc08 0808
 	1010 1010 1010 1f00 0808 0808 0808 f800 ]
 
-@copy-icn [
+@copy-icn [8
 	003f 2021 2327 2121 00fc 0484 c4e4 8484
 	2120 2020 2020 3f00 8404 7c48 5060 c000 ]
 
-@paste-icn [
+@paste-icn [8
 	003f 2021 2121 2723 00fc 0484 8484 e4c4
 	2120 2020 2020 3f00 8404 7c48 5060 c000 ]
 
-@dir-icn [
+@dir-icn [8
 	0000 0000 0004 063f 0000 0000 0000 183c
 	3f06 0400 0000 0000 3c18 0000 0000 0000
 	0000 0101 0107 0301 0000 8080 80e0 c080
@@ -1362,19 +1372,25 @@
 	0000 0103 0301 0000 0000 80c0 c080 0000
 	0103 0701 0101 0000 80c0 e080 8080 0000 ]
 
-@lock-icn [
+@lock-icn [8
 	0000 0007 0f0c 0c0c 0000 00e0 f030 3030
 	1f1f 1f1f 1f1f 0000 f8f8 f8f8 f8f8 0000
 	0000 070f 0c0c 0000 0000 e0f0 3030 3030
 	1f1f 1f1f 1f1f 0000 f8f8 f8f8 f8f8 0000 ]
 
-@visible-icn [
+@emit-icn [8
+	0000 0000 0003 0119 0000 0060 3030 9898
+	1901 0300 0000 0000 9898 3030 6000 0000
+	0000 0000 0000 0019 0000 0000 0000 0098
+	1900 0000 0000 0000 9800 0000 0000 0000 ]
+
+@visible-icn [8
 	0000 0000 0000 0000 0000 0000 0000 0000
 	4020 1807 0000 0000 0204 18e0 0000 0000
 	0000 0000 0718 2347 0000 0000 e018 c4e2
 	0707 0300 0000 0000 e0e0 c000 0000 0000 ]
 
-@touch-chr [
+@touch-chr [8
 	0000 0000 0000 0817 0000 0000 0000 0008
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
@@ -1384,13 +1400,13 @@
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@draw-chr [
+@draw-chr [8
 	0000 0000 0f0e 0c08 0000 0000 0005 0307
 	0000 0000 0080 4020 0000 0000 0000 80c0
 	0402 0100 0000 0000 0301 0000 0000 0000
 	1008 0482 4224 1800 e0f0 f87c 3c18 0000 ]
 
-@craft-icn [
+@craft-icn [8
 	0007 1820 2040 4040 00ff 0000 0000 0000
 	00ff 0000 0000 0000 00e0 1804 0402 0202
 	4040 4040 4040 4040 0000 0000 0000 0000
@@ -1400,7 +1416,7 @@
 	4040 4020 2018 0700 0000 0000 0000 ff00
 	0000 0000 0000 ff00 0202 0204 0418 e000 ]
 
-@button-disabled-icn [
+@button-disabled-icn [8
 	0c30 4040 8080 0000 cd00 0000 0000 0000
 	b300 0000 0000 0000 300c 0202 0101 0001
 	8080 0000 8080 0080 0000 0000 0000 0000
@@ -1410,7 +1426,7 @@
 	0000 8080 4040 300c 0000 0000 0000 00cd
 	0000 0000 0000 00b3 0000 0101 0202 0c30 ]
 
-@button-enabled-chr [
+@button-enabled-chr [8
 	0f30 4040 8080 8080 000f 3f3f 7f7f 7f7f
 	ff00 0000 0000 0000 00ff ffff ffff ffff
 	ff00 0000 0000 0000 00ff ffff ffff ffff
@@ -1427,7 +1443,7 @@
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0101 0101 0202 0cf0 fefe fefe fcfc f000 ]
-	&down [
+	&down [8
 	0000 0f30 4040 8080 0000 000f 3f3f 7f7f
 	0000 ff00 0000 0000 0000 00ff ffff ffff
 	0000 ff00 0000 0000 0000 00ff ffff ffff
@@ -1445,7 +1461,7 @@
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0101 0101 0202 0cf0 fefe fefe fcfc f000 ]
 
-@fill-icn [
+@fill-icn [8
 	ffff ffff ffff ffff ffff ffff ffff ffff
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
@@ -1453,94 +1469,94 @@
 @|buffers )
 
 @symbols/buf
-	&tri [
+	&tri [8
 	0103 0307 070f 0f1f 80c0 c0e0 e0f0 f0f8
 	1f3f 3f7f 7fff ff7f f8fc fcfe feff fffe ]
-	&lozenge [
+	&lozenge [8
 	0103 070f 1f3f 7fff 80c0 e0f0 f8fc feff
 	ff7f 3f1f 0f07 0301 fffe fcf8 f0e0 c080 ]
-	&square [
+	&square [8
 	7fff ffff ffff ffff feff ffff ffff ffff
 	ffff ffff ffff ff7f ffff ffff ffff fffe ]
-	&hexagon [
+	&hexagon [8
 	0107 1f7f ffff ffff 80e0 f8fe ffff ffff
 	ffff ffff 7f1f 0701 ffff ffff fef8 e080 ]
-	&circle [
+	&circle [8
 	030f 1f3f 7f7f ffff c0f0 f8fc fefe ffff
 	ffff 7f7f 3f1f 0f03 ffff fefe fcf8 f0c0 ]
-	&left [
+	&left [8
 	030f 1f3f 7f7f ffff c030 0804 0202 0101
 	ffff 7f7f 3f1f 0f03 0101 0202 0408 30c0 ]
-	&quad4 [
+	&quad4 [8
 	030f 1f3f 7f7f ffff c030 0804 0202 0101
 	8080 4040 2010 0c03 0101 0202 0408 30c0 ]
-	&quad3 [
+	&quad3 [8
 	030c 1020 4040 8080 c030 0804 0202 0101
 	ffff 7f7f 3f1f 0f03 0101 0202 0408 30c0 ]
-	&num1 [
+	&num1 [8
 	0000 0000 0107 070f 0000 0000 80e0 e0f0
 	0f07 0701 0000 0000 f0e0 e080 0000 0000 ]
-	&num2 [
+	&num2 [8
 	0000 0000 0000 0000 187e 7eff ff7e 7e18
 	187e 7eff ff7e 7e18 0000 0000 0000 0000 ]
-	&num3 [
+	&num3 [8
 	0107 070f 0f07 0701 80e0 e0f0 f0e0 e080
 	187e 7eff ff7e 7e18 187e 7eff ff7e 7e18 ]
-	&num4 [
+	&num4 [8
 	187e 7eff ff7e 7e18 187e 7eff ff7e 7e18
 	187e 7eff ff7e 7e18 187e 7eff ff7e 7e18 ]
-	&rabbit-left [
+	&rabbit-left [8
 	0102 0202 021e 2048 0080 8080 8080 4030
 	403c 0206 0404 0c11 0804 0219 2141 4182 ]
-	&dog-left [
+	&dog-left [8
 	011f 20c8 807c 0404 c0c0 c090 9c5e 4d25
 	0404 0405 090a 366c 120a 0412 2222 12f2 ] &blank1 $20
-	&reverse [
+	&reverse [8
 	0000 0000 1030 61ff 0000 0000 6f92 24fc
 	ff61 3010 0000 0000 fc24 926f 0000 0000 ]
-	&tri-empty [
+	&tri-empty [8
 	0102 0204 0408 0810 8040 4020 2010 1008
 	1020 2040 4080 807f 0804 0402 0201 01fe ]
-	&lozenge-empty [
+	&lozenge-empty [8
 	0102 0408 1020 4080 8040 2010 0804 0201
 	8040 2010 0804 0201 0102 0408 1020 4080 ]
-	&square-empty [
+	&square-empty [8
 	7f80 8080 8080 8080 fe01 0101 0101 0101
 	8080 8080 8080 807f 0101 0101 0101 01fe ]
-	&hexagon-empty [
+	&hexagon-empty [8
 	0106 1860 8080 8080 8060 1806 0101 0101
 	8080 8080 6018 0601 0101 0101 0618 6080 ]
-	&circle-empty [
+	&circle-empty [8
 	030c 1020 4040 8080 c030 0804 0202 0101
 	8080 4040 2010 0c03 0101 0202 0408 30c0 ]
-	&right [
+	&right [8
 	030c 1020 4040 8080 c0f0 f8fc fefe ffff
 	8080 4040 2010 0c03 ffff fefe fcf8 f0c0 ]
-	&quad1 [
+	&quad1 [8
 	030c 1020 4040 8080 c0f0 f8fc fefe ffff
 	8080 4040 2010 0c03 0101 0202 0408 30c0
-	&quad2 [ 030c 1020 4040 8080 c030 0804
+	&quad2 [8 030c 1020 4040 8080 c030 0804
 	0202 0101 8080 4040 2010 0c03 ffff fefe
 	fcf8 f0c0 ]
-	&num1-neg [
+	&num1-neg [8
 	0000 0000 0107 060c 0000 0000 80e0 6030
 	0c06 0701 0000 0000 3060 e080 0000 0000 ]
-	&num2-neg [
+	&num2-neg [8
 	0000 0000 0000 0000 187e 66c3 c366 7e18
 	187e 66c3 c366 7e18 0000 0000 0000 0000 ]
-	&num3-neg [
+	&num3-neg [8
 	0107 060c 0c06 0701 80e0 6030 3060 e080
 	187e 66c3 c366 7e18 187e 66c3 c366 7e18 ]
-	&num4-neg [
+	&num4-neg [8
 	187e 66c3 c366 7e18 187e 66c3 c366 7e18
 	187e 66c3 c366 7e18 187e 66c3 c366 7e18 ]
-	&rabbit-right [
+	&rabbit-right [8
 	0001 0101 0101 020c 8040 4040 4078 0412
 	1020 4098 8482 8241 023c 4060 2020 3088 ]
-	&dog-right [
+	&dog-right [8
 	0303 0309 397a b2a4 80f8 0413 013e 2020
 	4850 2048 4444 484f 2020 20a0 9050 6c36 ] &blank2 $20
-	&transmute [
+	&transmute [8
 	3048 8787 4830 001f 0000 f8fc 0c0c 0cfc
 	3f30 3030 3f1f 0000 f800 0c12 e1e1 120c ] &bufend
 
@@ -1552,26 +1568,20 @@
 @anchors $40
 	( x y )
 
-@rules [
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
-	$80 $80 $80 $80
+@rules [8
+	$80 $80 $80 $80 $80 $80 $80 $80
+	$80 $80 $80 $80 $80 $80 $80 $80
+	$80 $80 $80 $80 $80 $80 $80 $80
+	$80 $80 $80 $80 $80 $80 $80 $80
+	$80 $80 $80 $80 $80 $80 $80 $80
+	$80 $80 $80 $80 $80 $80 $80 $80
 	&end ]
 
 @bag/buf $3e8 &bufend $18
 	( x* y* id )
 
 @masks $20
-	( bitmask: dir-x dir-y - - - hide eval lock )
+	( bitmask: dir-x dir-y - - emit hide eval lock )
 
 @rules/meta $30
 	( bitmask: - - - - - - - - )

@@ -1,0 +1,417 @@
+( 54K . Dave, Dave, Dave.. )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|004f @Varvara/version
+
+|000
+
+	@hexadecimal $1
+	@ptr $2
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	theme/<load>
+	( | size )
+	#0190 .Screen/width DEO2
+	#0028 .Screen/height DEO2
+	<redraw>
+	;on-mouse .Mouse/vector DEO2
+	;on-console .Console/vector DEO2
+	;on-screen .Screen/vector DEO2
+	#0000 .ptr STZ2
+	BRK
+
+@meta $1
+	( name ) "Logger 0a
+	( desc ) "Log 20 "Viewer 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "17 20 "Sep 20 "2026 00
+	( . ) 02
+	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
+
+@on-console ( -> )
+	.Console/read DEI .Console/type DEI <append>
+	#01 ;on-screen/reqdraw STA
+	BRK
+
+@on-screen ( -> )
+	[ LIT &reqdraw $1 ] DUP ?{ POP BRK }
+	DUP #01 NEQ ?{ <redraw> }
+	#01 SUB ,&reqdraw STR
+	BRK
+
+@on-mouse ( -> )
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;cursor-icn <update-cursor>
+	[ LIT &last $1 ] [ LIT2 00 -Mouse/state ] DEI NEQ DUP ,&last STR
+	DUP2 #0100 NEQ2 ?{ #08 ;on-screen/reqdraw STA }
+	POP2 .Mouse/state DEI ?{ BRK }
+	.Mouse/x DEI2 #0010 LTH2 ?on-touch-sidebar
+	BRK
+
+@on-touch-sidebar ( -> )
+	.Mouse/y DEI2 #04 SFT2 NIP DUP ?{ do-clear }
+	POP [ LIT2 00 -Mouse/state ] DEO
+	BRK
+
+(
+@|core )
+
+@<append> ( byte type -- )
+	( | forward )
+	DUP .Console/type DEO
+	OVR <send-byte>
+	( | push )
+	#00 ;mem/type .ptr LDZ2 STH2k ADD2 STA2
+	#00 ;mem/data STH2kr ADD2 STA2
+	STH2r INC2 #0fff AND2 .ptr STZ2
+	JMP2r
+
+@<send-byte> ( byte -- )
+	.hexadecimal LDZ ?/hex
+	.Console/write DEO
+	JMP2r
+
+	&hex ( byte -- )
+	u8/<print>
+	[ LIT &count 00 ] INC DUP ,&count STR
+	#0f AND ?{ #0a18 DEO
+		JMP2r }
+	#2018 DEO
+	JMP2r
+
+@do-clear ( -- )
+	.Mouse/state DEI #02 LTH ?{
+		[ LIT2 00 -hexadecimal ] LDZ EQU .hexadecimal STZ }
+	#0000 ;mem/data STA2
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	#0000 .ptr STZ2
+	#04 !<draw-icon>
+
+@<redraw> ( -- )
+	.Screen/height DEI2 #04 SFT2 NIP ;mem/data count-lines EQUk ?{
+		( min ) #03 GTHk [ JMP SWP POP ]
+		( scale ) #00 SWP #40 SFT2 #0008 ADD2 .Screen/height DEO2
+		POP }
+	POP2
+	( | clear )
+	#0014 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	<draw-sidebar>
+	;mem/data .hexadecimal LDZ ?<draw-binary>
+	( >> )
+
+@<draw-text> ( str* -- )
+	#0014 .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	&>w
+		LDAk ?{ POP2 !<draw-caret> }
+		( | handle backspace )
+		LDAk #08 NEQ ?{ <draw-bs> !/res }
+		( | handle wrap )
+		LDAk #20 GTH ?{
+			INC2k word-fits ?{ <draw-lb> !/res } }
+		LDAk #0a NEQ ?{ <draw-lb> !/res }
+		colorize
+		( ) LDAk <draw-char> &res INC2 !/>w
+
+@<draw-binary> ( str* -- )
+	#0014 .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	[ LITr 00 ]
+	&>w
+		colorize LDAk <draw-byte>
+		.Screen/x DEI2k #0008 ADD2 ROT DEO2
+		INCr STHkr #0f AND ?{ <draw-lb> }
+		INC2 LDAk ?/>w
+	POP2 JMP2r
+
+@<draw-byte> ( byte -- )
+	DUP #04 SFT <draw-hex>
+
+@<draw-hex> ( byte -- )
+	#0f AND #00 SWP ;base16-lut ADD2 LDA
+
+@<draw-char> ( char -- )
+	get-glyph
+	( >> )
+
+@<draw-glyph> ( addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &color 01 -Screen/sprite ] DEO
+	JMP2r
+
+@colorize ( addr* -- addr* )
+	DUP2 #1000 ADD2 LDA #0f AND
+	( ) DUP #00 EQU ADD ;<draw-glyph>/color STA
+	JMP2r
+
+@get-glyph ( char -- addr* )
+	DUP #0a EQU ?/blank
+	DUP #09 EQU ?/blank
+	DUP #20 LTH ?/unknown
+	DUP #7e GTH ?/unknown
+	#20 SUB #00 SWP #40 SFT2 ;font-icn ADD2 JMP2r
+	&unknown POP ;halftone-icn JMP2r
+	&blank POP ;blank-icn JMP2r
+
+@count-lines ( buf* -- lines )
+	.hexadecimal LDZ ?/hex
+	[ LITr 00 ]
+	&>w
+		LDAk #20 GTH ?{
+			INC2k word-fits ?{ INCr !/res } }
+		LDAk #0a NEQ ?{ INCr !/res } &res INC2 LDAk ?/>w
+	POP2 STHr INC JMP2r
+	&hex ;mem/data str/cap ;mem/data SUB2 #04 SFT2 NIP INC JMP2r
+
+@word-fits ( str* -- f )
+	.Screen/x DEI2 #0008 ADD2 STH2
+	&>w
+		STH2kr .Screen/width DEI2 GTH2 ?/fail
+		LDAk #20 GTH ?{ POP2 POP2r #01 JMP2r }
+		[ LIT2r 0008 ADD2r ] INC2 !/>w
+	&fail POP2 POP2r #00 JMP2r
+
+@<draw-lb> ( -- )
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	#0014 .Screen/x DEO2
+	JMP2r
+
+@<draw-bs> ( -- )
+	.Screen/x DEI2k #0008 SUB2 ROT DEO2
+	#20 <draw-char>
+	.Screen/x DEI2k #0008 SUB2 ROT DEO2
+	JMP2r
+
+@<draw-caret> ( -- )
+	#02 ;<draw-glyph>/color STA
+	;caret-icn !<draw-glyph>
+
+@<draw-sidebar> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	( | fill )
+	[ LIT2 12 -Screen/auto ] DEO
+	;halftone-icn .Screen/addr DEO2
+	#00 .Screen/height DEI2 #03 SFT2 NIP SUB
+	&times ( -- )
+	[ LIT2 01 -Screen/sprite ] DEO
+	INC DUP ?/times
+	POP
+	( | icon )
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	#01
+	( >> )
+
+@<draw-icon> ( color -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	;ascii-icn #00 .hexadecimal LDZ #50 SFT2 ADD2 .Screen/addr DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+@<update-cursor> ( color addr* -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 <draw-cursor>
+	.Mouse/x DEI2 ,<draw-cursor>/x STR2
+	.Mouse/y DEI2 ,<draw-cursor>/y STR2
+	.Screen/addr DEO2
+
+@<draw-cursor> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+(
+@|stdlib )
+
+@str/cap ( str* -- end* )
+	LDAk ?{ JMP2r }
+	INC2 !/cap
+
+@<pword> ( str* -- )
+	&>w
+		LDAk #18 DEO
+		INC2 LDAk #20 GTH ?/>w
+	POP2 JMP2r
+
+@u8/<print> ( byte -- )
+	DUP #04 SFT /c
+	&c ( -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0ad #f0ef #f0be
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
+
+	&path ".theme $1
+
+(
+@|assets )
+
+@base16-lut [8
+	"0123456789abcdef ]
+
+@cursor-icn [8
+	80c0 e0f0 f8e0 1000 ]
+
+@fill-icn [8
+	ffff ffff ffff ffff ]
+
+@caret-icn [8
+	4040 4040 4040 4040 4040 4040 4040 4040 ]
+
+@blank-icn $10
+
+@halftone-icn [8
+	aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+@appicon [8
+	0000 0000 003f 3838 0000 0000 0000 1717
+	0000 0000 00ff 0000 0000 0000 0000 ffff
+	0000 0000 00fc 0404 0000 0000 0000 f8f8
+	3838 3838 3838 3838 1717 1717 1717 1717
+	0042 e742 0042 3c00 ffbd 5abd ffbd c3ff
+	0404 0404 0404 043c f8f8 f8f8 f8f8 f8c0
+	3838 3700 0000 0000 1717 0000 0000 0000
+	0000 ff00 0000 0000 ffff 0000 0000 0000
+	3830 e000 0000 0000 d0c0 0000 0000 0000 ]
+
+@ascii-icn [8
+	aa55 805f 9051 9357 aa55 02f9 0a89 cae9
+	9753 9150 9f40 aa55 eac9 8a09 fa01 aa55 ]
+	( hex ) [8
+	aa55 805f 9057 9455 aa55 02f9 0ae9 2aa9
+	9554 9750 9f40 aa55 aa29 ea09 fa01 aa55 ]
+
+@font-icn [8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0038 3838 3838 3810 1010 1000 0010 3810
+	6c6c 2424 4800 0000 0000 0000 0000 0000
+	0012 1212 7f24 2424 2424 fe48 4848 4800
+	1038 5492 9690 5038 1412 d292 9478 1010
+	0262 9494 9498 6810 102c 3252 5252 8c80
+	0030 4848 4850 202e 5454 9488 8c72 0000
+	e0e0 2020 c000 0000 0000 0000 0000 0000
+	0204 0808 1010 1010 1010 1010 0808 0402
+	8040 2020 1010 1010 1010 1010 2020 4080
+	0000 0010 3892 d638 d692 3810 0000 0000
+	0000 0010 1010 10fe 1010 1010 0000 0000
+	0000 0000 0000 0000 0000 00e0 e020 20c0
+	0000 0000 0000 00fe 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0040 e0e0 4000
+	0202 0404 0808 0810 1010 2020 4040 8080
+	0018 2424 4242 4242 4242 4242 2424 1800
+	0010 7010 1010 1010 1010 1010 107c 0000
+	0018 2442 6202 0408 0810 2022 427e 0000
+	0038 4482 8202 0438 0402 8282 4438 0000
+	0008 1828 2848 4888 88fe 0808 083c 0000
+	00fc 8080 80b8 c482 0202 c282 4438 0000
+	003c 4246 8080 b8c4 8282 8282 4438 0000
+	00fe 8282 0404 0408 0808 0810 1010 1000
+	0038 4482 8282 4438 4482 8282 4438 0000
+	0038 4482 8282 8246 3a02 0282 4438 0000
+	0000 0000 0038 3800 0000 0000 3838 0000
+	0000 0000 0038 3800 0000 0038 3818 1030
+	0204 0408 0810 1020 2010 1008 0804 0402
+	0000 0000 00fe 0000 00fe 0000 0000 0000
+	8040 4020 2010 1008 0810 1020 2040 4080
+	0038 4482 c202 0404 0810 1000 0010 3810
+	003c 4282 9aa6 a2a2 a2a6 9a80 423c 0000
+	0010 2828 2844 4444 447c 8282 82c6 0000
+	00f8 4442 4242 4478 4442 4242 42fc 0000
+	003a 4642 8080 8080 8080 8242 423c 0000
+	00f8 4444 4242 4242 4242 4244 44f8 0000
+	00fe 4242 4048 4878 4848 4242 42fe 0000
+	00fe 4242 4048 4878 4848 4040 40f0 0000
+	001a 2642 4080 808f 8282 8242 661a 0000
+	00e7 4242 4242 7e42 4242 4242 42e7 0000
+	00fe 1010 1010 1010 1010 1010 10fe 0000
+	001f 0202 0202 0202 0282 8282 4438 0000
+	00e6 4444 4848 7050 4848 4444 42e3 0000
+	00f0 4040 4040 4040 4040 4242 42fe 0000
+	0082 c6aa aaaa 9292 9282 8282 82c6 0000
+	0087 c2a2 a2a2 9292 928a 8a8a 86c2 0000
+	0038 4482 8282 8282 8282 8282 4438 0000
+	00f8 4442 4242 4244 7840 4040 40f0 0000
+	0038 4444 8282 8282 8282 ba44 4438 0806
+	00f8 4442 4242 4478 4844 4444 42e3 0000
+	0034 4c84 8080 6018 0482 8282 c4b8 0000
+	00fe 9292 1010 1010 1010 1010 107c 0000
+	00e7 4242 4242 4242 4242 4242 423c 0000
+	00c6 8282 8282 4444 4444 2828 1010 0000
+	00c6 8282 8292 9292 aaaa aa44 4444 0000
+	00ee 4444 2828 1028 2828 4444 82c6 0000
+	00c6 8244 4444 2828 1010 1010 107c 0000
+	00fe 8488 0810 1010 2020 4242 82fe 0000
+	1e10 1010 1010 1010 1010 1010 1010 101e
+	0080 8040 4020 2010 1008 0804 0402 0200
+	f010 1010 1010 1010 1010 1010 1010 10f0
+	1028 4482 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 00ff
+	3030 2020 1000 0000 0000 0000 0000 0000
+	0000 0000 003c 4202 3e42 8282 867b 0000
+	00c0 4040 4078 4442 4242 4242 4478 0000
+	0000 0000 003a 4682 8080 8082 423c 0000
+	0006 0404 043c 4484 8484 8484 443e 0000
+	0000 0000 0038 4482 fe80 8082 423c 0000
+	000e 1110 10fe 1010 1010 1010 107c 0000
+	0000 0000 003b 4444 4438 4078 8482 827c
+	00c0 4040 405c 6242 4242 4242 42e7 0000
+	1818 0000 0078 0808 0808 0808 08ff 0000
+	0606 0000 003e 0202 0202 0202 8282 4438
+	00c0 4040 4042 4448 5864 4442 42e3 0000
+	0078 0808 0808 0808 0808 0808 08ff 0000
+	0000 0000 006c 9292 9292 9292 92db 0000
+	0000 0000 00dc 6242 4242 4242 42e7 0000
+	0000 0000 0038 4482 8282 8282 4438 0000
+	0000 0000 00f8 4442 4242 4244 7840 40f0
+	0000 0000 003e 4484 8484 8444 3c04 041e
+	0000 0000 00ec 3222 2020 2020 20fc 0000
+	0000 0000 003a 4642 403c 0282 c2bc 0000
+	0000 2020 20fc 2020 2020 2022 221c 0000
+	0000 0000 00c6 4242 4242 4242 4639 0000
+	0000 0000 00c6 8282 4444 4428 2810 0000
+	0000 0000 0092 9292 92aa aa44 4444 0000
+	0000 0000 00ee 4428 2810 2828 44ee 0000
+	0000 0000 00e7 4222 2414 0808 1090 a040
+	0000 0000 007e 4408 0810 1022 42fe 0000
+	0608 0808 0808 1020 1008 0808 0808 0806
+	1010 1010 1010 1010 1010 1010 1010 1010
+	c020 2020 2020 1008 1020 2020 2020 20c0
+	6092 0c00 0000 0000 0000 0000 0000 0000 ]
+
+@mem/data $1000 &type $1000
+

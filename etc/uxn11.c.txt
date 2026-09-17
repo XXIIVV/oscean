@@ -393,17 +393,32 @@ system_deo_colorize(void)
 	screen_reqdraw = 1;
 }
 
+static void *
+screen_request(void *buf, int *size, int length)
+{
+	if(length > *size) {
+		void *b2 = realloc(buf, length);
+		if(!b2) {
+			fprintf(stderr, "Screen out of memory.\n");
+			exit(1);
+		}
+		if(b2) *size = length, buf = b2;
+	}
+	return buf;
+}
+
 static void
 screen_resize(int width, int height)
 {
 	if(width != screen_width || height != screen_height) {
+		static int size;
 		int length;
 		screen_width = width, screen_wmar2 = width + 0x10;
 		poke2(&dev[0x22], screen_width);
 		screen_height = height, screen_hmar2 = height + 0x10;
 		poke2(&dev[0x24], screen_height);
 		length = screen_wmar2 * screen_hmar2;
-		screen_layers = realloc(screen_layers, length);
+		screen_layers = screen_request(screen_layers, &size, length);
 		memset(screen_layers, 0, length);
 		screen_reqsize = screen_reqdraw = 1;
 	}
@@ -446,12 +461,9 @@ screen_update(void)
 	if(screen_vector)
 		uxn_eval(screen_vector);
 	if(screen_reqsize) {
-		static int pixel_capacity;
-		int need = screen_width * screen_height * screen_zoom * screen_zoom;
-		if(need > pixel_capacity) {
-			pixel_capacity = need;
-			screen_pixels = realloc(screen_pixels, need * sizeof(unsigned int));
-		}
+		static int size;
+		int length = screen_width * screen_height * screen_zoom * screen_zoom * sizeof(unsigned int);
+		screen_pixels = screen_request(screen_pixels, &size, length);
 		screen_reqsize = 0;
 		emu_resize();
 	}
@@ -515,9 +527,8 @@ screen_deo_sprite(void)
 	int i, j, x = rX, y = rY;
 	int row_base = (y + 8) * stride;
 	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_incr, row_base += row_step) {
-		const Uint16 x0 = x + 8, y0 = y + 8;
-		if(x0 + 8 >= stride || y0 + 8 >= screen_hmar2) continue;
-		Uint8 *dst = screen_layers + row_base + x0;
+		if(x < -8 || y < -8 || x + 16 >= stride || y + 16 > screen_hmar2) continue;
+		Uint8 *dst = screen_layers + row_base + x + 8;
 		const Uint8 *col = &ram[rA + col_start];
 		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
 			Uint8 *d = dst;
