@@ -50,9 +50,18 @@
 	( ) "A 20 "Multiset 20 "Playground 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
 	( ) "17 20 "Sep 20 "2026 $1
-	( . ) 02
+	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat ( . )
+	_{ =dict/tote
+	( - ) 00 08 =rule/<delete-selected> =dict/delete-rule
+	( - ) 00 7f =bag/<clear-redraw> =dict/erase-all
+	( - ) 80 00 =bag/<step> =dict/step
+	( - ) 40 00 =bag/<unstep> =dict/unstep }
+	( ) $1
 
 (
 @|helpers )
@@ -96,10 +105,10 @@
 	( | vectors )
 	;on-mouse-edit .Mouse/vector DEO2
 	;on-frame-edit .Screen/vector DEO2
-	;on-button-edit .Controller/vector DEO2
+	;on-button .Controller/vector DEO2
 	bag/<to-acc>
 	bag/<update>
-	<update-rules>
+	rules/<update>
 	<validate>
 	( >> )
 
@@ -134,19 +143,9 @@
 	<redraw-edit>
 	BRK
 
-@on-button-edit ( -> )
-	.Controller/button DEI2
-	( bs ) DUP #08 NEQ ?{
-		[ LIT2 00 -overlay ] LDZ id-to-rule <clear-rule> }
-	( del ) DUP #7f NEQ ?{ bag/<clear>
-		<redraw-edit> }
-	( R ) OVR #80 NEQ ?{ <step>
-		bag/<organize>
-		<redraw-edit> }
-	( L ) OVR #40 NEQ ?{ <unstep>
-		bag/<organize>
-		<redraw-edit> }
-	POP2 BRK
+@on-button ( -> )
+	.Controller/button DEI2 manifest/scan INC2k ORA ?{ POP2 BRK }
+	( * ) JSR2 BRK
 
 @on-mouse-edit ( -> )
 	<draw-cursor-touch>
@@ -217,7 +216,7 @@
 				NEQkr STHr ?{
 					( dec ) OVR2 LDAk #01 SUB ROT ROT STA
 					( spawn ) OVR2 [ LIT2 &lhs $2 ] SUB2 NIP bag/<push-mouse>
-					<update-rules> }
+					rules/<update> }
 				INCr INC GTHk ?/>ll }
 		POP2 INC2 GTH2k ?/>l
 	POP2
@@ -234,7 +233,7 @@
 				NEQkr STHr ?{
 					( dec ) OVR2 LDAk #01 SUB ROT ROT STA
 					( spawn ) OVR2 [ LIT2 &rhs $2 ] SUB2 NIP bag/<push-mouse>
-					<update-rules> }
+					rules/<update> }
 				INCr INC GTHk ?/>rr }
 		POP2 INC2 GTH2k ?/>r
 	POP2 POP2 POP2r
@@ -242,7 +241,7 @@
 	bag/pick .drag STZ2 !<redraw-edit>
 
 	&sidebar ( rule* x* -- )
-	POP2 !<swap-rules>
+	POP2 !rules/<swap>
 
 @clamp-x ( x* -- x* )
 	DUP2 #0008 SUB2 #8000 LTH2 ?{ POP2 #0008 JMP2r }
@@ -300,7 +299,7 @@
 	( rhs ) .drag LDZ2 LDA2 GTH2 ?{ #0040 ADD2 }
 	( id ) [ LIT2 00 -drag ] LDZ2 get-sym-id ADD2
 	( inc ) LDAk INC ROT ROT STA
-	<update-rules>
+	rules/<update>
 	&destroy ( -- )
 	is-click ?<start-paint-mode>
 	#0000 .drag LDZ2 STA2
@@ -483,8 +482,8 @@
 		ADDr INC2 GTH2k ?/>l
 	POP2 POP2 STHr JMP2r
 
-@<clear-rule> ( rule* -- )
-	DUP2 ;rule/length ADD2 SWP2
+@rule/<clear> ( rule* -- )
+	DUP2 ;&length ADD2 SWP2
 	&>l
 		#0000 OVR2 STA2
 		INC2 INC2 GTH2k ?/>l
@@ -497,7 +496,7 @@
 @<validate-fwd> ( -- )
 	;rules/end ;rules
 	&>l
-		DUP2 ;acc/buf compare-rules ?{
+		DUP2 ;acc/buf rules/compare ?{
 			;rule/length ADD2 GTH2k ?/>l
 		[ LIT2 ff -valid/fwd ] STZ
 		POP2 POP2 JMP2r }
@@ -507,7 +506,7 @@
 @<validate-bwd> ( -- )
 	;rules ;rules/end
 	&>l
-		;rule/length SUB2 DUP2 #0040 ADD2 ;acc/buf compare-rules ?{
+		;rule/length SUB2 DUP2 #0040 ADD2 ;acc/buf rules/compare ?{
 			NEQ2k ?/>l
 		POP2 POP2 [ LIT2 ff -valid/bwd ] STZ
 		JMP2r }
@@ -523,7 +522,7 @@
 		#00 STHkr ;rules/meta ADD2 LDA [ LIT &meta $1 ] NEQ ?{
 			DUP2 [ LIT2 00 &a $1 ] ADD2 LDA #00 EQU ?{
 				DUP2 [ LIT2 00 &b $1 ] ADD2 LDA #00 EQU ?{
-					DUP2 ;acc/buf compare-rules #00 EQU ?{
+					DUP2 ;acc/buf rules/compare #00 EQU ?{
 						[ LITr -valid/craft ] STZr
 						POP2 POP2 JMP2r } } } }
 		INCr ;rule/length ADD2 GTH2k ?/>l
@@ -533,9 +532,9 @@
 @<change-meta> ( rule* -- )
 	;rules SUB2 #07 SFT2 ;rules/meta ADD2 LDAk INC #03 AND ROT ROT STA !<reqdraw-edit>
 
-@<swap-rules> ( rule* -- )
+@rules/<swap> ( rule* -- )
 	( | types )
-	DUP2 ;rules SUB2 #07 SFT2 ;rules/meta ADD2 LDA2k SWP SWP2 STA2
+	DUP2 ;rules SUB2 #07 SFT2 ;&meta ADD2 LDA2k SWP SWP2 STA2
 	( | registers )
 	DUP2 ;rule/length ADD2 SWP2
 	&>l
@@ -547,31 +546,31 @@
 		[ LIT &b $1 ] [ LIT2 &b-addr $2 ] STA
 		INC2 GTH2k ?/>l
 	POP2 POP2 <validate>
-	<update-rules> !<redraw-edit>
+	/<update> !<redraw-edit>
 
-@<update-rules> ( -- )
+@rules/<update> ( -- )
 	[ LIT2r =reachable ]
-	( ) ;rules/end ;rules
-	&>l
-		DUP2 validate-rule STH2kr STA
-		INC2r ;rule/length ADD2 GTH2k ?/>l
+	( ) ;&end ;rules
+	&>lu
+		DUP2 rule/validate STH2kr STA
+		INC2r ;rule/length ADD2 GTH2k ?/>lu
 	POP2 POP2 POP2r JMP2r
 
-@validate-rule ( rule* -- flag )
+@rule/validate ( rule* -- flag )
 	;rules OVR2 DUP2 ,&src STR2
-	&>l
-		;rule/length SUB2 GTH2k ?/reachable
-		DUP2 [ LIT2 &src $2 ] compare-rules ?/unreachable
-		!/>l
+	&>lv
+		;&length SUB2 GTH2k ?/reachable
+		DUP2 [ LIT2 &src $2 ] rules/compare ?/unreachable
+		!/>lv
 
 	&reachable ( to* from* -- flag )
 	POP2 POP2
-	( grows? ) DUP2 #0040 ADD2 compare-rules INCk ADD JMP2r
+	( grows? ) DUP2 #0040 ADD2 rules/compare INCk ADD JMP2r
 
 	&unreachable ( to* from* -- flag )
 	POP2 POP2 POP2 #02 JMP2r
 
-@compare-rules ( b* a* -- match )
+@rules/compare ( b* a* -- match )
 	[ LIT2r 0000 ] SWP2 STH2
 	DUP2 #0040 ADD2 SWP2
 	&>mask-loop
@@ -647,9 +646,11 @@
 	POP2 JMP2r
 
 @<inc-things> ( count id -- )
+	#00 OVR ;masks ADD2 LDA #08 AND #00 EQU ?{
+		( Send ) DUP2 INC MUL #18 DEO }
 	#00 ROT SUB
 	&>l
-		OVR #00 SWP <set-anchor>
+		OVR #00 SWP anchor/<set>
 		OVR bag/<push-auto>
 		INC DUP ?/>l
 	POP2 JMP2r
@@ -657,7 +658,7 @@
 @<eval-passive> ( -- )
 	[ LIT2r =rules/meta ] ;rules/end ;rules
 	&>l
-		LDAkr STHr #03 NEQ ?{ DUP2 ;acc/buf compare-rules ?/found }
+		LDAkr STHr #03 NEQ ?{ DUP2 ;acc/buf rules/compare ?/found }
 		INC2r ;rule/length ADD2 GTH2k ?/>l
 	POP2 POP2 POP2r JMP2r
 
@@ -682,14 +683,14 @@
 	&>bag-loop
 		#00 OVR .&buf SUB bag/<set-dir>
 		( ) LDZk #00 EQUk ?{
-			#00 STHkr <set-anchor>
+			#00 STHkr anchor/<set>
 			&>bag-loop2
 				STHkr bag/<push-auto>
 				INC GTHk ?/>bag-loop2 }
 		POP2 INCr INC GTHk ?/>bag-loop
 	POP2 POPr JMP2r
 
-@<set-anchor> ( id* -- )
+@anchor/<set> ( id* -- )
 	id-to-anchor ORAk ?{ POP2 JMP2r }
 	( y ) #00 SWP #40 SFT2 #0010 ADD2 ;bag/anchor-y STA2
 	( x ) #00 SWP #40 SFT2 #00f8 ADD2 ;bag/anchor-x STA2
@@ -800,6 +801,17 @@
 	POP2 POP2
 	( save ) [ LITr -&count ] STZr
 	JMP2r
+
+@bag/<clear-redraw> ( -- )
+	/<clear> !<redraw-edit>
+
+@bag/<step> ( -- )
+	<step>
+	/<organize> !<redraw-edit>
+
+@bag/<unstep> ( -- )
+	<unstep>
+	/<organize> !<redraw-edit>
 
 (
 @|project )
@@ -934,6 +946,9 @@
 
 @symbol/<toggle-emit> ( -- )
 	selected-mask LDAk #08 EOR ROT ROT STA !<reqdraw-paint>
+
+@rule/<delete-selected> ( -- )
+	[ LIT2 00 -overlay ] LDZ id-to-rule !/<clear>
 
 (
 @|drawing )
@@ -1269,12 +1284,31 @@
 (
 @|stdlib )
 
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
 @<set-size> ( x* y* -- )
 	.Screen/height DEO2
 	.Screen/width DEO2
 	.Screen/width DEI2 .size/w STZ2
 	.Screen/height DEI2 .size/h STZ2
 	JMP2r
+
+@dict/tote "Tote 00
+	&delete-rule "Delete 20 "Rule 00
+	&erase-all "Erase 20 "All 00
+	&step "Step 00
+	&unstep "Unstep 00
 
 
 
