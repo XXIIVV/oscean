@@ -3,14 +3,16 @@
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |004f @Varvara/version
+|2000 @buffer/buflen
 
 |000
 
-	@hexadecimal $1
-	@ptr $2
+	@hex/active $1
+	@thru/active $1
 
 |100
 
@@ -20,160 +22,152 @@
 	( | size )
 	#0190 .Screen/width DEO2
 	#0028 .Screen/height DEO2
-	<redraw>
+	buffer/<redraw>
 	;on-mouse .Mouse/vector DEO2
 	;on-console .Console/vector DEO2
+	;on-button .Controller/vector DEO2
 	;on-screen .Screen/vector DEO2
-	#0000 .ptr STZ2
 	BRK
 
 @meta $1
 	( name ) "Logger 0a
 	( desc ) "Log 20 "Viewer 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Sep 20 "2026 00
+	( date ) "19 20 "Sep 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+	( - ) a0 =manifest/dat
+
+@manifest/dat ( . )
+	_{ =dict/logger
+	( - ) 00 1b =buffer/<clear> =dict/clear
+	( - ) 00 09 =hex/<toggle> =dict/toggle }
+	( ) $1
+
+%Screen/<set-pos> ( x* y* -- ) {
+	.Screen/y DEO2
+	.Screen/x DEO2 }
 
 @on-console ( -> )
-	.Console/read DEI .Console/type DEI <append>
+	.Console/read DEI buffer/<append>
 	#01 ;on-screen/reqdraw STA
 	BRK
 
 @on-screen ( -> )
 	[ LIT &reqdraw $1 ] DUP ?{ POP BRK }
-	DUP #01 NEQ ?{ <redraw> }
+	DUP #01 NEQ ?{ buffer/<redraw> }
 	#01 SUB ,&reqdraw STR
 	BRK
 
 @on-mouse ( -> )
-	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;cursor-icn <update-cursor>
-	[ LIT &last $1 ] [ LIT2 00 -Mouse/state ] DEI NEQ DUP ,&last STR
-	DUP2 #0100 NEQ2 ?{ #08 ;on-screen/reqdraw STA }
-	POP2 .Mouse/state DEI ?{ BRK }
-	.Mouse/x DEI2 #0010 LTH2 ?on-touch-sidebar
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	#0001 EQU2 ?{ BRK }
+	.Mouse/x DEI2 #0010 LTH2 ?{ thru/<toggle>
+		BRK }
+	hex/<toggle-clear>
 	BRK
 
-@on-touch-sidebar ( -> )
-	.Mouse/y DEI2 #04 SFT2 NIP DUP ?{ do-clear }
-	POP [ LIT2 00 -Mouse/state ] DEO
-	BRK
+@on-button ( -> )
+	.Controller/button DEI2 manifest/scan INC2k ORA ?{ POP2 BRK }
+	( * ) JSR2 BRK
 
 (
-@|core )
+@|Buffer )
 
-@<append> ( byte type -- )
-	( | forward )
-	DUP .Console/type DEO
-	OVR <send-byte>
-	( | push )
-	#00 ;mem/type .ptr LDZ2 STH2k ADD2 STA2
-	#00 ;mem/data STH2kr ADD2 STA2
-	STH2r INC2 #0fff AND2 .ptr STZ2
+@buffer/<reqdraw> ( -- )
+	#08 ;on-screen/reqdraw STA
 	JMP2r
 
-@<send-byte> ( byte -- )
-	.hexadecimal LDZ ?/hex
-	.Console/write DEO
-	JMP2r
-
-	&hex ( byte -- )
-	u8/<print>
-	[ LIT &count 00 ] INC DUP ,&count STR
-	#0f AND ?{ #0a18 DEO
-		JMP2r }
-	#2018 DEO
-	JMP2r
-
-@do-clear ( -- )
-	.Mouse/state DEI #02 LTH ?{
-		[ LIT2 00 -hexadecimal ] LDZ EQU .hexadecimal STZ }
-	#0000 ;mem/data STA2
-	#0000 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	#0000 .ptr STZ2
-	#04 !<draw-icon>
-
-@<redraw> ( -- )
-	.Screen/height DEI2 #04 SFT2 NIP ;mem/data count-lines EQUk ?{
+@buffer/<rescale> ( -- )
+	.Screen/height DEI2 #04 SFT2 NIP ;&buf /count-lines EQUk ?{
 		( min ) #03 GTHk [ JMP SWP POP ]
-		( scale ) #00 SWP #40 SFT2 #0008 ADD2 .Screen/height DEO2
-		POP }
-	POP2
-	( | clear )
-	#0014 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	<draw-sidebar>
-	;mem/data .hexadecimal LDZ ?<draw-binary>
-	( >> )
+		( scale ) #00 OVR #40 SFT2 #0008 ADD2 .Screen/height DEO2 }
+	POP2 JMP2r
 
-@<draw-text> ( str* -- )
-	#0014 .Screen/x DEO2
-	#0004 .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	&>w
-		LDAk ?{ POP2 !<draw-caret> }
-		( | handle backspace )
-		LDAk #08 NEQ ?{ <draw-bs> !/res }
-		( | handle wrap )
+@buffer/count-lines ( buf* -- lines )
+	.hex/active LDZ ?/hex
+	[ LITr 00 ]
+	&>wcl
 		LDAk #20 GTH ?{
-			INC2k word-fits ?{ <draw-lb> !/res } }
-		LDAk #0a NEQ ?{ <draw-lb> !/res }
-		colorize
-		( ) LDAk <draw-char> &res INC2 !/>w
+			INC2k word-fits ?{ INCr !/res } }
+		LDAk #0a NEQ ?{ INCr !/res } &res INC2 LDAk ?/>wcl
+	POP2 INCr STHr JMP2r
+	&hex ,&ptr LDR2 SWP2 SUB2 #04 SFT2 NIP INC JMP2r
 
-@<draw-binary> ( str* -- )
-	#0014 .Screen/x DEO2
-	#0004 .Screen/y DEO2
+@buffer/<redraw> ( -- )
+	/<rescale>
+	( | clear )
+	#0014 #0000 Screen/<set-pos>
+	[ LIT2 80 -Screen/pixel ] DEO
+	sidebar/<draw>
+	/<draw-body> !thru/<draw>
+
+@buffer/<draw-body> ( -- )
+	#0014 #0004 Screen/<set-pos>
+	,&ptr LDR2 ;&buf .hex/active LDZ ?font/<draw-binary>
+	( | Draw text )
+	!font/<draw-range>
+
+@buffer/<clear> ( -- )
+	.Mouse/state DEI #02 LTH ?{ hex/<toggle> }
+	#0000 ;&buf STA2
+	;&buf ,&ptr STR2
+	#0000 DUP2 Screen/<set-pos>
+	/<reqdraw>
+	#04 !hex/<draw-icon>
+
+@buffer/<append> ( byte type -- )
+	DUP u8/<send>
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA !/<reqdraw>
+
+@font/<draw-binary> ( to* from* -- )
 	[ LIT2 15 -Screen/auto ] DEO
 	[ LITr 00 ]
 	&>w
-		colorize LDAk <draw-byte>
+		LDAk /<draw-byte>
 		.Screen/x DEI2k #0008 ADD2 ROT DEO2
-		INCr STHkr #0f AND ?{ <draw-lb> }
-		INC2 LDAk ?/>w
-	POP2 JMP2r
+		INCr STHkr #0f AND ?{ /<draw-lb> }
+		INC2 GTH2k ?/>w
+	POP2 POP2 POPr JMP2r
 
-@<draw-byte> ( byte -- )
-	DUP #04 SFT <draw-hex>
+@font/<draw-range> ( to* from* -- )
+	EQU2k ?{
+		[ LIT2 15 -Screen/auto ] DEO
+		&>wdt
+			LDAk #08 NEQ ?{ /<draw-bs>
+				INC2 }
+			LDAk /<draw-char>
+			INC2 GTH2k ?/>wdt }
+	POP2 POP2 JMP2r
 
-@<draw-hex> ( byte -- )
-	#0f AND #00 SWP ;base16-lut ADD2 LDA
-
-@<draw-char> ( char -- )
-	get-glyph
+@font/<draw-byte> ( byte -- )
+	DUP #04 SFT /<draw-hex>
 	( >> )
 
-@<draw-glyph> ( addr* -- )
+@font/<draw-hex> ( byte -- )
+	#0f AND #00 SWP ;&base16 ADD2 LDA
+	( >> )
+
+@font/<draw-char> ( char -- )
+	/get-glyph
+	( >> )
+
+@font/<draw-glyph> ( addr* -- )
 	.Screen/addr DEO2
-	[ LIT2 &color 01 -Screen/sprite ] DEO
+	[ LIT2 01 -Screen/sprite ] DEO
 	JMP2r
 
-@colorize ( addr* -- addr* )
-	DUP2 #1000 ADD2 LDA #0f AND
-	( ) DUP #00 EQU ADD ;<draw-glyph>/color STA
-	JMP2r
-
-@get-glyph ( char -- addr* )
+@font/get-glyph ( char -- addr* )
 	DUP #0a EQU ?/blank
 	DUP #09 EQU ?/blank
 	DUP #20 LTH ?/unknown
 	DUP #7e GTH ?/unknown
-	#20 SUB #00 SWP #40 SFT2 ;font-icn ADD2 JMP2r
+	#20 SUB #00 SWP #40 SFT2 ;&glyphs ADD2 JMP2r
 	&unknown POP ;halftone-icn JMP2r
 	&blank POP ;blank-icn JMP2r
-
-@count-lines ( buf* -- lines )
-	.hexadecimal LDZ ?/hex
-	[ LITr 00 ]
-	&>w
-		LDAk #20 GTH ?{
-			INC2k word-fits ?{ INCr !/res } }
-		LDAk #0a NEQ ?{ INCr !/res } &res INC2 LDAk ?/>w
-	POP2 STHr INC JMP2r
-	&hex ;mem/data str/cap ;mem/data SUB2 #04 SFT2 NIP INC JMP2r
 
 @word-fits ( str* -- f )
 	.Screen/x DEI2 #0008 ADD2 STH2
@@ -183,75 +177,70 @@
 		[ LIT2r 0008 ADD2r ] INC2 !/>w
 	&fail POP2 POP2r #00 JMP2r
 
-@<draw-lb> ( -- )
+@font/<draw-lb> ( -- )
 	.Screen/y DEI2k #0010 ADD2 ROT DEO2
 	#0014 .Screen/x DEO2
 	JMP2r
 
-@<draw-bs> ( -- )
+@font/<draw-bs> ( c -- )
 	.Screen/x DEI2k #0008 SUB2 ROT DEO2
-	#20 <draw-char>
+	#20 /<draw-char>
 	.Screen/x DEI2k #0008 SUB2 ROT DEO2
 	JMP2r
 
-@<draw-caret> ( -- )
-	#02 ;<draw-glyph>/color STA
-	;caret-icn !<draw-glyph>
-
-@<draw-sidebar> ( -- )
-	#0000 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
+@sidebar/<draw> ( -- )
+	#0000 DUP2 Screen/<set-pos>
 	( | fill )
 	[ LIT2 12 -Screen/auto ] DEO
 	;halftone-icn .Screen/addr DEO2
-	#00 .Screen/height DEI2 #03 SFT2 NIP SUB
-	&times ( -- )
-	[ LIT2 01 -Screen/sprite ] DEO
-	INC DUP ?/times
+	[ LIT2 00 -Screen/height ] DEI2 #03 SFT2 NIP SUB
+	&>times
+		[ LIT2 01 -Screen/sprite ] DEO
+		INC DUP ?/>times
 	POP
 	( | icon )
-	#0000 .Screen/x DEO2
-	#0000 .Screen/y DEO2
+	#0000 DUP2 Screen/<set-pos>
 	#01
 	( >> )
 
-@<draw-icon> ( color -- )
+@hex/<draw-icon> ( color -- )
 	[ LIT2 16 -Screen/auto ] DEO
-	;ascii-icn #00 .hexadecimal LDZ #50 SFT2 ADD2 .Screen/addr DEO2
+	;ascii-icn [ LIT2 00 -&active ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
 	.Screen/sprite DEOk DEO
 	JMP2r
 
-@<update-cursor> ( color addr* -- )
-	[ LIT2 00 -Screen/auto ] DEO
-	;fill-icn .Screen/addr DEO2
-	#40 <draw-cursor>
-	.Mouse/x DEI2 ,<draw-cursor>/x STR2
-	.Mouse/y DEI2 ,<draw-cursor>/y STR2
-	.Screen/addr DEO2
+@hex/<toggle-clear> ( -- )
+	buffer/<clear>
+	( >> )
 
-@<draw-cursor> ( color -- )
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	[ LIT2 &y $2 ] .Screen/y DEO2
-	.Screen/sprite DEO
+@hex/<toggle> ( -- )
+	[ LIT2 00 -&active ] LDZ EQU .&active STZ !buffer/<reqdraw>
+
+@thru/<toggle> ( -- )
+	[ LIT2 00 -&active ] LDZ EQU .&active STZ !buffer/<reqdraw>
+
+@thru/<draw> ( -- )
+	.&active LDZ ?{ JMP2r }
+	[ LIT2 15 -Screen/auto ] DEO
+	;&sprite .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
 	JMP2r
 
 (
-@|stdlib )
+@|Cursor )
 
-@str/cap ( str* -- end* )
-	LDAk ?{ JMP2r }
-	INC2 !/cap
+@cursor/<update> ( -- )
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD [ LIT2 15 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	;&sprite
+	( >> )
 
-@<pword> ( str* -- )
-	&>w
-		LDAk #18 DEO
-		INC2 LDAk #20 GTH ?/>w
-	POP2 JMP2r
-
-@u8/<print> ( byte -- )
-	DUP #04 SFT /c
-	&c ( -- )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] [ LIT2 &y $2 ] Screen/<set-pos>
+	.Screen/sprite DEO
 	JMP2r
 
 (
@@ -278,25 +267,67 @@
 
 	&path ".theme $1
 
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat
+		DUP2 LDAk #00 SWP INC ADD2 SWP2 #0003 ADD2
+		&>opt
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?/>opt
+		POP2 INC2 LDAk ?/>cat
+	POP2 #ffff JMP2r
+
 (
-@|assets )
+@|Stdlib )
 
-@base16-lut [8
-	"0123456789abcdef ]
+@str/cap ( str* -- end* )
+	LDAk ?{ JMP2r }
+	INC2 !/cap
 
-@cursor-icn [8
-	80c0 e0f0 f8e0 1000 ]
+@u8/<send> ( byte -- )
+	.hex/active LDZ ?/<send-hex>
+	( >> )
+
+@u8/<emit> ( byte -- )
+	.thru/active LDZ ?{ POP JMP2r }
+	.Console/write DEO
+	JMP2r
+
+	&<send-hex> ( byte -- )
+	/<print>
+	[ LIT &count 00 ] INC DUP ,&count STR
+	#0f AND ?{ #0a !/<emit> }
+	#20 !/<emit>
+
+@u8/<print> ( byte -- )
+	DUP #04 SFT /c
+	&c ( -- )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD !/<emit>
+
+(
+@|Assets )
+
+@dict/logger "Logger 00
+	&clear "Clear 00
+	&toggle "Toggle 00
 
 @fill-icn [8
-	ffff ffff ffff ffff ]
-
-@caret-icn [8
-	4040 4040 4040 4040 4040 4040 4040 4040 ]
+	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
 @blank-icn $10
 
 @halftone-icn [8
 	aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+@cursor/sprite [8
+	80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
+	( from Symbolics )
+
+@thru/sprite [8
+	0000 4040 2020 1010 0810 1020 2040 4000 ]
 
 @appicon [8
 	0000 0000 003f 3838 0000 0000 0000 1717
@@ -316,7 +347,10 @@
 	aa55 805f 9057 9455 aa55 02f9 0ae9 2aa9
 	9554 9750 9f40 aa55 aa29 ea09 fa01 aa55 ]
 
-@font-icn [8
+@font/base16 [8
+	"0123456789abcdef ]
+
+@font/glyphs [8
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0038 3838 3838 3810 1010 1000 0010 3810
 	6c6c 2424 4800 0000 0000 0000 0000 0000
@@ -413,5 +447,5 @@
 	c020 2020 2020 1008 1020 2020 2020 20c0
 	6092 0c00 0000 0000 0000 0000 0000 0000 ]
 
-@mem/data $1000 &type $1000
+@buffer/buf $&buflen
 
