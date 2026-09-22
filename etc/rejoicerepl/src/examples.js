@@ -150,15 +150,11 @@ n^10 y
 `
 examples.factorial=`( Print the Factorial number n )
 
-n^6 
+n^5 y^n /y
 
-@Fac ( n -- n )
-	acc^n /acc
-	@Loop ( n acc -- n )
-		End/nil^acc          ( if acc == 0: goto End )
-		't^acc/n             ( t = acc * n, n = 0 )
-		[Loop n^t]/[acc t^t] ( if acc--: t = 0, n = t, goto Loop )
-@End
+@factorial ( n y -- n ) 
+	'[r^y y]/[y n]
+	[factorial n^r]/[y r^r]
 
 .#n
 `
