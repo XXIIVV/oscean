@@ -31,7 +31,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "13 20 "Sep 20 "2026 0000
+	( date ) "22 20 "Sep 20 "2026 0000
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -215,18 +215,6 @@
 		( ref reg ) #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
 	( def reg ) #0001 JMP2r
 
-%fraction/den-length ( fraction* -- fraction* len* ) {
-	LDA2k LDA2k SWP2 SUB2 }
-
-%fraction/is-unquoted ( fraction* -- fraction* t ) {
-	DUP2 INC2k INC2
-	( f* num[0].id ) LDA2
-	( f* jump* = ) label/get NEQ2 }
-
-%fraction/get-multiplier ( item* -- mul* ) {
-	tote/get-register STH2
-	LDA2 tote/get-addr LDA2 STH2r DIV2 }
-
 @fraction/<print> ( addr* -- )
 	( num ) LDA2k OVR2 INC2 INC2 bag/<print>
 	LDA2 INC2k INC2 LDA2 ORA ?{ POP2 JMP2r }
@@ -382,12 +370,7 @@
 	&>lap
 		DUP2 /<put>
 		item/next GTH2k ?/>lap
-	POP2 POP2
-	( | multiplier )
-	fraction/is-unquoted ?{
-		fraction/den-length #0006 NEQ2 ?{
-			LDA2 INC2 INC2 fraction/get-multiplier !queue/<apply> } }
-	POP2 #0001 !queue/<apply>
+	POP2 POP2 POP2 #0001 !queue/<apply>
 
 @tote/get-range ( -- to* from* )
 	( from* ) ;&buf
