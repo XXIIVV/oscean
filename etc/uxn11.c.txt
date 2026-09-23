@@ -402,7 +402,7 @@ screen_request(void *buf, int *size, int length)
 			fprintf(stderr, "Screen out of memory.\n");
 			exit(1);
 		}
-		if(b2) *size = length, buf = b2;
+		*size = length, buf = b2;
 	}
 	return buf;
 }
@@ -526,8 +526,8 @@ screen_deo_sprite(void)
 	const Uint8 *table = blend_lut[blend][layer >> 6];
 	int i, j, x = rX, y = rY;
 	int row_base = (y + 8) * stride;
-	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_incr, row_base += row_step) {
-		if(x < -8 || y < -8 || x + 16 >= stride || y + 16 > screen_hmar2) continue;
+	for(i = 0; i <= rML; i++, x += dx, y += dy, rA = (rA + addr_incr) & 0xffff, row_base += row_step) {
+		if(x < -8 || y < -8 || x + 16 > stride || y + 16 > screen_hmar2) continue;
 		Uint8 *dst = screen_layers + row_base + x + 8;
 		const Uint8 *col = &ram[rA + col_start];
 		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
@@ -769,7 +769,7 @@ is_dir_path(const char *p)
 }
 
 static unsigned int
-is_dir_real(char *p)
+is_dir_real(const char *p)
 {
 	struct stat st;
 	return stat(p, &st) == 0 && S_ISDIR(st.st_mode);
@@ -833,11 +833,21 @@ file_open(unsigned int id, unsigned int want_write, Uint8 flags)
 	return u->state != IDLE;
 }
 
+static char *
+file_make_path(const char *s)
+{
+	size_t n = strlen(s) + 1;
+	char *p = malloc(n);
+	if(p) memcpy(p, s, n);
+	return p;
+}
+
 static unsigned int
 file_init(unsigned int id, Uint16 addr)
 {
 	file_reset(id);
-	ufs[id].filepath = (char *)&ram[addr];
+	free(ufs[id].filepath);
+	ufs[id].filepath = file_make_path((char *)&ram[addr]);
 	return 0;
 }
 
@@ -1165,7 +1175,7 @@ emu_screenshot(void)
 					Uint8 b1 = 0, b2 = 0;
 					for(col = 0; col < 8; col++) {
 						Uint8 px = src[col];
-						b1 |= ((px & 0x1) << (7 - col)), b2 |= (((px >> 2) & 0x1) << (7 - col));
+						b1 |= ((px & 0x1) << (7 - col)), b2 |= (((px >> 1) & 0x1) << (7 - col));
 					}
 					tile[row] = b1, tile[row + 8] = b2;
 				}
@@ -1354,7 +1364,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(79K), 16 Sep 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(79K), 22 Sep 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
