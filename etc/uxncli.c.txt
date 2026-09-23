@@ -40,8 +40,6 @@ static inline void poke2(Uint8 *d, Uint16 v) { d[0] = v >> 8, d[1] = v; }
 /*
 @|System ------------------------------------------------------------ */
 
-static char *system_boot_path;
-
 static void
 system_print(char *name, int r)
 {
@@ -68,7 +66,6 @@ system_load(const char *rom_path)
 static unsigned int
 system_boot(char *rom_path, const unsigned int has_args)
 {
-	system_boot_path = rom_path;
 	dev[0x17] = has_args;
 	return system_load(rom_path);
 }
@@ -129,8 +126,8 @@ console_input(int c, unsigned int type)
 /* clang-format off */
 
 static void console_deo_vector(void) { console_vector = peek2(&dev[0x10]); }
-static void console_deo_stdout(void) { fputc(dev[0x18], stdout); }
-static void console_deo_stderr(void) { fputc(dev[0x19], stderr); }
+static void console_deo_stdout(void) { fputc(dev[0x18], stdout); fflush(stdout); }
+static void console_deo_stderr(void) { fputc(dev[0x19], stderr); fflush(stderr); }
 static void console_deo_debug1(void) { fprintf(stderr, "%02x", dev[0x1a]); }
 static void console_deo_debug2(void) { fprintf(stderr, "%02x%02x", dev[0x1a], dev[0x1b]); }
 
@@ -258,7 +255,7 @@ is_dir_path(const char *p)
 }
 
 static unsigned int
-is_dir_real(char *p)
+is_dir_real(const char *p)
 {
 	struct stat st;
 	return stat(p, &st) == 0 && S_ISDIR(st.st_mode);
@@ -322,11 +319,21 @@ file_open(unsigned int id, unsigned int want_write, Uint8 flags)
 	return u->state != IDLE;
 }
 
+static char *
+file_make_path(const char *s)
+{
+	size_t n = strlen(s) + 1;
+	char *p = malloc(n);
+	if(p) memcpy(p, s, n);
+	return p;
+}
+
 static unsigned int
 file_init(unsigned int id, Uint16 addr)
 {
 	file_reset(id);
-	ufs[id].filepath = (char *)&ram[addr];
+	free(ufs[id].filepath);
+	ufs[id].filepath = file_make_path((char *)&ram[addr]);
 	return 0;
 }
 
@@ -582,7 +589,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 18 Aug 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 22 Sep 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
