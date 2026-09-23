@@ -1,50 +1,73 @@
-<nibble> ::= "0" "1" "2" "3"
-             "4" "5" "6" "7"
-             "8" "9" "a" "b"
-             "c" "d" "e" "f"
-<byte>   ::= <nibble><nibble>
-<short>  ::= <nibble><nibble><nibble><nibble>
-<number> ::= <nibble>
-             <nibble><nibble>
-             <nibble><nibble><nibble>
-             <nibble><nibble><nibble><nibble>
+/* Uxntal 54K formal grammar, written in W3C-style EBNF */
 
-<op>     ::= "LIT" "INC" "POP" "NIP" "SWP" "ROT" "DUP" "OVR"
-             "EQU" "NEQ" "GTH" "LTH" "JMP" "JCN" "JSR" "STH"
-             "LDZ" "STZ" "LDR" "STR" "LDA" "STA" "DEI" "DEO"
-             "ADD" "SUB" "MUL" "DIV" "AND" "ORA" "EOR" "SFT"
-<mode>   ::= "2" "k" "r"
-<opcode> ::= "BRK"
-             <op><mode>
-             <op><mode><mode>
-             <op><mode><mode><mode>
+Program		::= WS? (Statement WS)*
 
-<rune>   ::= "|" "$" "@" "&" "%" "(" "," "_"
-             "." "-" ";" "=" "?" "!" "#" "}"
-             "~" "[" "]" "\""
-<name>   ::= <string> <string>/<string>
-           - <number> <opcode> <rune><string>
-<label>  ::= <name> /<string> &<string> "{" 
+Statement	::= Opcode 
+			  | ParentLabel
+			  | ChildLabel 
+			  | PadRel 
+			  | PadAbs 
+			  | LiteralHex 
+			  | RawString
+			  | ImmJSI 
+			  | ImmJMI
+			  | ImmJCI
+			  | LiteralZep 
+			  | LiteralRel 
+			  | LiteralAbs 
+			  | RawZep 
+			  | RawRel
+			  | RawAbs
+			  | Ignore
+			  | Comment
+			  | MacroName
 
-<macros> ::= %<name>" { "<string>" }"
-<comment> ::= "("<string>" )"
-<ignore>  ::= "["<string>" ]"
+Opcode		::= Op Mode*
+Op			::= 'BRK' | 'INC' | 'POP' | 'DUP' | 'NIP' | 'SWP' | 'OVR' | 'ROT'
+			  | 'EQU' | 'NEQ' | 'GTH' | 'LTH' | 'JMP' | 'JCN' | 'JSR' | 'STH'
+			  | 'LDZ' | 'STZ' | 'LDR' | 'STR' | 'LDA' | 'STA' | 'DEI' | 'DEO'
+			  | 'ADD' | 'SUB' | 'MUL' | 'DIV' | 'AND' | 'ORA' | 'EOR' | 'SFT'
+			  | 'LIT'
+Mode		::= '2' | 'k' | 'r'
 
-<toplab> ::= @<name>
+ParentLabel	::= '@' Name
+ChildLabel	::= '&' Sublabel
+PadRel		::= '$' (Number | Name | ChildLabel)
+PadAbs		::= '|' (Number | Name | ChildLabel)
+LiteralHex	::= '#' (Byte | Short)
+RawString 	::= '"' (Char - WS)+
+ImmJSI		::= Name | AnonLabel
+ImmJMI		::= '!' Label
+ImmJCI		::= '?' Label
+LiteralZep	::= '.' Label
+LiteralRel	::= ',' Label
+LiteralAbs	::= ';' Label
+RawZep		::= '-' Label
+RawRel		::= '_' Label
+RawAbs		::= '=' Label
 
-<padrel> ::= $<number> $<name>
-<padabd> ::= |<number> |<name>
+Ignore		::= (')' | '[' | ']') Word?
 
-<lithex> ::= #<byte> #<short>
-<rawstr>  ::= \"<string>
+Comment		::= '(' Word? WS (CmtContents WS)* ')'
+CmtContents	::= Word - ('(' | ')') | '(' WS (CmtContents WS)* ')'
 
-<immjsi> ::= <name> /<string> "{"
-<immjmi> ::= !<label>
-<immjci> ::= ?<label>
+Macro		::= '%' MacroName WS ((Word - '{') WS)* '{' MacroBody '}'
+MacroName	::= Name
+MacroBody	::= WS (Statement WS)*
 
-<litzep> ::= .<label>
-<litrel> ::= ,<label>
-<litabs> ::= ;<label>
-<rawzep> ::= -<label>
-<rawrel> ::= _<label>
-<rawabs> ::= =<label>
+Label		::= Name | ChildLabel | AnonLabel
+Name		::= Scope | Scope? '/' Sublabel
+Sublabel	::= Word?
+AnonLabel	::= '{' Word? WS (Statement WS)* '}' Word?
+Scope		::= (ScopeChar - Rune) ScopeChar*
+ScopeChar	::= Char - (WS | '/')
+
+Number		::= Nibble Nibble? Nibble? Nibble?
+Short		::= Byte Byte
+Byte		::= Nibble Nibble
+Nibble		::= [0-9a-f]
+Rune		::= '|' | '$' | '@' | '&' | ',' | '_' | '.' | '-'
+		 	  | ';' | '=' | '!' | '?' | '#' | '"' | '~' | '%'
+			  | '{' | '}' | '(' | ')' | '[' | ']'
+Word		::= (Char - WS)+
+WS			::= (#x20 | #x9 | #xD | #xA)+
