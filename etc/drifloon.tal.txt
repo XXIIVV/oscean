@@ -22,7 +22,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Sep 20 "2026 00
+	( date ) "24 20 "Sep 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
@@ -122,9 +122,13 @@
 (
 @|Macros )
 
+%macros/next ( addr* -- next* ) {
+	#0005 ADD2 }
+
 @macros/<latch> ( t* -- )
 	name/validate dict/alloc /<push-short>
-	( used byte ) #00 /<push-byte>
+	( use byte ) #00 /<push-byte>
+	dict/get-ptr /<push-short>
 	;&walk !assembly/<set>
 
 	&walk ( t* -- )
@@ -138,12 +142,8 @@
 	( a ) LIT "{ EQU SWP LIT "{ EQU ORA [ STH ADDr ]
 	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
 	( . ) STHkr LITr _&+depth STRr
-	?{ POP2 #00 /<push-byte> !standard/<latch> }
-	/<push-word>
-	#20 !/<push-byte>
-
-@macros/<push-word> ( t* -- )
-	;&<push-byte> !for-each
+	?{ POP2 #00 dict/<push-byte> !standard/<latch> }
+	;dict/<push-byte> for-each #20 !dict/<push-byte>
 
 @macros/<push-short> ( s* -- )
 	SWP /<push-byte>
@@ -165,23 +165,22 @@
 	&>lf
 		GTH2k ?{
 			POP2 #ffff &found NIP2 POP2r JMP2r }
-		LDA2k STH2kr str/cmp ?&found
-		INC2 INC2 INC2 str/cap !/>lf
+		LDA2k STH2kr str/cmp ?/found
+		/next !/>lf
 
 @macros/<write> ( t* macro* -- )
 	NIP2 token/<new>
-	INC2 INC2
-	( use ) LITr 01 STH2k STAr
-	INC2 ;token/<push-byte> !for-each
+	( walk name ) INC2 INC2
+	( use byte ) LITr 01 STH2k STAr
+	( walk addr ) INC2 LDA2 ;token/<push-byte> !for-each
 
 @macros/<print-unused> ( -- )
 	,&+ptr LDR2 ;&mem
 	&>l
 		GTH2k ?{ POP2 POP2 JMP2r }
-		INC2k INC2 LDAk ?{
-			;dict/unused info/<print>
-			OVR2 LDA2 info/<print-lb> }
-		NIP2 INC2 str/cap !/>l
+		INC2k INC2 LDA ?{ ;dict/unused info/<print>
+			LDA2k info/<print-lb> }
+		/next !/>l
 
 (
 @|Token )
@@ -344,12 +343,9 @@
 	( >> )
 
 @lambda/name ( id* -- str* )
-	/name-part ROT /name-part ,&id1 STR2
-	,&id2 STR2
+	u8/ascii ,&id2 STR2
+	u8/ascii ,&id1 STR2
 	;&sym JMP2r
-
-@lambda/name-part ( id -- hexchar hexchar )
-	DUP #04 SFT hexc SWP !hexc
 
 @lambda/pop ( -- )
 	,&+ptr LDR2
@@ -390,7 +386,7 @@
 @|Syms )
 
 %syms/next-sym ( sym* -- next-sym* ) {
-	#0003 ADD2 LDAk #00 SWP INC ADD2 }
+	#0008 ADD2 }
 
 %syms/is-used ( sym* -- sym* t ) {
 	INC2k INC2 LDA .SymType/used AND }
@@ -399,7 +395,7 @@
 	LDA2k ;on-reset EQU2 }
 
 %syms/is-capitalized ( sym* -- sym* t ) {
-	DUP2 #0004 ADD2 LDA [ LIT "A ] SUB #1a LTH }
+	DUP2 #0004 ADD2 LDA2 LDA [ LIT "A ] SUB #1a LTH }
 
 @syms/<new> ( name* -- )
 	/find-name INC2k ORA ?{
@@ -412,13 +408,16 @@
 	( ! ) ;dict/duplicate !info/<error-token-sym>
 
 @syms/<push-sym> ( name* type addr* -- )
-	( hb ) SWP /<push-byte>
-	( lb ) /<push-byte>
+	( addr ) /<push-short>
 	( type ) /<push-byte>
-	[ LIT2r =&ptr ] LDA2kr #00 /<push-byte>
-	name/validate ;&<push-byte> for-each SWP2r LDA2r OVR2r SUB2r SWP2r STAr
-	POPr #00
+	( length ) str/len INC /<push-byte>
+	name/validate dict/alloc /<push-short>
+	LIT2 "? 00
 	( >> )
+
+@syms/<push-short> ( s* -- )
+	( hb ) SWP /<push-byte>
+	( lb ) ( >> )
 
 @syms/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
@@ -429,19 +428,17 @@
 	STA
 	JMP2r
 
-@syms/find-name ( name* -- <sym>* )
+@syms/find-name ( name* -- name* <sym>* )
 	DUP2 ,&name STR2
-	str/len INC STH
 	,&ptr LDR2 ;&mem
 	&>lfn
-		GTH2k ?{
-			POP2 POP2 #ffff POPr JMP2r }
-		DUP2 #0003 ADD2 LDAk STHkr NEQ ?{
-			INC2k [ LIT2 &name $2 ] str/cmp ?/found }
-		POP2 /next-sym !/>lfn
+		DUP2 #0004 ADD2 LDA2 ORAk ?{
+			POP2 POP2 POP2 #ffff JMP2r }
+		[ LIT2 &name $2 ] str/cmp ?/found
+		/next-sym !/>lfn
 
-	&found ( to* from* . len -- sym* )
-	POP2 NIP2 POPr JMP2r
+	&found ( to* from* -- sym* )
+	NIP2 JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
 	/find-name INC2k ORA ?{
@@ -462,7 +459,7 @@
 			/is-reset ?{
 				/is-capitalized ?{
 					;dict/unused info/<print>
-					DUP2 #0004 ADD2 info/<print-lb> } } }
+					DUP2 #0004 ADD2 LDA2 info/<print-lb> } } }
 		/next-sym GTH2k ?/>ls
 	POP2 POP2 JMP2r
 
@@ -501,16 +498,12 @@
 	syms/use LDA2 JMP2r
 
 @refs/<push-short> ( value* -- )
-	SWP /<push-byte>
-	( >> )
-
-@refs/<push-byte> ( byte -- )
-	[ LIT2 &+ptr =&mem ] INC2k
+	[ LIT2 &+ptr =&mem ] INC2k INC2
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/References info/<error-token> }
 	,&+ptr STR2
-	STA
+	STA2
 	JMP2r
 
 @refs/get-abs ( label* -- addr )
@@ -562,7 +555,7 @@
 	( ! ) ;dict/too-far !info/<error-resolution>
 
 @refs/<record-scope> ( sym* -- )
-	DUP2 #0003 ADD2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
+	DUP2 #0004 ADD2 LDA2 LDA2 #cebb NEQ2 ?{ POP2 JMP2r }
 	;&scope STA2
 	JMP2r
 
@@ -623,10 +616,14 @@
 		LDAk DUP ?{ POP POP2 POP2r JMP2r }
 		STH2kr JSR2 INC2 !/>w
 
-@hexc ( hex -- char )
-	#0f AND #0a LTHk ?{
-		SUB [ LIT "a ] ADD JMP2r }
-	POP [ LIT "0 ] ADD JMP2r
+@u8/ascii ( u8 -- h l )
+	DUP #04 SFT /hexc SWP
+	( >> )
+
+@u8/hexc ( hex -- char )
+	#000f ROT AND ;&lut ADD2 LDA JMP2r
+
+	&lut "0123456789abcdef
 
 @chex ( addr* -- addr* <val> )
 	LDAk
@@ -680,10 +677,10 @@
 	/<print>
 	;dict/spacer /<print>
 	( ref* sym* ) [ LIT2 &ref $2 ] INC2k INC2 LDA2
-	( ref* sym/name* ) #0004 ADD2 /<print>
+	( ref* sym/name* ) #0004 ADD2 LDA2 /<print>
 	( ref* ref/line* ) DUP2 #0008 ADD2 LDA2
 	( line* ref/scope* ) SWP2 #0006 ADD2 LDA2
-	( line* scope/name* ) #0004 ADD2 !/<print-location>
+	( line* scope/name* ) #0004 ADD2 LDA2 !/<print-location>
 
 @info/<error-token-sym> ( adj* -- )
 	;dict/Symbol
@@ -736,14 +733,21 @@
 (
 @|Dict )
 
+@dict/get-ptr ( -- ptr* )
+	,&+ptr LDR2 JMP2r
+
 @dict/alloc ( src* -- ptr* )
-	,&+ptr LDR2 SWP2
-	&>w
-		LDAk
-		( push ) DUP [ LIT2 &+ptr =&buf ] INC2k ,&+ptr STR2
-		STA
-		( null ) ?{ POP2 JMP2r }
-		INC2 !/>w
+	,&+ptr LDR2 SWP2 ;&<push-byte> for-each #00
+	( >> )
+
+@dict/<push-byte> ( byte -- )
+	[ LIT2 &+ptr =&mem ] INC2k
+	( | check overflow )
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;&exceeded ;&Dictionary info/<error-token> }
+	,&+ptr STR2
+	STA
+	JMP2r
 
 @dict/assembled "Assembled 00
 	&in 20 "in 20 00
@@ -757,6 +761,7 @@
 	&Macros "Macros 00
 	&Macro "Macro 00
 	&Name "Name 00
+	&Dictionary "Dictionary 00
 	&Number "Number 00
 	&Comment "Comment 00
 	&Writing "Writing 00
@@ -773,16 +778,17 @@
 
 @lambda/mem $100
 
-@macros/mem ( dict*, value\0 )
-	$1000 &memend
+@macros/mem ( dict-name*, used, dict-body* )
+	$200 &memend
 
-@dict/buf $400 &bufend
+@dict/mem ( str\0, str\0, str\0, .. )
+	$3800 &memend
 
 @refs/mem ( addr*, symbol*, type-fn*, scope*, line* )
-	$3000 &memend
+	$3800 &memend
 
-@syms/mem ( addr*, SymType, len, name\0 )
-	$4800 &memend
+@syms/mem ( addr*, SymType, len, dict*, ?\0 )
+	$3800 &memend
 
 @rom/mem ( zeropage )
 	$100
