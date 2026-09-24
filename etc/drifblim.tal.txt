@@ -125,7 +125,7 @@
 	syms/<reset>
 	lambda/<reset>
 	macros/<reset>
-	standard/<latch>
+	standard/<bind>
 	/<init>
 	;src/buf token/<stream>
 	error/get ?/<fail>
@@ -190,7 +190,7 @@
 		DUP2 .File/write DEO2
 		#0004 ADD2 LDA2k str/len #00 SWP INC2 .File/length DEO2
 		.File/write DEO2
-		INC2 INC2 str/cap GTH2k ?/>les
+		INC2 INC2 GTH2k ?/>les
 	POP2 POP2 JMP2r
 
 @runes/concat INC2
@@ -257,7 +257,7 @@
 (
 @|Modes )
 
-@standard/<latch> ( -- )
+@standard/<bind> ( -- )
 	;&assemble !assembly/<set>
 
 @standard/assemble ( t* -- )
@@ -270,7 +270,7 @@
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
-@comment/<latch> ( t* -- )
+@comment/<bind> ( t* -- )
 	POP2 [ LIT2 01 _&+depth ] STR
 	;&assemble !assembly/<set>
 
@@ -279,7 +279,7 @@
 	( a ) LIT2 "( $1 EQU2 [ STH ADDr ]
 	( b ) LIT2 ") $1 EQU2 [ STH SUBr ]
 	( . ) STHkr LITr _&+depth STRr
-	?{ !standard/<latch> }
+	?{ !standard/<bind> }
 	JMP2r
 
 (
@@ -288,7 +288,7 @@
 %macros/next ( addr* -- next* ) {
 	#0005 ADD2 }
 
-@macros/<latch> ( t* -- )
+@macros/<bind> ( t* -- )
 	name/validate dict/alloc /<push-short>
 	( use byte ) #00 /<push-byte>
 	dict/get-ptr /<push-short>
@@ -305,7 +305,7 @@
 	( a ) LIT "{ EQU SWP LIT "{ EQU ORA [ STH ADDr ]
 	( b ) LIT2 "} $1 EQU2 [ STH SUBr ]
 	( . ) STHkr LITr _&+depth STRr
-	?{ POP2 #00 dict/<push-byte> !standard/<latch> }
+	?{ POP2 #00 dict/<push-byte> !standard/<bind> }
 	;dict/<push-byte> for-each #20 !dict/<push-byte>
 
 @macros/<push-short> ( s* -- )
@@ -409,10 +409,10 @@
 	POP2 !lambda/pop
 
 	&coment ( t* -- )
-	!comment/<latch>
+	!comment/<bind>
 
 	&macros ( t* -- )
-	/req-name !macros/<latch>
+	/req-name !macros/<bind>
 
 	&padabs ( t* -- )
 	/req-name syms/find-addr !rom/<set-head>
@@ -549,7 +549,7 @@
 @|Syms )
 
 %syms/next-sym ( sym* -- next-sym* ) {
-	#0008 ADD2 }
+	#0006 ADD2 }
 
 %syms/is-used ( sym* -- sym* t ) {
 	INC2k INC2 LDA .SymType/used AND }
@@ -572,36 +572,34 @@
 
 @syms/<push-sym> ( name* type addr* -- )
 	( addr ) /<push-short>
-	( type ) /<push-byte>
-	( length ) str/len INC /<push-byte>
-	name/validate dict/alloc /<push-short>
-	LIT2 "? 00
+	( type ) STH
+	( length ) str/len INC STHr SWP /<push-short>
+	name/validate dict/alloc
 	( >> )
 
 @syms/<push-short> ( s* -- )
-	( hb ) SWP /<push-byte>
-	( lb ) ( >> )
-
-@syms/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k
+	[ LIT2 &ptr =&mem ] INC2k INC2
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/Symbols info/<error-token> }
 	,&ptr STR2
-	STA
+	STA2
 	JMP2r
 
 @syms/find-name ( name* -- name* <sym>* )
 	DUP2 ,&name STR2
+	str/len INC ,&len STR
 	,&ptr LDR2 ;&mem
 	&>lfn
 		DUP2 #0004 ADD2 LDA2 ORAk ?{
 			POP2 POP2 POP2 #ffff JMP2r }
-		[ LIT2 &name $2 ] str/cmp ?/found
-		/next-sym !/>lfn
+		( | TODO: Improve this! )
+		OVR2 #0003 ADD2 LDA [ LIT &len $1 ] NEQ ?{
+			DUP2 [ LIT2 &name $2 ] str/cmp ?/found }
+		POP2 /next-sym !/>lfn
 
-	&found ( to* from* -- sym* )
-	NIP2 JMP2r
+	&found ( to* from* syms/str* -- sym* )
+	POP2 NIP2 JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
 	/find-name INC2k ORA ?{
