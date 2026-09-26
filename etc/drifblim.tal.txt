@@ -29,7 +29,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "24 20 "Sep 20 "2026 0a0a
+	( date ) "26 20 "Sep 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -472,7 +472,7 @@
 @opcodes/parse ( str* -- byte )
 	[ LIT2r 1f00 ] ;&lut
 	&>w1
-		SWP2k #0003 SWP2 mem/cmp ?{
+		SWP2k str/cmp3 ?{
 			INCr #0003 ADD2 LDAk ?/>w1
 		POP2 POP2 POP2r #00 JMP2r }
 	POP2
@@ -529,10 +529,12 @@
 @name/validate ( name* -- name* )
 	( not hex ) str/is-hex ?/fail
 	( not lambda ) LDAk LIT "{ EQU ?/fail
-	( not runic ) LDAk runes/find INC2 ORA ?/fail
+	( not runics ) LDAk runes/find INC2 ORA ?/fail
+	( not opcode ) opcodes/is-opcode ?/fail
 	( dup macros ) macros/find-name INC2 ORA ?/dup
 	( dup symbol ) syms/find-name INC2 ORA ?/dup
-	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
+	JMP2r
+
 	&fail ( -- )
 	;dict/invalid ;dict/Name !info/<error-token>
 
@@ -788,8 +790,8 @@
 
 @chex ( addr* -- addr* <val> )
 	LDAk
-	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
-	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH ?{ JMP2r }
+	( hex ) #27 SUB DUP #0a SUB #05 GTH ?{ JMP2r }
 	( nil ) POP #ff JMP2r
 
 @str/hex ( str* -- value* )
@@ -816,20 +818,17 @@
 	LDAk ?/cap1
 	INC2 JMP2r
 
-@str/cmp ( a* b* -- bool )
+@str/cmp ( a* b* -- f )
 	STH2
-	DUP2 /cap SWP2 !mem/r
+	&>wc
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?/d
+		INC2 INC2r !/>wc
 
-@mem/cmp ( a* length* b* -- t )
+@str/cmp3 ( a* b* -- f )
 	STH2
-	OVR2 ADD2 SWP2 !/c
-
-	&>l
-		INC2 INC2r &c
-		&r ( end* a* . b* -- t )
-		EQU2k ?{
-			LDAk LDAkr STHr EQU ?/>l }
-	POP2r EQU2 JMP2r
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
 
 (
 @|Info )

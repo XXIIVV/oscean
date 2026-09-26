@@ -11,6 +11,7 @@
 
 |000
 
+	@zero-eval/lit $1 &addr $2 &jsr2 $2
 	@center/x $2 &y $2
 	@wheel/y $1 &y-lo $1
 
@@ -46,6 +47,8 @@
 	[ LIT2 d0 -Screen/pixel ] DEO
 	[ LIT2 e0 -Screen/pixel ] DEO
 	[ LIT2 f0 -Screen/pixel ] DEO
+	( | Setup zero-vector )
+	zero-eval/<install>
 	( | Find center )
 	.Screen/width DEI2 #01 SFT2 .center/x STZ2
 	.Screen/height DEI2 #01 SFT2 .center/y STZ2
@@ -60,10 +63,21 @@
 @meta 00 "Perifs 0a
 	( details ) "A 20 "Peripherals 20 "Test 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "3 20 "Sep 20 "2026 00
+	( date ) "26 20 "Sep 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
+
+@zero-eval/<install> ( -- )
+	LIT2 LIT2 -&lit STZ
+	;&<error> .&addr STZ2
+	LIT2 JSR2 -&jsr2 STZ
+	JMP2r
+
+@zero-eval/<error> ( -- )
+	;&error !str/<print>
+
+	&error "Evaluated 20 "0x0000. 00
 
 %Screen/<set-pos> ( x* y* -- ) {
 	.Screen/y DEO2
@@ -93,6 +107,15 @@
 	DUP ?{ smile/<next> }
 	NEQ ?{ #010e DEO }
 	BRK
+
+@controller/<toggle> ( -- )
+	.Controller/vector DEI2 ;&on-event EQU2 ?{
+		( | bind )
+		;&on-event .Controller/vector DEO2
+		JMP2r }
+	( | unbind )
+	#0000 .Controller/vector DEO2
+	JMP2r
 
 @controller/<draw> ( -- )
 	.Controller/button DEI2
@@ -151,7 +174,10 @@
 @mouse/on-event ( -> )
 	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
 	EQUk ?{
-		DUP #00 EQU ?{ smile/<next> } }
+		DUP #00 EQU ?{
+			( | Disconnect controller vector )
+			.Mouse/x DEI2 .Mouse/y DEI2 smile/is-outside ?{ controller/<toggle> }
+			smile/<next> } }
 	POP2 /<draw>
 	/<draw-cursor>
 	BRK
@@ -224,6 +250,10 @@
 
 (
 @|Smile )
+
+@smile/is-outside ( x* y* -- t )
+	.Screen/height DEI2 #0020 SUB2 SUB2 #0010 LTH2 ?{ POP2 #01 JMP2r }
+	#0010 SUB2 #0010 GTH2 JMP2r
 
 @smile/<next> ( -- )
 	[ LIT &ptr $1 ] INCk ,&ptr STR
@@ -417,6 +447,11 @@
 	#00 SWP #0f AND #30 SFT2 ;&icns ADD2 .Screen/addr DEO2
 	[ LIT2 03 -Screen/sprite ] DEO
 	JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
 
 (
 @|Assets )
