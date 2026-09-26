@@ -5,14 +5,14 @@ typedef struct {
 } Balance;
 
 typedef struct {
-	char name[0x100], *body;
+	char name[0x80], *body;
 	int wst_neg, wst_pos, rst_neg, rst_pos;
 	int vector, macro, defined, lambda, depth_err;
 } Label;
 
 static unsigned int lambda_length = 0;
-static char scope[0x100];
-static Label labels[0x200], *_labels = labels;
+static char scope[0x80];
+static Label labels[0x400], *_labels = labels;
 
 /* clang-format off */
 
@@ -186,8 +186,10 @@ walk_byte(char *s)
 	if(is_hex(s)) {
 		if(token_length(s) == 2)
 			return walk_token(s);
-		else
+		else {
 			printf("error: %s\n", s);
+			return walk_token(s);
+		}
 	}
 	if(s[0] == '$' && s[1] == '1')
 		return walk_token(s);
@@ -241,12 +243,11 @@ find_lambda(char *t)
 static Label *
 find_label(char *t)
 {
+	char fullname[0x100];
 	Label *l = labels;
 	if(t[0] == '{') return find_lambda(t);
-	if(t[0] == '/' || t[0] == '&') {
-		char fullname[0x100];
+	if(t[0] == '/' || t[0] == '&')
 		t = make_name(t, fullname);
-	}
 	while(l != _labels) {
 		char *a = l->name, *b = t;
 		while(*a && *b && *a == *b)
