@@ -480,17 +480,16 @@
 	;tag/nav html/<close>
 	JMP2r
 
-	&<build-children> ( name* -- name* )
+@page/<build-children> ( name* -- name* )
 	;tag/ul html/<open>
 	stash-depth
 	&>w
-		stop-at-siblings ?/end
-		when-depth+1 ?{
-			;tag/li html/<open>
-			INC2k INC2 html/<local>
-			;tag/li html/<close> }
-		INC2 INC2 str/cap LDAk ?/>w
-	&end ( name* . depth -- )
+		stop-at-siblings ?{
+			when-depth+1 ?{
+				;tag/li html/<open>
+				INC2k INC2 html/<local>
+				;tag/li html/<close> }
+			INC2 INC2 str/cap LDAk ?/>w }
 	POP2 POPr ;tag/ul html/<close>
 	JMP2r
 
@@ -563,13 +562,12 @@
 	( ) diary/count #02 LTH ?{ ;term/name ;warnings/hidden warning/<print> }
 	stash-depth
 	&>w
-		stop-at-siblings ?/end1
-		when-depth+1 ?{
-			INC2k INC2 diary/<load>
-			diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
-			POP2 }
-		INC2 INC2 str/cap LDAk ?/>w
-	&end1 ( name* . depth -- )
+		stop-at-siblings ?{
+			when-depth+1 ?{
+				INC2k INC2 diary/<load>
+				diary/find DUP2 #ffff EQU2 ?{ DUP2 #00 html/<photo> }
+				POP2 }
+			INC2 INC2 str/cap LDAk ?/>w }
 	POP2 POPr
 	( restore diary ) DUP2 !diary/<load>
 
@@ -829,8 +827,12 @@
 		LDAk ?{ JMP2r }
 		INC2 !/>w2
 
-@str/cmp ( a* b* -- bool )
-	DUP2k /cap SWP2 SUB2 SWP2 !mem/cmp
+@str/cmp ( a* b* -- f )
+	STH2
+	&>wcm
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?/d
+		INC2 INC2r !/>wcm
 
 @str/cmp3 ( a* b* -- f )
 	STH2
@@ -868,8 +870,8 @@
 		[ LIT "0 ] ADD #18 DEO !/>put
 
 @chr/hex ( c -- <val> )
-	( dec ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
-	( hex ) #27 SUB DUP #0f GTH [ JMP JMP2r ]
+	( dec ) LIT "0 SUB DUP #09 GTH ?{ JMP2r }
+	( hex ) #27 SUB DUP #0f GTH ?{ JMP2r }
 	( err ) POP #ff JMP2r
 
 @mem/cmp ( a* length* b* -- t )
