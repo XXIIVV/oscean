@@ -33,7 +33,7 @@
 	( name ) "Pavol 0a
 	( details ) "PulseAudio 20 "Volume 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "20 20 "May 20 "2026 $1
+	( date ) "26 20 "Sep 20 "2026 $1
 	( elements ) 00
 
 @on-mouse ( -> )
@@ -56,14 +56,12 @@
 	BRK
 
 @answer/find-volume ( buf* -- )
-	( | find first slash )
 	&>w
-		LDAk LIT "/ EQU ?{ INC2 LDAk ?&>w }
+		LDAk LIT "/ EQU ?{ INC2 LDAk ?/>w }
 	( space ) INC2
 	( space ) INC2
 	( space ) LDAk #20 NEQ ?{ INC2 }
-	str/dec #0005 DIV2 NIP
-	( >> )
+	str/dec #0005 DIV2 NIP !volume/<set>
 
 @volume/<set> ( value -- )
 	DUP #15 LTH ?{ POP JMP2r }
@@ -71,17 +69,9 @@
 	DUP ,&last STR
 	DUP /<draw>
 	( | send )
-	#00 SWP DUP ADD ;&vol-lut ADD2 LDA2 .Console/addr DEO2
+	#00 SWP DUP ADD ;&lut ADD2 LDA2 .Console/addr DEO2
 	[ LIT2 01 -Console/exec ] DEO
 	JMP2r
-
-	&vol-lut [
-	=dict/v00 =dict/v05 =dict/v10 =dict/v15
-	=dict/v20 =dict/v25 =dict/v30 =dict/v35
-	=dict/v40 =dict/v45 =dict/v50 =dict/v55
-	=dict/v60 =dict/v65 =dict/v70 =dict/v75
-	=dict/v80 =dict/v85 =dict/v90 =dict/v95
-	=dict/v100 ]
 
 @volume/<draw> ( value -- )
 	#0010 .Screen/x DEO2
@@ -94,7 +84,7 @@
 	&>l
 		#00 OVR #01 AND #40 SFT2 ;&middle-icn ADD2 .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP
 	( | bottom )
 	;&bottom-icn .Screen/addr DEO2
@@ -107,7 +97,7 @@
 	INCk #00
 	&>lf
 		[ LIT2 05 -Screen/sprite ] DEO
-		INC GTHk ?&>lf
+		INC GTHk ?/>lf
 	POP2
 	( | select )
 	#00 OVR #30 SFT #00b0 SWP2 SUB2 .Screen/y DEO2
@@ -178,7 +168,7 @@
 		( val ) LDAk [ LIT "0 ] SUB #09 GTH ?{
 			( acc ) [ LIT2r 000a ] MUL2r
 			( mix ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
-			ADD2r INC2 LDAk ?&>wd }
+			ADD2r INC2 LDAk ?/>wd }
 	POP2 STH2r JMP2r
 
 (
@@ -207,31 +197,40 @@
 	&v00 "pactl 20 "set-sink-volume 20 "@DEFAULT_SINK@ 20 "0% $1
 	&get "pactl 20 "get-sink-volume 20 "@DEFAULT_SINK@ $1
 
-@volume/top-icn [ 0000 0000 0000 0010 0000 0000 0000 0000 ]
-	&middle-icn [
+@volume/lut [6
+	=dict/v00 =dict/v05 =dict/v10 =dict/v15 =dict/v20 =dict/v25
+	=dict/v30 =dict/v35 =dict/v40 =dict/v45 =dict/v50 =dict/v55
+	=dict/v60 =dict/v65 =dict/v70 =dict/v75 =dict/v80 =dict/v85
+	=dict/v90 =dict/v95 =dict/v100 ]
+
+@volume/top-icn [8
+	0000 0000 0000 0010 0000 0000 0000 0000 ]
+	&middle-icn [8
 	2828 2828 2828 2828 0000 0040 0000 0000
 	2828 2828 2828 2828 0000 0070 0000 0000 ]
-	&bottom-icn [ 1000 0000 0000 0000 0000 0000 0000 0000 ]
-	&select-chr [ 387c fefe fe7c 3800 0038 7c7c 7c38 0000 ]
+	&bottom-icn [8
+	1000 0000 0000 0000 0000 0000 0000 0000 ]
+	&select-chr [8
+	387c fefe fe7c 3800 0038 7c7c 7c38 0000 ]
 	&fill-icn [ 1010 1010 1010 1010 ]
 
-@cursor/up-chr [
+@cursor/up-chr [8
 	0000 0000 0814 1417 0000 0000 0008 0808
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@cursor/down-chr [
+@cursor/down-chr [8
 	0000 0000 0000 0817 0000 0000 0000 0008
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@fill-icn [
+@fill-icn [8
 	ffff ffff ffff ffff ffff ffff ffff ffff
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
-@font/digits [
+@font/digits [8
 	0018 2424 4242 4242 4242 4242 2424 1800
 	0010 7010 1010 1010 1010 1010 107c 0000
 	0018 2442 6202 0408 0810 2022 427e 0000

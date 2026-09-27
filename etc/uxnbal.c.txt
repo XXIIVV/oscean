@@ -368,6 +368,10 @@ branch_out(char *t, Label *l, Balance *b, Label *goal, int display)
 		return balfork.wst == goal->wst_pos - goal->wst_neg;
 	}
 	balfork.depth = b->depth + 1;
+	if(balfork.depth > 64) {
+		printf("error: infinite loop at "), print_token(t);
+		return 0;
+	}
 	res = validate_label(l, &balfork, display);
 	return res;
 }
@@ -434,8 +438,9 @@ validate_label(Label *l, Balance *bal, int display)
 		}
 		/* LIT */
 		else if(is_lit(t)) {
-			int is_2 = t[3] == '2' || t[4] == '2';
-			int is_r = t[3] == 'r' || t[4] == 'r';
+			int len = token_length(t);
+			int is_2 = (len > 3 && t[3] == '2') || (len > 4 && t[4] == '2');
+			int is_r = (len > 3 && t[3] == 'r') || (len > 4 && t[4] == 'r');
 			if(is_r)
 				balance_rst(l, t, bal, 0, 1 + is_2, display);
 			else
