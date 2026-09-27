@@ -29,7 +29,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Sep 20 "2026 0a0a
+	( date ) "27 20 "Sep 20 "2026 0a0a
 	&usage "Usage: 20 "in.tal 20 "out.rom 0a 00
 	( . ) 01
 	( - ) 56 =Varvara/version
@@ -45,13 +45,11 @@
 	BRK
 
 @project/<read-char> ( c -- )
-	DUP #21 LTH ?{
-		[ LIT2 &fn =src/<push> ] JMP2 }
-	POP [ LIT2 00 &f $1 ] EQU DUP ,&f STR
-	?{
-		;src/<push> ,&fn STR2
-		assembly/<start> !src/<reset> }
-	;dst/<push> ,&fn STR2 !dst/<reset>
+	DUP #21 LTH ?{ ,&dst LDR ?dst/<push>
+		!src/<push> }
+	POP [ LIT2 00 &dst $1 ] EQU DUP ,&dst STR
+	?dst/<reset>
+	assembly/<start> !src/<reset>
 
 @project/load ( -- succ )
 	;&path .File2/name DEO2
@@ -76,8 +74,8 @@
 
 @src/<push> ( c -- )
 	[ LIT2 00 &ptr -&buf ]
-	( clamp ) DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
-	INCk ,&ptr STR
+	( clamp ) .&cap LTHk ?{ SWP ;&buf info/<error-path> }
+	POP INCk ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -88,8 +86,8 @@
 
 @dst/<push> ( c -- )
 	[ LIT2 00 &ptr -&buf ]
-	( clamp ) DUP .&cap NEQ ?{ POP2 ;&buf !info/<error-path> }
-	INCk ,&ptr STR
+	( clamp ) .&cap LTHk ?{ SWP ;&buf info/<error-path> }
+	POP INCk ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -152,7 +150,7 @@
 	&mmu-put [ 00 0001 0001 &dst $2 &v $1 ]
 	&mmu-get [ 01 0001 0001 &src $2 0000 =&buf ]
 
-@rom/validate-support ( -- )
+@rom/validate-support ( -- t )
 	#d6 DUP #dead STH2k /<put>
 	( check ) STH2kr /get EQU
 	( restore ) #00 STH2r
@@ -173,13 +171,12 @@
 	( | emit rom )
 	;dst/buf .File/name DEO2
 	#0001 .File/length DEO2
-	#00ff !{
-
+	#00ff
 	&>ler
 		INC2 DUP2 ,&src STR2
 		;&mmu-get .System/expansion DEO2
-		;&buf .File/write DEO2 }
-	NEQ2k ?/>ler
+		;&buf .File/write DEO2
+		NEQ2k ?/>ler
 	POP2 POP2
 	( | emit sym )
 	;dict/sym-ext dst/<push-str>

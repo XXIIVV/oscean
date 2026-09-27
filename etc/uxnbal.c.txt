@@ -419,10 +419,9 @@ validate_label(Label *l, Balance *bal, int display)
 		else if(!l->vector && is_jmp(t)) {
 			if(*t == '!') {
 				Label *call = find_label(t + 1);
-				if(call)
-					balance_wst(l, t, bal, call->wst_neg, call->wst_pos, display);
-				else
-					return print_error_token(t);
+				if(!call) return print_error_token(t);
+				if(!call->defined && t[2] == '>') return 1;
+				balance_wst(l, t, bal, call->wst_neg, call->wst_pos, display);
 			}
 			/* Exit(success) */
 			return compare_balance(l, bal);
