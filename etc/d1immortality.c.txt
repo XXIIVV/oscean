@@ -1,0 +1,62 @@
+#include <ESP8266WiFi.h>
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+
+WiFiEventHandler onConnect;
+volatile bool blinkRequested = false;
+const byte DNS_PORT = 53;
+IPAddress apIP(172, 217, 28, 1);
+DNSServer dnsServer;
+ESP8266WebServer webServer(80);
+String responseHTML = "<!DOCTYPE html>"
+"<html><head><title>Immortality by Clare Harner</title></head>"
+"<body><pre>Do not stand<br />"
+"	By my grave, and weep.<br />"
+"I am not there,<br />"
+"	I do not sleep&mdash;<br /><br />"
+"I am the thousand winds that blow<br />"
+"I am the diamond glints in snow<br />"
+"I am the sunlight on ripened grain,<br />"
+"I am the gentle, autumn rain.<br />"
+"As you awake with morning's hush,<br />"
+"I am the swift, up-flinging rush<br />"
+"Of quiet birds in circling flight,<br />"
+"I am the day transcending night.<br /><br />"
+"Do not stand<br />"
+"	By my grave, and cry&mdash;<br />"
+"I am not there,<br />"
+"	I did not die.<br />"
+"</pre></body></html>";
+
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP("Immortality");
+  onConnect = WiFi.onSoftAPModeStationConnected(
+    [](const WiFiEventSoftAPModeStationConnected&) {
+      blinkRequested = true;
+    });
+  dnsServer.start(DNS_PORT, "*", apIP);
+  webServer.onNotFound([]() {
+    webServer.send(200, "text/html", responseHTML);
+  });
+  webServer.begin();
+}
+
+void loop() {
+  if (blinkRequested) {
+    blinkRequested = false;
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(750);
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+  if (WiFi.softAPgetStationNum() == 0) 
+    delay(100);
+  else {
+    delay(100);
+    dnsServer.processNextRequest();
+    webServer.handleClient();
+  }
+}
