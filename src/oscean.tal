@@ -81,7 +81,7 @@
 	html/<str>
 	DEO2r }
 
-%html/<attribute-prefix> ( body* attr* -- ) {
+%html/<attribute-prefix> ( body* prefix* attr* -- ) {
 	;ascii/space .File2/write DEO2
 	html/<str>
 	;ascii/equal .File2/write DEO2
@@ -180,7 +180,7 @@
 	;term/diary LDAk ?{ POP2 ;path/default-image ;og/image !/<write> }
 	substr3/make ;path/abs-diary ;og/image
 	( >> )
-	&<write-abs> ( content* property* -- )
+	&<write-abs> ( content* prefix* property* -- )
 	;ascii/lt .File2/write DEO2
 	;tag/meta html/<str>
 	;attr/property html/<attribute>
@@ -413,7 +413,7 @@
 (
 @|Build )
 
-%stash-depth ( name* -- name* . depth ) {
+%stash-depth ( name* -- name* end* . depth ) {
 	DUP2k #0002 SUB2 LDA chr/hex STH
 	str/cap }
 
@@ -423,7 +423,7 @@
 %when-depth+1 ( name* -- name* t ) {
 	LDAk chr/hex STHkr INC NEQ }
 
-%page/is-archive ( name* -- name* ) {
+%page/is-archive ( name* -- name* t ) {
 	DUP2 #0001 SUB2 LDA #20 NEQ }
 
 @page/build ( name* -- name* )
@@ -742,7 +742,7 @@
 
 	&res [ "tmp/log- &resbuf $30 ]
 
-@path-tmp-map/make ( str* -- buf* str* )
+@path-tmp-map/make ( str* -- str* )
 	;&resbuf ,&ptr STR2
 	&>w
 		LDAk DUP #1f GTH ?{ &end POP JMP2r }
