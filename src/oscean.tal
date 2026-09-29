@@ -859,12 +859,14 @@
 		INC2 !/>wp
 
 @dec/<print> ( dec* -- )
-	DUP2 #000a DIV2 ORAk ?{ POP2 !/digit }
-	/<print>
-	( >> )
-	&digit ( dec* -- )
-	#000a DIV2k MUL2 SUB2 NIP LIT "0 ADD #18 DEO
-	JMP2r
+	[ LIT2r ff00 ]
+	&>read
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?/>read
+	POP2
+	&>write
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?/>write
+	POP2r JMP2r
 
 @chr/hex ( c -- <val> )
 	( dec ) LIT "0 SUB DUP #09 GTH ?{ JMP2r }
