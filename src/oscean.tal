@@ -26,6 +26,9 @@
 	diaries/<print-available>
 	BRK
 
+%<continue> ( t -- ) {
+	[ JMP JMP2r ] }
+
 @term/<clear> ( -- )
 	[ LIT2 -&cap -&name ]
 	&>l
@@ -230,7 +233,7 @@
 @diary/find ( -- diary* )
 	;&buf
 	&>wf
-		log/has-no-picture ?{ JMP2r }
+		log/has-no-picture <continue>
 		str/cap LDAk ?/>wf
 	POP2 #ffff JMP2r
 
@@ -549,7 +552,7 @@
 	( ) DUP [ LIT "; ] NEQ ?{ POP !portal-archive-module/<build> }
 	( ) DUP [ LIT ". ] NEQ ?{ POP !portal-module/<build> }
 	( ) DUP [ LIT ", ] NEQ ?{ POP !archive-module/<build> }
-	[ LIT "# ] NEQ ?{ JMP2r }
+	[ LIT "# ] NEQ <continue>
 	( | Build diary )
 	;diary/buf
 	&>wbd
@@ -869,8 +872,8 @@
 	POP2r JMP2r
 
 @chr/hex ( c -- <val> )
-	( dec ) LIT "0 SUB DUP #09 GTH ?{ JMP2r }
-	( hex ) #27 SUB DUP #0f GTH ?{ JMP2r }
+	( dec ) LIT "0 SUB DUP #09 GTH <continue>
+	( hex ) #27 SUB DUP #0f GTH <continue>
 	( err ) POP #ff JMP2r
 
 @mem/cmp ( a* length* b* -- t )
