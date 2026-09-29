@@ -460,9 +460,11 @@ validate_label(Label *l, Balance *bal, int display)
 		/* Unknown */
 		else {
 			Label *call = find_label(t);
-			if(call)
+			if(call) {
 				balance_wst(l, t, bal, call->wst_neg, call->wst_pos, display);
-			else
+				if(call->defined)
+					balance_rst(l, t, bal, call->rst_neg - (call->vector ? 0 : 2), call->rst_pos, display);
+			} else
 				return print_error_token(t);
 		}
 		t = walk_token(t);
