@@ -7,8 +7,8 @@
 
 |000
 
-	@scope/buf $3f &cap $1
-	@token/buf $3f &cap $1
+	@scope/buf $3f &bufend $1
+	@token/buf $3f &bufend $1
 
 |100
 
@@ -22,7 +22,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Sep 20 "2026 00
+	( date ) "29 20 "Sep 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
@@ -40,9 +40,11 @@
 @rom/<put> ( byte addr* -- )
 	;&mem ADD2
 	( | Clamp )
-	DUP2 ;&mem LTH2 ?{ STA
-		JMP2r }
-	POP2 POP ;dict/exceeded ;dict/size !info/<error-token>
+	;&mem GTH2k ?{
+		SWP2
+		( ! ) ;dict/exceeded ;dict/size info/<error-token> }
+	POP2 STA
+	JMP2r
 
 @rom/<emit> ( -- )
 	;dict/assembled info/<print>
@@ -150,11 +152,10 @@
 	( >> )
 
 @macros/<push-byte> ( byte -- )
-	[ LIT2 &+ptr =&mem ] INC2k
-	( | check overflow )
+	[ LIT2 &+ptr =&mem ] INC2k ,&+ptr STR2
 	DUP2 ;&memend LTH2 ?{
+		POP2 ;&mem
 		( ! ) ;dict/exceeded ;dict/Macros info/<error-token> }
-	,&+ptr STR2
 	STA
 	JMP2r
 
@@ -194,11 +195,10 @@
 	DUP #20 GTH ?{
 		;&buf assembly/apply #0a NEQ ?/<new>
 		[ LIT2 &line 0001 ] INC2 ,&line STR2 !/<new> }
-	[ LIT2 00 &+ptr -&buf ] INCk
-	( | check overflow )
-	DUP .&cap LTH ?{
+	[ LIT2 00 &+ptr -&buf ] INCk ,&+ptr STR
+	DUP .&bufend LTH ?{
+		POP .&buf
 		( ! ) ;dict/exceeded ;dict/Name info/<error-token> }
-	,&+ptr STR
 	STZ2
 	JMP2r
 
@@ -206,11 +206,10 @@
 @|Scope )
 
 @scope/<push-byte> ( c -- )
-	[ LIT2 00 &+ptr -&buf ] INCk
-	( | check overflow )
-	DUP .&cap LTH ?{
+	[ LIT2 00 &+ptr -&buf ] INCk ,&+ptr STR
+	DUP .&bufend LTH ?{
+		POP .&buf
 		( ! ) ;dict/exceeded info/<error-token-sym> }
-	,&+ptr STR
 	STZ2
 	JMP2r
 
@@ -339,6 +338,9 @@
 @lambda/make-name ( token* -- name* )
 	POP2 [ LIT2 &+count $2 ] INC2k ,&+count STR2
 	DUP2 [ LIT2 &+ptr =&mem ] INC2k INC2 ,&+ptr STR2
+	DUP2 ;&memend LTH2 ?{
+		POP2 ;&mem
+		( ! ) ;dict/exceeded info/<error-token-sym> }
 	STA2
 	( >> )
 
@@ -351,7 +353,8 @@
 	,&+ptr LDR2
 	( | check underflow )
 	DUP2 ;&mem NEQ2 ?{
-		( ! ) ;dict/invalid info/<error-token-sym> }
+		POP2
+		( ! ) ;dict/invalid !info/<error-token-sym> }
 	#0002 SUB2 LDA2k /name syms/<new>
 	,&+ptr STR2
 	JMP2r
@@ -401,27 +404,26 @@
 
 @syms/<new> ( name* -- )
 	/find-name INC2k ORA ?{
-		POP2 ;&ptr LDA2 refs/<record-scope>
-		.SymType/declared rom/get-head !/<push-sym> }
+		POP2 ;&ptr LDA2 SWP2 rom/get-head .SymType/declared /<push-sym> !refs/<record-scope> }
 	( | name* sym* -- )
 	NIP2 DUP2 refs/<record-scope>
-	/is-declared ?{ rom/get-head OVR2 STA2 !/<declare> }
+	/is-declared ?{ rom/get-head OVR2 STA2 !/<set-declared> }
 	POP2
 	( ! ) ;dict/duplicate !info/<error-token-sym>
 
-@syms/<push-sym> ( name* type addr* -- )
-	( addr ) /<push-short>
+@syms/<push-sym> ( name* addr* type -- )
 	( type ) STH
+	SWP2 name/validate SWP2
+	( addr ) /<push-short>
 	( length ) str/len INC STHr SWP /<push-short>
-	name/validate dict/alloc
+	dict/alloc
 	( >> )
 
 @syms/<push-short> ( s* -- )
-	[ LIT2 &ptr =&mem ] INC2k INC2
-	( | check overflow )
+	[ LIT2 &ptr =&mem ] INC2k INC2 ,&ptr STR2
 	DUP2 ;&memend LTH2 ?{
+		POP2 ;&mem
 		( ! ) ;dict/exceeded ;dict/Symbols info/<error-token> }
-	,&ptr STR2
 	STA2
 	JMP2r
 
@@ -430,11 +432,10 @@
 	str/len INC ,&len STR
 	,&ptr LDR2 ;&mem
 	&>lfn
-		DUP2 #0004 ADD2 LDA2 ORAk ?{
+		DUP2 #0003 ADD2 LDAk ?{
 			POP2 POP2 POP2 #ffff JMP2r }
-		( | TODO: Improve this! )
-		OVR2 #0003 ADD2 LDA [ LIT &len $1 ] NEQ ?{
-			DUP2 [ LIT2 &name $2 ] str/cmp ?/found }
+		LDAk [ LIT &len $1 ] NEQ ?{
+			INC2k LDA2 [ LIT2 &name $2 ] str/cmp ?/found }
 		POP2 /next-sym !/>lfn
 
 	&found ( to* from* syms/str* -- sym* )
@@ -443,14 +444,14 @@
 @syms/find-alloc ( name* -- <addr>* )
 	/find-name INC2k ORA ?{
 		( null* .. next* ) POP2 ;&ptr LDA2
-		( alloc ) SWP2 .SymType/used #ffff !/<push-sym> }
+		( alloc ) SWP2 #ffff .SymType/used !/<push-sym> }
 	NIP2 JMP2r
 
 @syms/find-addr ( name* -- <addr>* )
 	str/is-hex ?str/hex
 	name/unpack /find-name /is-defined ?{
 		( ! ) ;dict/invalid info/<error-token-sym> }
-	/use LDA2 NIP2 JMP2r
+	/set-used LDA2 NIP2 JMP2r
 
 @syms/<print-unused> ( -- )
 	;&ptr LDA2 ;&mem
@@ -474,11 +475,11 @@
 @syms/is-declared ( sym* -- sym* t )
 	INC2k INC2 LDA .SymType/declared AND JMP2r
 
-@syms/use ( sym* -- sym* )
+@syms/set-used ( sym* -- sym* )
 	INC2k INC2 STH2k LDA .SymType/used ORA STH2r STA
 	JMP2r
 
-@syms/<declare> ( sym* -- )
+@syms/<set-declared> ( sym* -- )
 	INC2 INC2 STH2k LDA .SymType/declared ORA STH2r STA
 	JMP2r
 
@@ -495,14 +496,13 @@
 		( scope* ) [ LIT2 &scope $2 ] /<push-short>
 		( line* ) ;token/line LDA2 /<push-short> }
 	( | mark as used )
-	syms/use LDA2 JMP2r
+	syms/set-used LDA2 JMP2r
 
 @refs/<push-short> ( value* -- )
-	[ LIT2 &+ptr =&mem ] INC2k INC2
-	( | check overflow )
+	[ LIT2 &+ptr =&mem ] INC2k INC2 ,&+ptr STR2
 	DUP2 ;&memend LTH2 ?{
+		POP2 ;&mem
 		( ! ) ;dict/exceeded ;dict/References info/<error-token> }
-	,&+ptr STR2
 	STA2
 	JMP2r
 
@@ -739,11 +739,10 @@
 	( >> )
 
 @dict/<push-byte> ( byte -- )
-	[ LIT2 &+ptr =&mem ] INC2k
-	( | check overflow )
+	[ LIT2 &+ptr =&mem ] INC2k ,&+ptr STR2
 	DUP2 ;&memend LTH2 ?{
+		POP2 ;&mem
 		( ! ) ;&exceeded ;&Dictionary info/<error-token> }
-	,&+ptr STR2
 	STA
 	JMP2r
 
@@ -774,7 +773,7 @@
 (
 @|Buffers )
 
-@lambda/mem $100
+@lambda/mem $100 &memend
 
 @macros/mem ( dict-name*, used, dict-body* )
 	$200 &memend
