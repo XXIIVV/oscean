@@ -53,7 +53,7 @@
 @meta 00 "Noodle 0a
 	( ) "A 20 "Drawing 20 "Program 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "28 20 "Sep 20 "2026 00
+	( ) "29 20 "Sep 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -63,7 +63,7 @@
 
 @<untrap> ( -- )
 	filepath/<draw>
-	;Mouse/state DEO
+	[ LIT2 00 -Mouse/state ] DEO
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	JMP2r
@@ -85,7 +85,7 @@
 			[ LIT2 00 -pointer/drag ] STZ
 			BRK } }
 	( | route touch )
-	.Mouse/x DEI2 .Mouse/y DEI2 [ LIT2 00 -pointer/drag ] LDZ NEQ ;Mouse/state DEI NEQ AND ?on-drag
+	.Mouse/x DEI2 .Mouse/y DEI2 [ LIT2 00 -pointer/drag ] LDZ NEQ [ LIT2 00 -Mouse/state ] DEI NEQ AND ?on-drag
 	POP2 POP2 BRK
 
 @on-drag ( x* y* -> )
@@ -226,7 +226,7 @@
 	DUP #03 EQU ?/start-drag
 	DUP #08 EQU ?/start-drag
 	( | release when not drag )
-	;Mouse/state DEO
+	[ LIT2 00 -Mouse/state ] DEO
 	DUP #03 LTH ?/tool
 	DUP #03 GTH OVR #08 LTH AND ?/patt
 	DUP #07 GTH OVR #0d LTH AND ?/size
@@ -790,12 +790,11 @@
 	JMP2r
 
 @cursor/<clear> ( -- )
-	;Screen/auto DEO
+	[ LIT2 00 -Screen/auto ] DEO
 	#40 ;fill-icn !/<draw>
 
 @cursor/<update> ( -- )
 	/<clear>
-	;Screen/auto DEO
 	#45 ;pointers-icns .Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
 	/<draw>
@@ -835,17 +834,19 @@
 	( | y )
 	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
 	gts2 [ JMP SWP POP ] ,&sy STR
-	,&dx LDR2 ,&dy LDR2 ADD2 &again
+	,&dx LDR2 ,&dy LDR2 ADD2
 	&>w
-		( apply ) OVR2r STH2r STH2kr [ LIT2 &fn $2 ] JSR2
-		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
-			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
-				( stop ) POP2 POP2r POP2r JMP2r } }
-		( e .. e2 ) DUP2k ADD2 DUP2
-		( y ) [ LIT2 &dy $2 ] lts2 ?{
-			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
-			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
-		( x ) [ LIT2 &dx $2 ] gts2 ?/again
+	
+		&>ww
+			( apply ) OVR2r STH2r STH2kr [ LIT2 &fn $2 ] JSR2
+			( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
+				( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
+					( stop ) POP2 POP2r POP2r JMP2r } }
+			( e .. e2 ) DUP2k ADD2 DUP2
+			( y ) [ LIT2 &dy $2 ] lts2 ?{
+				( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
+				( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
+			( x ) [ LIT2 &dx $2 ] gts2 ?/>ww
 		( e+dx ) ,&dx LDR2 ADD2
 		( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] !/>w
 
@@ -896,7 +897,7 @@
 	POP2 POP2 canvas/<draw> !panel/<draw>
 
 %brush/outside ( x y -- t ) {
-	#00 SWP ;brush/size LDZ #30 SFT2 ;size-icns ADD2 ADD2 LDA #ff EOR SWP SFT #01 AND }
+	#00 SWP #00 .brush/size LDZ #30 SFT2 ;size-icns ADD2 ADD2 LDA #ff EOR SWP SFT #01 AND }
 
 @brush/<paint-dot> ( x* y* -- )
 	#0003 SUB2 ,&y STR2
@@ -931,7 +932,7 @@
 
 @brush/get-tool ( -- ptr* )
 	/<set-oper>
-	( touch ) ;Mouse/state DEI #00 NEQ DUP ADD
+	( touch ) [ LIT2 00 -Mouse/state ] DEI #00 NEQ DUP ADD
 	( changed ) [ LIT2 00 &last $1 ] NEQ ADD DUP ADD
 	( lut ) .&tool LDZ #30 SFT ADD ;&tools-lut ADD2 LDA2
 	( record ) .Mouse/state DEI ,&last STR
@@ -1241,7 +1242,7 @@
 	#0a18 DEO
 	JMP2r
 
-	&error-unknown-txt "Unsupported 20 "tga-type: 20 $1
+	&error-unknown-txt "Unsupported 20 "tga-type: 20 00
 
 @tga/<parse-bw> ( -- )
 	#00 ;image/depth LDA #03 SFT .File/length DEO2
@@ -1348,10 +1349,10 @@
 @menu/on-mouse ( -> )
 	cursor/<update>
 	( | when touch cat )
-	;Mouse/state DEI EQU ?{
+	[ LIT2 00 -Mouse/state ] DEI EQU ?{
 		.Mouse/y DEI2 #000c GTH2 ?{
 			.Mouse/x DEI2 /get-xcat /<select>
-			;Mouse/state DEO
+			[ LIT2 00 -Mouse/state ] DEO
 			BRK } }
 	( | when sub active )
 	;&sel LDA #ff EQU ?{
@@ -1361,9 +1362,9 @@
 			;&sel LDA #ff /<draw-sub> }
 		POP
 		( | when touch sub )
-		;Mouse/state DEI EQU ?{
+		[ LIT2 00 -Mouse/state ] DEI EQU ?{
 			;&sel-sub LDA /<select-sub>
-			;Mouse/state DEO }
+			[ LIT2 00 -Mouse/state ] DEO }
 		BRK }
 	( | do not leave if menu is active )
 	;&sel LDA INC ?{
