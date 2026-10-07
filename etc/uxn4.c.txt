@@ -1,0 +1,746 @@
+#include <Arduino.h>
+#include <EInkDisplay.h>
+#include <esp_sleep.h>
+#include <SPI.h>
+#include <SD.h>
+
+#include "rom.h"
+
+#define SD_CS 12
+#define SD_MISO 7
+
+#define BAT_ADC 0
+#define USB_DET 20
+
+#define EPD_SCLK 8
+#define EPD_MOSI 10
+#define EPD_CS 21
+#define EPD_DC 4
+#define EPD_RST 5
+#define EPD_BUSY 6
+
+#define BTN_ADC1 1
+#define BTN_ADC2 2
+#define BTN_PWR 3
+
+#define FRAME_MS 250
+
+EInkDisplay display(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
+
+/* A, B, L, R */
+static const int E1[] = {3800, 3100, 2090, 750, 0};
+static const uint8_t MAP1[4] = {0x02, 0x01, 0x40, 0x80};
+/* U, D */
+static const int E2[] = {3800, 1120, 0};
+static const uint8_t MAP2[2] = {0x10, 0x20};
+
+static const int SCREEN_W = 480, SCREEN_H = 800;
+static void screen_change(int x1, int y1, int x2, int y2);
+
+static uint8_t ram[0x10000], dev[0x100], stk[2][0x100], ptr[2];
+static unsigned int uxn_eval(uint16_t pc);
+
+static void
+power_off(void)
+{
+	Serial.println("nite nite");
+	while(digitalRead(BTN_PWR) == LOW) delay(10);
+	delay(50);
+	display.deepSleep();
+	esp_deep_sleep_enable_gpio_wakeup(1ULL << BTN_PWR, ESP_GPIO_WAKEUP_GPIO_LOW);
+	esp_deep_sleep_start();
+}
+
+static void
+try_power_off(void)
+{
+	if(!dev[0x0f]) return;
+	display.displayBuffer(EInkDisplay::HALF_REFRESH);
+	power_off();
+}
+
+static int
+ladder(int v, const int *e, int n)
+{
+	int i;
+	if(v >= e[0]) return -1;
+	for(i = 0; i < n; i++)
+		if(v >= e[i + 1]) return i;
+	return -1;
+}
+
+static uint8_t
+read_buttons(int a1, int a2)
+{
+	uint8_t m = 0;
+	int a = ladder(a1, E1, 4), b = ladder(a2, E2, 2);
+	if(a >= 0) m |= MAP1[a];
+	if(b >= 0) m |= MAP2[b];
+	if(digitalRead(BTN_PWR) == LOW) m |= 0x08;
+	return m;
+}
+
+static inline uint16_t
+peek2(const uint8_t *d)
+{
+	return ((uint16_t)d[0] << 8) | d[1];
+}
+
+/*
+@|Screen ------------------------------------------------------------ */
+
+static uint8_t *fb;
+static int screen_vector = 0;
+static int rX, rY, rA, rMX, rMY, rMA, rML, rDX, rDY;
+static int screen_reqdraw;
+static const uint8_t alpha_lut[16] = {0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0};
+
+/* clang-format off */
+
+static const uint8_t blend_lut[16][2][4] = {
+	{{0,0,1,2},{0,0,4,8}},  {{0,1,2,3},{0,4,8,12}},
+	{{0,2,3,1},{0,8,12,4}}, {{0,3,1,2},{0,12,4,8}},
+	{{1,0,1,2},{4,0,4,8}},  {{1,1,2,3},{4,4,8,12}},
+	{{1,2,3,1},{4,8,12,4}}, {{1,3,1,2},{4,12,4,8}},
+	{{2,0,1,2},{8,0,4,8}},  {{2,1,2,3},{8,4,8,12}},
+	{{2,2,3,1},{8,8,12,4}}, {{2,3,1,2},{8,12,4,8}},
+	{{3,0,1,2},{12,0,4,8}}, {{3,1,2,3},{12,4,8,12}},
+	{{3,2,3,1},{12,8,12,4}}, {{3,3,1,2},{12,12,4,8}}
+};
+
+/* clang-format on */
+
+static void
+screen_change(int x1, int y1, int x2, int y2)
+{
+	screen_reqdraw = 1;
+}
+
+static inline void
+put(int x, int y, uint8_t c)
+{
+	uint8_t *p = &fb[(SCREEN_W - 1 - x) * (SCREEN_H / 8) + (y >> 3)];
+	const uint8_t m = 0x80 >> (y & 7);
+	if(c & 1)
+		*p &= ~m;
+	else
+		*p |= m;
+}
+
+static void
+fill(int x1, int y1, int x2, int y2, uint8_t c)
+{
+	if(x1 < 0) x1 = 0;
+	if(y1 < 0) y1 = 0;
+	if(x2 > SCREEN_W) x2 = SCREEN_W;
+	if(y2 > SCREEN_H) y2 = SCREEN_H;
+	if(x1 >= x2 || y1 >= y2) return;
+	const uint8_t on = (c & 1) ? 0x00 : 0xff;
+	const int b1 = y1 >> 3, b2 = (y2 - 1) >> 3;
+	const uint8_t m1 = 0xff >> (y1 & 7);
+	const uint8_t m2 = (uint8_t)(0xff << (7 - ((y2 - 1) & 7)));
+	for(int x = x1; x < x2; x++) {
+		uint8_t *row = &fb[(SCREEN_W - 1 - x) * (SCREEN_H / 8)];
+		if(b1 == b2) {
+			const uint8_t m = m1 & m2;
+			row[b1] = (row[b1] & ~m) | (on & m);
+		} else {
+			row[b1] = (row[b1] & ~m1) | (on & m1);
+			if(b2 - b1 > 1) memset(&row[b1 + 1], on, b2 - b1 - 1);
+			row[b2] = (row[b2] & ~m2) | (on & m2);
+		}
+	}
+}
+
+static void
+screen_deo_pixel(void)
+{
+	const int ctrl = dev[0x2e], c = ctrl & 3;
+	const int hidden = (ctrl & 0x40) && !c;
+	if(ctrl & 0x80) {
+		const int x1 = (ctrl & 0x10) ? 0 : rX, x2 = (ctrl & 0x10) ? rX : SCREEN_W;
+		const int y1 = (ctrl & 0x20) ? 0 : rY, y2 = (ctrl & 0x20) ? rY : SCREEN_H;
+		if(!hidden) fill(x1, y1, x2, y2, c);
+		screen_change(x1, y1, x2, y2);
+	} else {
+		if(!hidden && rX >= 0 && rX < SCREEN_W && rY >= 0 && rY < SCREEN_H) {
+			put(rX, rY, c);
+			screen_change(rX, rY, rX + 1, rY + 1);
+		}
+		if(rMX) rX++;
+		if(rMY) rY++;
+	}
+}
+
+static inline uint8_t
+rev8(uint8_t v)
+{
+	v = (v >> 4) | (v << 4);
+	v = ((v & 0xcc) >> 2) | ((v & 0x33) << 2);
+	return ((v & 0xaa) >> 1) | ((v & 0x55) << 1);
+}
+
+static void
+transpose8(uint8_t *s)
+{
+	uint64_t x = 0, t;
+	for(int j = 0; j < 8; j++) x = (x << 8) | s[j];
+	t = ((x >> 7) ^ x) & 0x00AA00AA00AA00AAULL, x ^= t ^ (t << 7);
+	t = ((x >> 14) ^ x) & 0x0000CCCC0000CCCCULL, x ^= t ^ (t << 14);
+	t = ((x >> 28) ^ x) & 0x00000000F0F0F0F0ULL, x ^= t ^ (t << 28);
+	for(int j = 7; j >= 0; j--) s[j] = x & 0xff, x >>= 8;
+}
+
+static void
+screen_deo_sprite(void)
+{
+	int i, j, k, x = rX, y = rY;
+	const int ctrl = dev[0x2f];
+	const int flipx = ctrl & 0x10, flipy = ctrl & 0x20, fg = ctrl & 0x40;
+	const int dx = flipx ? -rDY : rDY, dy = flipy ? -rDX : rDX;
+	const int mode_2bpp = ctrl >> 7, addr_2bpp = mode_2bpp ? rMA << 2 : rMA << 1;
+	const int blend = ctrl & 0xf;
+	const uint8_t opaque = alpha_lut[blend];
+	const uint8_t *table = blend_lut[blend][0];
+	uint8_t draw[4], dark[4];
+	for(i = 0; i < 4; i++) {
+		draw[i] = (opaque || i) && !(fg && !table[i]);
+		dark[i] = draw[i] && (table[i] & 1);
+	}
+	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_2bpp) {
+		if(x < -8 || x >= SCREEN_W || y < -8 || y >= SCREEN_H) continue;
+		uint8_t D[8], K[8], R = 0xff;
+		for(j = 0; j < 8; j++) {
+			const int ai = (rA + (flipy ? 7 - j : j)) & 0xffff;
+			uint8_t c1 = ram[ai], c2 = mode_2bpp ? ram[(ai + 8) & 0xffff] : 0;
+			if(flipx) c1 = rev8(c1), c2 = rev8(c2);
+			const uint8_t m0 = ~c1 & ~c2, m1 = c1 & ~c2, m2 = ~c1 & c2, m3 = c1 & c2;
+			D[j] = (draw[0] ? m0 : 0) | (draw[1] ? m1 : 0) | (draw[2] ? m2 : 0) | (draw[3] ? m3 : 0);
+			K[j] = (dark[0] ? m0 : 0) | (dark[1] ? m1 : 0) | (dark[2] ? m2 : 0) | (dark[3] ? m3 : 0);
+		}
+		transpose8(D), transpose8(K);
+		if(y < 0) R &= 0xff >> -y;
+		if(y + 8 > SCREEN_H) R &= 0xff << (8 - (SCREEN_H - y));
+		const int yb = y >> 3, s = y & 7;
+		for(k = 0; k < 8; k++) {
+			const int px = x + k;
+			if(px < 0 || px >= SCREEN_W) continue;
+			const uint8_t d = D[k] & R, w = d & ~K[k];
+			uint8_t *row = &fb[(SCREEN_W - 1 - px) * (SCREEN_H / 8)];
+			if(yb >= 0 && yb < SCREEN_H / 8)
+				row[yb] = (row[yb] & ~(d >> s)) | (w >> s);
+			if(s && yb + 1 >= 0 && yb + 1 < SCREEN_H / 8) {
+				const uint8_t dl = d << (8 - s), wl = w << (8 - s);
+				row[yb + 1] = (row[yb + 1] & ~dl) | wl;
+			}
+		}
+	}
+	{
+		int x1 = flipx ? x : rX, x2 = flipx ? rX : x;
+		int y1 = flipy ? y : rY, y2 = flipy ? rY : y;
+		screen_change(x1 - 8, y1 - 8, x2 + 8, y2 + 8);
+	}
+	if(rMX) rX += flipx ? -rDX : rDX;
+	if(rMY) rY += flipy ? -rDY : rDY;
+}
+
+static void
+screen_flush(void)
+{
+	static int n;
+	display.displayBuffer(++n % 16 ? EInkDisplay::FAST_REFRESH : EInkDisplay::HALF_REFRESH);
+	screen_reqdraw = 0;
+}
+
+static void
+screen_deo_auto(void)
+{
+	rMX = dev[0x26] & 0x1;
+	rMY = dev[0x26] & 0x2;
+	rMA = dev[0x26] & 0x4;
+	rML = dev[0x26] >> 4;
+	rDX = rMX << 3;
+	rDY = rMY << 2;
+}
+
+/*
+@|Controller -------------------------------------------------------- */
+
+static int controller_vector = 0;
+
+static void
+controller_down(uint8_t mask)
+{
+	if(!mask) return;
+	dev[0x82] |= mask;
+	if(controller_vector) uxn_eval(controller_vector);
+}
+
+static void
+controller_up(uint8_t mask)
+{
+	if(!mask) return;
+	dev[0x82] &= ~mask;
+	if(controller_vector) uxn_eval(controller_vector);
+}
+
+/*
+@|File -------------------------------------------------------------- */
+
+typedef struct {
+	File f;
+	char name[128];
+	char line[160];
+	int linelen, has_name;
+	enum { IDLE,
+		READING,
+		WRITING,
+		LISTING,
+		MKDIR } state;
+} UxnFile;
+
+static UxnFile uxn_file[2];
+static bool sd_ok;
+
+static void
+file_reset(UxnFile *c)
+{
+	if(c->f) c->f.close();
+	c->f = File();
+	c->linelen = 0;
+	c->state = UxnFile::IDLE;
+}
+
+static void
+file_path(UxnFile *c, char *out, size_t n)
+{
+	const char *s = c->name;
+	for(;;) {
+		if(*s == '/')
+			s++;
+		else if(s[0] == '.' && s[1] == '/')
+			s += 2;
+		else
+			break;
+	}
+	if(!*s || (s[0] == '.' && !s[1]))
+		snprintf(out, n, "/");
+	else
+		snprintf(out, n, "/%s", s);
+	for(size_t l = strlen(out); l > 1 && out[l - 1] == '/';) out[--l] = 0;
+}
+
+static bool
+is_dir(const char *path)
+{
+	File t = SD.open(path, FILE_READ);
+	return t && t.isDirectory();
+}
+
+static void
+ensure_dirs(const char *path)
+{
+	char buf[130];
+	size_t n = strlen(path);
+	if(n >= sizeof buf) return;
+	memcpy(buf, path, n + 1);
+	for(size_t i = 1; i < n; i++)
+		if(buf[i] == '/') {
+			buf[i] = 0;
+			if(!SD.exists(buf)) SD.mkdir(buf);
+			buf[i] = '/';
+		}
+}
+
+static void
+put_details(char *out, int len, bool err, bool dir, size_t size)
+{
+	if(dir) return (void)memset(out, '-', len);
+	if(err) return (void)memset(out, '!', len);
+	if(len < 8 && (size >> (len * 4)) != 0) return (void)memset(out, '?', len);
+	for(int i = len - 1; i >= 0; i--)
+		out[i] = "0123456789abcdef"[size & 0xf], size >>= 4;
+}
+
+static int
+entry_line(char *out, size_t n, const char *base, bool dir, size_t size)
+{
+	char d[4];
+	put_details(d, 4, false, dir, size);
+	return snprintf(out, n, "%.4s\t%s%s\n", d, base, dir ? "/" : "");
+}
+
+static unsigned int
+file_init(UxnFile *c, int addr)
+{
+	int i = 0;
+	file_reset(c);
+	while(i < (int)sizeof(c->name) - 1 && addr + i < 0x10000 && ram[addr + i])
+		c->name[i] = ram[addr + i], i++;
+	c->name[i] = 0;
+	c->has_name = 1;
+	return 0;
+}
+
+static unsigned int
+dir_read(UxnFile *c, int addr, int len)
+{
+	int n = 0;
+	const int cap = len - 1;
+	if(len < 1) return 0;
+	for(;;) {
+		if(!c->linelen) {
+			File e = c->f.openNextFile();
+			if(!e) break;
+			c->linelen = entry_line(c->line, sizeof c->line, e.name(), e.isDirectory(), e.size());
+			if(c->linelen >= (int)sizeof c->line) c->linelen = sizeof c->line - 1;
+		}
+		if(n + c->linelen > cap) {
+			if(n == 0 && cap > 0) {
+				memcpy(&ram[addr], c->line, cap);
+				c->linelen = 0;
+				n = cap;
+			}
+			break;
+		}
+		memcpy(&ram[addr + n], c->line, c->linelen);
+		n += c->linelen;
+		c->linelen = 0;
+	}
+	ram[addr + n] = 0;
+	return n;
+}
+
+static unsigned int
+file_read(UxnFile *c, int addr, int len)
+{
+	char path[140];
+	unsigned int n;
+	if(!c->has_name) return 0;
+	if(c->state != UxnFile::READING && c->state != UxnFile::LISTING) {
+		file_path(c, path, sizeof path);
+		file_reset(c);
+		c->f = SD.open(path, FILE_READ);
+		if(!c->f) return 0;
+		c->state = c->f.isDirectory() ? UxnFile::LISTING : UxnFile::READING;
+	}
+	n = c->state == UxnFile::LISTING ? dir_read(c, addr, len) : c->f.read(&ram[addr], len);
+	if(len > 0 && n == 0) file_reset(c);
+	return n;
+}
+
+static unsigned int
+file_write(UxnFile *c, int addr, int len, int append)
+{
+	char path[140];
+	const size_t nl = strlen(c->name);
+	const bool want_dir = nl && c->name[nl - 1] == '/';
+	if(!c->has_name) return 0;
+	file_path(c, path, sizeof path);
+	if(c->state != UxnFile::WRITING && c->state != UxnFile::MKDIR) {
+		file_reset(c);
+		ensure_dirs(path);
+		if(want_dir) {
+			if(!is_dir(path)) SD.mkdir(path);
+			if(is_dir(path)) c->state = UxnFile::MKDIR;
+		} else {
+			c->f = SD.open(path, append ? FILE_APPEND : FILE_WRITE);
+			if(c->f && !c->f.isDirectory())
+				c->state = UxnFile::WRITING;
+			else
+				file_reset(c);
+		}
+		if(c->state == UxnFile::IDLE) return 0;
+	}
+	if(c->state == UxnFile::WRITING) {
+		const size_t n = c->f.write(&ram[addr], len);
+		c->f.flush();
+		return n;
+	}
+	return is_dir(path);
+}
+
+static unsigned int
+file_stat(UxnFile *c, int addr, int len)
+{
+	char path[140];
+	if(!c->has_name) return 0;
+	file_path(c, path, sizeof path);
+	File t = c->state == UxnFile::READING || c->state == UxnFile::WRITING ? c->f : SD.open(path, FILE_READ);
+	put_details((char *)&ram[addr], len, !t, t && t.isDirectory(), t ? t.size() : 0);
+	return len;
+}
+
+static unsigned int
+file_delete(UxnFile *c)
+{
+	char path[140];
+	if(!c->has_name) return 0;
+	file_path(c, path, sizeof path);
+	file_reset(c);
+	return SD.remove(path) ? 1 : 0;
+}
+
+static void
+file_deo(int id, int port)
+{
+	UxnFile *c = &uxn_file[id];
+	uint8_t *d = &dev[0xa0 + id * 0x10];
+	int addr, len, res = -1;
+	if(!sd_ok) {
+		d[0x2] = d[0x3] = 0;
+		return;
+	}
+	switch(port) {
+	case 0x5:
+		addr = peek2(d + 0x4), len = peek2(d + 0xa);
+		if(len > 0x10000 - addr) len = 0x10000 - addr;
+		res = file_stat(c, addr, len);
+		break;
+	case 0x6: res = file_delete(c); break;
+	case 0x9: res = file_init(c, peek2(d + 0x8)); break;
+	case 0xd:
+		addr = peek2(d + 0xc), len = peek2(d + 0xa);
+		if(len > 0x10000 - addr) len = 0x10000 - addr;
+		res = file_read(c, addr, len);
+		break;
+	case 0xf:
+		addr = peek2(d + 0xe), len = peek2(d + 0xa);
+		if(len > 0x10000 - addr) len = 0x10000 - addr;
+		res = file_write(c, addr, len, d[0x7]);
+		break;
+	}
+	if(res >= 0) d[0x2] = res >> 8, d[0x3] = res;
+}
+
+/*
+@|Battery ----------------------------------------------------------- */
+
+static int
+bat_percent(int mv)
+{
+	static const int16_t T[][2] = {{3270, 0}, {3610, 5}, {3690, 10}, {3730, 20}, {3770, 30}, {3800, 40}, {3840, 50}, {3870, 60}, {3950, 70}, {4020, 80}, {4110, 90}, {4200, 100}};
+	const int n = sizeof T / sizeof T[0];
+	if(mv <= T[0][0]) return 0;
+	for(int i = 1; i < n; i++)
+		if(mv < T[i][0])
+			return T[i - 1][1] + (mv - T[i - 1][0]) * (T[i][1] - T[i - 1][1]) / (T[i][0] - T[i - 1][0]);
+	return 100;
+}
+
+static int
+bat_read(void)
+{
+	int sum = 0;
+	for(int i = 0; i < 16; i++) sum += analogReadMilliVolts(BAT_ADC);
+	return sum / 16 * 2;
+}
+
+static uint32_t bat_t;
+
+static void
+battery_update(void)
+{
+	if(bat_t && millis() - bat_t < 5000) return;
+	bat_t = millis();
+	const int mv = bat_read();
+	dev[0xd0] = bat_percent(mv);
+	dev[0xd1] = digitalRead(USB_DET) == HIGH;
+	dev[0xd2] = mv >> 8;
+	dev[0xd3] = mv;
+}
+
+/*
+
+@|Emu */
+
+static inline uint8_t
+emu_dei(const uint8_t port)
+{
+	switch(port) {
+	case 0x22: return SCREEN_W >> 8;
+	case 0x23: return (uint8_t)SCREEN_W;
+	case 0x24: return SCREEN_H >> 8;
+	case 0x25: return (uint8_t)SCREEN_H;
+	case 0x28: return rX >> 8;
+	case 0x29: return rX;
+	case 0x2a: return rY >> 8;
+	case 0x2b: return rY;
+	case 0x2c: return rA >> 8;
+	case 0x2d: return rA;
+	case 0xd0:
+	case 0xd1:
+	case 0xd2:
+	case 0xd3: battery_update(); return dev[port];
+	default: return dev[port];
+	}
+}
+
+static inline void
+emu_deo(const uint8_t port, const uint8_t value)
+{
+	dev[port] = value;
+	switch(port) {
+	case 0x18:
+	case 0x19: Serial.write(value); break;
+	case 0x21: screen_vector = peek2(&dev[0x20]); break;
+	case 0x26: screen_deo_auto(); break;
+	case 0x28:
+	case 0x29: rX = (short)peek2(&dev[0x28]); break;
+	case 0x2a:
+	case 0x2b: rY = (short)peek2(&dev[0x2a]); break;
+	case 0x2c:
+	case 0x2d: rA = peek2(&dev[0x2c]); break;
+	case 0x2e: screen_deo_pixel(); break;
+	case 0x2f: screen_deo_sprite(); break;
+	case 0x81: controller_vector = peek2(&dev[0x80]); break;
+	case 0xa5:
+	case 0xa6:
+	case 0xa9:
+	case 0xad:
+	case 0xaf: file_deo(0, port & 0xf); break;
+	case 0xb5:
+	case 0xb6:
+	case 0xb9:
+	case 0xbd:
+	case 0xbf: file_deo(1, port & 0xf); break;
+	}
+}
+
+/*
+@|Core -------------------------------------------------------------- */
+
+/* clang-format off */
+
+#define OPC(opc, A, B) {\
+	case 0x00|opc: {const uint8_t d=0,r=0;A B} break;\
+	case 0x20|opc: {const uint8_t d=1,r=0;A B} break;\
+	case 0x40|opc: {const uint8_t d=0,r=1;A B} break;\
+	case 0x60|opc: {const uint8_t d=1,r=1;A B} break;\
+	case 0x80|opc: {const uint8_t d=0,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xa0|opc: {const uint8_t d=1,r=0,k=ptr[0];A ptr[0]=k;B} break;\
+	case 0xc0|opc: {const uint8_t d=0,r=1,k=ptr[1];A ptr[1]=k;B} break;\
+	case 0xe0|opc: {const uint8_t d=1,r=1,k=ptr[1];A ptr[1]=k;B} break;}
+#define DEC(m) stk[m][--ptr[m]]
+#define INC(m) stk[m][ptr[m]++]
+#define IMM a = ram[pc++] << 8, a |= ram[pc++];
+#define MOV pc = d ? (uint16_t)a : pc + (int8_t)a;
+#define POx(o,m) o = DEC(r); if(m) o |= DEC(r) << 8;
+#define PUx(i,m,s) if(m) c = (i), INC(s) = c >> 8, INC(s) = c; else INC(s) = i;
+#define GOT(o) if(d) o[1] = DEC(r); o[0] = DEC(r);
+#define PUT(i,s) INC(s) = i[0]; if(d) INC(s) = i[1];
+#define DEO(o,v) emu_deo(o, v[0]); if(d) emu_deo(o + 1, v[1]);
+#define DEI(i,v) v[0] = emu_dei(i); if(d) v[1] = emu_dei(i + 1); PUT(v,r)
+#define POK(o,v,m) ram[o] = v[0]; if(d) ram[(o + 1) & m] = v[1];
+#define PEK(i,v,m) v[0] = ram[i]; if(d) v[1] = ram[(i + 1) & m]; PUT(v,r)
+
+static unsigned int uxn_eval(uint16_t pc)
+{
+	unsigned int a, b, c;
+	uint16_t x[2], y[2], z[2];
+	for(;;)
+	switch(ram[pc++]) {
+	case 0x00: return 1;
+	case 0x20: if(DEC(0)) { IMM pc += a; } else pc += 2; break;
+	case 0x40: IMM pc += a; break;
+	case 0x60: IMM PUx(pc, 1, 1) pc += a; break;
+	case 0xa0: INC(0) = ram[pc++]; /* fall-through */
+	case 0x80: INC(0) = ram[pc++]; break;
+	case 0xe0: INC(1) = ram[pc++]; /* fall-through */
+	case 0xc0: INC(1) = ram[pc++]; break;
+	OPC(0x01,POx(a,d),PUx(a+1,d,r))
+	OPC(0x02,ptr[r] -= 1+d;,{})
+	OPC(0x03,GOT(x) ptr[r] -= 1+d;,PUT(x,r))
+	OPC(0x04,GOT(x) GOT(y),PUT(x,r) PUT(y,r))
+	OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y,r) PUT(x,r) PUT(z,r))
+	OPC(0x06,GOT(x),PUT(x,r) PUT(x,r))
+	OPC(0x07,GOT(x) GOT(y),PUT(y,r) PUT(x,r) PUT(y,r))
+	OPC(0x08,POx(a,d) POx(b,d),PUx(b==a,0,r))
+	OPC(0x09,POx(a,d) POx(b,d),PUx(b!=a,0,r))
+	OPC(0x0a,POx(a,d) POx(b,d),PUx(b>a,0,r))
+	OPC(0x0b,POx(a,d) POx(b,d),PUx(b<a,0,r))
+	OPC(0x0c,POx(a,d),MOV)
+	OPC(0x0d,POx(a,d) POx(b,0),if(b) MOV)
+	OPC(0x0e,POx(a,d),PUx(pc,1,!r) MOV)
+	OPC(0x0f,GOT(x),PUT(x,!r))
+	OPC(0x10,POx(a,0),PEK(a,x,0xff))
+	OPC(0x11,POx(a,0) GOT(y),POK(a,y,0xff))
+	OPC(0x12,POx(a,0),PEK(pc+(int8_t)a,x,0xffff))
+	OPC(0x13,POx(a,0) GOT(y),POK(pc+(int8_t)a,y,0xffff))
+	OPC(0x14,POx(a,1),PEK(a,x,0xffff))
+	OPC(0x15,POx(a,1) GOT(y),POK(a,y,0xffff))
+	OPC(0x16,POx(a,0),DEI(a,x))
+	OPC(0x17,POx(a,0) GOT(y),DEO(a,y))
+	OPC(0x18,POx(a,d) POx(b,d),PUx(b+a,d,r))
+	OPC(0x19,POx(a,d) POx(b,d),PUx(b-a,d,r))
+	OPC(0x1a,POx(a,d) POx(b,d),PUx(b*a,d,r))
+	OPC(0x1b,POx(a,d) POx(b,d),PUx(a?b/a:0,d,r))
+	OPC(0x1c,POx(a,d) POx(b,d),PUx(b&a,d,r))
+	OPC(0x1d,POx(a,d) POx(b,d),PUx(b|a,d,r))
+	OPC(0x1e,POx(a,d) POx(b,d),PUx(b^a,d,r))
+	OPC(0x1f,POx(a,0) POx(b,d),PUx(b>>(a&0xf)<<(a>>4),d,r))
+	} return 0;
+}
+
+/* clang-format on */
+
+void
+setup()
+{
+	Serial.begin(115200);
+	// delay(3000);
+
+	/* Boot */
+	Serial.println("boot");
+	SPI.begin(EPD_SCLK, SD_MISO, EPD_MOSI, EPD_CS);
+	pinMode(BTN_PWR, INPUT_PULLUP);
+
+	/* Init SD, shares bus with screen */
+	pinMode(EPD_CS, OUTPUT), digitalWrite(EPD_CS, HIGH);
+	sd_ok = SD.begin(SD_CS, SPI);
+	Serial.println(sd_ok ? "sd: ok" : "sd: no card");
+
+	/* Init Display */
+	display.begin();
+	display.clearScreen(0xFF);
+	fb = display.getFrameBuffer();
+	memset(fb, 0xff, SCREEN_W / 8 * SCREEN_H);
+	while(digitalRead(BTN_PWR) == LOW) delay(10);
+
+	/* Battery status */
+	pinMode(USB_DET, INPUT);
+
+	/* Reset Vector */
+	memcpy(&ram[0x100], firmware, sizeof(firmware));
+	uxn_eval(0x100);
+	try_power_off();
+	if(screen_reqdraw) screen_flush();
+}
+
+void
+loop()
+{
+	static uint8_t last, held;
+	uint8_t now = read_buttons(analogRead(BTN_ADC1), analogRead(BTN_ADC2));
+
+	// Controller handlers
+	if(now == last && now != held) {
+		uint8_t down = now & ~held, up = held & ~now;
+		held = now;
+		// Serial.printf("-- button=%02x down=%02x up=%02x\n", held, down, up);
+		controller_up(up);
+		controller_down(down);
+		try_power_off();
+	}
+	last = now;
+
+	// Screen Vector
+	static uint32_t t_frame;
+	if(millis() - t_frame >= FRAME_MS) {
+		t_frame = millis();
+		if(screen_vector) uxn_eval(screen_vector);
+		try_power_off();
+		if(screen_reqdraw) screen_flush();
+	}
+	delay(10);
+}
