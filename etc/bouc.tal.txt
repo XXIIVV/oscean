@@ -10,8 +10,11 @@
 |d0 @Battery/percent $1 &usb $1 &mv $2
 |2000 @path/memlen
 |0040 @decstr/buflen
+|0100 @recent/buflen
 |0040 @bookmark/buflen
-|2000 @directory/buflen
+|0020 @directory/buflen
+|0011 @directory/lines
+|0011 @txt/lines
 |01e0 @window/width
 |0320 @window/height
 |00f0 @window/center
@@ -20,7 +23,7 @@
 
 |000
 
-	@path/buf $80 &cap
+	@path/buf $1 &buf+1 $7f &cap
 	@txt-token/buf $60 &cap
 	@directory/sel $1
 	@txt/file $2
@@ -40,7 +43,6 @@
 	;window/width .Screen/width DEO2
 	;window/height .Screen/height DEO2
 	path/<init>
-	path/<reload>
 	directory/<bind>
 	BRK
 
@@ -108,15 +110,15 @@
 @path/<parse-folders> ( -- )
 	;&mem
 	&>wfo
-		LDAk ?{ POP2 JMP2r }
-		LDAk LIT "- NEQ ?{ directory/push }
+		LDAk DUP ?{ POP POP2 JMP2r }
+		LIT "- NEQ ?{ directory/push }
 		#0005 ADD2 str/cap INC2 !/>wfo
 
 @path/<parse-files> ( -- )
 	;&mem
 	&>wfi
-		LDAk ?{ POP2 JMP2r }
-		LDAk LIT "- EQU ?{ directory/push }
+		LDAk DUP ?{ POP POP2 JMP2r }
+		LIT "- EQU ?{ directory/push }
 		#0005 ADD2 str/cap INC2 !/>wfi
 
 @path/<nullws> ( -- )
@@ -126,11 +128,20 @@
 		#1f GTH ?{ LITr 00 STH2k STAr }
 		INC2 !/>wnw
 
+@path/is-home ( -- t )
+	.&buf+1 LDZ2 LIT2 "/ 00 EQU2 JMP2r
+
 (
 @|Directory )
 
 @directory/<bind> ( -- )
-	;&on-button .Controller/vector DEO2 !/<redraw>
+	;&on-button .Controller/vector DEO2
+	path/<reload>
+	path/is-home ?{ !/<redraw> }
+	( | recall )
+	recent/<load>
+	;recent/buf LDAk ?{ POP2 !/<redraw> }
+	/<push> !/<redraw>
 
 @directory/on-button ( -> )
 	.Controller/button DEI
@@ -193,6 +204,9 @@
 	DUP2 #0005 ADD2
 	( | visible )
 	file/is-supported ?{ POP2 JMP2r }
+	( >> )
+
+@directory/<push> ( name* -- )
 	[ LIT2 &ptr =&buf ]
 	( | clamp )
 	;&bufend LTH2k ?{
@@ -205,7 +219,7 @@
 
 @directory/<redraw> ( -- )
 	wallpaper/<draw>
-	decstr/make-battery path/get-location header/<draw-str>
+	#00 decstr/make-battery path/get-location header/<draw>
 	( >> )
 
 @directory/<draw-files> ( -- )
@@ -214,7 +228,7 @@
 		POP2 POP2
 		( | Empty folder )
 		;dict/empty !uf5/<draw-str> }
-	[ LIT2r 1000 ]
+	[ LIT2r -&lines 00 ]
 	&>l
 		GTH2k ?{ &end POP2r POP2 POP2 !/<draw-selector> }
 		EQUkr STHr ?/end
@@ -331,7 +345,8 @@
 	;&on-button .Controller/vector DEO2
 	DUP2 bookmark/<set-path>
 	DUP2 .&file STZ2
-	decstr/make-path .File/name DEO2
+	decstr/make-path DUP2 recent/<save>
+	.File/name DEO2
 	#0001 .File/length DEO2
 	bookmark/<load>
 	txt-token/<reset>
@@ -340,7 +355,7 @@
 @txt/on-button ( -> )
 	.Controller/button DEI
 	( | handlers )
-	DUP #01 NEQ ?{ bookmark/<save> }
+	DUP #01 NEQ ?{ bookmark/<pin> }
 	DUP #02 NEQ ?{ directory/<bind> }
 	DUP #40 NEQ ?{ /<first-page> }
 	DUP #10 NEQ ?{ /<prev-page> }
@@ -368,12 +383,12 @@
 @txt/<pen-page> ( -- )
 	( | draw a token )
 	#0018 .pen/x STZ2
-	#1100 txt-token/<pen>
+	[ LIT2 -&lines 00 ] txt-token/<pen>
 	&>s2
 		txt-token/read ?{ !/end }
 		( | wrap )
 		txt-token/get-width .pen/x LDZ2 ADD2 ;window/right LTH2 ?{ /<pen-lb> }
-		NEQk ?{ &end2 POP2 JMP2r }
+		NEQk ?{ POP2 JMP2r }
 		( | not empty )
 		txt-token/<pen>
 		( | linebreak )
@@ -394,7 +409,7 @@
 @txt/<draw-page> ( -- )
 	Screen/<clear>
 	#0018 #0048 Screen/<set-pos>
-	#1100 txt-token/<draw>
+	[ LIT2 -&lines 00 ] txt-token/<draw>
 	&>s
 		txt-token/read ?{
 			txt-token/<draw>
@@ -402,9 +417,7 @@
 			#7f uf5/<draw-glyph> !/end }
 		( | wrap )
 		txt-token/get-width .Screen/x DEI2 ADD2 ;window/right LTH2 ?{ /<draw-lb> }
-		NEQk ?{ &end POP2
-			( | header )
-			decstr/make-bookmark .&file LDZ2 !header/<draw-str> }
+		NEQk ?{ &end POP2 #01 decstr/make-bookmark .&file LDZ2 !header/<draw> }
 		( | not empty )
 		txt-token/<draw>
 		( | linebreak )
@@ -468,16 +481,20 @@
 		#20 SUB #00 SWP ;uf5/widths ADD2 LDA LITr 00 STH
 		ADD2r /utf8-walk !/>wgw
 
-@header/<draw-str> ( left* right* -- )
-	( | Header )
+@header/<draw> ( bookmark left* right* -- )
+	( | Left )
 	#0018 DUP2 Screen/<set-pos>
 	uf2/<draw-trim>
 	( | Spacer )
 	#0018 #0038 Screen/<set-pos>
 	[ LIT2 01 -Screen/auto ] DEO
 	#ca01 ;dotted-line [ LIT2 05 -Screen/sprite ] <draw-times>
-	( | Battery )
-	;window/right #0018 Screen/<set-pos> !uf2/<draw-right>
+	( | Right )
+	#01c8 #0018 Screen/<set-pos>
+	uf2/<draw-right>
+	( | Bookmark )
+	?bookmark/<draw>
+	JMP2r
 
 @wallpaper/<draw> ( -- )
 	;dict/wallpaper-path DUP2 file/exists ?icn/<draw>
@@ -535,6 +552,38 @@
 
 @bookmark/get ( -- page* )
 	.&page LDZ2 JMP2r
+
+@bookmark/<pin> ( -- )
+	/<save>
+	( >> )
+
+@bookmark/<draw> ( -- )
+	;&buf file/exists ?{ JMP2r }
+	;&buf .File2/name DEO2
+	#0002 .File2/length DEO2
+	;&current .File2/read DEO2
+	.&page LDZ2 LIT2 &current $2 EQU2 ?{ JMP2r }
+	#01b8 #0000 Screen/<set-pos>
+	;&sprite-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+(
+@|Recent )
+
+@recent/<save> ( buf* -- )
+	;&filepath .File2/name DEO2
+	DUP2 str/len .File2/length DEO2
+	.File2/write DEO2
+	JMP2r
+
+@recent/<load> ( -- )
+	;&filepath .File2/name DEO2
+	;&buflen .File2/length DEO2
+	;&buf .File2/read DEO2
+	JMP2r
+
+	&filepath "recent.boo 00
 
 (
 @|DecStr )
@@ -597,9 +646,9 @@
 @uf2/get-width ( text* -- width* )
 	LIT2r 0000
 	&>wg
-		LDAk #0000 ROT ;&widths ADD2 LDA STH2
-		ADD2r INC2 LDAk ?/>wg
-	POP2 STH2r JMP2r
+		LDAk DUP ?{ POP POP2 STH2r JMP2r }
+		#0000 ROT #20 SUB ;&widths ADD2 LDA STH2
+		ADD2r INC2 !/>wg
 
 @uf2/<draw-right> ( text* -- )
 	DUP2 /get-width STH2
@@ -609,9 +658,9 @@
 @uf2/<draw-str> ( text* -- )
 	[ LIT2 15 -Screen/auto ] DEO
 	&>w
-		LDAk /<draw-glyph>
-		INC2 LDAk ?/>w
-	POP2 JMP2r
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<draw-glyph>
+		INC2 !/>w
 
 @uf2/<draw-trim> ( text* -- )
 	[ LIT2 15 -Screen/auto ] DEO
@@ -703,11 +752,18 @@
 	LDAk ?{ JMP2r }
 	INC2 !/cap
 
+@str/len ( str* -- len* )
+	STH2k /cap STH2r SUB2 JMP2r
+
 @str/<print> ( str* -- )
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
 		INC2 !/>w
+
+@bookmark/sprite-icn [8
+	ffff ffff ffff ffff fffe fcf8 f0e0 c080
+	ffff ffff ffff ffff ff7f 3f1f 0f07 0301 ]
 
 @dotted-line [ aa00 0000 0000 0000 ]
 
@@ -931,12 +987,12 @@
 	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
 @uf5/widths ( NewYork34 ) [8
-	0c0c 0e18 1820 200a 1010 1014 0c10 0814
+	0c0c 0e18 1820 200a 1010 1014 0c10 080f
 	140a 1515 1515 1315 1315 0c0c 1014 1014
 	201b 1513 1715 1515 180a 1118 151c 1a18
 	161a 1713 151a 1a21 1716 140c 140c 1018
 	0c11 1510 1510 0c11 1509 0a13 0c1e 1512
-	1414 1010 0c15 141b 1616 1210 0810 1000
+	1414 1010 0c15 141b 1614 1210 0810 1000
 	&glyphs
 ( 0 )
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -1105,11 +1161,11 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 ( f )
 	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0000 0000 0001 0102 0204 0408 0810
-	1000 0000 0000 0000 0000 0000 0000 0001
-	0102 0204 0408 0810 1020 2040 4080 8000
+	0000 0000 0001 0103 0306 060c 0c18 1830
+	6000 0000 0000 0000 0000 0000 0000 0001
+	0306 060c 0c18 1830 3060 60c0 c080 8000
 	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0000 0080 8000 0000 0000 0000 0000
+	0000 0000 0000 0080 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -1999,6 +2055,8 @@
 ( @|Assets )
 
 @icn/buf $400
+
+@recent/buf $&buflen &bufend
 
 @directory/buf $&buflen &bufend
 
