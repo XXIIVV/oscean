@@ -45,7 +45,7 @@
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @dst/<push-byte> ( b -- )
 	DUP #04 SFT /<push-nibble>
@@ -65,6 +65,9 @@
 (
 @|Core )
 
+@tga/get-length ( -- lengt* )
+	#00 ;&depth LDA #03 SFT JMP2r
+
 @tga/<parse> ( path* -- )
 	DUP2 dst/<push-str>
 	.File/name DEO2
@@ -80,8 +83,8 @@
 	( | get parser )
 	;&image-type LDA
 	( | handlers )
-	DUP #02 NEQ ?{ POP ;filter/raw-true #0003 !/<apply> }
-	DUP #03 NEQ ?{ POP ;filter/raw-bw #0001 !/<apply> }
+	DUP #02 NEQ ?{ POP ;filter/raw-true /get-length !/<apply> }
+	DUP #03 NEQ ?{ POP ;filter/raw-bw /get-length !/<apply> }
 	( error ) ;&error-txt !str/<print>
 
 	&error-txt "Unsupported 20 "tga-type: 20 00
@@ -94,7 +97,7 @@
 	&>stream
 		;&pixel STH2k .File/read DEO2
 		[ LIT2 &x $2 ] [ LIT2 &y $1 &y-lb $1 ] STH2r [ LIT2 &filter $2 ] JSR2
-		( chr ) #ff SWP SUB pixel/<set>
+		( chr ) pixel/<set>
 		( | on linebreak )
 		,&x LDR2 INC2 DUP2 ,&x STR2
 		;&w LDA2 NEQ2 ?{
@@ -103,35 +106,32 @@
 			?{
 				;&buffer .File2/write DEO2
 				.size LDZ2k .File2/length DEI2 ADD2 ROT STZ2 } }
-		.File/success DEI2 ORA ?&>stream
+		.File/success DEI2 ORA ?/>stream
 	JMP2r
 	&pixel $4
 
-@pixel/assoc-color ( color -- color )
-	DUP #10 LTH ?{
-		DUP #80 LTH ?{
-			#e0 LTH ?{ #03 JMP2r }
+@pixel/assoc-color ( gray -- color )
+	DUP #ef GTH ?{
+		DUP #7f GTH ?{
+			#1f GTH ?{ #03 JMP2r }
 			#01 JMP2r }
 		POP #02 JMP2r }
 	POP #00 JMP2r
 
-@pixel/<set> ( x* y* color -- )
+@pixel/<set> ( x* y* gray -- )
 	/assoc-color STH
-	OVR2 SWP2
-	( get addr ) DUP2 #0007 AND2 SWP2 #83 SFT2 ADD2 SWP2 #43 SFT2 ADD2 ;tga/buffer ADD2
-	( ch1 ) OVR2 OVR2 STHkr #01 /<toggle>
-	( ch2 ) #0008 ADD2 STHr #00
+	( addr ) OVR2 #43 SFT2 ADD2 ;tga/buffer ADD2
+	( mask ) SWP2 NIP #07 AND #80 SWP SFT DUP ,&mask STR
+	#ff EOR ,&nm STR
+	( ch1 ) DUP2 STHkr #01 SFT /<plane>
+	( ch2 ) #0008 ADD2 STHr #01 AND
 	( >> )
 
-@pixel/<toggle> ( x* addr* color ch -- )
-	STH2
-	LDAk STH
-	SWP2 NIP STHr SWP SFTr STHr #01 AND ?{
-		( mask ) #0107 ROT #07 AND SUB #40 SFT SFT #ff EOR AND
-		( save ) ROT ROT STA
-		JMP2r }
-	#0107 ROT #07 AND SUB #40 SFT SFT ORA
-	( save ) ROT ROT STA
+@pixel/<plane> ( addr* bit -- )
+	[ LIT &mask $1 ] MUL STH
+	LDAk [ LIT &nm $1 ] AND STH
+	ORAr STH2
+	STAr
 	JMP2r
 
 @filter/raw-true ( pixel* -- color )
@@ -162,7 +162,7 @@
 (
 @|Buffers )
 
-@tga/head [
+@tga/head [4
 	&id-length $1 &color-map $1
 	&image-type $1 &map $5
 	&_x $2 &_y $2
