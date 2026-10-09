@@ -223,6 +223,10 @@
 		LITr 0a MULr STH
 		ADDr INC !/>w8
 
+@ztr/walk-utf8 ( ztr -- ztr )
+	INC LDZk #06 SFT #02 EQU ?/walk-utf8
+	JMP2r
+
 (
 @|Str )
 
@@ -286,6 +290,17 @@
 	DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk chr/escape }
 	#18 DEO
 	INC2 !/<print>
+
+%utf8/cont ( addr* -- addr* cont ) {
+	LDAk #06 SFT #02 EQU }
+
+@utf8/prev ( addr* -- addr* )
+	#0001 SUB2 /cont ?/prev
+	JMP2r
+
+@utf8/next ( addr* -- addr* )
+	INC2 /cont ?/next
+	JMP2r
 
 (
 @|Obj )
