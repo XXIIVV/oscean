@@ -2411,4 +2411,6 @@ someone [cor] aliq
 everyone [cor] omn qui
 no one [cor] nul qui
 
+north [adj] boreal
+south [adj] austral
 `
