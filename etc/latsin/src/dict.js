@@ -50,7 +50,6 @@ be agreeable [v] place
 air [n] (airship) aeronave
 alarm [v] turba
 alas [inter] eheu!; heu!
-albeit [conj] quamvis
 alike [adj] pari
 alive [adj] vivo
 all [adj] toto
@@ -59,7 +58,6 @@ alone [adj] solo
 alongside [adj] apud
 already [adv] jam
 also [adv] etiam
-although [conj] etsi; quamvis
 always [cor] semper
 ambiguous [adj] vago
 amble [v] ambula
@@ -95,7 +93,7 @@ as [cor] quale; sicut
 as far as [prep] (distance) usque
 as if [prep] quasi
 as long as [prep] dum
-as...as [conj] tanto...quanto; tanto...quanto tam...quam
+as...as [conj] tanto...quanto; tanto...quanto tam...que
 as...so [conj] ut...ita
 ash [adj] (ashy) cinereo
 ask [v] interroga; quaere
@@ -1117,7 +1115,7 @@ at the left [prep] laeva; sinistro
 leg [n] crure
 lenient [adj] lene
 less [adv] minus
-less...than [conj] minus...quam
+less...than [conj] minus...que
 lesson [n] lectione
 letter [n] (correspondence) epistola
 library [n] bibliotheca
@@ -1231,7 +1229,7 @@ mood [n] modo
 moon [n] luna
 new moon [n] novilunio
 more [adv] magis; plus
-more...than [conj] plus...quam
+more...than [conj] plus...que
 moreover [conj] praeterea
 morning [n] auror
 most [adv] maximo
@@ -1270,7 +1268,7 @@ neither [conj] (neither...nor) neque...nec
 nephew [n] nepote
 net [n] rete
 neuter [adj] neutro
-never [cor] nunquam
+never [cor] nunque
 nevertheless [adv] tamen
 new [adj] novo
 news [n] notitias
@@ -1282,7 +1280,7 @@ no one [cor] nemine
 no way [exp] in nullo modo
 nobody [n] nemine
 not one [adv] nullo
-nowhere [adv] nusquam
+nowhere [adv] nusque
 noise [n] rumore
 nominate [v] nomina
 noon [n] meridie
@@ -1915,7 +1913,7 @@ tense [n] tempore
 tent [n] tentorio
 term [n] tempore
 test [v] proba
-than [conj] quam
+than [conj] que
 thank [v] agere gratias
 thanks [n] gratias
 that [cor] eo; illo
@@ -1937,7 +1935,6 @@ thirst [n] siti
 this [cor] ce; hoc; isto
 thorax [n] thorace
 thorn [n] (thorny) spinoso
-though [conj] etsi; quamvis
 thread [n] filo
 threaten [adj] (threatening) minace
 threshold [n] limine
