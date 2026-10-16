@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style title="Basic">:root{color-scheme:light dark}img,video{max-width:100%;height:auto}@media(prefers-color-scheme:dark){body{background-color:black}a{color:inherit}a:hover{text-decoration:none}img.icon{mix-blend-mode:lighten;filter:invert()}}</style><link rel="icon" href="https://167.235.19.20/favicon.ico"><title>Compile-time Uxntal</title></head><body><banner><nav><p><a href="https://167.235.19.20/" aria-label="✿"><svg aria-role="img" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><desc>✿</desc><path d="M6 24 c-5 -1 -6 -3 -6 -8 l0 -4 1 0 c0 0 1 0 2 0 l1 0 -2 -2 c-2 -2 -2 -2 -2 -6 l0 -4 4 0 c5 0 6 1 8 3 l0 1 1 -1 c1 -2 3 -3 7 -3 l4 0 0 4 c0 5 -1 6 -3 7 -2 1 -1 1 1 1 l2 0 0 3 c0 5 -1 6 -4 8 -1 1 -11 1 -14 1z m9 -10 c0 0 1 -1 1 -1 3 -1 0 -5 -3 -5 -4 0 -8 4 -5 4 1 0 3 2 4 4 l1 1 0 -1 c0 0 1 -1 2 -2z"></path></svg></a></p></nav></banner><main><h1>Experimenting with compile-time blocks in Uxntal.</h1><p>In my Uxntal programs I make heavy use of compile-time (or assembly-time, if you will) features to avoid computing various constants at runtime. This is typically done via labels and the “cursor” (sometimes also called “head”) — an internal register of the assembler that points at the position of the next byte that will be written to the ROM. The cursor increments automatically on each byte written, but it can also be set to a particular value with the absolute padding rune (“|”) or incremented by a particular amount with the relative padding rune (“$”). The “constants” are in reality labels that got defined when the cursor had a specific value. This works great for simple calculations, i.e. addition, subtraction of a known constant, or multiplication by a known constant:</p><figure><pre><tt aria-label="Uxntal snippet">|2 @a       ( Sets a to 2. )
+|a $1 @b    ( Sets b to a+1. )
+|a $b @c    ( Sets c to a+b. )
+|a $ffff @d ( Sets d to a-1. )
+|a $a $a @e ( Sets e to a*3. )
+</tt></pre></figure><p>The constants can be read via the addressing runes, either literal or raw, absolute or zero-page, or even used as a padding, making this approach very flexible:</p><figure><pre><tt aria-label="Uxntal snippet">;a           ( Equivalent to #0002. )
+.a           ( Equivalent to #02. )
+[ LIT2r =a ] ( Equivalent to [ LIT2r 0002 ]. )
+[ LITr -a ]  ( Equivalent to [ LITr 02 ]. )
+=a           ( Equivalent to 0002. )
+-a           ( Equivalent to 02. )
+$a           ( Equivalent to $2. )
+</tt></pre></figure><p>Bonus: as a side-effect of the zero-page check, constants with values greater than 255 have an out-of-the-box compile-time assert that makes sure they're not used in byte contexts (“.” and “-”) which would result in potentially unwanted truncating. Pretty neat.</p><p>This approach is often used for defining enumerations, bitmasks, and structures. The device labels in pretty much all Uxntal programs are typically a kind of enumeration.</p><figure><pre><tt aria-label="Uxntal snippet">|0 @Tag &amp;lframe $1 &amp;eframe $1 &amp;dframe $1
+|0 @Dpad |1 &amp;up |2 &amp;down |4 &amp;left |8 &amp;right
+|0 @Vector &amp;x $2 &amp;y $2 &amp;z $2 &amp;size
+</tt></pre></figure><nav><p>Further reading: <a href="https://wiki.xxiivv.com/site/uxntal_labels.html">“Uxntal Labels”</a></p></nav><p>Unfortunately, addition, subtraction of a known constant, and multiplication by a known constant can only get you so far. If you want your value to be a result of a division, modulo, or maybe even a bitwise operation, you're out of luck and have to rely on other options.</p><nav><p>One of such options is to compute these values in a metaprogram (i.e. program that generates code), which complicates the build process if the values are tweaked often. This is what I did for Bad Apple!!, see: <a href="https://167.235.19.20/bad-apple-uxn/constants.tal">constants.tal</a></p></nav><p>Another option is to compute these values at the very start of the program. If a value is used once, write it there and you're done. However, if a value is used multiple times in the program, you would either have to keep track of all these places separately and write the value to each one, or keep the value in a separate location and load it at runtime. Neither of these options sounds appealing to me.</p><nav><p><a href="https://git.sr.ht/~rabbits/drifblim">Drifblim</a></p></nav><p>As of 2026, Drifblim is the standard Uxntal assembler, written in Uxntal itself. It is running on the same architecture it targets. If an assembler running on Uxn is assembling Uxntal anyway, couldn't it execute some of the code it's assembling?</p><p>The compile-time blocks in my proof-of-concept implementation come in two flavors: “~{ … }” and “|{ … }”.</p><figure><pre><tt aria-label="Uxntal snippet">|{ #0001 #0002 ADD2 } ( Equivalent to |0003. )
+~{ #0001 #0002 ADD2 } ( Equivalent to 0003. )
+</tt></pre></figure><p>Each compile-time block can be thought of as a separate mini-program executed by the assembler. I also call these “escape blocks” because you “escape” the assembler to execute a piece of arbitrary code.</p><p>Try them yourself:</p><nav><p><a href="https://167.235.19.20/compile-time-uxntal/drifblim-escapes.patch">drifblim-escapes.patch</a></p></nav><p>Encountering a compile-time block puts the assembler into a special mode (similar to one when defining a macro) in which words are assembled into a separate region in memory, up until a terminating “}”. Then, the assembler quite literally jumps to that region as it it was a procedure in Drifblim's internals. Once it reaches the end of the block, it returns back to regular assembling, but before that, it does one of two things:</p><ul><li>If we have just exited the “|{ … }” block, the cursor is set (as if it was set by a regular “|” rune) to the short on the top of the working stack.</li><li>If we have just exited the “~{ … }” block, all bytes that have been pushed onto the working stack inside the block are baked into the final ROM (which limits their size to the size of the working stack).</li></ul><p>Code in such blocks can define new macros and labels, but these will not be available beyond that particular block. External macros (ones defined outside of the blocks) can be expanded due to how macros work internally in Drifblim. External labels can be referenced (unless relative) but any external code cannot be jumped to and executed (it is in a different address space, after all).</p><p>I have a feeling there's something fundamentally raw going on about the escaping, some kind of primal computing concept akin to Forth's compile mode, a strange loop closing. But maybe I'm just tooting my own horn. I'll leave that for someone else to think about.</p><p>The following sections explore fun &amp; practical use-cases for escape blocks. Some of the macros are written in a very peculiar style to not define any named labels that would potentially cause a name clash, like any well-behaved macro should.</p><h2 id="1"><a href="#1">1. Complex constants</a></h2><p>Division, bitwise operations, anything goes. The computation can be as complex as you need (just don't overflow the escape program buffer).</p><figure><pre><tt aria-label="Uxntal snippet">|0060 @x
+|{ ;x #0002 DIV2 } @x/2
+
+;x/2 ( Equivalent to #0030. )
+</tt></pre></figure><h2 id="2"><a href="#2">2. Distance between labels</a></h2><figure><pre><tt aria-label="Uxntal snippet">@asset
+	( … )
+	&amp;end
+	|{ ;asset/end ;asset SUB2 } &amp;size |&amp;end
+
+;asset/size ( Equivalent to ;asset/end ;asset SUB2. )
+</tt></pre></figure><h2 id="3"><a href="#3">3. Visualized sprite data</a></h2><p>For those who don't want to work out the bit representation of a hex number in their head.</p><figure><pre><tt aria-label="Uxntal program">|00 @System/vector $2 &amp;expansion $2 &amp;wst $1 &amp;rst $1 &amp;metadata $2 &amp;r $2 &amp;g $2 &amp;b $2 &amp;debug $1 &amp;state $1
+|20 @Screen/vector $2 &amp;width $2 &amp;height $2 &amp;auto $1 &amp;pad $1 &amp;x $2 &amp;y $2 &amp;addr $2 &amp;pixel $1 &amp;sprite $1
+
+%░ { #00 }
+%█ { #01 }
+
+%byte ( a b c d e f g h -- a&lt;&lt;7|b&lt;&lt;6|c&lt;&lt;5|d&lt;&lt;4|e&lt;&lt;3|f&lt;&lt;2|g&lt;&lt;1|h&lt;&lt;0 ) {
+	STH STH STH STH STH STH STH
+	#10 SFT STHr ORA
+	#10 SFT STHr ORA
+	#10 SFT STHr ORA
+	#10 SFT STHr ORA
+	#10 SFT STHr ORA
+	#10 SFT STHr ORA
+	#10 SFT STHr ORA
+}
+
+|0100
+	#0f00 .System/r DEO2
+	;sprite .Screen/addr DEO2
+	#01 .Screen/sprite DEO
+	BRK
+
+@sprite ~{
+	░ █ █ ░ █ █ ░ ░ byte
+	█ █ █ █ █ █ █ ░ byte
+	█ █ █ █ █ █ █ ░ byte
+	█ █ █ █ █ █ █ ░ byte
+	░ █ █ █ █ █ ░ ░ byte
+	░ ░ █ █ █ ░ ░ ░ byte
+	░ ░ ░ █ ░ ░ ░ ░ byte
+	░ ░ ░ ░ ░ ░ ░ ░ byte
+}
+</tt></pre></figure><h2 id="4"><a href="#4">4. Baked build date</a></h2><p>Since Drifblim runs on Varvara, compile-time blocks have access to pretty much all Varvara devices.</p><figure><pre><tt aria-label="Uxntal program">|00 @System/vector $2 &amp;expansion $2 &amp;wst $1 &amp;rst $1 &amp;metadata $2 &amp;r $2 &amp;g $2 &amp;b $2 &amp;debug $1 &amp;state $1
+|c0 @DateTime/year $2 &amp;month $1 &amp;day $1 &amp;hour $1 &amp;minute $1 &amp;second $1 &amp;dotw $1 &amp;doty $2 &amp;isdst $1
+
+%bury6 ( a b c d e f g -- g a b c d e f ) { SWP STH SWP STH SWP STH SWP STH ROT ROT STHr STHr STHr STHr }
+
+%byte-to-month-chars ( n -- c1 c2 c3 ) {
+	{ "Jan "Feb "Mar "Apr "May "Jun "Jul "Aug "Sep "Oct "Nov "Dec } STH2r
+	ROT #00 SWP #0003 MUL2 ADD2
+	LDA2k SWP2 INC2 INC2 LDA
+}
+
+%short-to-dec-digits ( number* -- digits... ) {
+	[ LITr 00 ]
+	#2710 DIV2k DUP STHkr EQU ?{ DUP [ LIT "0 ] ADD bury6 POPr [ LITr ff ] } MUL2 SUB2
+	#03e8 DIV2k DUP STHkr EQU ?{ DUP [ LIT "0 ] ADD bury6 POPr [ LITr ff ] } MUL2 SUB2
+	#0064 DIV2k DUP STHkr EQU ?{ DUP [ LIT "0 ] ADD bury6 POPr [ LITr ff ] } MUL2 SUB2
+	#000a DIV2k DUP STHr  EQU ?{ DUP [ LIT "0 ] ADD bury6                  } MUL2 SUB2
+	                             NIP [ LIT "0 ] ADD
+}
+
+%today ( -- string... ) {
+	.DateTime/month DEI byte-to-month-chars
+	#20
+	#00 .DateTime/day DEI short-to-dec-digits
+	[ LIT ", ]
+	#20
+	.DateTime/year DEI2 short-to-dec-digits
+}
+
+|0100
+	;metadata .System/metadata DEO2
+	BRK
+
+@metadata 00
+	"Date 20 "Bakery 0a
+	"A 20 "Date 20 "Baking 20 "Demo 0a
+	"By 20 "Charlie 20 "Bellini 0a
+	~{ today } 00 ( Equivalent to e.g. "Jul 20 "12, 20 "2026 00. )
+	00
+</tt></pre></figure><h2 id="5"><a href="#5">5. Parametric macros</a></h2><p>The following “roll” macro generates code that bubbles up the 𝑛th element of the stack to the top.</p><figure><pre><tt aria-label="Uxntal snippet">%recursive { STH2kr JSR2 POP2r }
+%recurse   { SWP2r STH2kr JSR2 SWP2r }
+
+%roll ( n -- code... ) {
+	{
+		DUP #00 NEQ ?{ POP             JMP2r }
+		DUP #01 NEQ ?{ POP [ LIT SWP ] JMP2r }
+		DUP #02 NEQ ?{ POP [ LIT ROT ] JMP2r }
+		[ LIT STH ] SWP #01 SUB recurse [ LIT2 STHr SWP ]
+		JMP2r
+	} recursive
+}
+
+~{ #01 roll } ( Equivalent to SWP. )
+~{ #03 roll } ( Equivalent to STH ROT STHr SWP. )
+~{ #05 roll } ( Equivalent to STH STH STH ROT STHr SWP STHr SWP STHr SWP. )
+</tt></pre></figure><p>Note that macros cannot expand themselves recursively because a macro does not have a base case, so they have to rely on some sort of a subroutine (here, a lambda with a little recursion trick). Also, the escape stack will overflow for large 𝑛 and this particular implementation doesn't check that for clarity.</p><nav><p>Inspired by: <a href="https://codeberg.org/wimvanderbauwhede/funktal/src/branch/devel/stack-manipulation-universal-uxn.md">“Universal stack operations using Uxn primitives”</a></p></nav><h2 id="6"><a href="#6">6. Conditional compilation</a></h2><p>Sometimes you want to compile a chunk of code only if a certain compile-time flag is set, akin to #ifdef in C.</p><figure><pre><tt aria-label="Uxntal snippet">|1 @debug?
+
+%compile ( ^{code}* -- code... ) {
+	DUP2r [ LIT2r 0002 ] SUB2r LDA2r SWP2r
+	{ } ROT2r
+		STH2kr #0000 EQU2 ?{
+			[ LIT2r 0001 ] SUB2r
+			ROT2r LDAkr STHr INC2r
+			ROT2r JMP2kr
+		}
+	POP2r POP2r POP2r
+}
+
+~{ .debug? #00 EQU ?{ {
+	#01 .System/debug DEO
+} compile } }
+</tt></pre></figure><h2 id="7"><a href="#7">7. Custom warnings &amp; errors</a></h2><figure><pre><tt aria-label="Uxntal snippet">|00 @System/vector $2 &amp;expansion $2 &amp;wst $1 &amp;rst $1 &amp;metadata $2 &amp;r $2 &amp;g $2 &amp;b $2 &amp;debug $1 &amp;state $1
+|10 @Console/vector $2 &amp;read $5 &amp;type $1 &amp;write $1 &amp;error $1
+
+%emit ( str\0* -- ) { { } LDAk .Console/error DEO INC2 LDAk STH2kr JCN2 POP2 POP2r }
+%halt ( -&gt; )        { #01 .System/state DEO BRK }
+</tt></pre></figure><p>The following program will fail to assemble if we ever add another Tag and forget to acknowledge it in handle-tag.</p><figure><pre><tt aria-label="Uxntal snippet">|0 @Tag
+	&amp;foo $1
+	&amp;bar $1
+	&amp;baz $1
+	( &amp;qux $1…? )
+&amp;count
+
+@handle-tag ( tag -- )
+	~{ ;Tag/count #0003 EQU2 ?{
+		{ "Non-exhaustive: 20 "Tag: 20 "handle-tag 0a 00 } STH2r emit
+		halt
+	} }
+	DUP .Tag/foo NEQ ?{ ( … ) }
+	DUP .Tag/bar NEQ ?{ ( … ) }
+	DUP .Tag/baz NEQ ?{ ( … ) }
+	( … )
+</tt></pre></figure><p>Assembling the following program will emit a warning to the console if the ROM exceeds a certain size and there's not much memory left for some sort of a buffer.</p><figure><pre><tt aria-label="Uxntal snippet">@buffer |10000 &amp;end
+
+~{ ;buffer/end ;buffer SUB2 #1000 LTH2 #00 EQU ?{
+	{ "-- 20 "Warning: 20 "buffer/size 20 "&lt; 20 "1000 0a 00 } STH2r emit
+} }
+</tt></pre></figure><h2 id="8"><a href="#8">8. Binary includes</a></h2><p>The second File device is generally unused in Drifblim, so we can borrow it to include our own files in the ROM. Could be extended to do some kind of post-processing on the data. The included files are limited to a maximum of 253 bytes (working stack size minus 3 for Drifblim's internals). The following snippet uses the emit and halt macros from the previous section.</p><figure><pre><tt aria-label="Uxntal snippet">|00 @System/vector $2 &amp;expansion $2 &amp;wst $1 &amp;rst $1 &amp;metadata $2 &amp;r $2 &amp;g $2 &amp;b $2 &amp;debug $1 &amp;state $1
+|b0 @File2/vector $2 &amp;success $2 &amp;stat $2 &amp;delete $1 &amp;append $1 &amp;name $2 &amp;length $2 &amp;read $2 &amp;write $2
+
+%parse-hex-digit ( byte -- value* ) {
+	DUP [ LIT "0 ] LTH ?{ DUP [ LIT "9 ] GTH ?{ [ LIT "0 ] SUB         } }
+	DUP [ LIT "a ] LTH ?{ DUP [ LIT "f ] GTH ?{ [ LIT "a ] SUB #0a ADD } }
+}
+
+%parse-hex ( ptr* -- number* ) {
+	STH2
+	      LDAkr STHr parse-hex-digit #00 SWP      #40 SFT2
+	INC2r LDAkr STHr parse-hex-digit #00 SWP ORA2 #40 SFT2
+	INC2r LDAkr STHr parse-hex-digit #00 SWP ORA2 #40 SFT2
+	INC2r LDAr  STHr parse-hex-digit #00 SWP ORA2
+}
+
+%wst-remaining ( -- ^wstrem ) { [ LIT2r 00 -System/wst ] DEIr SUBr }
+
+%include-size ( -- size* ) {
+	#0004 .File2/length DEO2
+	{ $4 } STH2kr .File2/stat DEO2
+	.File2/success DEI2 #0004 EQU2 ?{ { "include: 20 "Read 20 "error 0a 00 } STH2r emit halt }
+	STH2kr LDA [ LIT "? ] NEQ      ?{ { "include: 20 "File 20 "exceeded 0a 00 } STH2r emit halt }
+	STH2kr LDA [ LIT "- ] NEQ      ?{ { "include: 20 "Directory 0a 00 } STH2r emit halt }
+	STH2kr LDA [ LIT "! ] NEQ      ?{ { "include: 20 "Path 20 "invalid 0a 00 } STH2r emit halt }
+	STH2r parse-hex
+}
+
+%include ( filename\0* -- data... ) {
+	.File2/name DEO2
+	include-size STH2
+	DUP2r [ LITr 00 ] wst-remaining GTH2r [ LITr 00 ] EQUr STHr ?{ { "include: 20 "File 20 "exceeded 0a 00 } STH2r emit halt }
+	#0001 .File2/length DEO2
+	{ $1 }
+	{ } ROT2r
+		DUP2r [ LIT2r 0000 ] EQU2r STHr ?{
+			[ LIT2r 0001 ] SUB2r
+			ROT2r DUP2r [ LITr -File2/read ] DEO2r
+			[ LITr -File2/success ] DEI2r [ LIT2r 0001 ] EQU2r STHr ?{ { "include: 20 "Read 20 "error 0a 00 } STH2r emit halt }
+			DUP2r LDAr STHr
+			ROT2r JMP2kr
+		}
+	POP2r POP2r POP2r
+}
+
+@sprite ~{ { "assets/sprite.chr 00 } STH2r include }
+</tt></pre></figure><h2 id="9"><a href="#9">9. Baked Git hash</a></h2><p>With Uxn11's subprocess extension, you can run external commands at compile-time. The following snippet always expects a repository and does not check for any errors for simplicity.</p><figure><pre><tt aria-label="Uxntal snippet">|10 @Console &amp;vector $2 &amp;read $5 &amp;type $1 &amp;write $1 &amp;error $3 &amp;addr $2 &amp;mode $1 &amp;exec $1
+
+%git-hash ( -- string... ) {
+	{
+		STHkr ?{ POPr STH2r JMP2 }
+		.Console/read DEI
+		[ LITr 01 ] SUBr
+		BRK
+	} STH2r .Console/vector DEO2
+	{ "git 20 "rev-parse 20 "HEAD 00 } STH2r .Console/addr DEO2
+	#02 .Console/mode DEO
+	#01 .Console/exec DEO
+	
+	;{ STH2 [ LITr 07 ] BRK }
+}
+
+~{ git-hash } ( Equivalent to e.g. "83d2091. )
+</tt></pre></figure><nav><p><a href="https://167.235.19.20/uxn/">More about Uxntal</a></p></nav></main></body></html>
