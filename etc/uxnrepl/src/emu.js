@@ -33,15 +33,20 @@ function System(emu)
 function Console(emu)
 {
 	this.vector = 0
-	this.stdout_body = ""
+	this.stdout_bytes = []
 	this.stderr_body = ""
 
 	this.write = (char) => {
-		this.stdout_body += String.fromCharCode(char)
+		this.stdout_bytes.push(char)
 	}
 
 	this.write_string = (s) => {
-		this.stdout_body += s
+		for(const b of new TextEncoder().encode(s))
+			this.stdout_bytes.push(b)
+	}
+
+	this.stdout = () => {
+		return new TextDecoder('utf-8').decode(new Uint8Array(this.stdout_bytes))
 	}
 
 	this.error = (char) => {
@@ -79,16 +84,14 @@ function Emu ()
 
 	this.dei = (port) => {
 		switch (port) {
-		case 0xc0: { return new Date().getFullYear() >> 8; }
-		case 0xc1: { return new Date().getFullYear() & 0xff; }
+		case 0xc0: { const y = new Date().getFullYear(); this.uxn.dev[0xc1] = y & 0xff; return y >> 8; }
 		case 0xc2: { return new Date().getMonth(); }
 		case 0xc3: { return new Date().getDate(); }
 		case 0xc4: { return new Date().getHours(); }
 		case 0xc5: { return new Date().getMinutes(); }
 		case 0xc6: { return new Date().getSeconds(); }
 		case 0xc7: { return new Date().getDay(); }
-		case 0xc8: { return doty(new Date()) >> 8; }
-		case 0xc9: { return doty(new Date()) & 0xff; }
+		case 0xc8: { const d = doty(new Date()); this.uxn.dev[0xc9] = d & 0xff; return d >> 8; }
 		}
 		return this.uxn.dev[port]
 	}
@@ -200,18 +203,18 @@ function Repl(rom, keyword)
 		emu.console.input(0x00, 4);
 		const segments = mojibake(emu.console.stderr_body.trim()).split('\n');
 		if(segments.length > 50)
-			this.logs_el.innerHTML = "..\n" + segments.slice(-50).join('\n');
+			this.logs_el.textContent = "..\n" + segments.slice(-50).join('\n');
 		else
-			this.logs_el.innerHTML = segments.join('\n');
+			this.logs_el.textContent = segments.join('\n');
 		this.logs_el.scrollTop = this.logs_el.scrollHeight;
 		this.editor_el.focus();
-		this.postrun(emu.console.stdout_body.trimEnd(), emu.console.stderr_body);
+		this.postrun(emu.console.stdout().trimEnd(), emu.console.stderr_body);
 	}
 	
 	function mojibake(brokenStr) {
-	const bytes = new Uint8Array(brokenStr.length);
-	for (let i = 0; i < brokenStr.length; i++) 
-		bytes[i] = brokenStr.charCodeAt(i) & 0xFF;
+		const bytes = new Uint8Array(brokenStr.length);
+		for (let i = 0; i < brokenStr.length; i++) 
+			bytes[i] = brokenStr.charCodeAt(i) & 0xFF;
 		const decoder = new TextDecoder('utf-8');
 		return decoder.decode(bytes);
 	}
@@ -223,8 +226,8 @@ function Repl(rom, keyword)
 	this.emit = (res) => {
 		if(res.includes('\n')) {
 			this.popup(res)
-			this.result_el.innerHTML = "Result in new window"
+			this.result_el.textContent = "Result in new window"
 		} else
-			this.result_el.innerHTML = res
+			this.result_el.textContent = res
 	}
 }
