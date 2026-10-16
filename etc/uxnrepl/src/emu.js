@@ -118,6 +118,8 @@ function Emu ()
 
 function Repl(rom, keyword)
 {
+	this.live = 0
+
 	this.init = () => {
 		// Connect to interface
 		this.logs_el = document.getElementById("logs")
@@ -135,8 +137,18 @@ function Repl(rom, keyword)
 				this.editor_el.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd)
 				this.editor_el.setSelectionRange(selectionStart+1, selectionStart+1)
 			}
-			else if (e.ctrlKey && e.key === 'Enter')
+			else if (e.ctrlKey && e.key === 'Enter'){
+				e.preventDefault()
 				this.run()
+			}
+			else if (e.ctrlKey && e.key === 'l') {
+				e.preventDefault()
+				this.live = !this.live
+				console.log(this.live == 0 ? "Idle" : "Live")
+			}
+		})
+		this.editor_el.addEventListener("keyup", (e) => {
+			if (this.live) this.run()
 		})
 		this.run_el.addEventListener("click", this.run)
 		this.run_el.value = keyword
@@ -201,6 +213,8 @@ function Repl(rom, keyword)
 		for (let i = 0; i < queryBytes.length; i++) 
 			emu.console.input(queryBytes[i], 1);
 		emu.console.input(0x00, 4);
+		if(this.live && emu.uxn.dev[0x0f] != 0x80)
+			return
 		const segments = mojibake(emu.console.stderr_body.trim()).split('\n');
 		if(segments.length > 50)
 			this.logs_el.textContent = "..\n" + segments.slice(-50).join('\n');

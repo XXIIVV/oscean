@@ -31,7 +31,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Sep 20 "2026 0000
+	( date ) "16 20 "Oct 20 "2026 0000
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
@@ -130,11 +130,11 @@
 	label/get-addr LDA2 }
 
 @label/<parse-quote> ( ztr -- )
+	INC LDZk ?{ POP JMP2r }
 	#0001 ;&quote-name syms/find-alloc DUP2 /<create>
 	world/<push-scope>
 	world/<push-count-id>
-	,&id LDR INC ,&id STR
-	INC !token/<parse-fraction>
+	,&id LDR INC ,&id STR !token/<parse-fraction>
 
 	&quote-name "' [ &id "0 00 ]
 
@@ -209,10 +209,12 @@
 
 @item/walk-count ( ztr -- ztr count* )
 	LDZk LIT "^ NEQ ?{
-		INC LDZk char/is-dec ?dec-ztr/walk-u16
-		LDZ2k ;inf/glyph NEQ2 ?{ INC2 INC2 ;inf JMP2r }
-		DUP symbol/walk
-		( ref reg ) #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
+		INC
+		( | handlers )
+		LDZk ?{ #0001 JMP2r }
+		LDZk char/is-dec ?dec-ztr/walk-u16
+		LDZ2k ;inf/glyph NEQ2 ?{ INC INC ;inf JMP2r }
+		DUP symbol/walk #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
 	( def reg ) #0001 JMP2r
 
 @fraction/<print> ( addr* -- )
@@ -276,21 +278,18 @@
 	tote/<clear>
 	;&buf [ LIT2r 0001 ]
 	&>w
-		LDA2k ORA ?{ !/end }
+		LDA2k ORA ?{
+			POP2 tote/<print>
+			;dict/reached-a str/<print>
+			STH2r u16/<print-dec>
+			;dict/reached-b str/<print>
+			syms/get-length #01 SFT2 #0001 SUB2 u16/<print-dec>
+			;dict/reached-c !str/<print> }
 		tote/<print>
 		DUP2 tote/<apply>
 		DUP2 fraction/<print>
 		#0a19 DEO
 		goto/step INC2r !/>w
-
-	&end ( addr* -- )
-	POP2 tote/<print>
-	( | steps )
-	;dict/reached-a str/<print>
-	STH2r u16/<print-dec>
-	;dict/reached-b str/<print>
-	syms/get-length #01 SFT2 #0001 SUB2 u16/<print-dec>
-	;dict/reached-c !str/<print>
 
 @goto/step ( addr* -- addr* )
 	,&+count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
@@ -370,12 +369,13 @@
 	&>lap
 		DUP2 /<put>
 		item/next GTH2k ?/>lap
-	POP2 POP2 POP2 #0001 !queue/<apply>
+	POP2 POP2 POP2 !queue/<apply>
 
 @tote/get-range ( -- to* from* )
 	( from* ) ;&buf
 	( from* to-ptr* ) DUP2 syms/get-length ADD2 ;&bufend
-	( from* min* ) [ LTH2k JMP SWP2 POP2 ]
+	( from* min* ) LTH2k ?{ SWP2 }
+	POP2
 	( to* from* ) SWP2 JMP2r
 
 @tote/<print> ( -- )
@@ -418,7 +418,7 @@
 	tote/get-register STH2kr LDA2 SWP2 SUB2 STH2r STA2
 	POP2 JMP2r
 
-@queue/<put> ( item* -- item* )
+@queue/<put> ( item* -- )
 	LDA2k
 	( | Handle inc )
 	/find INC2k ORA ?{
@@ -438,16 +438,16 @@
 	#0000 ;&+buf STA2
 	JMP2r
 
-@queue/<apply> ( fraction* mul* -- )
-	STH2
+@queue/<apply> ( -- )
 	,&+ptr LDR2 ;&+buf
 	&>l
 		EQU2k ?{
-			INC2k INC2 LDA2 STH2kr MUL2 OVR2 LDA2 tote/get-addr LDA2k ROT2 ADD2
-			( clamp ) ;inf LTH2k [ JMP SWP2 ] POP2
+			INC2k INC2 LDA2 OVR2 LDA2 tote/get-addr LDA2k ROT2 ADD2
+			( clamp ) ;inf LTH2k ?{ SWP2 }
+			POP2
 			( new-value* item* ) SWP2 STA2
 			item/next !/>l }
-	POP2 POP2 POP2r JMP2r
+	POP2 POP2 JMP2r
 
 @queue/<push> ( value* -- )
 	[ LIT2 &+ptr =&+buf ] INC2k INC2
