@@ -131,6 +131,7 @@
 
 @label/<parse-quote> ( ztr -- )
 	INC LDZk ?{ POP JMP2r }
+	( | TODO: If there's no denumerator, inf all values )
 	#0001 ;&quote-name syms/find-alloc DUP2 /<create>
 	world/<push-scope>
 	world/<push-count-id>
@@ -208,14 +209,13 @@
 	( walk ] ) INC JMP2r
 
 @item/walk-count ( ztr -- ztr count* )
-	LDZk LIT "^ NEQ ?{
-		INC
-		( | handlers )
-		LDZk ?{ #0001 JMP2r }
-		LDZk char/is-dec ?dec-ztr/walk-u16
-		LDZ2k ;inf/glyph NEQ2 ?{ INC INC ;inf JMP2r }
-		DUP symbol/walk #00 ROT syms/find-alloc #8000 ORA2 JMP2r }
-	( def reg ) #0001 JMP2r
+	LDZk LIT "^ NEQ ?/default
+	INC
+	( | handlers )
+	LDZk ?{ &default #0001 JMP2r }
+	LDZk char/is-dec ?dec-ztr/walk-u16
+	LDZ2k ;inf/glyph NEQ2 ?{ INC INC ;inf JMP2r }
+	DUP symbol/walk #00 ROT syms/find-alloc #8000 ORA2 JMP2r
 
 @fraction/<print> ( addr* -- )
 	( num ) LDA2k OVR2 INC2 INC2 bag/<print>
@@ -404,7 +404,7 @@
 		( id ) POP2 JMP2r }
 	( | Handle inf )
 	DUP2 tote/get-addr LDA2 ;inf NEQ2 ?{
-		OVR2 INC2 INC2 LDA2 ;inf EQU2 ?{ POP2 POP2 JMP2r } }
+		OVR2 tote/get-register NIP2 ;inf EQU2 ?{ POP2 POP2 JMP2r } }
 	( | Handle dec )
 	/find INC2k ORA ?{
 		POP2
@@ -415,8 +415,18 @@
 		( count* ) #0000 SWP2 SUB2 !/<push> }
 	( | merge offset )
 	INC2 INC2 STH2
-	tote/get-register STH2kr LDA2 SWP2 SUB2 STH2r STA2
+	tote/get-register STH2kr LDA2 /sub-sat STH2r STA2
 	POP2 JMP2r
+
+@queue/sub-sat ( value* offset* -- new* )
+	SWP2 SUB2 DUP2 #8001 LTH2 ?{ JMP2r }
+	POP2 #8001 JMP2r
+
+@queue/add-sat ( value* offset* -- new* )
+	OVR #80 AND ?{
+		ADD2 DUP2 #8000 LTH2 ?{ POP2 #7fff }
+		JMP2r }
+	ADD2 JMP2r
 
 @queue/<put> ( item* -- )
 	LDA2k
@@ -430,7 +440,7 @@
 		( count* ) !/<push> }
 	( | merge offset )
 	INC2 INC2 STH2
-	tote/get-register STH2kr LDA2 ADD2 STH2r STA2
+	tote/get-register STH2kr LDA2 /add-sat STH2r STA2
 	POP2 JMP2r
 
 @queue/<reset> ( -- )
