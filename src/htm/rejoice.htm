@@ -6,7 +6,7 @@
 
 <ul>
 	<li>The <b>program state</b> is a bag of unordered things where elements are combined by union and <code>^n</code> denotes multiplicity. For example, the bag <code>[cube cone^3]</code> contains one cube, and three cones. The empty bag is represented as <code>[]</code>.</li>
-	<li><b>Symbols</b> are things in the bag written as either numeric decimal integers or names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[8 ball^2]</code> and <code>[2^3 ball ball]</code> are equal.</li>
+	<li><b>Symbols</b> are things in the bag written as names representing <a href='primes.html'>prime values</a>. For example, the bag <code>[eye ball^2]</code> and <code>[ball eye ball]</code> are equal.</li>
 	<li><b>Transformations</b> are represented as <a href='fractions.html'>fractions</a> in which the denominator indicates things to remove from the bag, and the numerator, the things to add. For example, <code>owl/cat^2</code> means to replace two <code>cats</code> with one <code>owl</code>.</li>
 </ul>
 
@@ -62,49 +62,16 @@ x y or
 <pre>
 x y and
 	true/[and x y]
-	false/and x]
+	false/[and x]
 	false/[and y]
 	false/and
 </pre>
 
 <img src='../media/refs/fraction_and.png' width='150'/>
 
-<h3 id='infinity'>Infinity</h3>
-
-<p>Picked by Cantor for the first infinite ordinal number, infinity is expressed as the letter Omega, ω. It indicates the limit of the sequence of natural numbers 1, 2, 3, 4.. For example, <code>apple^ω</code> means an infinity of apples. Infinity is a saturating value, no finite quantity can be added to or removed from it.</p>
-
-<pre>
-x^ω x      =  x^ω      <i>( No quantity may be added to infinity )</i>
-x^ω /x     =  x^ω      <i>( No quantity may be removed from infinity )</i>
-x^ω x^ω    =  x^ω      <i>( Infinity and infinity makes infinity )</i>
-x^ω y^x    =  x^ω y^ω  <i>( Infinity can spread )</i>
-x^ω /x^ω   =  []       <i>( Infinity can be removed from infinity )</i>
-</pre>
-
-<p>Adding infinity to infinity also equals infinity. To remove an infinity from the bag, the size to remove must also be that of infinity, this deviates from Cantor's infinity which is undefined. In a 16-bit Rejoice system, infinity is any number equal or higher than 32767.</p>
-
-<p>For example, ere is how to use the infinity saturation to clamp a value:</p>
-
-<pre style='margin-bottom:1px'>
-hp^18        <i>( You have 18/25hp )</i>
-hp^10        <i>( Take a potion, add 10hp )</i>
-hp^ω/hp^25   <i>( Clamp hp at 25 )</i>
-hp^25/hp^ω
-</pre>
-<pre>
-[hp^18] hp^10
-[hp^28] hp^ω/hp^25
-[hp^ω] hp^25/hp^ω
-[hp^25]
-</pre>
-
-<ul>
-	<li><b>Saturate</b> <code>( a -- a^a|a^ω ) a^ω/a</code></li>
-</ul>
-
 <h3 id='exponents'>Dynamic Ratios</h3>
 
-<p>When a symbol is used as an exponent, its value is the number of instances of that symbol in the bag at that moment, or zero when it is absent. For example, a fraction containing x^y, the value of y is read as the number of instances of the symbol y in the bag resolved when the fraction is evaluated. The fraction <code>[a a^x]/b</code> can be thought of as <code>a^(1+x)/b</code>. When a symbol used as an exponent is absent from the bag, its value is zero.</p>
+<p>In <a href='fractran.html'>Fractran</a>, a fraction is a constant, but in Rejoice, a fraction is resolved against the bag when it is evaluated, so the same fraction can be a different ratio every time. When a symbol is used as an exponent, its value is the number of instances of that symbol in the bag at that moment, or zero when it is absent. For example, a fraction containing x^y, the value of y is read as the number of instances of the symbol y in the bag resolved when the fraction is evaluated. The fraction <code>[a a^x]/b</code> can be thought of as <code>a^(1+x)/b</code>.</p>
 
 <p>For example, to find the <b>sum</b> of two values, the program creates as many instances of <code>x</code> as there are of <code>y</code>, and then drain the left-over instances of <code>y</code>:</p>
 
@@ -142,10 +109,44 @@ x^6 y^6 equ?
 	<li><b>Equal?</b> <code>( a b -- true|[a b] ) true/[a^b b^a]</code></li>
 	<li><b>Greater?</b> <code>( a b -- [true a^diff]|[a b] ) true/[a^b b^b]</code></li>
 	<li><b>Min</b> <code>( a b -- min^b|min^a ) min^b/[a^b b^b] min^a/[b^a a^a]</code></li>
-	<li><b>Max</b> <code>( a b -- max^a|max^a ) max^a/[a^b b^b] max^b/[b^a a^a]</code></li>
+	<li><b>Max</b> <code>( a b -- max^a|max^b ) max^a/[a^b b^b] max^b/[b^a a^a]</code></li>
 </ul>
 
 <img src='../media/refs/creative_coding_privacy.png' width='300'/>
+
+<h3 id='infinity'>Infinity</h3>
+
+<p>Picked by Cantor for the first infinite ordinal number, infinity is expressed as the letter Omega, ω. It indicates the limit of the sequence of natural numbers 1, 2, 3, 4.. For example, <code>apple^ω</code> means an infinity of apples. Infinity is a saturating value, no finite quantity can be added to or removed from it.</p>
+
+<pre>
+x^ω x         =  x^ω      <i>( No quantity may be added to infinity )</i>
+x^ω /x        =  x^ω      <i>( No quantity may be removed from infinity )</i>
+x^ω x^ω       =  x^ω      <i>( Infinity and infinity makes infinity )</i>
+x^ω y^x       =  x^ω y^ω  <i>( Infinity can spread )</i>
+x^ω /x^ω      =  []       <i>( Infinity can be removed from infinity )</i>
+x^ω y^ω /x^y  =  y^ω      <i>( An exponent that reads ω is ω )</i>
+</pre>
+
+<p>Adding infinity to infinity also equals infinity. To remove an infinity from the bag, the size to remove must also be that of infinity, this deviates from Cantor's infinity which is undefined. In a 16-bit Rejoice system, infinity is any number equal or higher than 32767.</p>
+
+<p>For example, here is how to use the infinity saturation to clamp a value:</p>
+
+<pre style='margin-bottom:1px'>
+hp^18        <i>( You have 18/25hp )</i>
+hp^10        <i>( Take a potion, add 10hp )</i>
+hp^ω/hp^25   <i>( Clamp hp at 25 )</i>
+hp^25/hp^ω
+</pre>
+<pre>
+[hp^18] hp^10
+[hp^28] hp^ω/hp^25
+[hp^ω] hp^25/hp^ω
+[hp^25]
+</pre>
+
+<ul>
+	<li><b>Saturate</b> <code>( a -- a^a|a^ω ) a^ω/a</code></li>
+</ul>
 
 <h3>Absence</h3>
 
