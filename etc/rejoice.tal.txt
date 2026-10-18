@@ -31,13 +31,16 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "16 20 "Oct 20 "2026 0000
+	( date ) "18 20 "Oct 20 "2026 0000
 
 %u16/mod ( a* b* -- a%b* ) {
 	DIV2k MUL2 SUB2 }
 
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
+
+%syms/mask-id ( sym* -- id* ) {
+	#7fff AND2 }
 
 %syms/get-name ( id* -- str* ) {
 	DUP2 ADD2 ;syms/buf ADD2 LDA2 }
@@ -163,7 +166,7 @@
 		[ LIT2 "^ 19 ] DEO
 		OVR #80 AND ?{
 			( num reg ) !u16/<print-dec> }
-		( ref reg ) #7fff AND2 syms/get-name !str/<print> }
+		( ref reg ) syms/mask-id syms/get-name !str/<print> }
 	POP2 JMP2r
 
 @item/parse-any-push ( ztr -- ztr )
@@ -213,7 +216,7 @@
 	INC
 	( | handlers )
 	LDZk ?{ &default #0001 JMP2r }
-	LDZk char/is-dec ?dec-ztr/walk-u16
+	LDZk char/is-dec ?ztr/walk-u16
 	LDZ2k ;inf/glyph NEQ2 ?{ INC INC ;inf JMP2r }
 	DUP symbol/walk #00 ROT syms/find-alloc #8000 ORA2 JMP2r
 
@@ -227,7 +230,7 @@
 @bag/<print> ( to* from* -- )
 	item/not-quote ?{
 		LIT "' char/<print>
-		INC2 INC2 INC2 INC2 }
+		#0004 ADD2 }
 	( | Not quote )
 	SUB2k #0004 GTH2 ?/<print-complex>
 	&>lpb
@@ -321,7 +324,7 @@
 
 @tote/get-register ( item* -- item* value* )
 	INC2k INC2 LDA2 OVR #80 AND ?{ JMP2r }
-	#7fff AND2 /get-addr LDA2 JMP2r
+	syms/mask-id /get-addr LDA2 JMP2r
 
 @tote/<put-print> ( item* name* -- )
 	str/<set-print>
@@ -591,32 +594,6 @@
 (
 @|Stdlib )
 
-@dec-ztr/walk-u16 ( ztr -- ztr u16* )
-	[ LIT2r 0000 ]
-	&>w16
-		LDZk LIT "0 SUB DUP #0a LTH ?{
-			POP STH2r #7fff AND2 JMP2r }
-		[ LIT2r 000a ] MUL2r [ LITr 00 ] STH
-		ADD2r INC !/>w16
-
-@str/<print> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	( | esc )
-	[ LIT &+esc 01 ] ?{
-		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape } }
-	char/<print>
-	INC2 !/<print>
-
-@str/<set-print> ( -- )
-	[ LIT2 18 _char/port ] STR
-	[ LIT2 00 _&+esc ] STR
-	JMP2r
-
-@str/<set-debug> ( -- )
-	[ LIT2 19 _char/port ] STR
-	[ LIT2 01 _&+esc ] STR
-	JMP2r
-
 @char/<print-digit> ( d -- )
 	LIT "0 ADD
 	( >> )
@@ -630,9 +607,23 @@
 	[ LIT "n ] NEQ ?{ #0a JMP2r }
 	#20 JMP2r
 
-@ztr/walk-ws ( ztr -- ztr )
-	LDZk #20 NEQ ?{ INC !/walk-ws }
+@str/<set-print> ( -- )
+	[ LIT2 18 _char/port ] STR
+	[ LIT2 00 _&+esc ] STR
 	JMP2r
+
+@str/<set-debug> ( -- )
+	[ LIT2 19 _char/port ] STR
+	[ LIT2 01 _&+esc ] STR
+	JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	( | esc )
+	[ LIT &+esc 01 ] ?{
+		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape } }
+	char/<print>
+	INC2 !/<print>
 
 @str/cmp ( a* b* -- bool )
 	STH2
@@ -640,6 +631,23 @@
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?/d
 		INC2 INC2r !/>wc
+
+@ztr/walk-ws ( ztr -- ztr )
+	LDZk #20 NEQ ?{ INC !/walk-ws }
+	JMP2r
+
+@ztr/walk-u16 ( ztr -- ztr u16* )
+	[ LIT2r 0000 ]
+	&>w16
+		LDZk LIT "0 SUB DUP #0a LTH ?{
+			POP STH2r
+			( clamp ) ;inf LTH2k ?{ SWP2 }
+			POP2 JMP2r }
+		#00 SWP STH2r SWP2 OVR2 #0ccd LTH2 ?{ POP2 POP2 ;inf !/>st }
+	SWP2 #000a MUL2 ADD2
+	&>st
+		STH2
+		INC !/>w16
 
 @u16/<print-dec> ( u16* -- )
 	DUP2 ;inf NEQ2 ?{ POP2 ;dict/inf !str/<print> }
