@@ -505,3 +505,21 @@ examples.fractran=`( This is a Fractran program )
 ( When no fractions can be applied,
   the Fractran program ends. )
 `
+examples.five_philosophers=`( Five philosophers, five forks.
+  Eating takes both forks in one atomic step. )
+
+f1 f2 f3 f4 f5
+h1 h2 h3 h4 h5
+
+@Dine
+	[Dine e1 ."1 eats"\\n]/[h1 f1 f2]
+	[Dine e2 ."2 eats"\\n]/[h2 f2 f3]
+	[Dine e3 ."3 eats"\\n]/[h3 f3 f4]
+	[Dine e4 ."4 eats"\\n]/[h4 f4 f5]
+	[Dine e5 ."5 eats"\\n]/[h5 f5 f1]
+	[Dine f1 f2 ."1 done"\\n]/e1
+	[Dine f2 f3 ."2 done"\\n]/e2
+	[Dine f3 f4 ."3 done"\\n]/e3
+	[Dine f4 f5 ."4 done"\\n]/e4
+	[Dine f5 f1 ."5 done"\\n]/e5
+`
