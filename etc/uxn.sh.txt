@@ -1,0 +1,1355 @@
+#!bin/sh
+#
+# uxn.sh
+# Copyright (c) 2026 Dominik Joe Pantucek
+
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the “Software”), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# Dependencies:
+# - mktemp (tempfile is enough, but in most distros it complains about being deprecated)
+# - xxd (ROM loading, character input, argument parsing)
+# - sed (not necessary, but speeds ROM loading up significantly)
+# - dd (character input)
+#
+#set -x
+
+################################################################
+# Block Memory Implementation
+###############################################################
+
+# BMI Latch Register
+bmiltc=
+
+# BMI Write Register
+bmiwrr=
+
+# Pack latch
+pltc=
+
+#
+# $1..$4 - bytes
+pack_dword() {
+    pltc=$(($1 | ($2 << 8) | ($3 << 16) | ($4 << 24)))
+}
+
+# $1 - dword
+# $2 - 0-3
+dword_get_byte() {
+    bmiltc=$((255 & ($1 >> ($2 << 3))))
+}
+
+#
+# Gets given index from data block
+# $1 - index
+# $2..$5 - dwords
+block_get_val() {
+    local idx
+    idx=$1
+    shift $((($1 >> 2) + 1))
+    bmiltc=$((255 & ($1 >> ((idx & 3) << 3))))
+}
+
+#
+# Returns updated data block
+# $1 - index
+# $2 - value
+# $3..$6 - dwords
+block_set_val() {
+    case $(($1 >> 2)) in
+	0) bmiwrr="$(($3 & (~ (255 << (($1 & 3) << 3))) | ($2 << (($1 & 3) << 3)))) $4 $5 $6"
+	   ;;
+	1) bmiwrr="$3 $(($4 & (~ (255 << (($1 & 3) << 3))) | ($2 << (($1 & 3) << 3)))) $5 $6"
+	   ;;
+	2) bmiwrr="$3 $4 $(($5 & (~ (255 << (($1 & 3) << 3))) | ($2 << (($1 & 3) << 3)))) $6"
+	   ;;
+	3) bmiwrr="$3 $4 $5 $(($6 & (~ (255 << (($1 & 3) << 3))) | ($2 << (($1 & 3) << 3))))"
+	   ;;
+    esac
+}
+
+#
+# Creates an empty block
+block_create() {
+    bmiwrr="0 0 0 0"
+}
+
+#
+# Creates a memory backed by variables
+# $1 - variable name
+# $2 - number of blocks
+blockmem_init() {
+    local idx eb
+    eval "$1i=$2"
+    block_create
+    idx=0
+    while [ $idx -lt $2 ] ; do
+	eval "$1$idx='$bmiwrr'"
+	idx=$((idx + 1))
+    done
+}
+
+#
+# Prints the block memory matrix
+# $1 - name
+blockmem_print() {
+    local nb idx
+    echo "[Mem]$1"
+    eval "nb=\$$1i"
+    idx=0
+    while [ $idx -lt $nb ] ; do
+	eval "echo \$$1$idx"
+	idx=$((idx + 1))
+    done
+}
+
+#
+# Updates a value in block memory by adjusting appropriate block
+# $1 - name
+# $2 - offset
+# $3 - value
+blockmem_write() {
+    local bn cb
+    bn=$(($2 >> 4))
+    eval "cb=\$$1$bn"
+    block_set_val $(($2 & 15)) $3 $cb
+    eval "$1$bn='$bmiwrr'"
+}
+
+#
+# Reads a single value
+# $1 - name
+# $2 - offset
+blockmem_read() {
+    local bn cb
+    bn=$(($2 >> 4))
+    eval "cb=\$$1$bn"
+    block_get_val $(($2 & 15)) $cb
+}
+
+# End of Block Memory Implementation
+################################################################
+
+################################
+# Block Memory Areas
+blockmem_init st 32
+blockmem_init dm 16
+blockmem_init mb 4096
+
+################################
+# Integer ALU
+
+# Global ALU Latch register
+alultc=
+
+#
+# Converts 4-bit number to hex
+# $1 - 0..15
+nibble_to_hex() {
+    case $1 in
+	10) alultc=a ;;
+	11) alultc=b ;;
+	12) alultc=c ;;
+	13) alultc=d ;;
+	14) alultc=e ;;
+	15) alultc=f ;;
+	*) alultc=$1 ;;
+    esac
+}
+
+#
+# Converts byte number 0..255 to hex 00..FF
+# $1 - 0..255
+byte_to_hex() {
+    local l h L
+    l=$(($1 & 15))
+    h=$((( $1 >> 4 ) & 15))
+    nibble_to_hex $l
+    L=$alultc
+    nibble_to_hex $h
+    alultc=$alultc$L
+}
+
+#
+# Binary output
+output_byte() {
+    byte_to_hex $1
+    echo $alultc | xxd -r -p
+}
+
+################################
+# Generic stacks
+
+# Stack pointers and pointer latch
+stksptrs=0
+
+#
+# Pushes a byte onto the stack
+# $1 - stack number: 0 or 1
+# $2 - byte to push: 0..255
+stk_push_byte() {
+    local ptr nptr
+    ptr=$(((stksptrs >> ($1 << 3)) & 255))
+    blockmem_write st $((($1 << 8) + ptr)) $2
+    nptr=$(((ptr + 1) & 255))
+    stksptrs=$(((stksptrs & (0xff00 >> ($1 << 3))) | (nptr << ($1 << 3))))
+}
+
+#
+# Pops a byte from the stack
+# $1 - stack number: 0 or 1
+stk_pop_byte() {
+    local nptr
+    nptr=$(((((stksptrs >> ($1 << 3)) & 255) + 255 ) & 255))
+    blockmem_read st $((($1 << 8) + nptr))
+    blockmem_write st $((($1 << 8) + nptr)) 0
+    stksptrs=$(((stksptrs & (0xff00 >> ($1 << 3))) | (nptr << ($1 << 3))))
+}
+
+#
+# Gets a byte from the stack
+# $1 - stack number
+# $2 - offset (typically 0, 1, or 2)
+stk_get_byte() {
+    blockmem_read st $((($1 << 8) + (( ((stksptrs >> ($1 << 3)) & 255) - $2 + 255 ) & 255)))
+}
+
+#
+# Gets a word from the stack, points at low byte, low byte is in the
+# +1 address further on the stack (which is lower address in stack
+# memory)
+# $1 - stack number
+# $2 - offset (typically 0, 1, or 2)
+stk_get_word() {
+    local ha l
+    stk_get_byte $1 $2
+    l=$bmiltc
+    ha=$(($2 + 1))
+    stk_get_byte $1 $ha
+    bmiltc=$(((bmiltc << 8) + l))
+}
+
+#
+# Prints stack for debugging
+# $1 - stack number: 0 or 1
+stk_print() {
+    local ptr cptr b hh
+    ptr=$(((stksptrs >> ($1 << 3)) & 255))
+    cptr=$((( ptr - 8 + 256 ) & 255))
+    while [ $cptr -ne $ptr ] ; do
+	blockmem_read st $((($1 << 8) + cptr))
+	byte_to_hex $bmiltc
+	echo -n $alultc
+	cptr=$((( cptr + 1 ) & 255))
+	if [ $cptr -eq 0 ] ; then
+	    echo -n  "|"
+	else
+	    echo -n " "
+	fi
+    done
+    echo -n "<"
+    byte_to_hex $ptr
+    echo $alultc
+}
+
+#
+# Prints both stacks for debugging
+stks_print() {
+    echo -n "WST "
+    stk_print 0 16
+    echo -n "RST "
+    stk_print 1 16
+}
+
+################################
+# Stack words
+
+#
+# Pushes a word onto a stack, lower byte first
+# $1 - stack number: 0 or 1
+# $2 - word: 0..65535
+stk_push_word() {
+    stk_push_byte $1 $(($2 >> 8))
+    stk_push_byte $1 $(($2 & 255))
+}
+
+#
+# Pops a word from the stack, lower byte first
+# $1 - stack number: 0 or 1
+stk_pop_word() {
+    local ptr nptr l
+    ptr=$(((stksptrs >> ($1 << 3)) & 255))
+    nptr=$((( ptr + 255 ) & 255))
+    blockmem_read st $((($1 << 8) + nptr))
+    l=$bmiltc
+    blockmem_write st $((($1 << 8) + nptr)) 0
+    nptr=$((( ptr + 254 ) & 255))
+    blockmem_read st $((($1 << 8) + nptr))
+    blockmem_write st $((($1 << 8) + nptr)) 0
+    bmiltc=$((($bmiltc << 8) + $l))
+    stksptrs=$(((stksptrs & (0xff00 >> ($1 << 3))) | (nptr << ($1 << 3))))
+}
+
+
+################################
+# ROM Support
+
+#
+# $1.. hex bytes
+rom_row_convert() {
+    local num
+    while [ -n "$1" ] ; do
+	num=$((0x$1))
+	echo -n "$num "
+	shift
+    done
+    echo 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+}
+rom_row_pad() {
+    echo "$1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16}"
+}
+rom_row_pack() {
+    pack_dword $1 $2 $3 $4
+    echo -n "$pltc "
+    shift 4
+    pack_dword $1 $2 $3 $4
+    echo -n "$pltc "
+    shift 4
+    pack_dword $1 $2 $3 $4
+    echo -n "$pltc "
+    shift 4
+    pack_dword $1 $2 $3 $4
+    echo "$pltc "
+    shift 4
+}
+
+#
+# Loads ROM into current memory
+# $1 - path to ROM iamge
+rom_load() {
+    local blk nums tmp 
+    tmp=`mktemp`
+    blk=16
+    xxd -p -c 16 $1 | sed 's/../& /g' >$tmp
+    while read row ; do
+	nums=`rom_row_convert $row`
+	nums=`rom_row_pad $nums`
+	nums=`rom_row_pack $nums`
+	eval "mb$blk='$nums'"
+	blk=$((blk + 1))
+    done <$tmp
+    rm $tmp
+}
+
+################################
+# Memory support
+
+#
+# Reads a single byte from given bank
+# $1 - 0..65535 address
+mem_read_byte() {
+    blockmem_read mb $1
+}
+
+#
+# Writes a single byte to given bank
+# $1 - 0..65535 address
+# $2 - 0..255 byte to write
+mem_write_byte() {
+    blockmem_write mb $1 $2
+}
+
+mem_read_word() {
+    local h a
+    blockmem_read mb $1
+    h=$bmiltc
+    a=$((( $1 + 1 ) & 65535))
+    blockmem_read mb $a
+    bmiltc=$((($h << 8) + $bmiltc))
+}
+
+mem_write_word() {
+    blockmem_write mb $1 $(($2 >> 8))
+    blockmem_write mb $((( $1 + 1 ) & 65535)) $(($2 & 255))
+}
+
+################################
+# CPU
+
+#
+# Program Counter
+CPUPC=0
+
+#
+# Prints the nul-terminated string
+# $1 - address in bank0
+system_metadata() {
+    local off byt
+    off=$(($1 + 1))
+    byt=256
+    mem_read_byte $1
+    while [ $byt -ne 0 ] ; do
+	# echo $byt $off
+	mem_read_byte $off
+	byt=$bmiltc
+	if [ $byt -ne 0 ] ; then
+	    output_byte $byt
+	fi
+	off=$((off + 1))
+    done
+    echo
+}
+
+#
+# Handles device output message
+# $1 - port
+# $2 - value (byte or word)
+# $3 - if 1, word, if 0, byte
+device_output() {
+    local tp
+    if [ $3 -eq 1 ] ; then
+	tp=word
+    else
+	tp=byte
+    fi
+    case $3 in
+	0) blockmem_write dm $1 $2 ;;
+	1) blockmem_write dm $1 $(($2 >> 8))
+	   blockmem_write dm $((( $1 + 1 ) & 255)) $(($2 & 255))
+	   ;;
+    esac
+    case $1 in
+	6) # 06 System/metadata, expects word
+	    if [ $3 -eq 1 ] ; then
+		system_metadata $2 >&2
+	    fi
+	    ;;
+	15) # 0f System/exitcode
+	    if [ $2 -gt 0 ] ; then
+		vmpower=0
+		vmexit=$(($2 & 127))
+	    fi
+	    ;;
+	16) # Console/vector
+	    if [ $3 -eq 1 ] ; then
+		convec=$2
+	    fi
+	    ;;
+	24) # 18 Console/write
+	    output_byte $2
+	    ;;
+	25) # 18 Console/error
+	    output_byte $2 >&2
+	    ;;
+    esac
+}
+
+#
+# Runs the CPU loop
+cpu_run() {
+    running=1
+    while [ $running -eq 1 ] ; do
+	blockmem_read mb $CPUPC
+	CPUPC=$((( CPUPC + 1 ) & 65535))
+	# cpu_fetch_byte
+	opc=$(($bmiltc & 31))
+	fl2=$((( $bmiltc >> 5 ) & 1))
+	flr=$((( $bmiltc >> 6 ) & 1))
+	flk=$((( $bmiltc >> 7 ) & 1))
+	case $opc in
+	    0) case $flk$flr$fl2 in
+		   100|110) # LIT
+		       blockmem_read mb $CPUPC
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       # cpu_fetch_byte
+		       stk_push_byte $flr $bmiltc
+		       ;;
+		   101|111) # LIT2
+		       blockmem_read mb $CPUPC
+		       h=$bmiltc
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       blockmem_read mb $CPUPC
+		       bmiltc=$(((h << 8) + bmiltc))
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       # cpu_fetch_word
+		       stk_push_word $flr $bmiltc
+		       ;;
+		   001) # JCI
+		       blockmem_read mb $CPUPC
+		       h=$bmiltc
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       blockmem_read mb $CPUPC
+		       bmiltc=$(((h << 8) + bmiltc))
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       # cpu_fetch_word
+		       ad=$bmiltc
+		       stk_pop_byte 0
+		       if [ $bmiltc -ne 0 ] ; then
+			   CPUPC=$(((CPUPC + ad) & 65535))
+		       fi
+		       ;;
+		   011) # JSI
+		       blockmem_read mb $CPUPC
+		       h=$bmiltc
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       blockmem_read mb $CPUPC
+		       bmiltc=$(((h << 8) + bmiltc))
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       # cpu_fetch_word
+		       stk_push_word 1 $CPUPC
+		       CPUPC=$(((CPUPC + bmiltc) & 65535))
+		       ;;
+		   010) # JMI
+		       blockmem_read mb $CPUPC
+		       h=$bmiltc
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       blockmem_read mb $CPUPC
+		       bmiltc=$(((h << 8) + bmiltc))
+		       CPUPC=$((( CPUPC + 1 ) & 65535))
+		       # cpu_fetch_word
+		       CPUPC=$(((CPUPC + bmiltc) & 65535))
+		       ;;
+		   000) # BRK
+		       running=0
+		       ;;
+	       esac
+	       ;;
+	    28) # AND
+		case $flk$fl2 in 
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $((bmiltc & b))
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $((bmiltc & b))
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $((bmiltc & b))
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $((bmiltc & b))
+			;;
+		esac
+		;;
+	    24) # ADD
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $(((bmiltc + b) & 255))
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $(((bmiltc + b) & 65535))
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $(((bmiltc + b) & 255))
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $(((bmiltc + b) & 65535))
+			;;
+		esac
+		;;
+	    23) # DEO
+		case $flk in
+		    0) stk_pop_byte $flr ;;
+		    1) stk_get_byte $flr 0 ;;
+		esac
+		prt=$bmiltc
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr ;;
+		    01) stk_pop_word $flr ;;
+		    10) stk_get_byte $flr 1 ;;
+		    11) stk_get_word $flr 2 ;;
+		esac
+		device_output $prt $bmiltc $fl2
+		;;
+	    6) # DUP
+		case $flk$fl2 in
+		    00) stk_get_byte $flr 0
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) stk_get_word $flr 0
+			stk_push_word $flr $bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			stk_push_byte $flr $bmiltc
+			stk_push_byte $flr $bmiltc
+			;;
+		    11)
+			stk_get_word $flr 0
+			stk_push_word $flr $bmiltc
+			stk_push_word $flr $bmiltc
+			;;
+		esac
+		;;
+	    1) # INC
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			stk_push_byte $flr $(((bmiltc + 1) & 255))
+			;;
+		    01) stk_pop_word $flr
+			stk_push_word $flr $(((bmiltc + 1) & 65535))
+			;;
+		    10) stk_get_byte $flr 0
+			stk_push_byte $flr $(((bmiltc + 1) & 255))
+			;;
+		    11) stk_get_word $flr 0
+			stk_push_word $flr $(((bmiltc + 1) & 65535))
+			;;
+		esac
+		;;
+	    8) # EQU
+		local b
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			;;
+		esac
+		stk_push_byte $flr $((bmiltc == b))
+		;;
+	    15) # STH
+		dst=$((1 - $flr))
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			stk_push_byte $dst $bmiltc
+			;;
+		    01) stk_pop_word $flr
+			stk_push_word $dst $bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			stk_push_byte $dst $bmiltc
+			;;
+		    11) stk_get_word $flr 0
+			stk_push_word $dst $bmiltc
+			;;
+		esac
+		;;
+	    12) # JMP
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			CPUPC=$(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			;;
+		    01) stk_pop_word $flr
+			CPUPC=$bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			CPUPC=$(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			;;
+		    11) stk_get_word $flr 0
+			CPUPC=$bmiltc
+			;;
+		esac
+		;;
+	    10) # GTH
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			;;
+		esac
+		stk_push_byte $flr $((bmiltc > b))
+		;;
+	    26) # MUL
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $(((bmiltc * b) & 255))
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $(((bmiltc * b) & 65535))
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $(((bmiltc * b) & 255))
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $(((bmiltc * b) & 65535))
+			;;
+		esac
+		;;
+	    20) # LDA
+		case $flk$fl2 in
+		    00) stk_pop_word $flr
+			mem_read_byte $bmiltc
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) stk_pop_word $flr
+			mem_read_word $bmiltc
+			stk_push_word $flr $bmiltc
+			;;
+		    10) stk_get_word $flr 0
+			mem_read_byte $bmiltc
+			stk_push_byte $flr $bmiltc
+			;;
+		    11) stk_get_word $flr 0
+			mem_read_word $bmiltc
+			stk_push_word $flr $bmiltc
+			;;
+		esac
+		;;
+	    31) # SFT
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			bth=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $((((bmiltc >> (bth & 15)) << (( bth >> 4 ) & 15)) & 255))
+			;;
+		    01) stk_pop_byte $flr
+			bth=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $((((bmiltc >> (bth & 15)) << (( bth >> 4 ) & 15)) & 65535))
+			;;
+		    10) stk_get_byte $flr 0
+			bth=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $((((bmiltc >> (bth & 15)) << (( bth >> 4 ) & 15)) & 255))
+			;;
+		    11) stk_get_byte $flr 0
+			bth=$bmiltc
+			stk_get_word $flr 1
+			stk_push_word $flr $((((bmiltc >> (bth & 15)) << (( bth >> 4 ) & 15)) & 65535))
+			;;
+		esac
+		;;
+	    14) # JSR
+		stk_push_word $((1 - $flr)) $CPUPC
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			CPUPC=$(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			;;
+		    01) stk_pop_word $flr
+			CPUPC=$bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			CPUPC=$(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			;;
+		    11) stk_get_word $flr 0
+			CPUPC=$bmiltc
+			;;
+		esac
+		;;
+	    2) # POP
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr ;;
+		    01) stk_pop_word $flr ;;
+		    # Nop otherwise
+		esac
+		;;
+	    5) # ROT
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			c=$bmiltc
+			stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $b
+			stk_push_byte $flr $c
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) stk_pop_word $flr
+			c=$bmiltc
+			stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $b
+			stk_push_word $flr $c
+			stk_push_word $flr $bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			c=$bmiltc
+			stk_get_byte $flr 1
+			b=$bmiltc
+			stk_get_byte $flr 2
+			stk_push_byte $flr $b
+			stk_push_byte $flr $c
+			stk_push_byte $flr $bmiltc
+			;;
+		    11) stk_get_word $flr 0
+			c=$bmiltc
+			stk_get_word $flr 2
+			b=$bmiltc
+			stk_get_word $flr 4
+			stk_push_word $flr $b
+			stk_push_word $flr $c
+			stk_push_word $flr $bmiltc
+			;;
+		esac
+		;;
+	    4) # SWP
+		case $flk$fl2 in
+		    00) # byte
+			stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $b
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) # word
+			stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $b
+			stk_push_word $flr $bmiltc
+			;;
+		    10) # byte
+			stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $b
+			stk_push_byte $flr $bmiltc
+			;;
+		    11) # word
+			stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $b
+			stk_push_word $flr $bmiltc
+			;;
+		esac
+		;;
+	    3) # NIP
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $b
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $b
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $b
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $b
+			;;
+		esac
+		;;
+	    27) # DIV
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			if [ $b -eq 0 ] ; then
+			    stk_push_byte $flr 0
+			else
+			    stk_push_byte $flr $((bmiltc / b))
+			fi
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			if [ $b -eq 0 ] ; then
+			    stk_push_word $flr 0
+			else
+			    stk_push_word $flr $((bmiltc / b))
+			fi
+			;;
+		    10) stk_get_byte $flr 0
+			if [ $bmiltc -eq 0 ] ; then
+			    stk_push_byte $flr 0
+			else
+			    b=$bmiltc
+			    stk_get_byte $flr 1
+			    stk_push_byte $flr $((bmiltc / b))
+			fi
+			;;
+		    11) stk_get_word $flr 0
+			if [ $bmiltc -eq 0 ] ; then
+			    stk_push_word $flr 0
+			else
+			    b=$bmiltc
+			    stk_get_word $flr 2
+			    stk_push_word $flr $((bmiltc / b))
+			fi
+			;;
+		esac
+		;;
+	    9) # NEQ
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			;;
+		esac
+		stk_push_byte $flr $((bmiltc != b))
+		;;
+	    11) # LTH
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			;;
+		esac
+		stk_push_byte $flr $((bmiltc < b))
+		;;
+	    13) # JCN
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			ad=$bmiltc
+			stk_pop_byte $flr
+			if [ $bmiltc -ne 0 ] ; then
+			    CPUPC=$(((CPUPC + (ad >> 7) * (ad - 256) + (1 - (ad >>7)) * ad) & 65535))
+			fi
+			;;
+		    01) stk_pop_word $flr
+			ad=$bmiltc
+			stk_pop_byte $flr
+			if [ $bmiltc -ne 0 ] ; then
+			    CPUPC=$ad
+			fi
+			;;
+		    10) stk_get_byte $flr 0
+			ad=$bmiltc
+			stk_get_byte $flr 1
+			if [ $bmiltc -ne 0 ] ; then
+			    CPUPC=$(((CPUPC + (ad >> 7) * (ad - 256) + (1 - (ad >> 7)) * ad) & 65535))
+			fi
+			;;
+		    11) stk_get_word $flr 0
+			ad=$bmiltc
+			stk_get_byte $flr 2
+			if [ $bmiltc -ne 0 ] ; then
+			    CPUPC=$ad
+			fi
+			;;
+		esac
+		;;
+	    25) # SUB
+		case $flk$fl2 in
+		    00) # byte
+			stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $(((bmiltc - b + 65536) & 255))
+			;;
+		    01) # word
+			stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $(((bmiltc - b + 65536) & 65535))
+			;;
+
+		    10) # byte
+			stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $(((bmiltc - b + 65536) & 255))
+			;;
+		    11) # word
+			stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $(((bmiltc - b + 65536) & 65535))
+			;;
+		esac
+		;;
+	    29) # ORA
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $((bmiltc | b))
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $((bmiltc | b))
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $((bmiltc | b))
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $((bmiltc | b))
+			;;
+		esac
+		;;
+	    16) # LDZ
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			mem_read_byte $bmiltc
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) stk_pop_byte $flr
+			ad=$bmiltc
+			mem_read_byte $ad
+			h=$bmiltc
+			ad=$((( ad + 1 ) & 255))
+			mem_read_byte $ad
+			stk_push_word $flr $(((h << 8) + bmiltc))
+			;;
+		    10) stk_get_byte $flr 0
+			mem_read_byte $bmiltc
+			stk_push_byte $flr $bmiltc
+			;;
+		    11) stk_get_byte $flr 0
+			ad=$bmiltc
+			mem_read_byte $ad
+			h=$bmiltc
+			ad=$((( ad + 1 ) & 255))
+			mem_read_byte $ad
+			stk_push_word $flr $(((h << 8) + bmiltc))
+			;;
+		esac
+		;;
+	    30) # EOR
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $((bmiltc ^ b))
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $((bmiltc ^ b))
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $((bmiltc ^ b))
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $((bmiltc ^ b))
+			;;
+		esac
+		;;
+	    18) # LDR
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			mem_read_byte $(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) stk_pop_byte $flr
+			mem_read_word $(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			stk_push_word $flr $bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			mem_read_byte $(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			stk_push_byte $flr $bmiltc
+			;;
+		    11) stk_get_byte $flr 0
+			mem_read_word $(((CPUPC + (bmiltc >> 7) * (bmiltc - 256) + (1 - (bmiltc >> 7)) * bmiltc) & 65535))
+			stk_push_word $flr $bmiltc
+			;;
+		esac
+		;;
+	    21) # STA
+		case $flk$fl2 in
+		    00) stk_pop_word $flr
+			ad=$bmiltc
+			stk_pop_byte $flr
+			mem_write_byte $ad $bmiltc
+			;;
+		    01) stk_pop_word $flr
+			ad=$bmiltc
+			stk_pop_word $flr
+			mem_write_word $ad $bmiltc
+			;;
+		    10) stk_get_word $flr 0
+			ad=$bmiltc
+			stk_get_byte $flr 2
+			mem_write_byte $ad $bmiltc
+			;;
+		    11) stk_get_word $flr 0
+			ad=$bmiltc
+			stk_get_word $flr 2
+			mem_write_word $ad $bmiltc
+			;;
+		esac
+		;;
+	    17) # STZ
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			ad=$bmiltc
+			stk_pop_byte $flr
+			mem_write_byte $ad $bmiltc
+			;;
+		    01) stk_pop_byte $flr
+			ad=$bmiltc
+			stk_pop_word $flr
+			mem_write_byte $ad $((bmiltc >> 8))
+			mem_write_byte $((( ad + 1 ) & 255)) $((bmiltc & 255))
+			;;
+
+		    10) stk_get_byte $flr 0
+			ad=$bmiltc
+			stk_get_byte $flr 1
+			mem_write_byte $ad $bmiltc
+			;;
+		    11) stk_get_byte $flr 0
+			ad=$bmiltc
+			stk_get_word $flr 1
+			mem_write_byte $ad $((bmiltc >> 8))
+			mem_write_byte $((( ad + 1 ) & 255)) $((bmiltc & 255))
+			;;
+		esac
+		;;
+	    19) # STR
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			ad=$bmiltc
+			stk_pop_byte $flr
+			mem_write_byte $(((CPUPC + (ad >> 7) * (ad - 256) + (1 - (ad >> 7)) * ad) & 65535)) $bmiltc
+			;;
+		    01) stk_pop_byte $flr
+			ad=$bmiltc
+			stk_pop_word $flr
+			mem_write_word $(((CPUPC + (ad >> 7) * (ad - 256) + (1 - (ad >> 7)) * ad) & 65535)) $bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			ad=$bmiltc
+			stk_get_byte $flr 1
+			mem_write_byte $(((CPUPC + (ad >> 7) * (ad - 256) + (1 - (ad >> 7)) * ad) & 65535)) $bmiltc
+			;;
+		    11) stk_get_byte $flr 0
+			ad=$bmiltc
+			stk_get_word $flr 1
+			mem_write_word $(((CPUPC + (ad >> 7) * (ad - 256) + (1 - (ad >> 7)) * ad) & 65535)) $bmiltc
+			;;
+		esac
+		;;
+	    7) # OVR
+		case $flk$fl2 in
+		    00) stk_pop_byte $flr
+			b=$bmiltc
+			stk_pop_byte $flr
+			stk_push_byte $flr $bmiltc
+			stk_push_byte $flr $b
+			stk_push_byte $flr $bmiltc
+			;;
+		    01) stk_pop_word $flr
+			b=$bmiltc
+			stk_pop_word $flr
+			stk_push_word $flr $bmiltc
+			stk_push_word $flr $b
+			stk_push_word $flr $bmiltc
+			;;
+		    10) stk_get_byte $flr 0
+			b=$bmiltc
+			stk_get_byte $flr 1
+			stk_push_byte $flr $bmiltc
+			stk_push_byte $flr $b
+			stk_push_byte $flr $bmiltc
+			;;
+		    11) stk_get_word $flr 0
+			b=$bmiltc
+			stk_get_word $flr 2
+			stk_push_word $flr $bmiltc
+			stk_push_word $flr $b
+			stk_push_word $flr $bmiltc
+			;;
+		esac
+		;;
+	    22) # DEI
+		case $flk in
+		    0) stk_pop_byte $flr
+		       prt=$bmiltc
+		       ;;
+		    1) stk_get_byte $flr 0
+		       prt=$bmiltc
+		       ;;
+		esac
+		case $fl2 in
+		    0) blockmem_read dm $prt
+		       num=$bmiltc
+		       stk_push_byte $flr $bmiltc
+		       ;;
+		    1) blockmem_read dm $prt
+		       num=$bmiltc
+		       stk_push_byte $flr $bmiltc
+		       prt=$((( prt + 1 ) & 255))
+		       blockmem_read dm $prt
+		       stk_push_byte $flr $bmiltc
+		       ;;
+		esac
+		;;
+	esac
+    done
+}
+
+#
+# Construct cmdline stream
+argsa=
+parse_arg() {
+    echo "$@" | xxd -p | sed 's/../& /g'
+}
+parse_cmdline() {
+    local parg
+    while [ -n "$1" ] ; do
+	parg=`parse_arg $1`
+	argsa="$argsa$parg"
+	shift
+    done
+}
+
+#
+# Sends a single argument byte to the console vector
+# $1.. - argsa
+send_arg_byte() {
+    blockmem_write dm 18 $((0x$1))
+    if [ "$1" = "0a" ] ; then
+	blockmem_write dm 23 3
+    else
+	blockmem_write dm 23 2
+    fi
+    shift
+    if [ -z "$2" ] ; then
+	shift
+    fi
+    argsa="$*"
+}
+
+################################
+# Main
+
+if [ -z "$1" ] ; then
+    echo "Usage: $0 image.rom args"
+    exit 1
+fi
+rom_load $1
+shift
+parse_cmdline "$@"
+CPUPC=256
+vmpower=1
+vmexit=128
+convec=0
+if [ -z "$argsa" ] ; then
+    wargs=0
+    blockmem_write dm 23 0
+else
+    wargs=1
+    blockmem_write dm 23 1
+fi
+cpu_run # boot vector
+while [ $vmpower -eq 1 ] ; do
+    # Try command-line arguments first
+    if [ -n "$argsa" ] ; then
+	# echo "argsa: $argsa"
+	send_arg_byte $argsa
+    else
+	# Maybe end of arguments
+	if [ $wargs -eq 1 ] ; then
+	    # echo wargs
+	    wargs=0
+	    blockmem_write dm 23 4
+	    blockmem_write dm 18 10
+	else
+	    # Then console
+	    # echo console
+	    inch=`dd bs=1c count=1 status=none 2>/dev/null|xxd -p`
+	    if [ -n "$inch" ] ; then
+		blockmem_write dm 23 1
+		# echo converted $inch to $alultc >&2
+		blockmem_write dm 18 $((0x$inch))
+	    else
+		# echo finishing >&2
+		blockmem_write dm 23 4
+	    fi
+	fi
+    fi
+    if [ $convec -gt 0 ] ; then
+	CPUPC=$convec
+	cpu_run
+	# stks_print >&2
+	# blockmem_print mb >&2
+    fi
+    sleep 0.0167
+done
+exit $vmexit
