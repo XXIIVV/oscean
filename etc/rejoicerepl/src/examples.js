@@ -2,17 +2,19 @@ let examples={}
 examples.hello_world=`( The forge contains 3 ingots of lead )
 lead^3
 
+( Add mercury and sulfur )
+mercury sulfur
+
 ( Double the amount of ingots, add the philosopher's stone )
 lead^lead stone
 
 ( The philosopher stone turns four ingots into gold )
-'gold/[stone lead^4]
+'gold/[stone lead^6 mercury sulfur]->Success
 
-( Inspect the result )
-take ."It's " [True Fool]/[take gold]
+@Failure ."It didn't work!" ->End
+@Success ."It's gold!" ->End
 
-@Fool  .pyrite.. End
-@True  .gold! @End`
+@End`
 examples.fractions=`( A whole number, equal to 7/1 )
 7
 
@@ -36,9 +38,9 @@ i^2 pow^4
 
 @Loop ( n i -- n i )     
 	( lteq=pow<=n ) t^n lteq/t^pow []/[t^t pow^pow]
-	( lteq..Prime ) Lteq/lteq ." is prime" End @Lteq
+	( lteq..Prime ) /lteq->Lteq ." is prime" ->End @Lteq
 	( rem=n%i )     t^n '[]/t^i rem/t []/t^t
-	[Loop i pow^i pow^i pow]/rem
+	[i pow^i pow^i pow]/rem->Loop
 
 ." is not prime" @End
 `
@@ -64,11 +66,11 @@ examples.product=`( Generate the multiplication table up to 12x12 )
 	@Row ( y -- y )
 		x
 		( x y2 mul ) y2^y '[res^x]/y2
-		( pad ) [Skip-c res^100]/res^100 .\\s @Skip-c
-		( pad ) [Skip-d res^10]/res^10   .\\s @Skip-d
+		( pad ) res^100/res^100->Skip-c .\\s @Skip-c
+		( pad ) res^10/res^10->   .\\s @Skip-d
 		( res ) .#res/res^res
-		[]/x^12 [Row x .\\s]/x
-	[]/y^12 [Col y .\\n]/y
+		[]/x^12 [x .\\s]/x->Row
+	[]/y^12 [y .\\n]/y->Col
 `
 examples.gcd=`( A program to find the GCD of two numbers,
 	and print the result )
@@ -80,32 +82,20 @@ x^6 y^15
 @Gcd ( x y -- x )
 	'z/[x y]
 	[y^x x^z]/[x^x z^z]
-	[Gcd y]/y
+	y/y->Gcd
 
 .#x
-`
-examples.random=`( Flip a coin and print the result )
-
-[Head Tail]
-
-@Head 
-	."You flipped head" Halt
-	
-@Tail 
-	."You flipped tail"
-	
-@Halt
 `
 examples.sort=`( Sort numbers in a list from largest to smallest )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
 
 @Loop ( -- )
-	[true b^a]/b^a [Loop a^b b^a]/[true a^a b^b]
-	[true c^b]/c^b [Loop b^c c^b]/[true b^b c^c]
-	[true d^c]/d^c [Loop c^d d^c]/[true c^c d^d]
-	[true e^d]/e^d [Loop d^e e^d]/[true d^d e^e]
-	[true f^e]/f^e [Loop e^f f^e]/[true e^e f^f]
+	[true b^a]/b^a [a^b b^a]/[true a^a b^b]->Loop
+	[true c^b]/c^b [b^c c^b]/[true b^b c^c]->Loop
+	[true d^c]/d^c [c^d d^c]/[true c^c d^d]->Loop
+	[true e^d]/e^d [d^e e^d]/[true d^d e^e]->Loop
+	[true f^e]/f^e [e^f f^e]/[true e^e f^f]->Loop
 
 ( Print them: )
 
@@ -116,14 +106,14 @@ examples.search=`( Search for a number in a list )
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
 ( target ) target^78
 
-@Loop ( target -- target )
-	Found/[a^target target^a] i
-	Found/[b^target target^b] i
-	Found/[c^target target^c] i
-	Found/[d^target target^d] i
-	Found/[e^target target^e] i
-	Found/[f^target target^f] i
-	."Not found."\\n End
+	/[a^target target^a]->Found i
+	/[b^target target^b]->Found i
+	/[c^target target^c]->Found i
+	/[d^target target^d]->Found i
+	/[e^target target^e]->Found i
+	/[f^target target^f]->Found i
+	."Not found."\\n ->End
+
 @Found ( i -- )
 	."Found at index: " .#i .\\n @End
 `
@@ -135,26 +125,25 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 [times^100 n f b]
 
 @Loop ( times -- n f b )
-	[Loop n f b .FizzBuzz\\n]/[times f^3 b^5]
-	[Loop n f b .Fizz\\n]/[times f^3]
-	[Loop n f b .Buzz\\n]/[times b^5]
-	[Loop n f b .#n .\\n]/times
+	[n f b .FizzBuzz\\n]/[times f^3 b^5]->Loop
+	[n f b .Fizz\\n]/[times f^3]->Loop
+	[n f b .Buzz\\n]/[times b^5]->Loop
+	[n f b .#n .\\n]/times->Loop
 `
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
 n^10 y
 
-@fibonacci ( n y -- x y )
 	'[y^x x^y .#x .\\s]/[x^x n]
 `
 examples.factorial=`( Print the Factorial number n )
 
 n^5 y^n /y
 
-@factorial ( n y -- n ) 
+@Factorial ( n y -- n ) 
 	'[r^y y]/[y n]
-	[factorial n^r]/[y r^r]
+	n^r/[y r^r]->Factorial
 
 .#n
 `
@@ -166,9 +155,9 @@ n^7
 @Collatz ( n -- )
 	( print ) .#n .\\s
 	x^n 'y/x^2 
-	End/[none^y x n]
-		[Collatz n^n n^n n^n n]/[y^y n^n x] 
-		[Collatz n^y]/[n^n y^y] @End`
+	/[none^y x n]->End
+		[n^n n^n n^n n]/[y^y n^n x]->Collatz
+		n^y/[n^n y^y]->Collatz @End`
 examples.sierpinski=`( Draw the Sierpiński Triangle )
 
 y4 y3 y2 y1 y0 width height^31
@@ -177,17 +166,17 @@ y4 y3 y2 y1 y0 width height^31
 	c^width ." "^height
 	@Cols ( c -- )
 		x^c/x^x []/x
-		[Cols .\\s\\s y4]/[c y4 x^16] []/x^16
-		[Cols .\\s\\s y3]/[c y3 x^8] []/x^8
-		[Cols .\\s\\s y2]/[c y2 x^4] []/x^4
-		[Cols .\\s\\s y1]/[c y1 x^2] []/x^2
-		[Cols .\\s\\s y0]/[c y0 x] 
-		[Cols .\\s*]/c
-	[Rows width .\\n]/[height y0]
-	[Rows width .\\n y0]/[height y1]
-	[Rows width .\\n y1 y0]/[height y2]
-	[Rows width .\\n y2 y1 y0]/[height y3]
-	[Rows width .\\n y3 y2 y1 y0]/[height y4]
+		[.\\s\\s y4]/[c y4 x^16]->Cols []/x^16
+		[.\\s\\s y3]/[c y3 x^8]->Cols []/x^8
+		[.\\s\\s y2]/[c y2 x^4]->Cols []/x^4
+		[.\\s\\s y1]/[c y1 x^2]->Cols []/x^2
+		[.\\s\\s y0]/[c y0 x]->Cols 
+		[.\\s*]/c->Cols
+	[width .\\n]/[height y0]->Rows
+	[width .\\n y0]/[height y1]->Rows
+	[width .\\n y1 y0]/[height y2]->Rows
+	[width .\\n y2 y1 y0]/[height y3]->Rows
+	[width .\\n y3 y2 y1 y0]/[height y4]->Rows
 `
 examples.stack_machine=`( Operate a 3-cells stack machine )
 
@@ -339,19 +328,19 @@ d^92
 
 ( Decimal to Nibbles )
 
-     'n^8/d^128 'n^4/d^64 'n^2/d^32 'n/d^16 task PrintNibble
+     'n^8/d^128 'n^4/d^64 'n^2/d^32 'n/d^16 task ->PrintNibble
 @Low 'n^8/d^8   'n^4/d^4  'n^2/d^2  'n/d
 
 ( Nibble to Hexadecimal )
 
 @PrintNibble ( n -- )
-	[Next .f]/n^15 [Next .e]/n^14 [Next .d]/n^13 [Next .c]/n^12 
-	[Next .b]/n^11 [Next .a]/n^10 [Next .9]/n^9  [Next .8]/n^8
-	[Next .7]/n^7  [Next .6]/n^6  [Next .5]/n^5  [Next .4]/n^4
-	[Next .3]/n^3  [Next .2]/n^2  [Next .1]/n    .0
+	.f/n^15->Next .e/n^14->Next .d/n^13->Next .c/n^12 ->Next
+	.b/n^11->Next .a/n^10->Next .9/n^9->Next  .8/n^8->Next
+	.7/n^7->Next  .6/n^6->Next  .5/n^5->Next  .4/n^4->Next
+	.3/n^3->Next  .2/n^2->Next  .1/n->Next    .0->Next
 
 @Next ( task -- )
-	Low/task
+	/task->Low
 `
 examples.heptavintimal_print=`( Put a decimal number in the bag )
 
@@ -359,24 +348,24 @@ d^128
 
 ( Decimal to Tribbles )
 
-     't^9/d^243 't^3/d^81 't/d^27 task PrintTribble
+     't^9/d^243 't^3/d^81 't/d^27 task ->PrintTribble
 @Low 't^9/d^9   't^3/d^3  't/d
 
 ( Tribble to Heptavintimal )
 
 @PrintTribble ( t -- )
-	[Next .z]/t^26 [Next .y]/t^25 [Next .x]/t^24
-	[Next .w]/t^23 [Next .v]/t^22 [Next .u]/t^21
-	[Next .t]/t^20 [Next .s]/t^19 [Next .r]/t^18
-	[Next .q]/t^17 [Next .p]/t^16 [Next .o]/t^15
-	[Next .n]/t^14 [Next .m]/t^13 [Next .l]/t^12
-	[Next .k]/t^11 [Next .j]/t^10 [Next .i]/t^9
-	[Next .h]/t^8  [Next .g]/t^7  [Next .f]/t^6
-	[Next .e]/t^5  [Next .d]/t^4  [Next .c]/t^3
-	[Next .b]/t^2  [Next .a]/t    .0
+	.z/t^26->Next .y/t^25->Next .x/t^24->Next
+	.w/t^23->Next .v/t^22->Next .u/t^21->Next
+	.t/t^20->Next .s/t^19->Next .r/t^18->Next
+	.q/t^17->Next .p/t^16->Next .o/t^15->Next
+	.n/t^14->Next .m/t^13->Next .l/t^12->Next
+	.k/t^11->Next .j/t^10->Next .i/t^9->Next
+	.h/t^8->Next  .g/t^7->Next  .f/t^6->Next
+	.e/t^5->Next  .d/t^4->Next  .c/t^3->Next
+	.b/t^2->Next  .a/t->Next    .0->Next
 
 @Next ( task -- )
-	Low/task
+	/task->Low
 `
 examples.toffoli=`( The Toffoli gate is a reversible CNOT gate with
 	two control bits[a,b] and one target bit[c] )
@@ -413,24 +402,24 @@ examples.proquints=`( Print the proquint spelling of 16-bits )
 
 tasks^4
 
-    c^8/byte1^128 c^4/byte1^64 c^2/byte1^32  c/byte1^16 Con
-@v0 v^2/byte1^8   v/byte1^4                             Vow
-@c1 c^8/byte1^2   c^4/byte1    c^2/byte2^128 c/byte2^64 Con
-@v1 v^2/byte2^32  v/byte2^16                            Vow
-@c2 c^8/byte2^8   c^4/byte2^4  c^2/byte2^2   c/byte2    Con
+    c^8/byte1^128 c^4/byte1^64 c^2/byte1^32  c/byte1^16 ->Con
+@v0 v^2/byte1^8   v/byte1^4                             ->Vow
+@c1 c^8/byte1^2   c^4/byte1    c^2/byte2^128 c/byte2^64 ->Con
+@v1 v^2/byte2^32  v/byte2^16                            ->Vow
+@c2 c^8/byte2^8   c^4/byte2^4  c^2/byte2^2   c/byte2    ->Con
 
 @Con ( c -- )
-	[Next .z]/c^15 [Next .v]/c^14 [Next .t]/c^13 [Next .s]/c^12
-	[Next .r]/c^11 [Next .p]/c^10 [Next .n]/c^9  [Next .m]/c^8
-	[Next .l]/c^7  [Next .k]/c^6  [Next .j]/c^5  [Next .h]/c^4
-	[Next .g]/c^3  [Next .f]/c^2  [Next .d]/c    [Next .b]/[]
+	.z/c^15->Next .v/c^14->Next .t/c^13->Next .s/c^12->Next
+	.r/c^11->Next .p/c^10->Next .n/c^9->Next  .m/c^8->Next
+	.l/c^7->Next  .k/c^6->Next  .j/c^5->Next  .h/c^4->Next
+	.g/c^3->Next  .f/c^2->Next  .d/c->Next    .b/[]->Next
 
 @Vow ( v -- )
-	[Next .u]/v^3  [Next .o]/v^2  [Next .i]/v    [Next .a]/[]
+	.u/v^3->Next   .o/v^2->Next   .i/v->Next     .a/[]->Next
 
 @Next ( dest -- )
-	[v0 tasks^3]/tasks^4 [c1 tasks^2]/tasks^3
-	[v1 tasks^1]/tasks^2 [c2]/tasks
+	tasks^3/tasks^4->v0 tasks^2/tasks^3->c1
+	tasks^1/tasks^2->v1 /tasks->c2
 	
 `
 examples.spirograph=`( Calculate the number of turns of two spirograph cogs )
@@ -443,7 +432,7 @@ examples.spirograph=`( Calculate the number of turns of two spirograph cogs )
 @Gcd ( x y -- x )
 	'z/[x y]
 	[y^x x^z]/[x^x z^z]
-	[Gcd y]/y
+	y/y->Gcd
 
 ( y2/x  ) 'res/y2^x
 ( print ) ."Turns: " .#res
@@ -455,11 +444,11 @@ examples.wdr_computer=`( The Know-how Computer is an educational model of a comp
 
 r2^5
 
-@l1 ( jmp 4 ) l4
+@l1 ( jmp 4 ) ->l4
 @l2 ( inc 1 ) r1
 @l3 ( dec 2 ) []/r2
-@l4 ( isz 2 ) [l5 r2]/r2 l6
-@l5 ( jmp 2 ) l2
+@l4 ( isz 2 ) r2/r2->l5 ->l6
+@l5 ( jmp 2 ) ->l2
 @l6 ( stp )`
 examples.pounds_to_kilograms=`( Convert pounds to kilograms )
 
@@ -495,16 +484,15 @@ belar/num
 `
 examples.fractran=`( This is a Fractran program )
 
-[apple^2 orange]       ( This is the state of the accumulator. )
+[apple^2 orange]         ( This is the state of the accumulator. )
 
-@t                     ( This is a label. )
-  [t banana]/orange^3  ( This trades 3 oranges for 1 banana. )
-  [t orange]/apple     ( Each numerator must include the "t" label. )
-  [t .Fractran]/banana ( A dot-symbol prints its name to the console. )
+@Loop                    ( This is a label. )
+  banana/orange^3->Loop  ( This trades 3 oranges for 1 banana. )
+  orange/apple->Loop     ( Each fraction must return to the "Loop" label. )
+  .Fractran/banana->Loop ( A dot-symbol prints its name to the console. )
 
 ( When no fractions can be applied,
-  the Fractran program ends. )
-`
+  the Fractran program ends. )`
 examples.five_philosophers=`( Five philosophers, five forks.
   Eating takes both forks in one atomic step. )
 
@@ -512,14 +500,14 @@ f1 f2 f3 f4 f5
 h1 h2 h3 h4 h5
 
 @Dine
-	[Dine e1 ."1 eats"\\n]/[h1 f1 f2]
-	[Dine e2 ."2 eats"\\n]/[h2 f2 f3]
-	[Dine e3 ."3 eats"\\n]/[h3 f3 f4]
-	[Dine e4 ."4 eats"\\n]/[h4 f4 f5]
-	[Dine e5 ."5 eats"\\n]/[h5 f5 f1]
-	[Dine f1 f2 ."1 done"\\n]/e1
-	[Dine f2 f3 ."2 done"\\n]/e2
-	[Dine f3 f4 ."3 done"\\n]/e3
-	[Dine f4 f5 ."4 done"\\n]/e4
-	[Dine f5 f1 ."5 done"\\n]/e5
+	[e1 ."1 eats"\\n]/[h1 f1 f2]->Dine
+	[e2 ."2 eats"\\n]/[h2 f2 f3]->Dine
+	[e3 ."3 eats"\\n]/[h3 f3 f4]->Dine
+	[e4 ."4 eats"\\n]/[h4 f4 f5]->Dine
+	[e5 ."5 eats"\\n]/[h5 f5 f1]->Dine
+	[f1 f2 ."1 done"\\n]/e1->Dine
+	[f2 f3 ."2 done"\\n]/e2->Dine
+	[f3 f4 ."3 done"\\n]/e3->Dine
+	[f4 f5 ."4 done"\\n]/e4->Dine
+	[f5 f1 ."5 done"\\n]/e5->Dine
 `

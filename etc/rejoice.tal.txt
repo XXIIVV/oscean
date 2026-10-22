@@ -19,7 +19,6 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | Prefabs )
-	random/<init>
 	;dict/identity syms/find-alloc-force POP2
 	( | Modes )
 	.Console/type DEI ?{ ;token/on-console-interactive .Console/vector DEO2
@@ -31,10 +30,7 @@
 	( name ) "Rejoice 0a
 	( desc ) "A 20 "Rejoice 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Oct 20 "2026 0000
-
-%u16/mod ( a* b* -- a%b* ) {
-	DIV2k MUL2 SUB2 }
+	( date ) "21 20 "Oct 20 "2026 0000
 
 %char/is-dec ( c -- t ) {
 	LIT "0 SUB #0a LTH }
@@ -120,11 +116,20 @@
 	world/<push-scope>
 	LDZk LIT "/ EQU ?{
 		( den bag [] ) world/<push-identity>
-		world/<pop-scope>
-		POP JMP2r }
+		world/<pop-scope> !/<parse-target> }
 	INC
-	( den bag ) item/parse-any-push world/<pop-scope>
-	POP JMP2r
+	( den bag ) item/parse-any-push world/<pop-scope> !/<parse-target>
+
+@token/<parse-target> ( ztr -- )
+	LDZ2k LIT2 "-> NEQ2 ?{
+		( label ) INC INC #00 SWP syms/find-alloc /<take-quote>
+		POP2 !world/<push> }
+	POP /<take-quote> !world/<push>
+
+@token/<take-quote> ( -- short* )
+	[ LIT &+quote $1 ] [ LIT2 00 _&+quote ] STR
+	?{ #0000 JMP2r }
+	#ffff JMP2r
 
 %label/get-addr ( id* -- addr* ) {
 	DUP2 ADD2 ;label/buf ADD2 }
@@ -134,27 +139,15 @@
 
 @label/<parse-quote> ( ztr -- )
 	INC LDZk ?{ POP JMP2r }
-	( | TODO: If there's no denumerator, inf all values )
-	#0001 ;&quote-name syms/find-alloc DUP2 /<create>
-	world/<push-scope>
-	world/<push-count-id>
-	,&id LDR INC ,&id STR !token/<parse-fraction>
-
-	&quote-name "' [ &id "0 00 ]
+	[ LIT2 01 _token/+quote ] STR
+	world/<push-scope> !token/<parse-fraction>
 
 @label/<parse> ( ztr -- )
-	#00 SWP INC syms/find-alloc
-	( >> )
-
-@label/<create> ( id* -- )
-	/get-addr world/get-ptr SWP2 STA2
+	#00 SWP INC syms/find-alloc /get-addr world/get-ptr SWP2 STA2
 	JMP2r
 
 (
 @|Bag/Items )
-
-%item/not-quote ( item* -- item* t ) {
-	LDA2k syms/get-name LDA LIT "' NEQ }
 
 @item/<print> ( addr* -- )
 	INC2k INC2 LDA2 SWP2 LDA2
@@ -178,8 +171,8 @@
 	( | not numeric )
 	[ LIT2 -&+buf _&+ptr ] STR
 	&>w
-		LDZk DUP symbol/is-spacer ?/parse-sym-push
-		/<push>
+		LDZ2k symbol/is-spacer ?/parse-sym-push
+		LDZk /<push>
 		INC !/>w
 
 @item/<push> ( c -- )
@@ -190,9 +183,8 @@
 	STZ2
 	JMP2r
 
-@item/parse-sym-push ( ztr c -- ztr )
-	POP
-	( identity ) [ LIT2 -&+buf _&+ptr ] LDR EQU ?world/<push-identity>
+@item/parse-sym-push ( ztr -- ztr )
+	[ LIT2 -&+buf _&+ptr ] LDR EQU ?world/<push-identity>
 	/walk-count ;&+buf
 	( | emit symbol )
 	LDA2k [ LIT2 ".# ] NEQ2 ?{
@@ -221,6 +213,17 @@
 	DUP symbol/walk #00 ROT syms/find-alloc #8000 ORA2 JMP2r
 
 @fraction/<print> ( addr* -- )
+	DUP2 LDA2 LDA2 LDA2
+	( self ) DUP2 #ffff NEQ2 ?{
+		POP2 [ LIT2 "' 19 ] DEO !/<print-bags> }
+	( none ) ORAk ?{ POP2 !/<print-bags> }
+	STH2
+	/<print-bags>
+	[ LIT2 "- 19 ] DEO
+	[ LIT2 "> 19 ] DEO
+	STH2r syms/get-name !str/<print>
+
+@fraction/<print-bags> ( addr* -- )
 	( num ) LDA2k OVR2 INC2 INC2 bag/<print>
 	LDA2 INC2k INC2 LDA2 ORA ?{ POP2 JMP2r }
 	( den is not [] ) [ LIT2 "/ 19 ] DEO
@@ -228,10 +231,6 @@
 	( >> )
 
 @bag/<print> ( to* from* -- )
-	item/not-quote ?{
-		LIT "' char/<print>
-		#0004 ADD2 }
-	( | Not quote )
 	SUB2k #0004 GTH2 ?/<print-complex>
 	&>lpb
 		DUP2 item/<print>
@@ -290,25 +289,20 @@
 			;dict/reached-c !str/<print> }
 		tote/<print>
 		DUP2 tote/<apply>
+		STH
 		DUP2 fraction/<print>
 		#0a19 DEO
-		goto/step INC2r !/>w
+		STHr goto/step INC2r !/>w
 
-@goto/step ( addr* -- addr* )
-	,&+count LDR STHk ?{ POPr LDA2 LDA2 JMP2r }
-	POP2 [ LIT2 00 _&+count ] STR
-	;&buf ,&+ptr STR2
-	STHkr #01 GTH ?{ POPr ;&buf LDA2 JMP2r }
-	random/make #00 STHr u16/mod DUP2 ADD2 ;&buf ADD2 LDA2 JMP2r
-
-@goto/<push> ( addr* -- )
-	[ LIT &+count $1 ] INC ,&+count STR
-	[ LIT2 &+ptr =&buf ] INC2k INC2
-	( clamp ) ;&bufend LTH2k ?{ ;dict/goto err/<set-buf>
-		SWP2 }
-	POP2 ,&+ptr STR2
-	STA2
+@goto/step ( addr* applied -- addr* )
+	?{ !/next }
+	DUP2 LDA2 LDA2 LDA2 ORAk ?{ POP2 !/next }
+	( self ) INC2k ORA ?{ POP2 JMP2r }
+	NIP2 label/get ORAk ?{ POP2 !world/get-ptr }
 	JMP2r
+
+@goto/next ( addr* -- next* )
+	LDA2 LDA2 INC2 INC2 JMP2r
 
 (
 @|Tote )
@@ -343,20 +337,7 @@
 @tote/<put> ( item* -- )
 	LDA2k syms/get-name
 	( dup name* ) LDAk LIT ". EQU ?/<put-print>
-	( pop name* ) POP2
-	( | detect label )
-	LDA2k label/get
-	( dup addr* ) ORAk ?/<put-label>
-	( pop addr* ) POP2 !queue/<put>
-
-@tote/<put-label> ( item* addr* -- )
-	STH2
-	/get-register NIP2 ORAk ?{ POP2 POP2r JMP2r }
-	#0000
-	&>lpl
-		STH2kr goto/<push>
-		INC2 GTH2k ?/>lpl
-	POP2 POP2 POP2r JMP2r
+	( pop name* ) POP2 !queue/<put>
 
 @tote/<apply> ( fraction* -- )
 	( | take )
@@ -367,13 +348,14 @@
 		item/next GTH2k ?/>lac
 	POP2 POP2
 	( | validate )
-	queue/can-apply ?{ POP2 JMP2r }
+	queue/can-apply ?{ POP2 #00 JMP2r }
 	( | put )
 	LDA2k OVR2 /next-cell
 	&>lap
 		DUP2 /<put>
 		item/next GTH2k ?/>lap
-	POP2 POP2 POP2 !queue/<apply>
+	POP2 POP2 POP2 queue/<apply>
+	#01 JMP2r
 
 @tote/get-range ( -- to* from* )
 	( from* ) ;&buf
@@ -491,23 +473,27 @@
 (
 @|Dict )
 
-@symbol/is-spacer ( c -- t )
+@symbol/is-spacer ( c c -- t )
+	DUP2 LIT2 "-> NEQ2 ?{ POP2 #01 JMP2r }
+	POP
+	( | .. )
 	DUP LIT 21 LTH ?{
 		DUP LIT "[ EQU ?{
 			DUP LIT "/ EQU ?{
-				DUP LIT "] EQU ?{ LIT "^ EQU JMP2r } } } }
+				DUP LIT "] EQU ?{
+					DUP LIT "> EQU ?{ LIT "^ EQU JMP2r } } } } }
 	POP #01 JMP2r
 
 @symbol/walk ( ztr -- ztr )
 	&>ww
-		LDZk /is-spacer ?{ INC !/>ww }
+		LDZ2k /is-spacer ?{ INC !/>ww }
 	JMP2r
 
 @symbol/new ( str* -- str* )
 	;&+buf ,&+ptr STR2
 	#0000 ;&+buf STA2
 	&>wn
-		LDAk /is-spacer ?{ LDAk /<push>
+		LDA2k /is-spacer ?{ LDAk /<push>
 			INC2 !/>wn }
 	POP2 ;&+buf JMP2r
 
@@ -549,10 +535,7 @@
 	NIP2 ;&buf SUB2 #01 SFT2 JMP2r
 
 @syms/<print-count-id> ( id* -- )
-	/get-name
-	( | quoted )
-	LDAk LIT "' NEQ ?str/<print>
-	LDA !char/<print>
+	/get-name !str/<print>
 
 @dict/alloc ( src* -- ptr* )
 	,&+ptr LDR2 SWP2
@@ -574,7 +557,6 @@
 	&token "Token 00
 	&item "Item 00
 	&world "World 00
-	&goto "Goto 00
 	&queue "Queue 00
 	&syms "Syms 00
 	&symbol "Symbol 00 &inf =inf/glyph 00
@@ -660,25 +642,6 @@
 		OVRr ADDr STHkr ?/>write
 	POP2r JMP2r
 
-@random/<init> ( -- )
-	[ LIT2 00 -DateTime/second ] DEI
-	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
-	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
-	[ LIT2 00 -DateTime/day ] DEI #04 SFT2
-	( ) [ LIT2 00 -DateTime/month ] DEI #10 SFT2 EOR2
-	( ) [ LIT2 00 -DateTime/second ] DEI #60 SFT2 EOR2
-	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
-	JMP2r
-
-@random/make ( -- number* )
-	[ LIT2 &x $2 ]
-	( ) DUP2 #50 SFT2 EOR2
-	( ) DUP2 #03 SFT2 EOR2
-	( ) [ LIT2 &y $2 ]
-	( ) DUP2 ,&x STR2
-	DUP2 #01 SFT2 EOR2 EOR2
-	( ) ,&y STR2k POP JMP2r
-
 (
 @|Buffers )
 
@@ -689,9 +652,6 @@
 	$200 &bufend
 
 @tote/buf ( length*, length*, length*.. )
-	$200 &bufend
-
-@goto/buf ( addr*, addr*.. )
 	$200 &bufend
 
 @label/buf ( addr*, addr*, addr*, addr*.. )

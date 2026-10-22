@@ -17,7 +17,7 @@ file^1
 <pre>coin^3
 
 @VendingMachine <i>( coin -- candy )</i>
-	[VendingMachine candy]/coin</pre>
+	candy/coin->VendingMachine</pre>
 
 <ul>
 	<li>A fraction is <b>Linear</b> if every resource involved is consumed exactly once and produced exactly once. The resource exists in both the numerator and denominator, and its exponent on both sides is equal. No resource is created, and no resource is destroyed. It is a state transition. <code>apple/dollar</code></li>
@@ -98,13 +98,13 @@ c^5 [a^c b^c]/c^c <i>( c = 5; a = b = c; )</i>
 <pre>
 x^3 y^4 r1 Add @R1
 x^5 y^5 r2 Add @R2
-End
+->End
 
 @Add ( x y -- )
 	( x+y   ) x^y/y^y
 	( print ) .#x/x^x .\s
-	R1/r1
-	R2/r2
+	/r1->R1
+	/r2->R2
 
 @End</pre>
 
@@ -154,37 +154,37 @@ End
 </center>
 
 <pre>
-( start in the living room ) EnterLivingroom
+( start in the living room ) ->EnterLivingroom
 ( will queue commands ) cmd1 
 
 @Eval
-	( living room to attic ) [Use ladder cmd2]/cmd1 
-	( back to living room ) [Use ladder cmd3]/cmd2 
-	( living room to garden ) [Use door cmd4]/cmd3
-	( back to living room ) [Use door]/cmd4
-	End
+	( living room to attic ) [ladder cmd2]/cmd1->Use
+	( back to living room ) [ladder cmd3]/cmd2->Use
+	( living room to garden ) door cmd4/cmd3->Use
+	( back to living room ) door/cmd4->Use
+	->End
 
 @Use 
-	EnterAttic/[livingroom ladder^2 door]
-	EnterLivingroom/[attic ladder^2]
-	EnterGarden/[livingroom ladder door^2]
-	EnterLivingroom/[garden door^2]
-	End
+	/[livingroom ladder^2 door]->EnterAttic
+	/[attic ladder^2]->EnterLivingroom
+	/[livingroom ladder door^2]->EnterGarden
+	/[garden door^2]->EnterLivingroom
+	->End
 
 @EnterGarden ( -- )
 	."You have entered the garden, you see a well.\n"
 	garden door
-	Eval
+	->Eval
 
 @EnterLivingroom ( -- )
 	."You have entered the living room.\n"
 	livingroom door ladder 
-	Eval
+	->Eval
 
 @EnterAttic ( -- )
 	."You have entered the attic.\n"
 	attic ladder
-	Eval
+	->Eval
 
 @End
 </pre>
