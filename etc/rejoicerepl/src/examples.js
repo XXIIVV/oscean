@@ -8,11 +8,11 @@ mercury sulfur
 ( Double the amount of ingots, add the philosopher's stone )
 lead^lead stone
 
-( The philosopher stone turns four ingots into gold )
+( The philosopher stone turns six ingots into gold )
 'gold/[stone lead^6 mercury sulfur]->Success
 
 @Failure ."It didn't work!" ->End
-@Success ."It's gold!" ->End
+@Success ."It's gold!"
 
 @End`
 examples.fractions=`( A whole number, equal to 7/1 )
