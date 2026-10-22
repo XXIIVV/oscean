@@ -477,7 +477,7 @@ belar/num
 
 ( Consum du num pro teser dum posibil.. )
 @Teserar ( num -- teser )
-    [Teserar teser]/num^2
+    teser/num^2->Teserar
 
 ( Ad fin, imprim computat. )
 .#teser
