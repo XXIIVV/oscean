@@ -156,21 +156,27 @@ examples.sierpinski=`( Draw the Sierpiński Triangle )
 y4 y3 y2 y1 y0 width height^31
 
 @Rows ( width height -- )
-	c^width ." "^height
+	c^width times^height ->pad @pad-ret
 	@Cols ( c -- )
 		x^c/x^x []/x
-		[.\\s\\s y4]/[c y4 x^16]->Cols []/x^16
-		[.\\s\\s y3]/[c y3 x^8]->Cols []/x^8
-		[.\\s\\s y2]/[c y2 x^4]->Cols []/x^4
-		[.\\s\\s y1]/[c y1 x^2]->Cols []/x^2
-		[.\\s\\s y0]/[c y0 x]->Cols 
-		[.\\s*]/c->Cols
-	[width .\\n]/[height y0]->Rows
-	[width .\\n y0]/[height y1]->Rows
-	[width .\\n y1 y0]/[height y2]->Rows
-	[width .\\n y2 y1 y0]/[height y3]->Rows
-	[width .\\n y3 y2 y1 y0]/[height y4]->Rows
-`
+		y4/[c y4 x^16]->Cols=>"  " []/x^16
+		y3/[c y3 x^8]->Cols=>"  " []/x^8
+		y2/[c y2 x^4]->Cols=>"  " []/x^4
+		y1/[c y1 x^2]->Cols=>"  " []/x^2
+		y0/[c y0 x]->Cols=>"  " 
+		/c->Cols=>" *"
+	width/[height y0]->Rows=>"\\n"
+	[width y0]/[height y1]->Rows=>"\\n"
+	[width y1 y0]/[height y2]->Rows=>"\\n"
+	[width y2 y1 y0]/[height y3]->Rows=>"\\n"
+	[width y3 y2 y1 y0]/[height y4]->Rows=>"\\n"
+	->end
+
+@pad ( times -- )
+	/times->pad=>" "
+	->pad-ret
+
+@end`
 examples.stack_machine=`( Operate a 3-cells stack machine )
 
 n^56 ( 56 )       [b^a a^n c^b]/[a^a b^b c^c n^n]
