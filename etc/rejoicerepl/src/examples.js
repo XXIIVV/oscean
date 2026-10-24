@@ -11,8 +11,8 @@ lead^lead stone
 ( The philosopher stone turns six ingots into gold )
 'gold/[stone lead^6 mercury sulfur]->Success
 
-@Failure ."It didn't work!" ->End
-@Success ."It's gold!"
+@Failure =>"It didn't work!" ->End
+@Success =>"It's gold!"
 
 @End`
 examples.fractions=`( A whole number, equal to 7/1 )
@@ -32,18 +32,17 @@ examples.fractions=`( A whole number, equal to 7/1 )
 `
 examples.primes=`( Check if number n, is prime )
 
-n^23 .#n
+n^23 =>"{n}"
 
 i^2 pow^4
 
 @Loop ( n i -- n i )     
 	( lteq=pow<=n ) t^n lteq/t^pow []/[t^t pow^pow]
-	( lteq..Prime ) /lteq->Lteq ." is prime" ->End @Lteq
+	( lteq..Prime ) /lteq->Lteq =>" is prime" ->End @Lteq
 	( rem=n%i )     t^n '[]/t^i rem/t []/t^t
 	[i pow^i pow^i pow]/rem->Loop
 
-." is not prime" @End
-`
+=>" is not prime" @End`
 examples.multisets=`( Put a marble in the bag )
 
 marble
@@ -66,26 +65,24 @@ examples.product=`( Generate the multiplication table up to 12x12 )
 	@Row ( y -- y )
 		x
 		( x y2 mul ) y2^y '[res^x]/y2
-		( pad ) res^100/res^100->Skip-c .\\s @Skip-c
-		( pad ) res^10/res^10->   .\\s @Skip-d
-		( res ) .#res/res^res
-		[]/x^12 [x .\\s]/x->Row
-	[]/y^12 [y .\\n]/y->Col
-`
+		( pad ) res^100/res^100->Skip-c =>" " @Skip-c
+		( pad ) res^10/res^10->         =>" " @Skip-d
+		( res ) /res^res=>{res}
+		/x^12 =>" " x/x->Row
+	/y^12 =>"\\n" y/y->Col`
 examples.gcd=`( A program to find the GCD of two numbers,
 	and print the result )
 
 x^6 y^15
 
-."The GDC of " .#x ." and " .#y ." is "
+=>"The GDC of {x} and {y} is "
 
 @Gcd ( x y -- x )
 	'z/[x y]
 	[y^x x^z]/[x^x z^z]
 	y/y->Gcd
 
-.#x
-`
+=>{x}`
 examples.sort=`( Sort numbers in a list from largest to smallest )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
@@ -99,8 +96,7 @@ examples.sort=`( Sort numbers in a list from largest to smallest )
 
 ( Print them: )
 
-.#a .\\s .#b .\\s .#c .\\s .#d .\\s .#e .\\s .#f
-`
+=>"{a} {b} {c} {d} {e} {f}"`
 examples.search=`( Search for a number in a list )
 
 ( a list ) a^12 b^34 c^56 d^78 e^91 f^23
@@ -112,11 +108,10 @@ examples.search=`( Search for a number in a list )
 	/[d^target target^d]->Found i
 	/[e^target target^e]->Found i
 	/[f^target target^f]->Found i
-	."Not found."\\n ->End
+	=>"Not found.\\n" ->End
 
 @Found ( i -- )
-	."Found at index: " .#i .\\n @End
-`
+	=>"Found at index: {i}\\n" @End`
 examples.fizzbuzz=`( Prints numbers from 1 to 100,
 	replacing multiples of 3 with Fizz,
 	multiples of 5 with Buzz,
@@ -125,18 +120,16 @@ examples.fizzbuzz=`( Prints numbers from 1 to 100,
 [times^100 n f b]
 
 @Loop ( times -- n f b )
-	[n f b .FizzBuzz\\n]/[times f^3 b^5]->Loop
-	[n f b .Fizz\\n]/[times f^3]->Loop
-	[n f b .Buzz\\n]/[times b^5]->Loop
-	[n f b .#n .\\n]/times->Loop
-`
+	[n f b]/[times f^3 b^5]->Loop=>"FizzBuzz\\n"
+	[n f b]/[times f^3]->Loop=>"Fizz\\n"
+	[n f b]/[times b^5]->Loop=>"Buzz\\n"
+	[n f b]/times->Loop=>"{n}\\n"`
 examples.fibonacci=`( Print the Fibonacci sequence: 
 	0, 1, 1, 2, 3, 5, 8, 13, 21, 34 )
 
 n^10 y
 
-	'[y^x x^y .#x .\\s]/[x^x n]
-`
+	'[y^x x^y]/[x^x n]=>"{x} "`
 examples.factorial=`( Print the Factorial number n )
 
 n^5 y^n /y
@@ -145,19 +138,19 @@ n^5 y^n /y
 	'[r^y y]/[y n]
 	n^r/[y r^r]->Factorial
 
-.#n
-`
+=>{n}`
 examples.collatz=`( Print the Collatz sequence for n^7: 
 	7, 22, 11, 34, 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1 )
 
 n^7
 
 @Collatz ( n -- )
-	( print ) .#n .\\s
-	x^n 'y/x^2 
+	x^n=>"{n} " 'y/x^2 
 	/[none^y x n]->End
 		[n^n n^n n^n n]/[y^y n^n x]->Collatz
-		n^y/[n^n y^y]->Collatz @End`
+		n^y/[n^n y^y]->Collatz
+
+@End ( -- )`
 examples.sierpinski=`( Draw the Sierpiński Triangle )
 
 y4 y3 y2 y1 y0 width height^31
@@ -190,8 +183,7 @@ n^12 ( 12 34 56 ) [b^a a^n c^b]/[a^a b^b c^c n^n]
 ( dup 34 34 12 )  [a^a b^a c^b]/[a^a b^b c^c]
 ( add 68 12 )     [a^b b^c]/[b^b c^c]
 ( sub 56 )        []/[a^b b^b c^c]
-( put )           [.#a a^b b^c]/[a^a b^b c^c]
-`
+( put )           [a^b b^c]/[a^a b^b c^c]=>{a}`
 examples.roman_addition=`( 1742 ) [ M   D   C^2     X^4     I^2 ]
 ( 674  ) [     D   C   L   X^2     I^4 ]
 
@@ -244,9 +236,7 @@ d^92
 
 ( Print 8 bits )
 
-.#b7 .#b6 .#b5 .#b4 .\\s
-.#b3 .#b2 .#b1 .#b0
-`
+=>"{b7}{b6}{b5}{b4} {b3}{b2}{b1}{b0}"`
 examples.binary_adder=`( Put two binary numbers in the bag
   Bit   b7 b6 b5 b4 b3 b2 b1 b0 )
 
@@ -294,9 +284,7 @@ d^92
 
 ( Print 6 trits )
 
-.#b5 .#b4 .#b3 .\\s
-.#b2 .#b1 .#b0
-`
+=>"{b5}{b4}{b3} {b2}{b1}{b0}"`
 examples.ternary_adder=`( Put two ternary numbers in the bag )
 
 ( 73  )    t3^2 t2^2      t0
@@ -320,8 +308,7 @@ n^10 d^6
 ( /d    ) 'd1/x^d []/d^d
 ( /100  ) 'int/d1^100
 ( /10   ) 'd0/d1^10
-( print ) .#int .. .#d0 .#d1
-`
+( print ) =>"{int}.{d0}{d1}"`
 examples.hexadecimal_print=`( Put a decimal number in the bag )
 
 d^92
@@ -334,14 +321,13 @@ d^92
 ( Nibble to Hexadecimal )
 
 @PrintNibble ( n -- )
-	.f/n^15->Next .e/n^14->Next .d/n^13->Next .c/n^12 ->Next
-	.b/n^11->Next .a/n^10->Next .9/n^9->Next  .8/n^8->Next
-	.7/n^7->Next  .6/n^6->Next  .5/n^5->Next  .4/n^4->Next
-	.3/n^3->Next  .2/n^2->Next  .1/n->Next    .0->Next
+	/n^15->Next=>f /n^14->Next=>e /n^13->Next=>d /n^12->Next=>c
+	/n^11->Next=>b /n^10->Next=>a /n^9->Next=>9  /n^8->Next=>8
+	/n^7->Next=>7  /n^6->Next=>6  /n^5->Next=>5  /n^4->Next=>4
+	/n^3->Next=>3  /n^2->Next=>2  /n->Next=>1    ->Next=>0
 
 @Next ( task -- )
-	/task->Low
-`
+	/task->Low`
 examples.heptavintimal_print=`( Put a decimal number in the bag )
 
 d^128
@@ -409,13 +395,13 @@ tasks^4
 @c2 c^8/byte2^8   c^4/byte2^4  c^2/byte2^2   c/byte2    ->Con
 
 @Con ( c -- )
-	.z/c^15->Next .v/c^14->Next .t/c^13->Next .s/c^12->Next
-	.r/c^11->Next .p/c^10->Next .n/c^9->Next  .m/c^8->Next
-	.l/c^7->Next  .k/c^6->Next  .j/c^5->Next  .h/c^4->Next
-	.g/c^3->Next  .f/c^2->Next  .d/c->Next    .b/[]->Next
+	/c^15->Next=>z /c^14->Next=>v /c^13->Next=>t /c^12->Next=>s
+	/c^11->Next=>r /c^10->Next=>p /c^9->Next=>n  /c^8->Next=>m
+	/c^7->Next=>l  /c^6->Next=>k  /c^5->Next=>j  /c^4->Next=>h
+	/c^3->Next=>g  /c^2->Next=>f  /c->Next=>d    /[]->Next=>b
 
 @Vow ( v -- )
-	.u/v^3->Next   .o/v^2->Next   .i/v->Next     .a/[]->Next
+	/v^3->Next=>u  /v^2->Next=>o  /v->Next=>i    /[]->Next=>a
 
 @Next ( dest -- )
 	tasks^3/tasks^4->v0 tasks^2/tasks^3->c1
@@ -435,8 +421,7 @@ examples.spirograph=`( Calculate the number of turns of two spirograph cogs )
 	y/y->Gcd
 
 ( y2/x  ) 'res/y2^x
-( print ) ."Turns: " .#res
-`
+( print ) =>"Turns: {res}"`
 examples.wdr_computer=`( The Know-how Computer is an educational model of a computer
 	consisting of a pen, paper, and matches.
   Let's pretend that we're a register machine pretending
@@ -458,7 +443,7 @@ examples.pounds_to_kilograms=`( Convert pounds to kilograms )
 'dc/d1^100
 'd0/d1^10
 
-.#dc .. .#d0 .#d1 .kg`
+=>"{dc}.{d0}{d1}kg"`
 examples.fahrenheit_to_celsius=`( Convert Fahrenheit to Celsius )
 
 ( degrees: ) f^55
@@ -466,7 +451,7 @@ examples.fahrenheit_to_celsius=`( Convert Fahrenheit to Celsius )
 []/f^32 't^50/f 'c/t^9
 'c-hd/c^10
 
-.#c-hd .. .#c .°C`
+=>"{c-hd}.{c}°C"`
 examples.gaud=`( Salv ad Gaud, lud de symbol et sac. )
 
 ( Inser un calcul et quinq num in sac: )
@@ -480,8 +465,7 @@ belar/num
     teser/num^2->Teserar
 
 ( Ad fin, imprim computat. )
-.#teser
-`
+=>{teser}`
 examples.fractran=`( This is a Fractran program )
 
 [apple^2 orange]         ( This is the state of the accumulator. )
@@ -489,7 +473,7 @@ examples.fractran=`( This is a Fractran program )
 @Loop                    ( This is a label. )
   banana/orange^3->Loop  ( This trades 3 oranges for 1 banana. )
   orange/apple->Loop     ( Each fraction must return to the "Loop" label. )
-  .Fractran/banana->Loop ( A dot-symbol prints its name to the console. )
+  []/banana->Loop        ( Remove the banana. )
 
 ( When no fractions can be applied,
   the Fractran program ends. )`
@@ -500,14 +484,14 @@ f1 f2 f3 f4 f5
 h1 h2 h3 h4 h5
 
 @Dine
-	[e1 ."1 eats"\\n]/[h1 f1 f2]->Dine
-	[e2 ."2 eats"\\n]/[h2 f2 f3]->Dine
-	[e3 ."3 eats"\\n]/[h3 f3 f4]->Dine
-	[e4 ."4 eats"\\n]/[h4 f4 f5]->Dine
-	[e5 ."5 eats"\\n]/[h5 f5 f1]->Dine
-	[f1 f2 ."1 done"\\n]/e1->Dine
-	[f2 f3 ."2 done"\\n]/e2->Dine
-	[f3 f4 ."3 done"\\n]/e3->Dine
-	[f4 f5 ."4 done"\\n]/e4->Dine
-	[f5 f1 ."5 done"\\n]/e5->Dine
+	e1/[h1 f1 f2]->Dine=>"1 eats\\n"
+	e2/[h2 f2 f3]->Dine=>"2 eats\\n"
+	e3/[h3 f3 f4]->Dine=>"3 eats\\n"
+	e4/[h4 f4 f5]->Dine=>"4 eats\\n"
+	e5/[h5 f5 f1]->Dine=>"5 eats\\n"
+	[f1 f2]/e1->Dine=>"1 done\\n"
+	[f2 f3]/e2->Dine=>"2 done\\n"
+	[f3 f4]/e3->Dine=>"3 done\\n"
+	[f4 f5]/e4->Dine=>"4 done\\n"
+	[f5 f1]/e5->Dine=>"5 done\\n"
 `

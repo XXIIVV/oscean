@@ -121,9 +121,46 @@
 
 @token/<parse-target> ( ztr -- )
 	LDZ2k LIT2 "-> NEQ2 ?{
-		( label ) INC INC #00 SWP syms/find-alloc /<take-quote>
-		POP2 !world/<push> }
-	POP /<take-quote> !world/<push>
+		( label ) INC INC #00 OVR syms/find-alloc STH2
+		symbol/walk /<take-quote>
+		POP2 STH2r !/<parse-effect> }
+	/<take-quote>
+	( >> )
+
+@token/<parse-effect> ( ztr target* -- )
+	world/<push>
+	LDZ2k LIT2 "=> NEQ2 ?{
+		INC INC /<compile-string>
+		#00 SWP dict/alloc !world/<push> }
+	POP #0000 !world/<push>
+
+@token/<compile-string> ( ztr -- ztr )
+	DUP STH
+	DUP
+	&>wc
+		( r w ) OVR LDZ DUP ?{
+			POP NIP #00 SWP STZ
+			STHr JMP2r }
+		DUP LIT "{ NEQ ?{ POP /<interpolate> !/>wc }
+	OVR STZ
+	INC SWP INC SWP !/>wc
+
+@token/<interpolate> ( r w -- r' w' )
+	OVR INC DUP /<find-close>
+	LDZk LIT "} NEQ ?{
+		#00 OVR STZ
+		STH
+		#00 SWP syms/find-alloc NIP OVR INC STZ
+		#01 OVR STZ
+		INC INC NIP STHr INC SWP JMP2r }
+	POP2 OVR LDZ OVR STZ
+	INC SWP INC SWP JMP2r
+
+@token/<find-close> ( p -- p )
+	&>wf
+		LDZk ?{ JMP2r }
+		LDZk LIT "} NEQ ?{ JMP2r }
+		INC !/>wf
 
 @token/<take-quote> ( -- short* )
 	[ LIT &+quote $1 ] [ LIT2 00 _&+quote ] STR
@@ -184,11 +221,7 @@
 
 @item/parse-sym-push ( ztr -- ztr )
 	[ LIT2 -&+buf _&+ptr ] LDR EQU ?world/<push-identity>
-	/walk-count ;&+buf
-	( | emit symbol )
-	LDA2k [ LIT2 ".# ] NEQ2 ?{
-		NIP2 INC2k INC2 syms/find-alloc SWP2 }
-	syms/find-alloc !world/<push-count-id>
+	/walk-count ;&+buf syms/find-alloc !world/<push-count-id>
 
 @item/parse-empty ( ztr -- ztr )
 	&>wpe
@@ -212,8 +245,18 @@
 	DUP symbol/walk #00 ROT syms/find-alloc #8000 ORA2 JMP2r
 
 @fraction/<print> ( addr* -- )
+	DUP2 /<print-core>
+	LDA2 LDA2 INC2 INC2 LDA2 ORAk ?{ POP2 JMP2r }
+	[ LIT2 "= 19 ] DEO
+	[ LIT2 "> 19 ] DEO
+	[ LIT2 "" 19 ] DEO
+	str/<print>
+	[ LIT2 "" 19 ] DEO
+	JMP2r
+
+@fraction/<print-core> ( addr* -- )
 	DUP2 LDA2 LDA2 LDA2
-	( self ) DUP2 #ffff NEQ2 ?{
+	( self ) INC2k ORA ?{
 		POP2 [ LIT2 "' 19 ] DEO !/<print-bags> }
 	( none ) ORAk ?{ POP2 !/<print-bags> }
 	STH2
@@ -300,7 +343,7 @@
 	JMP2r
 
 @goto/next ( addr* -- next* )
-	LDA2 LDA2 INC2 INC2 JMP2r
+	LDA2 LDA2 #0004 ADD2 JMP2r
 
 (
 @|Tote )
@@ -318,25 +361,6 @@
 	INC2k INC2 LDA2 OVR #80 AND ?{ JMP2r }
 	syms/mask-id /get-addr LDA2 JMP2r
 
-@tote/<put-print> ( item* name* -- )
-	str/<set-print>
-	( walk dot ) INC2
-	( is emitter ) LDAk LIT "# EQU ?/<put-emit>
-	STH2
-	/get-register #0000 SWP2 SUB2
-	&>lpp
-		STH2kr str/<print>
-		INC2 ORAk ?/>lpp
-	POP2 POP2 POP2r !str/<set-debug>
-
-@tote/<put-emit> ( item* name* -- )
-	POP2 INC2 INC2 LDA2 /get-addr LDA2 u16/<print-dec> !str/<set-debug>
-
-@tote/<put> ( item* -- )
-	LDA2k syms/get-name
-	( dup name* ) LDAk LIT ". EQU ?/<put-print>
-	( pop name* ) POP2 !queue/<put>
-
 @tote/apply ( fraction* -- success )
 	( | take )
 	queue/<reset>
@@ -347,13 +371,20 @@
 	POP2 POP2
 	( | validate )
 	queue/can-apply ?{ POP2 #00 JMP2r }
+	( | effect )
+	DUP2 /<effect>
 	( | put )
 	LDA2k OVR2 /next-cell
 	&>lap
-		DUP2 /<put>
+		DUP2 queue/<put>
 		item/next GTH2k ?/>lap
 	POP2 POP2 POP2 queue/<apply>
 	#01 JMP2r
+
+@tote/<effect> ( fraction* -- )
+	LDA2 LDA2 INC2 INC2 LDA2 ORAk ?{ POP2 JMP2r }
+	str/<set-print>
+	str/<print> !str/<set-debug>
 
 @tote/get-range ( -- to* from* )
 	( from* ) ;&buf
@@ -473,6 +504,7 @@
 
 @symbol/is-spacer ( c c -- t )
 	DUP2 LIT2 "-> NEQ2 ?{ POP2 #01 JMP2r }
+	DUP2 LIT2 "=> NEQ2 ?{ POP2 #01 JMP2r }
 	POP
 	( | .. )
 	DUP LIT 21 LTH ?{
@@ -598,11 +630,19 @@
 
 @str/<print> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
+	( | ref )
+	DUP #01 NEQ ?{
+		POP INC2 LDAk /<print-ref> !/next }
 	( | esc )
 	[ LIT &+esc 01 ] ?{
 		DUP [ LIT "\ ] NEQ ?{ POP INC2 LDAk char/escape } }
-	char/<print>
-	INC2 !/<print>
+	char/<print> &next INC2 !/<print>
+
+@str/<print-ref> ( id -- )
+	#00 SWP ,&+esc LDR ?{ tote/get-addr LDA2 !u16/<print-dec> }
+	[ LIT "{ ] char/<print>
+	syms/get-name /<print>
+	[ LIT "} ] !char/<print>
 
 @str/cmp ( a* b* -- bool )
 	STH2

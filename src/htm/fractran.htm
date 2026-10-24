@@ -101,9 +101,9 @@ Dijkstra's bag, not technical enough.</q>
 sugar oranges apples cherries flour apples
 
 <b>@t</b>
-	<i>( 7/30 )</i>   [t apple-cake]/[flour sugar apples]
-	<i>( 17/715 )</i> [t fruit-salad]/[apples oranges cherries]
-	<i>( 19/119 )</i> [t fruit-cake]/[fruit-salad apple-cake]
+	<i>( 7/30 )</i>   apple-cake/[flour sugar apples]->t
+	<i>( 17/715 )</i> fruit-salad/[apples oranges cherries]->t
+	<i>( 19/119 )</i> fruit-cake/[fruit-salad apple-cake]->t
 </pre>
 <pre>
 21450                flour.2 sugar.3 apples.5 apples.5 oranges.11 cherries.13
@@ -135,11 +135,12 @@ while(year++) {
 spring
 
 <b>@t</b>
-	[t .Reached!]/[autumn year^2]
-	[t summer]/spring 
-	[t autumn]/summer 
-	[t winter]/autumn 
-	[t spring year]/winter
+	/[autumn year^2]->t
+	summer/spring->t
+	autumn/summer->t
+	winter/autumn->t 
+	[spring year]/winter->t
+	=>Reached!
 </pre>
 
 <p>Looking at the trace of the evaluation, we can see the following transformations:<p>
@@ -169,10 +170,10 @@ potential location in the <a href='binary.html'>truth table</a>, notice how it n
 x y and?
 
 <b>@t</b>
-	[t true]/[x y and?]
-	[t false]/[x and?]
-	[t false]/[y and?]
-	[t false]/[and?]
+	true/[x y and?]->t
+	false/[x and?]->t
+	false/[y and?]->t
+	false/[and?]->t
 </pre>
 
 <p>The comparison operations are implemented using a loop that drains the
@@ -182,9 +183,9 @@ registers until only the offset remains:</p>
 x^4 y^3 gth?
 
 <b>@t</b>
-	[t gth?]/[x y gth?]
-	[t true]/[x gth?]
-	[t false]/[gth?]
+	gth?/[x y gth?]->t
+	true/[x gth?]->t
+	false/[gth?]->t
 </pre>
 <pre>
 2160 × 5/30 = 360  x^3 y^2 gth?
@@ -198,9 +199,9 @@ x^4 y^3 gth?
 x^7 even?
 
 <b>@t</b>
-	[t even?]/[x^2 even?]
-	[t false]/[x even?]
-	[t true]/[even?]
+	even?/[x^2 even?]->t
+	false/[x even?]->t
+	true/[even?]->t
 </pre>
 
 <img src='../media/refs/fraction_and.png' width='150'/>
@@ -214,9 +215,9 @@ the result in a third register(sum):</p>
 x^4 y^2 add 
 
 <b>@t</b>
-	[t sum add]/[x add]
-	[t sum add]/[y add]
-	t/add
+	[sum add]/[x add]->t
+	[sum add]/[y add]->t
+	/add->t
 </pre>
 <pre>
 2352 × 15/6 = 5880     x^3 add sum y^2 
@@ -235,7 +236,7 @@ register into the other:</p>
 x^4 y^2 add 
 
 <b>@t</b>
-	[t y add]/[x add]
+	[y add]/[x add]->t
 </pre>
 
 <p>The <b>difference</b> between two registers(x-y) can be reached by consuming
@@ -246,10 +247,10 @@ and fourth(neg) to get the signed result:</p>
 x^4 y^6 sub 
 
 <b>@t</b>
-	[t sub]/[x y sub]
-	[t sub pos]/[x sub]
-	[t sub neg]/[y sub]
-	t/sub
+	sub/[x y sub]->t
+	[sub pos]/[x sub]->t
+	[sub neg]/[y sub]->t
+	t/sub->t
 </pre>
 <pre>
 58320 × 5/30 = 9720  x^3 y^5 sub 
@@ -268,8 +269,8 @@ register twice for each input register values:</p>
 x^4 double 
 
 <b>@t</b>
-	[t res^2 double]/[x double]
-	t/double
+	[res^2 double]/[x double]->t
+	/double->t
 </pre>
 <pre>
 48 × 75/6 = 600         x^3 double res^2 
@@ -286,8 +287,8 @@ register twice for each output register value:</p>
 x^4 half 
 
 <b>@t</b>
-	[t res half]/[x^2 half]
-	t/half
+	[res half]/[x^2 half]->t
+	/half->t
 </pre>
 
 <p>The <b>product</b> is reached from a series of additions, by copying the input register,
@@ -297,11 +298,11 @@ into a temporary register and third result register.</p>
 x^3 y^2 
 
 <b>@t</b>
-	[t x i]/[z i]
-	t/i
-	[t y z res]/[x y]
-	[t i]/y
-	t/x
+	[x i]/[z i]->t
+	/i->t
+	[y z res]/[x y]->t
+	[i]/y->t
+	/x->t
 </pre>
 <pre>
 675 × 70/15 = 3150      res x^2 y^2 z 
@@ -328,13 +329,13 @@ x^3 y^2
 <p>To implement Fizzbuzz, we can increment registers for thirds and fifths to emit fizz and buzz at the proper intervals, while decrementing the upper boundary:</p>
 
 <pre>
-times^100
+times^100 num
 
 <b>@t</b> ( times -- num f b )
-	[t num f b .FizzBuzz\n]/[times f^3 b^5]
-	[t num f b .Fizz\n]/[times f^3]
-	[t num f b .Buzz\n]/[times b^5]
-	[t num f b .#num .\n]/times
+	[num f b]/[times f^3 b^5]->t=>FizzBuzz\n
+	[num f b]/[times f^3]->t=>Fizz\n
+	[num f b]/[times b^5]->t=>Buzz\n
+	[num f b]/times->t=>"{num}\n"
 </pre>
 
 <h3 id='fib'>Example: Fibonacci</h3>
@@ -345,13 +346,13 @@ times^100
 res n^5 last fib
 
 <b>@t</b>
-	[t fib n B]/[fib n last]
-	[t fib n A B]/[fib n res]
-	[t fibrec]/[fib n]
-	[t fibrec last]/[fibrec A]
-	[t fibrec res]/[fibrec B]
-	[t fib]/fibrec
-	t/last
+	[fib n B]/[fib n last]->t
+	[fib n A B]/[fib n res]->t
+	[fibrec]/[fib n]->t
+	[fibrec last]/[fibrec A]->t
+	[fibrec res]/[fibrec B]->t
+	[fib]/fibrec->t
+	/last->t
 </pre>
 
 <p>To dive deeper, have a look at the <a href='fractran_devlog.html'>Fractran devlog</a>.</p>
