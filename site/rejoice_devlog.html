@@ -77,6 +77,42 @@ x y or
 	<li>Compression Rules: The denominator is greater than the numerator, the system is consolidating data.</li>
 </ul>
 
+<p>The multiplication fraction <code>'r^x/y</code> is almost reversible, but lacks the bookkeeping necessary to reverse it. When <code>x</code> is zero, multiplying forgets <code>y</code>, so undoing it is basically a division by zero. In Rejoice, the inverse <code>'y/r^x</code> has an empty denominator when <code>x</code> is absent, so it always applies and never exhausts. Adding a trace <code>t</code> puts a symbol in the denominator that each step consumes, so the inverse always terminates and recovers <code>y</code>.</p>
+
+<table border='1'>
+	<tr>
+		<th>Irreversible</th>
+		<th>Reversible</th>
+	</tr>
+	<tr>
+	<td>
+<pre>
+[x^4 y^5]  'r^x/y = [x^4 r^20]
+[x^4]      'r^x/y = [x^4]
+[y^5]      'r^x/y = []
+[]         'r^x/y = [] 
+
+[x^4 r^20] 'y/r^x = [x^4 y^5]
+[x^4]      'y/r^x = [x^4]
+[]         'y/r^x = ( endless loop )
+</pre>
+	</td>
+	<td>
+<pre>
+[x^4 y^5]       '[r^x t]/y = [x^4 r^20 t^5] 
+[x^4]           '[r^x t]/y = [x^4]
+[y^5]           '[r^x t]/y = [t^5]
+[]              '[r^x t]/y = []
+
+[x^4 r^20 t^5]  'y/[r^x t] = [x^4 y^5] 
+[x^4]           'y/[r^x t] = [x^4]
+[t^5]           'y/[r^x t] = [y^5]
+[]              'y/[r^x t] = []
+</pre>
+	</td>
+	</tr>
+</table>
+
 <h3>On Optimization</h3>
 <p>There are various levels of optimizations possible, the interpreter might choose to <i>drain</i> symbols by anonymous functions in a single step. This allows for moving or copying values from a single denominator to any number of symbols, without having to run through each value one at a time. But each layer of optimization adds runtime costs.</p>
 
