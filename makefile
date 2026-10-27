@@ -41,7 +41,7 @@ bin/log.rom: src/log.tal
 links/img.xml: bin/img.rom src/diary/*
 	@ echo "RSS(img)"
 	@ ${EMU} bin/img.rom > links/img.xml
-links/log.xml: bin/log.rom src/log/*
+links/log.xml: bin/log.rom src/logs/*
 	@ echo "RSS(log)"
 	@ ${EMU} bin/log.rom
 docs/index.html: bin/dir.rom docs/*
