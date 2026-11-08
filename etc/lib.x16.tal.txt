@@ -1,0 +1,57 @@
+(
+| spiral )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|0180 @width
+|00c0 @width-half
+|0100 @height
+|0080 @height-half
+
+|100
+
+@on-reset ( -> )
+	#04af .System/r DEO2
+	#04af .System/g DEO2
+	#04af .System/b DEO2
+	;width .Screen/width DEO2
+	;height .Screen/height DEO2
+	;on-frame .Screen/vector DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	<draw-frame>
+	BRK
+
+@<draw-frame> ( -- )
+	;height #0000
+	&>y
+		STH2k #0000 .Screen/x DEO2
+		DUP2 .Screen/y DEO2
+		;width #0000
+		&>x
+			DUP2 ;width-half SUB2 STH2kr ;height-half SUB2 SWP2 x16/atan2 ;x16/pi x16/add #0700 x16/mul ,&x STR2
+			DUP2 ;width-half SUB2 DUP2 MUL2 STH2kr ;height-half SUB2 DUP2 MUL2 ADD2 INC2 #01 SFT2 x16/sqrt #2000 SWP2 x16/div [ LIT2 &x $2 ] EOR2 POP #03 AND .Screen/pixel DEO
+			INC2 NEQ2k ?/>x
+		POP2 POP2 POP2r
+		( ) INC2 NEQ2k ?/>y
+	POP2 POP2 JMP2r
+
+@on-frame ( -> )
+	BRK
+
+@plot ( theta* -- )
+	spiral-point .Screen/height DEI2 #01 SFT2 ADD2 .Screen/y DEO2
+	.Screen/width DEI2 #01 SFT2 ADD2 .Screen/x DEO2
+	;dot-icn .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@spiral-point ( theta* -- dx* dy* )
+	DUP2 #0300 x16/mul STH2
+	DUP2 x16/cos STH2kr x16/mul x16/to-s16 SWP2 x16/sin STH2r x16/mul !x16/to-s16
+
+@dot-icn [8
+	030f 1f3f 7f7f ffff c0f0 f8fc fefe ffff
+	ffff 7f7f 3f1f 0f03 ffff fefe fcf8 f0c0 ]
+
+~src/lib.x16.tal
+
