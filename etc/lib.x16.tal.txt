@@ -45,10 +45,10 @@
 @x16/lteq ( x* y* -- x<y )
 	/bias GTH2 #00 EQU JMP2r
 
-@x16/gt ( x* y* -- x<y )
+@x16/gt ( x* y* -- x>y )
 	/bias GTH2 JMP2r
 
-@x16/gteq ( x* y* -- x<y )
+@x16/gteq ( x* y* -- x>y )
 	/bias LTH2 #00 EQU JMP2r
 
 @x16/min ( x* y* -- min[x, y]* )
@@ -61,11 +61,14 @@
 	NIP #00 EQU JMP2r
 
 @x16/remainder ( x* y* -- x%y* )
-	OVR2 OVR2 /quotient /mul
-	( >> )
+	OVR #80 LTH ?{ /neg }
+	SWP2 DUP2 STH2
+	OVR #80 LTH ?{ /neg }
+	SWP2 DIV2k MUL2 SUB2 STH2r #8000 LTH2 ?{ /neg }
+	JMP2r
 
 @x16/sub ( x* y* -- x-y* )
-	x16/neg
+	/neg
 	( >> )
 
 @x16/add ( x* y* -- x+y* )
@@ -79,7 +82,7 @@
 	ADD2 JMP2r
 
 @x16/negate ( x* -- -x* )
-	x16/neg JMP2r
+	/neg JMP2r
 
 @x16/div ( x* y* -- x/y* )
 	;&div-unsigned !/signed-op
@@ -93,9 +96,11 @@
 
 @x16/signed-op ( x* y* f* -- f[x,y] )
 	STH2
-	[ LIT2r 0001 ] DUP2 #8000 LTH2 ?{ x16/neg SWPr }
-	SWP2 DUP2 #8000 LTH2 ?{ x16/neg SWPr }
-	SWP2 SWP2r STH2r JSR2 STHr ?{ x16/neg }
+	[ LIT2r 0001 ]
+	( y ) OVR #80 LTH ?{ /neg SWPr }
+	SWP2
+	( x ) OVR #80 LTH ?{ /neg SWPr }
+	SWP2 SWP2r STH2r JSR2 STHr ?{ /neg }
 	POPr JMP2r
 
 @x16/mul-unsigned ( ab* cd* -- ac+ad+bc+bd* )
@@ -112,7 +117,7 @@
 	&mul-o1 POP2 POP2r &mul-o3 POP2r &mul-o4 POP2 #7fff JMP2r
 	&mul-whole POP STH
 	SWP STHkr /mul8 DUP2 #007f GTH2 ?{
-		SWP ROT STHr /mul8 ADD2 DUP2 #8000 LTH2 ?{ POP2 #7fff }
+		SWP ROT STHr /mul8 ADD2 OVR #80 LTH ?{ POP2 #7fff }
 		JMP2r }
 	POP2 POP POPr #7fff JMP2r
 	&mul-frac STH
@@ -138,7 +143,7 @@
 			STH2kr #0000 EQU2 ?/div-done
 			#01 SFT2 LITr 01 SFT2r LTH2k ?/>lb2
 		SWP2 OVR2 SUB2 SWP2 DUP2r ROT2r ADD2r SWP2r !/>lb1
-	&div-done POP2 POP2 POP2r STH2r DUP2 #7fff GTH2 ?/div-o2
+	&div-done POP2 POP2 POP2r STH2r OVR #7f GTH ?/div-o2
 	JMP2r
 	&div-o1 POP2 POP2 &div-o2 POP2 #7fff JMP2r
 
@@ -149,21 +154,19 @@
 @x16/floor ( x* -- floor[x]* )
 	DUP EOR JMP2r
 
-@x16/ceil ( x* -- floor[x]* )
+@x16/ceil ( x* -- ceil[x]* )
 	#00ff ADD2 DUP EOR JMP2r
 
 @x16/round ( x* -- round[x]* )
-	OVR #01 AND ?{
-		#007f ADD2 DUP EOR JMP2r }
-	#0080 ADD2 DUP EOR JMP2r
+	OVR #01 AND #7f ADD #00 SWP ADD2 DUP EOR JMP2r
 
 @x16/unit-circle ( x* -- x'* )
 	DUP2 ;&2pi LTH2 ?{
-		DUP2 #8000 LTH2 ?{
-			x16/neg /unit-circle ORAk #00 EQU ?{ ;&2pi SWP2 SUB2 }
+		OVR #80 LTH ?{
+			/neg /unit-circle ORAk #00 EQU ?{ ;&2pi SWP2 SUB2 }
 			JMP2r }
 		DUP2 ;&2pi DIV2 DUP2 #01 SFT2 STH2
-		;&2pi MUL2 SUB2 STH2r SUB2 DUP2 #8000 LTH2 ?{ ;&2pi ADD2 } }
+		;&2pi MUL2 SUB2 STH2r SUB2 OVR #80 LTH ?{ ;&2pi ADD2 } }
 	JMP2r
 
 @x16/cos ( x* -- cos[x]* )
@@ -172,7 +175,7 @@
 
 @x16/sin ( x* -- sin[x]* )
 	DUP2 ;&err LTH2 ?/sin-positive
-	x16/neg /sin-positive !/negate
+	/neg /sin-positive !/negate
 	( >> )
 	&sin-positive ( x* -- sin[x]* )
 	/unit-circle
@@ -204,13 +207,13 @@
 	DUP2 ;&err EQU2 ?/atan2-error
 	OVR2 ;&err EQU2 ?/atan2-error
 	( ) OVR2 /is-neg #00 SWP ROT2 ROT2
-	( ) DUP2 /is-neg #00 SWP ROT2 ROT2 DUP2 #8000 LTH2 ?{ x16/neg }
-	SWP2 DUP2 #8000 LTH2 ?{ x16/neg }
+	( ) DUP2 /is-neg #00 SWP ROT2 ROT2 OVR #80 LTH ?{ /neg }
+	SWP2 OVR #80 LTH ?{ /neg }
 	SWP2 OVR2 OVR2 /gt DUP STH
 	#00 EQU ?{ SWP2 }
 	/div STHr ROT ROT #0100 OVR2 /sub #0046 /mul #00c9 /add /mul ROT #00 EQU ?{ ;&pi-half SWP2 /sub }
 	SWP2 NIP #00 EQU ?{ ;&pi SWP2 /sub }
-	SWP2 NIP #00 EQU ?{ ;&2pi SWP2 /sub }
+	SWP2 NIP #00 EQU ?{ ;&2pi SWP2 !/sub }
 	JMP2r
 
 	&atan2-error ( y* x* -- angle* )
@@ -225,7 +228,7 @@
 	&from-s16-error POP2 ;&err JMP2r
 
 @x16/to-s16 ( x* -- whole* )
-	DUP2 #7fff GTH2 ?{ DUP EOR SWP JMP2r }
+	OVR #7f GTH ?{ DUP EOR SWP JMP2r }
 	#00ff STHk ADD2 POP DUP #07 SFT STHr MUL SWP JMP2r
 
 @x16/to-s8 ( x* -- whole )
@@ -250,7 +253,7 @@
 		NIP2 !/>sqrt-l2
 
 @x16/sq ( x* -- x*x* )
-	DUP2 #8000 LTH2 ?{ x16/neg }
+	OVR #80 LTH ?{ /neg }
 	DUP2 #0b50 GTH2 ?{
 		STH2k #08 SFT2 DUP2 MUL2 #80 SFT2 STH2kr #08 SFT2 STH2kr #00ff AND2 MUL2 #10 SFT2 ADD2 STH2r #00ff AND2 DUP2 MUL2 #08 SFT2 ADD2 JMP2r }
 	POP2 #7fff JMP2r
@@ -262,8 +265,8 @@
 	NIP #00 SWP ;&sqrt-table ADD2 LDA #00 SWP STHr #40 SFT SFT2 JMP2r
 
 @x16/<emit> ( x* -- )
-	DUP2 #8000 LTH2 ?{ #2d18 DEO
-		x16/neg }
+	OVR #80 LTH ?{ #2d18 DEO
+		/neg }
 	SWP DUP #64 LTH ?/<100
 	#64 DIVk DUP /<emit-dec-digit>
 	MUL SUB !/>=10
