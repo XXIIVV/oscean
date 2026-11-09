@@ -133,7 +133,7 @@
 	#01 #0001 STA ( INC )
 	#a0 #0002 STA ( LIT2 ) ;&jci-return #0003 STA2 ( <hi>,<lo> )
 	#2c #0005 STA ( JMP2 )
-	#fffe JMP2 &jci-return POP2r #8b EQU tests/<outcome>
+	#fffe JMP2 &jci-return #8b EQU tests/<outcome>
 
 	( | You have a working uxn! )
 	#800f DEO
@@ -215,6 +215,7 @@
 	( skip ) #01 JMP2r
 
 @op-jci ( -- pass )
+	#01 ?&foreward &back
 	( - ) #12 #01 ?{ INC }
 	#12 EQU
 	( - ) #34 #00 ?{ INC }
@@ -223,11 +224,13 @@
 	#34 EQU AND JMP2r
 
 @op-jmi ( -- pass )
+	!/foreward &back
 	( - ) #12 !{
 	INC }
 	#12 EQU JMP2r
 
 @op-jsi ( -- pass )
+	/foreward &back POP2r
 	#12 /t #24 EQU JMP2r
 	&t DUP ADD JMP2r
 
@@ -1403,6 +1406,15 @@
 
 @op-sft2kr ( -- pass )
 	( - ) LIT2r 1234 LITr 32 SFT2kr LIT2r 2468 EQU2r SWP2r LIT2r 1234 EQU2r ANDr LIT2r 3201 EQU2r STHr JMP2r
+
+@op-jci/foreward ( -- )
+	#02 ?&back BRK
+
+@op-jmi/foreward ( -- )
+	!/back
+
+@op-jsi/foreward ( -- )
+	POP2r /back BRK
 
 @tests/lut [
 	=op-brk =op-inc =op-pop =op-nip
