@@ -22,7 +22,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal(54K) 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "29 20 "Sep 20 "2026 00
+	( date ) "9 20 "Nov 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
@@ -394,7 +394,7 @@
 	#0006 ADD2 }
 
 %syms/is-used ( sym* -- sym* t ) {
-	INC2k INC2 LDA .SymType/used AND }
+	.SymType/used syms/get-flag }
 
 %syms/is-reset ( sym* -- sym* t ) {
 	LDA2k ;on-reset EQU2 }
@@ -407,7 +407,9 @@
 		POP2 ;&ptr LDA2 SWP2 rom/get-head .SymType/declared /<push-sym> !refs/<record-scope> }
 	( | name* sym* -- )
 	NIP2 DUP2 refs/<record-scope>
-	/is-declared ?{ rom/get-head OVR2 STA2 !/<set-declared> }
+	/is-declared ?{
+		rom/get-head OVR2 STA2
+		.SymType/declared /set-flag POP2 JMP2r }
 	POP2
 	( ! ) ;dict/duplicate !info/<error-token-sym>
 
@@ -451,7 +453,7 @@
 	str/is-hex ?str/hex
 	name/unpack /find-name /is-defined ?{
 		( ! ) ;dict/invalid info/<error-token-sym> }
-	/set-used LDA2 NIP2 JMP2r
+	.SymType/used /set-flag LDA2 NIP2 JMP2r
 
 @syms/<print-unused> ( -- )
 	;&ptr LDA2 ;&mem
@@ -473,14 +475,18 @@
 	( >> )
 
 @syms/is-declared ( sym* -- sym* t )
-	INC2k INC2 LDA .SymType/declared AND JMP2r
+	.SymType/declared
+	( >> )
 
-@syms/set-used ( sym* -- sym* )
-	INC2k INC2 STH2k LDA .SymType/used ORA STH2r STA
-	JMP2r
+@syms/get-flag ( sym* flag -- sym* mask )
+	STH
+	INC2k INC2 LDA STHr AND JMP2r
 
-@syms/<set-declared> ( sym* -- )
-	INC2 INC2 STH2k LDA .SymType/declared ORA STH2r STA
+@syms/set-flag ( sym* flag -- sym* )
+	STH
+	INC2k INC2 LDAk STH
+	ORAr STH2
+	STAr
 	JMP2r
 
 (
@@ -496,7 +502,7 @@
 		( scope* ) [ LIT2 &scope $2 ] /<push-short>
 		( line* ) ;token/line LDA2 /<push-short> }
 	( | mark as used )
-	syms/set-used LDA2 JMP2r
+	.SymType/used syms/set-flag LDA2 JMP2r
 
 @refs/<push-short> ( value* -- )
 	[ LIT2 &+ptr =&mem ] INC2k INC2 ,&+ptr STR2
@@ -518,11 +524,7 @@
 	rom/get-head /get-distance syms/byte-distance NIP JMP2r
 
 @refs/get-rel2 ( label* -- distance* )
-	;&handle-rel2 /get-type rom/get-head
-	( >> )
-
-@refs/get-distance ( a* b* -- distance* )
-	INC2 INC2 SUB2 JMP2r
+	;&handle-rel2 /get-type rom/get-head !/get-distance
 
 @refs/<resolve-all> ( -- )
 	,&+ptr LDR2 ;&mem
@@ -545,10 +547,17 @@
 	/resolve-sym NIP2 !rom/<write-short>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-sym SWP2 LDA2 /get-distance /byte-distance NIP !rom/<write-byte>
+	/distance /byte-distance NIP !rom/<write-byte>
 
 @refs/handle-rel2 ( ref* -- )
-	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short>
+	/distance !rom/<write-short>
+
+@refs/distance ( ref* -- distance* )
+	/resolve-sym SWP2 LDA2
+	( >> )
+
+@refs/get-distance ( a* b* -- distance* )
+	INC2 INC2 SUB2 JMP2r
 
 @refs/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
@@ -639,21 +648,16 @@
 	POP2 STH2r JMP2r
 
 @str/len ( str* -- str* length )
-	DUP2k /cap SWP2 INC2 SUB2 NIP JMP2r
+	DUP2
+	&>wl
+		LDAk ?{ OVR2 SUB2 NIP JMP2r }
+		INC2 !/>wl
 
 @str/is-hex ( str* -- str* f )
 	DUP2
 	&>wih
 		chex INC ?{ LDA #00 EQU JMP2r }
 		INC2 !/>wih
-
-@str/cap1 ( str* -- end* )
-	INC2
-	( >> )
-
-@str/cap ( str* -- end* )
-	LDAk ?/cap1
-	INC2 JMP2r
 
 @str/cmp ( a* b* -- f )
 	STH2
