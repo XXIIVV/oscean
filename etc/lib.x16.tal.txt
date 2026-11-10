@@ -20,10 +20,10 @@
 	#0000 SWP2 SUB2 }
 
 @x16/is-non-neg ( x* -- bool )
-	;&minimum LTH2 JMP2r
+	POP #80 LTH JMP2r
 
 @x16/is-neg ( x* -- bool )
-	;&maximum GTH2 JMP2r
+	POP #7f GTH JMP2r
 
 @x16/cmp ( x* y* -- c )
 	/bias
@@ -42,13 +42,13 @@
 @x16/lt ( x* y* -- x<y )
 	/bias LTH2 JMP2r
 
-@x16/lteq ( x* y* -- x<y )
+@x16/lteq ( x* y* -- x<=y )
 	/bias GTH2 #00 EQU JMP2r
 
 @x16/gt ( x* y* -- x>y )
 	/bias GTH2 JMP2r
 
-@x16/gteq ( x* y* -- x>y )
+@x16/gteq ( x* y* -- x>=y )
 	/bias LTH2 #00 EQU JMP2r
 
 @x16/min ( x* y* -- min[x, y]* )
@@ -62,9 +62,8 @@
 
 @x16/remainder ( x* y* -- x%y* )
 	OVR #80 LTH ?{ /neg }
-	SWP2 DUP2 STH2
-	OVR #80 LTH ?{ /neg }
-	SWP2 DIV2k MUL2 SUB2 STH2r #8000 LTH2 ?{ /neg }
+	SWP2 OVR #80 LTH STHk ?{ /neg }
+	SWP2 DIV2k MUL2 SUB2 STHr ?{ /neg }
 	JMP2r
 
 @x16/sub ( x* y* -- x-y* )
@@ -127,20 +126,19 @@
 	ORAk ?{
 		POP2 ORA ?{ #0000 JMP2r }
 		#7fff JMP2r }
-	DUP ?{
-		POP #00 SWP DIV2 JMP2r }
+	DUP ?{ #08 SFT2 DIV2 JMP2r }
 	DIV2k DUP2 #007f GTH2 ?/div-o1
 	STH2k LITr 80 SFT2r OVR2 STH2
 	MUL2 SUB2 STH2r [ LIT2r 0100 ]
 	&>la1
-		&la2 STH2kr #0000 EQU2 ?/div-done
+		&la2 STH2kr ORA ?{ !/div-done }
 		OVR2 #7fff GTH2 ?{
 			SWP2 #10 SFT2 SWP2 LITr 01 SFT2r LTH2k ?/la2
 			SWP2 OVR2 SUB2 SWP2 DUP2r ROT2r ADD2r SWP2r !/>la1 }
 	&>lb1
 	
 		&>lb2
-			STH2kr #0000 EQU2 ?/div-done
+			STH2kr ORA ?{ !/div-done }
 			#01 SFT2 LITr 01 SFT2r LTH2k ?/>lb2
 		SWP2 OVR2 SUB2 SWP2 DUP2r ROT2r ADD2r SWP2r !/>lb1
 	&div-done POP2 POP2 POP2r STH2r OVR #7f GTH ?/div-o2
@@ -148,7 +146,7 @@
 	&div-o1 POP2 POP2 &div-o2 POP2 #7fff JMP2r
 
 @x16/quot-unsigned ( x* y* -- x//y* )
-	DIV2 DUP2 #007f GTH2 ?{ #80 SFT2 JMP2r }
+	DIV2 DUP2 #007f GTH2 ?{ NIP #00 JMP2r }
 	POP2 #7fff JMP2r
 
 @x16/floor ( x* -- floor[x]* )
@@ -163,8 +161,8 @@
 @x16/unit-circle ( x* -- x'* )
 	DUP2 ;&2pi LTH2 ?{
 		OVR #80 LTH ?{
-			/neg /unit-circle ORAk #00 EQU ?{ ;&2pi SWP2 SUB2 }
-			JMP2r }
+			/neg /unit-circle ORAk ?{ JMP2r }
+			;&2pi SWP2 SUB2 JMP2r }
 		DUP2 ;&2pi DIV2 DUP2 #01 SFT2 STH2
 		;&2pi MUL2 SUB2 STH2r SUB2 OVR #80 LTH ?{ ;&2pi ADD2 } }
 	JMP2r
@@ -174,7 +172,7 @@
 	;&2pi SUB2 !/sin-reduced
 
 @x16/sin ( x* -- sin[x]* )
-	DUP2 ;&err LTH2 ?/sin-positive
+	OVR #80 LTH ?/sin-positive
 	/neg /sin-positive !/negate
 	( >> )
 	&sin-positive ( x* -- sin[x]* )
@@ -206,14 +204,12 @@
 @x16/atan2 ( y* x* -- angle* )
 	DUP2 ;&err EQU2 ?/atan2-error
 	OVR2 ;&err EQU2 ?/atan2-error
-	( ) OVR2 /is-neg #00 SWP ROT2 ROT2
-	( ) DUP2 /is-neg #00 SWP ROT2 ROT2 OVR #80 LTH ?{ /neg }
-	SWP2 OVR #80 LTH ?{ /neg }
-	SWP2 OVR2 OVR2 /gt DUP STH
-	#00 EQU ?{ SWP2 }
-	/div STHr ROT ROT #0100 OVR2 /sub #0046 /mul #00c9 /add /mul ROT #00 EQU ?{ ;&pi-half SWP2 /sub }
-	SWP2 NIP #00 EQU ?{ ;&pi SWP2 /sub }
-	SWP2 NIP #00 EQU ?{ ;&2pi SWP2 !/sub }
+	SWP2 OVR #80 LTH STHk ?{ /neg }
+	SWP2 OVR #80 LTH STHk ?{ /neg }
+	LTH2k STHk ?{ SWP2 }
+	/div-unsigned #0100 OVR2 SUB2 #0046 /mul-unsigned #00c9 ADD2 /mul-unsigned STHr ?{ ;&pi-half SWP2 SUB2 }
+	STHr ?{ ;&pi SWP2 SUB2 }
+	STHr ?{ ;&2pi SWP2 SUB2 }
 	JMP2r
 
 	&atan2-error ( y* x* -- angle* )
@@ -249,20 +245,21 @@
 			SWP2 #02 SFT2 SWP2 #10 SFT2 !/>sqrt-l1 }
 	NIP2
 	&>sqrt-l2
-		OVR2 OVR2 /div OVR2 ADD2 #01 SFT2 GTH2k ?{ POP2 NIP2 JMP2r }
+		OVR2 OVR2 /div-unsigned OVR2 ADD2 #01 SFT2 GTH2k ?{ POP2 NIP2 JMP2r }
 		NIP2 !/>sqrt-l2
 
 @x16/sq ( x* -- x*x* )
 	OVR #80 LTH ?{ /neg }
 	DUP2 #0b50 GTH2 ?{
-		STH2k #08 SFT2 DUP2 MUL2 #80 SFT2 STH2kr #08 SFT2 STH2kr #00ff AND2 MUL2 #10 SFT2 ADD2 STH2r #00ff AND2 DUP2 MUL2 #08 SFT2 ADD2 JMP2r }
+		STH2k #08 SFT2 DUP2 MUL2 NIP #00 STH2kr #08 SFT2 STH2kr #00ff AND2 MUL2 #10 SFT2 ADD2 STH2r #00ff AND2 DUP2 MUL2 #08 SFT2 ADD2 JMP2r }
 	POP2 #7fff JMP2r
 
 @x16/sqrt-fast ( x* -- sqrt[x]* )
 	LITr 00
 	&>norm
-		OVR #00 EQU ?{ #02 SFT2 INCr !/>norm }
-	NIP #00 SWP ;&sqrt-table ADD2 LDA #00 SWP STHr #40 SFT SFT2 JMP2r
+		OVR ?{
+			NIP #00 SWP ;&sqrt-table ADD2 LDA #00 SWP STHr #40 SFT SFT2 JMP2r }
+		#02 SFT2 INCr !/>norm
 
 @x16/<emit> ( x* -- )
 	OVR #80 LTH ?{ #2d18 DEO
