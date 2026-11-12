@@ -13,9 +13,6 @@
 %x16/bias ( x* y* -- x* y* ) {
 	#8000 EOR2 SWP2 #8000 EOR2 SWP2 }
 
-%x16/mul8 ( x y -- xy* ) {
-	#0000 SWP2 ROT SWP MUL2 }
-
 %x16/neg ( x* -- -x* ) {
 	#0000 SWP2 SUB2 }
 
@@ -102,48 +99,47 @@
 	SWP2 SWP2r STH2r JSR2 STHr ?{ /neg }
 	POPr JMP2r
 
-@x16/mul-unsigned ( ab* cd* -- ac+ad+bc+bd* )
+@x16/mul-unsigned ( ab* cd* -- ab*cd* )
 	DUP ?{ !/mul-whole }
 	OVR2 NIP ?{ SWP2 !/mul-whole }
 	OVR ?{ !/mul-frac }
 	OVR2 POP ?{ SWP2 !/mul-frac }
-	OVR2 OVR2 STH2
+	ROT STH
 	STH2
-	ROT SWPr ROTr SWP2 /mul8 DUP2 #007f GTH2 ?/mul-o1
-	SWP SWP2 /mul8 #08 SFT2 ADD2 STH2r /mul8 ADD2 OVR #7f GTH ?/mul-o3
-	STH2r /mul8 ADD2 OVR #7f GTH ?/mul-o4
-	JMP2r
-	&mul-o1 POP2 POP2r &mul-o3 POP2r &mul-o4 POP2 #7fff JMP2r
-	&mul-whole POP STH
-	SWP STHkr /mul8 DUP2 #007f GTH2 ?{
-		SWP ROT STHr /mul8 ADD2 OVR #80 LTH ?{ POP2 #7fff }
+	#00 SWP #7fff OVR2 DIV2 STH2kr LTH2 ?{
+		( ) STH2kr MUL2
+		( ) STH2r #00 SWP
+		( ) #00 STHkr MUL2 #08 SFT2 ROT #00 SWP #00
+		( ) STHr MUL2 ADD2 ADD2 OVR #7f GTH ?/mul-o2
 		JMP2r }
-	POP2 POP POPr #7fff JMP2r
-	&mul-frac STH
-	POP STHkr /mul8 #08 SFT2 ROT STHr /mul8 ADD2 JMP2r
+	POP2r POPr &mul-o2 POP2 #7fff JMP2r
+
+	&mul-whole ( ab* cd* -- ab*cd* )
+	POP DUP ?{ POP2 POP #0000 JMP2r }
+	#00 SWP #7fff OVR2 DIV2 ROT2 LTH2k ?{ NIP2 MUL2 JMP2r }
+	POP2 POP2 POP2 #7fff JMP2r
+
+	&mul-frac ( ab* cd* -- ab*cd* )
+	STH
+	#08 SFT2 #00 STHkr MUL2 #08 SFT2 ROT #00 SWP #00 STHr MUL2 ADD2 JMP2r
 
 @x16/div-unsigned ( x* y* -- x/y* )
 	ORAk ?{
 		POP2 ORA ?{ #0000 JMP2r }
 		#7fff JMP2r }
 	DUP ?{ #08 SFT2 DIV2 JMP2r }
-	DIV2k DUP2 #007f GTH2 ?/div-o1
-	STH2k LITr 80 SFT2r OVR2 STH2
-	MUL2 SUB2 STH2r [ LIT2r 0100 ]
-	&>la1
-		&la2 STH2kr ORA ?{ !/div-done }
-		OVR2 #7fff GTH2 ?{
-			SWP2 #10 SFT2 SWP2 LITr 01 SFT2r LTH2k ?/la2
-			SWP2 OVR2 SUB2 SWP2 DUP2r ROT2r ADD2r SWP2r !/>la1 }
-	&>lb1
-	
-		&>lb2
-			STH2kr ORA ?{ !/div-done }
-			#01 SFT2 LITr 01 SFT2r LTH2k ?/>lb2
-		SWP2 OVR2 SUB2 SWP2 DUP2r ROT2r ADD2r SWP2r !/>lb1
-	&div-done POP2 POP2 POP2r STH2r OVR #7f GTH ?/div-o2
-	JMP2r
-	&div-o1 POP2 POP2 &div-o2 POP2 #7fff JMP2r
+	DIV2k DUP2 #0080 LTH2 ?{
+		POP2 POP2 POP2 #7fff JMP2r }
+	STHk OVR2 MUL2 ROT2 SWP2 SUB2 OVR2 POP ?{
+		NIP #00 SWP2 DIV2 NIP STHr SWP JMP2r }
+	OVR2 POP #10 LTH ?{
+		LIT2r 0001
+		&>lp
+			#10 SFT2 DUP2r ADD2r GTH2k ?{ OVR2 SUB2 INC2r }
+			STH2kr POP ?{ !/>lp }
+		POP2 POP2 STH2r NIP STHr SWP JMP2r }
+	#40 SFT2 OVR2 DIV2k STHk MUL2 SUB2 #40 SFT2 OVR2 DIV2k STHk MUL2 SUB2 POP2 POP2
+	( ) STHr STHr #40 SFT ORA STHr SWP JMP2r
 
 @x16/quot-unsigned ( x* y* -- x//y* )
 	DIV2 DUP2 #007f GTH2 ?{ NIP #00 JMP2r }

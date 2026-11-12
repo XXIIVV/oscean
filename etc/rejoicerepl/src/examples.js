@@ -70,6 +70,16 @@ examples.product=`( Generate the multiplication table up to 12x12 )
 		( res ) /res^res=>{res}
 		/x^12 =>" " x/x->Row
 	/y^12 =>"\\n" y/y->Col`
+examples.reversible_product=`[x^4 y^5]
+
+@mul ( x y -- x r t )
+	[r^x t]/y->mul
+=>"r^{r} <> "
+
+@lum ( x r t -- x y )
+	y/[r^x t]->lum
+=>"x^{x} y^{y}"
+`
 examples.gcd=`( A program to find the GCD of two numbers,
 	and print the result )
 
