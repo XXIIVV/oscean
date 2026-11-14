@@ -23,11 +23,11 @@
 	;src/on-console-once .Console/vector DEO2
 	BRK
 
-@meta $1
+@meta 00
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Jul 20 "2026 $2
+	( date ) "14 20 "Nov 20 "2026 00 00
 
 %u8/mod ( a b -- a%b ) {
 	DIVk MUL SUB }
@@ -74,7 +74,7 @@
 
 	&cmd [ 00 4000 0000 =&buf 00 ]
 
-@scope/put ( c -- )
+@scope/<put> ( c -- )
 	#00 [ LIT2 &ptr =&buf ]
 	( | handlers )
 	DUP2 ;&cap EQU2 ?{
@@ -104,6 +104,9 @@
 
 @result/get-last ( -- c )
 	,&ptr LDR2 #0001 SUB2 LDA JMP2r
+
+@result/get-last-two ( -- c c )
+	,&ptr LDR2 #0002 SUB2 LDA2 JMP2r
 
 @result/<write-file> ( -- )
 	.err LDZ ?{
@@ -142,14 +145,14 @@
 	( norm ws ) #20 GTHk [ JMP SWP POP ]
 	( join ws ) [ LIT &last 20 ] OVR ,&last STR
 	( no repeat ) DUP2 #2020 NEQ2 ?{ POP2 JMP2r }
-	#20 NEQ ?scope/put
+	#20 NEQ ?scope/<put>
 	DUP #28 NEQ ?{
 		[ LIT2 01 _&mute ] STR }
 	DUP #29 NEQ ?{
 		[ LIT2 00 _&mute ] STR }
-	[ LIT &mute $1 ] ?scope/put
-	DUP [ LIT "@ ] NEQ OVR [ LIT "% ] NEQ AND ?scope/put
-	eval-scope !scope/put
+	[ LIT &mute $1 ] ?scope/<put>
+	DUP [ LIT "@ ] NEQ OVR [ LIT "% ] NEQ AND ?scope/<put>
+	eval-scope !scope/<put>
 
 @eval-scope ( -- )
 	<reset-depth>
@@ -157,6 +160,8 @@
 	( | pad zp )
 	[ LIT2 00 -inzp ] LDZ EQU ?{ #09 <emit> }
 	( | label/macro )
+	LDAk LIT "% NEQ ?{ #0a <emit>
+		#0a <emit> }
 	<emit-word>/
 	#20 <emit>
 	( | definition )
@@ -430,6 +435,7 @@
 		( ws ws ) result/get-last #20 EQU ?/ignore
 		( tb ws ) result/get-last #09 EQU ?/ignore }
 	DUP #0a NEQ ?{
+		( lb lb <- ) result/get-last-two #0a0a EQU2 ?/ignore
 		( ws lb <- ) result/get-last #20 NEQ ?{ result/rew }
 		( tb lb <- ) result/get-last #09 NEQ ?{ result/rew }
 		[ LIT &lb $1 ] INCk ,&lb STR
