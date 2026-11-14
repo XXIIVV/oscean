@@ -319,21 +319,11 @@ file_open(unsigned int id, unsigned int want_write, Uint8 flags)
 	return u->state != IDLE;
 }
 
-static char *
-file_make_path(const char *s)
-{
-	size_t n = strlen(s) + 1;
-	char *p = malloc(n);
-	if(p) memcpy(p, s, n);
-	return p;
-}
-
 static unsigned int
 file_init(unsigned int id, Uint16 addr)
 {
 	file_reset(id);
-	free(ufs[id].filepath);
-	ufs[id].filepath = file_make_path((char *)&ram[addr]);
+	ufs[id].filepath = (char *)&ram[addr];
 	return 0;
 }
 
@@ -519,8 +509,8 @@ emu_deo(const Uint8 port, const Uint8 value)
 #define Lx(m,o,o2)  m ? Lb(o2) << 8 | Lb(o2+1) : Lb(o)
 #define Pb(s,v)     stk[s][ptr[s]++] = v;
 #define Px(m,s,v)   if(m) {const int t=(v);Pb(s,t>>8) Pb(s,t)} else Pb(s,v)
-#define Lda(m,u,o)  Pb(r,ram[o]) if(m) Pb(r,ram[(u)(o+1)])
-#define Sta(u,o,v)  if(d) ram[o]=v>>8, ram[(u)(o+1)]=v; else ram[o]=v;
+#define Lda(m,u,o)  Pb(r,mem[o]) if(m) Pb(r,mem[(u)(o+1)])
+#define Sta(u,o,v)  if(d) mem[o]=v>>8, mem[(u)(o+1)]=v; else mem[o]=v;
 #define MUTE        (void)x;(void)y;(void)z;(void)r;(void)d;
 
 #define OP(opc,X,Y,Z,k1,k2,P) \
@@ -537,12 +527,13 @@ static unsigned int
 uxn_eval(Uint16 start_pc)
 {
 	Uint16 pc = start_pc;
+	Uint8 *const mem = ram;
 	for(;;)
-	switch(ram[pc++]) {
+	switch(mem[pc++]) {
 	/* BRK */ case 0x00: return 1;
-	/* JCI */ case 0x20: { const Uint16 a=ram[pc]<<8|ram[(Uint16)(pc+1)]; pc+=2; if(stk[0][--ptr[0]]) pc+=a; } break;
-	/* JMI */ case 0x40: { const Uint16 a=ram[pc]<<8|ram[(Uint16)(pc+1)]; pc+=2+a; } break;
-	/* JSI */ case 0x60: { const Uint16 a=ram[pc]<<8|ram[(Uint16)(pc+1)]; pc+=2; Px(1,1,pc); pc+=a; } break;
+	/* JCI */ case 0x20: { const Uint16 a=mem[pc]<<8|mem[(Uint16)(pc+1)]; pc+=2; if(stk[0][--ptr[0]]) pc+=a; } break;
+	/* JMI */ case 0x40: { const Uint16 a=mem[pc]<<8|mem[(Uint16)(pc+1)]; pc+=2+a; } break;
+	/* JSI */ case 0x60: { const Uint16 a=mem[pc]<<8|mem[(Uint16)(pc+1)]; pc+=2; Px(1,1,pc); pc+=a; } break;
 	/* LIT */ case 0x80: { const Uint8 r=0; Lda(0,Uint16,pc); pc+=1; } break;
 	/* LI2 */ case 0xa0: { const Uint8 r=0; Lda(1,Uint16,pc); pc+=2; } break;
 	/* LIr */ case 0xc0: { const Uint8 r=1; Lda(0,Uint16,pc); pc+=1; } break;
@@ -589,7 +580,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 22 Sep 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 13 Nov 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
