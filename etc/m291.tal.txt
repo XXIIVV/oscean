@@ -46,7 +46,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "15 20 "Nov 20 "2026 00
+	( date ) "16 20 "Nov 20 "2026 00
 	( . ) 02
 	( - ) 83 =appicon
 	( - ) a0 =manifest/dat
@@ -59,7 +59,7 @@
 	( - ) 44 00 =selection/<seek-prev> =dict/seek-prev
 	( - ) 84 00 =selection/<seek-next> =dict/seek-next }
 	_{ =dict/selection
-	( - ) 00 1b =selection/<escape> =dict/parent
+	( - ) 00 08 =selection/<escape> =dict/parent
 	( - ) 10 00 =selection/<move-up> =dict/move-up
 	( - ) 20 00 =selection/<move-down> =dict/move-down }
 	00
@@ -113,8 +113,8 @@
 	cursor/<update>
 	( | route events )
 	.Mouse/y DEI2
-	( within window ) DUP2 #8000 LTH2 ?{ POP2 BRK }
-	( > ) [ LIT2 00 -controls/playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?/player }
+	( within window ) OVR #80 LTH ?{ POP2 BRK }
+	( > ) [ LIT2 00 -controls/playing ] LDZ EQU ?{ DUP2 #009c LTH2 ?/player }
 	( | on list )
 	player/<y-id>
 	.Mouse/state DEI ?{ selection/<select>
@@ -967,14 +967,13 @@
 	JMP2r
 
 @window/<fit> ( -- )
-	/is-shaded ?{
-		( folders ) [ LIT2 00 -lines/folders ] LDZ
-		( tracks ) .lines/tracks LDZ ADD #18 u8/min
-		( empty ) DUP #00 EQU ADD #40 SFT2
-		( padding ) #0020 ADD2
-		( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?/<set-height>
-		#0080 ADD2 !/<set-height> }
-	JMP2r
+	/is-shaded ?header/<draw>
+	( folders ) [ LIT2 00 -lines/folders ] LDZ
+	( tracks ) .lines/tracks LDZ ADD #18 u8/min
+	( empty ) DUP #00 EQU ADD #40 SFT2
+	( padding ) #0020 ADD2
+	( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?/<set-height>
+	#0080 ADD2 !/<set-height>
 
 @header/get-string ( -- str* )
 	;id3/title LDAk ?{ POP2 !path/get-location }

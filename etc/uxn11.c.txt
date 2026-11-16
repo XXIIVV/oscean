@@ -427,8 +427,8 @@ screen_resize(int width, int height)
 static void
 screen_redraw(void)
 {
+	int y, *dst_ptr = screen_pixels;
 	if(screen_zoom == 1) {
-		int y, *dst_ptr = screen_pixels;
 		Uint8 *src_ptr = &screen_layers[8 * screen_wmar2 + 8];
 		for(y = 0; y < screen_height; y++) {
 			int *dst_end = dst_ptr + screen_width;
@@ -439,16 +439,18 @@ screen_redraw(void)
 	} else {
 		const int stride = screen_width * screen_zoom;
 		const int zoom_stride = screen_zoom * stride;
-		int x, y, k, l, row_base = 0, i_base = 8 * screen_wmar2 + 8;
-		for(y = 0; y < screen_height; y++, row_base += zoom_stride, i_base += screen_wmar2) {
-			int i = i_base, xs = 0;
-			for(x = 0; x < screen_width; x++, i++, xs += screen_zoom) {
-				const int c = screen_palette[screen_layers[i]];
-				int oo = row_base + xs;
-				for(k = 0; k < screen_zoom; k++, oo += stride)
-					for(l = 0; l < screen_zoom; l++)
-						screen_pixels[oo + l] = c;
+		const size_t row_bytes = stride * sizeof(*screen_pixels);
+		Uint8 *src_row = screen_layers + 8 * screen_wmar2 + 8;
+		for(y = 0; y < screen_height; y++, src_row += screen_wmar2, dst_ptr += zoom_stride) {
+			int x, k, l, *dst = dst_ptr;
+			Uint8 *src = src_row;
+			for(x = 0; x < screen_width; x++, src++) {
+				const int c = screen_palette[*src];
+				for(l = 0; l < screen_zoom; l++)
+					*dst++ = c;
 			}
+			for(k = 1; k < screen_zoom; k++, dst += stride)
+				memcpy(dst, dst_ptr, row_bytes);
 		}
 	}
 	emu_redraw();
@@ -491,10 +493,9 @@ screen_deo_pixel(void)
 			Uint8 *row = &screen_layers[y1 * screen_wmar2 + x1];
 			Uint8 *end = row + ver * screen_wmar2;
 			for(; row < end; row += screen_wmar2) {
-				int px;
-				Uint8 *dst = row;
-				for(px = 0; px < hor; px++)
-					dst[px] = (dst[px] & mask) | color;
+				Uint8 *dst = row, *dst_end = row + hor;
+				while(dst < dst_end)
+					*dst = (*dst & mask) | color, dst++;
 			}
 		}
 		/* pixel mode */
@@ -549,8 +550,8 @@ screen_deo_sprite(void)
 
 /* clang-format off */
 
-static Uint8 screen_dei_rx(void) { dev[0x29] = rX; return rX >> 8; }
-static Uint8 screen_dei_ry(void) { dev[0x2b] = rY; return rY >> 8; }
+static Uint8 screen_dei_rx(void) { dev[0x29] = (Uint16)rX; return rX >> 8; }
+static Uint8 screen_dei_ry(void) { dev[0x2b] = (Uint16)rY; return rY >> 8; }
 static Uint8 screen_dei_ra(void) { dev[0x2d] = rA; return rA >> 8; }
 static void screen_deo_vector(void) { screen_vector = peek2(&dev[0x20]); }
 static void screen_deo_width(void) { screen_resize(peek2(&dev[0x22]) & 0xfff, screen_height & 0xfff); }
@@ -1111,6 +1112,7 @@ uxn_eval(Uint16 vector)
 static Display *emu_dpy;
 static Window emu_win;
 static XImage *emu_img;
+static Atom wm_protocols, wm_delete;
 static int emu_x11;
 static int emu_timer;
 
@@ -1125,7 +1127,16 @@ emu_resize(void)
 		emu_img->data = NULL;
 		XDestroyImage(emu_img);
 	}
-	emu_img = XCreateImage(emu_dpy, DefaultVisual(emu_dpy, 0), DefaultDepth(emu_dpy, DefaultScreen(emu_dpy)), ZPixmap, 0, (char *)screen_pixels, width, height, 32, 0);
+	emu_img = XCreateImage(emu_dpy,
+		DefaultVisual(emu_dpy, DefaultScreen(emu_dpy)),
+		DefaultDepth(emu_dpy, DefaultScreen(emu_dpy)),
+		ZPixmap,
+		0,
+		(char *)screen_pixels,
+		width,
+		height,
+		32,
+		0);
 	XResizeWindow(emu_dpy, emu_win, width, height);
 }
 
@@ -1134,7 +1145,7 @@ emu_redraw(void)
 {
 	const int w = screen_width * screen_zoom;
 	const int h = screen_height * screen_zoom;
-	XPutImage(emu_dpy, emu_win, DefaultGC(emu_dpy, 0), emu_img, 0, 0, 0, 0, w, h);
+	XPutImage(emu_dpy, emu_win, DefaultGC(emu_dpy, DefaultScreen(emu_dpy)), emu_img, 0, 0, 0, 0, w, h);
 	XFlush(emu_dpy);
 }
 
@@ -1203,7 +1214,7 @@ display_center(void)
 	const int h = screen_height * screen_zoom;
 	const int x = screen->width / 2 - w / 2;
 	const int y = screen->height / 2 - h / 2;
-	emu_win = XCreateSimpleWindow(emu_dpy, RootWindow(emu_dpy, 0), x, y, w, h, 1, 0, 0);
+	emu_win = XCreateSimpleWindow(emu_dpy, RootWindow(emu_dpy, DefaultScreen(emu_dpy)), x, y, w, h, 1, 0, 0);
 }
 
 static void
@@ -1221,71 +1232,16 @@ display_hidecursor(void)
 static void
 display_floating(void)
 {
-	Atom wmDelete = XInternAtom(emu_dpy, "WM_DELETE_WINDOW", True);
 	Atom wmType = XInternAtom(emu_dpy, "_NET_WM_WINDOW_TYPE", False);
 	Atom wmDialog = XInternAtom(emu_dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+	wm_protocols = XInternAtom(emu_dpy, "WM_PROTOCOLS", False);
+	wm_delete = XInternAtom(emu_dpy, "WM_DELETE_WINDOW", False);
+	XSetWMProtocols(emu_dpy, emu_win, &wm_delete, 1);
 	XClassHint class = {"uxn11", "Uxn"};
-	XSetWMProtocols(emu_dpy, emu_win, &wmDelete, 1);
 	XChangeProperty(emu_dpy, emu_win, wmType, 4, 32, PropModeReplace, (Uint8 *)&wmDialog, 1);
 	XSelectInput(emu_dpy, emu_win, ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ExposureMask | KeyPressMask | KeyReleaseMask | LeaveWindowMask);
 	XStoreName(emu_dpy, emu_win, "uxn11");
 	XSetClassHint(emu_dpy, emu_win, &class);
-}
-
-static void
-emu_event(void)
-{
-	char buf[7];
-	XEvent ev;
-	XNextEvent(emu_dpy, &ev);
-	switch(ev.type) {
-	case Expose:
-		if(ev.xexpose.count == 0)
-			screen_redraw();
-		break;
-	case ClientMessage:
-		dev[0x0f] = 0x80;
-		break;
-	case KeyPress: {
-		KeySym sym;
-		int n = XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
-		switch(sym) {
-		case XK_F1: screen_zoom = (screen_zoom % 3) + 1, screen_reqsize = screen_reqdraw = 1; break;
-		case XK_F2: emu_deo(0xe, 0x1); break;
-		case XK_F4: console_close(), emu_restart(0); break;
-		case XK_F5: console_close(), emu_restart(1); break;
-		case XK_F6: emu_deo(0xe, 0x2); break;
-		}
-		controller_down(get_button(sym));
-		if(sym == XK_Tab)
-			buf[0] = 0x9, n = 1;
-		controller_key(sym < 0x80 ? sym : (n > 0 ? (Uint8)buf[0] : 0));
-	} break;
-	case KeyRelease: {
-		KeySym sym;
-		XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
-		controller_up(get_button(sym));
-	} break;
-	case ButtonPress: {
-		XButtonPressedEvent *e = (XButtonPressedEvent *)&ev;
-		switch(e->button) {
-		case 4: mouse_scroll(0, 1); break;
-		case 5: mouse_scroll(0, -1); break;
-		case 6: mouse_scroll(1, 0); break;
-		case 7: mouse_scroll(-1, 0); break;
-		default: mouse_down(0x1 << (e->button - 1));
-		}
-	} break;
-	case ButtonRelease: {
-		XButtonPressedEvent *e = (XButtonPressedEvent *)&ev;
-		mouse_up(0x1 << (e->button - 1));
-	} break;
-	case LeaveNotify:
-	case MotionNotify: {
-		XMotionEvent *e = (XMotionEvent *)&ev;
-		mouse_pos(e->x / screen_zoom, e->y / screen_zoom);
-	} break;
-	}
 }
 
 static int
@@ -1323,8 +1279,61 @@ emu_run(void)
 		/* only poll stdin while it's still active */
 		if(poll(fds, stdin_active ? 3 : 2, -1) <= 0)
 			continue;
-		while(XPending(emu_dpy))
-			emu_event();
+		while(XPending(emu_dpy) && !dev[0x0f]) {
+			char buf[7];
+			XEvent ev;
+			XNextEvent(emu_dpy, &ev);
+			switch(ev.type) {
+			case Expose:
+				if(ev.xexpose.count == 0)
+					screen_redraw();
+				break;
+			case ClientMessage:
+				if(ev.xclient.message_type == wm_protocols && (Atom)ev.xclient.data.l[0] == wm_delete)
+					dev[0x0f] = 0x80;
+				break;
+			case KeyPress: {
+				KeySym sym;
+				int n = XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
+				switch(sym) {
+				case XK_F1: screen_zoom = (screen_zoom % 3) + 1, screen_reqsize = screen_reqdraw = 1; break;
+				case XK_F2: emu_deo(0xe, 0x1); break;
+				case XK_F4: console_close(), emu_restart(0); break;
+				case XK_F5: console_close(), emu_restart(1); break;
+				case XK_F6: emu_deo(0xe, 0x2); break;
+				}
+				controller_down(get_button(sym));
+				if(sym == XK_Tab)
+					buf[0] = 0x9, n = 1;
+				controller_key(sym < 0x80 ? sym : (n > 0 ? (Uint8)buf[0] : 0));
+			} break;
+			case KeyRelease: {
+				KeySym sym;
+				XLookupString((XKeyPressedEvent *)&ev, buf, 7, &sym, 0);
+				controller_up(get_button(sym));
+			} break;
+			case ButtonPress: {
+				XButtonPressedEvent *e = (XButtonPressedEvent *)&ev;
+				switch(e->button) {
+				case 4: mouse_scroll(0, 1); break;
+				case 5: mouse_scroll(0, -1); break;
+				case 6: mouse_scroll(1, 0); break;
+				case 7: mouse_scroll(-1, 0); break;
+				default: mouse_down(0x1 << (e->button - 1));
+				}
+			} break;
+			case ButtonRelease: {
+				XButtonPressedEvent *e = (XButtonPressedEvent *)&ev;
+				mouse_up(0x1 << (e->button - 1));
+			} break;
+			case LeaveNotify:
+			case MotionNotify: {
+				XMotionEvent *e = (XMotionEvent *)&ev;
+				mouse_pos(e->x / screen_zoom, e->y / screen_zoom);
+			} break;
+			}
+		}
+		if(dev[0x0f]) break;
 		if(fds[1].revents & POLLIN) {
 			read(emu_timer, expirations, sizeof expirations);
 			screen_update();

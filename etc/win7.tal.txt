@@ -34,7 +34,7 @@
 |000
 
 	@path/buf $80 &cap
-	@directory/sel $2
+	@directory/sel $2 &dot $1
 	@scrollbar/y $2
 	@window/width $2 &height $2
 
@@ -54,7 +54,7 @@
 	( ) "Win7 0a
 	( ) "A 20 "windowing 20 "interface 0a
 	( ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( ) "6 20 "Sep 20 "2026 00
+	( ) "16 20 "Nov 20 "2026 00
 	( > ) 03
 	( - ) 83 =appicon
 	( - ) 56 =Varvara/version
@@ -69,6 +69,7 @@
 	( - ) 80 00 =directory/<next> =dict/next
 	( - ) 00 08 =directory/<parent> =dict/parent
 	( - ) 00 1b =directory/<deselect> =dict/deselect
+	( - ) 01 "h =directory/<toggle-dot> =dict/toggle-dot
 	( - ) 01 "i =sel/<invert> =dict/invert
 	( - ) 01 "a =sel/<all> =dict/select-all }
 	_{ =dict/edit
@@ -432,7 +433,11 @@
 	POP2 #0000 !/<set>
 
 @directory/push ( desc-name* -- desc-name* )
-	DUP2 #0005 ADD2 [ LIT2 &ptr =&buf ]
+	DUP2 #0005 ADD2
+	( | Dot )
+	.&dot LDZ ?{
+		LDAk LIT ". NEQ ?{ POP2 JMP2r } }
+	[ LIT2 &ptr =&buf ]
 	( | clamp )
 	;&bufend LTH2k ?{
 		( TODO: Warn ) SWP2 }
@@ -528,6 +533,13 @@
 		[ LIT2 01 _&reqdraw ] STR }
 	JMP2r
 
+@directory/<toggle-dot> ( -- )
+	.&dot LDZ ?{
+		LIT2 01 -&dot STZ
+		path/<reload> !/<reqdraw> }
+	LIT2 00 -&dot STZ
+	path/<reload> !/<reqdraw>
+
 (
 @|Selection )
 
@@ -618,7 +630,7 @@
 	/get-length ORAk ?{ POP2 JMP2r }
 	DUP2 #0001 NEQ2 ?{
 		POP2 /get-path file/is-folder ?{
-			file/get-size DUP2 #0000 EQU2 ?{ ;dict/bytes decstr/make-numstr !sans/<draw-right> } }
+			file/get-size ORAk #00 EQU ?{ ;dict/bytes decstr/make-numstr !sans/<draw-right> } }
 		POP2 #0001 }
 	;dict/selected decstr/make-numstr !sans/<draw-right>
 
@@ -1255,6 +1267,7 @@
 	&edit "Edit 00
 	&new-folder "New 20 "Folder 00
 	&create "Create 20 "Folder 00
+	&toggle-dot "Toggle 20 "Dotfiles 00
 	&command "Command 00
 	&modes "Modes 00
 	&search "Search 00
@@ -1650,7 +1663,7 @@
 @sans/<draw-center> ( text* -- )
 	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2
 	( | Clamp left )
-	DUP2 #8000 LTH2 ?{ POP2 #0000 }
+	OVR #80 LTH ?{ POP2 #0000 }
 	.Screen/x DEO2 !/<draw-left>
 
 @sans/<draw-left-color> ( text* color -- )
@@ -2163,21 +2176,21 @@
 (
 @|Buffers )
 
-@directory/buf $&buflen &bufend
+@directory/buf $&buflen &bufend $1
 
-@command/buf $&buflen &bufend
+@command/buf $&buflen &bufend $1
 
-@rename/buf $&buflen &bufend
+@rename/buf $&buflen &bufend $1
 
-@decstr/buf $&buflen &bufend
+@decstr/buf $&buflen &bufend $1
 
-@search/buf $&buflen &bufend
+@search/buf $&buflen &bufend $1
 
-@mkdir/buf $&buflen &bufend
+@mkdir/buf $&buflen &bufend $1
 
-@copy/buf $&buflen &bufend
+@copy/buf $&buflen &bufend $1
 
-@sel/buf $&buflen &bufend
+@sel/buf $&buflen &bufend $1
 
 @path/mem $&memlen
 
