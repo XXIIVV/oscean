@@ -46,7 +46,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "6 20 "Sep 20 "2026 00
+	( date ) "15 20 "Nov 20 "2026 00
 	( . ) 02
 	( - ) 83 =appicon
 	( - ) a0 =manifest/dat
@@ -54,8 +54,10 @@
 @manifest/dat _{ =dict/m291
 	( - ) 00 0d =selection/<pick-selected> =dict/play
 	( - ) 00 20 =selection/<send-pause> =dict/pause
-	( - ) 40 00 =selection/<seek-prev> =dict/seek-prev
-	( - ) 80 00 =selection/<seek-next> =dict/seek-next }
+	( - ) 40 00 =selection/<skip-prev> =dict/skip-prev
+	( - ) 80 00 =selection/<skip-next> =dict/skip-next
+	( - ) 44 00 =selection/<seek-prev> =dict/seek-prev
+	( - ) 84 00 =selection/<seek-next> =dict/seek-next }
 	_{ =dict/selection
 	( - ) 00 1b =selection/<escape> =dict/parent
 	( - ) 10 00 =selection/<move-up> =dict/move-up
@@ -145,7 +147,7 @@
 
 	&seeker ( -> )
 	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 selection/<seek>
-		DUP2 progress/<force> }
+		DUP2 progress/<draw-force> }
 	POP2 BRK
 
 	&scroll ( distance -> )
@@ -435,14 +437,8 @@
 	#0070 .Screen/x DEO2
 	#0050 .Screen/y DEO2
 	[ LIT2 36 -Screen/auto ] DEO
-	;button-icn #00 [ LIT2 01 -controls/paused ] LDZ AND #80 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEO
-	( | icon )
-	[ LIT2 16 -Screen/auto ] DEO
-	#0078 .Screen/x DEO2
-	#0058 .Screen/y DEO2
-	;&pause-icn [ LIT2 00 -controls/paused ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 05 -Screen/sprite ] DEOk DEO
+	;play-icn #00 [ LIT2 01 -controls/paused ] LDZ AND #70 SFT2 ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEOk DEOk DEO
 	JMP2r
 
 @controls/<draw-next> ( -- )
@@ -564,8 +560,8 @@
 		[ LITr 01 ] #00 line/<draw-background>
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
-			#03 line/<draw-background>
-			POPr [ LITr 05 ] }
+			#01 line/<draw-background>
+			POPr [ LITr 00 ] }
 		( | gizmo )
 		[ LIT2 15 -Screen/auto ] DEO
 		;WIDTH-10 .Screen/x DEO2
@@ -621,16 +617,14 @@
 		[ LITr 05 ]
 		( | playing )
 		DUP .selection/track LDZ NEQ ?{
-			#01 line/<draw-background>
 			[ LIT2 15 -Screen/auto ] DEO
 			#0000 .Screen/x DEO2
 			;poke-icn .Screen/addr DEO2
-			[ LIT2 00 -Screen/sprite ] DEO
-			POPr [ LITr 04 ] }
+			[ LIT2 01 -Screen/sprite ] DEO }
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
-			#03 line/<draw-background>
-			POPr [ LITr 05 ] }
+			#01 line/<draw-background>
+			POPr [ LITr 00 ] }
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
@@ -658,11 +652,15 @@
 
 @tracks/find ( name* -- id )
 	,&t STR2
-	[ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2 ;&buf ADD2 ;&buf
+	[ LITr 00 ] [ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ;&buf ADD2 ;&buf
 	&>lf
-		GTH2k ?{ POP2 POP2 #ff JMP2r }
-		DUP2 [ LIT2 &t $2 ] str/cmp ?{ #0080 ADD2 !/>lf }
-	;&buf SUB2 #07 SFT2 NIP JMP2r
+		EQU2k ?{
+			DUP2 [ LIT2 &t $2 ] str/cmp ?/found
+			#0080 ADD2 INCr !/>lf }
+	POP2 POP2 POPr #ff JMP2r
+
+	&found ( to* from* . id -- id )
+	NIP2 POP2 STHr JMP2r
 
 @track/<draw> ( text* color -- )
 	STH
@@ -785,7 +783,8 @@
 	JMP2r
 
 @search/<auto-select> ( -- )
-	;&buf tracks/find DUP #ff NEQ ?{ POP JMP2r }
+	;&buf LDAk ?{ POP2 JMP2r }
+	tracks/find INCk ?{ POP JMP2r }
 	selection/<pick-track> !/<reset>
 
 (
@@ -814,34 +813,36 @@
 	.secprog LDZ2
 	( | catch redraws )
 	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
-	&<force> ( x* -- )
+	( >> )
+
+@progress/<draw-force> ( x* -- )
 	DUP2 ,&last STR2
 	[ LIT2 15 -Screen/auto ] DEO
-	#0004 .Screen/x DEO2
+	( | overlay )
+	#0008 .Screen/x DEO2
 	#0084 .Screen/y DEO2
-	( | cap left )
-	;&left-chr .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEO
-	( | cap middle )
-	#e3
+	( | overlay left )
+	;&left-icn .Screen/addr DEO2
+	[ LIT2r 01 -Screen/sprite ] DEOkr
+	( | overlay middle )
+	#e4
 	&>t
-		;&middle-chr .Screen/addr DEO2
-		[ LIT2 81 -Screen/sprite ] DEO
+		;&middle-icn .Screen/addr DEO2
+		DEOkr
 		INC DUP ?/>t
 	POP
-	( | cap right )
-	;&right-chr .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEO
+	( | overlay right )
+	;&right-icn .Screen/addr DEO2
+	DEOr
 	( | fill )
-	#0008 .Screen/x DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	#0000
+	[ LIT2r 05 -Screen/sprite ] #0000
 	&>l
-		DUP2 #0004 ADD2 .Screen/x DEO2
+		DUP2 #0006 ADD2 .Screen/x DEO2
 		;&fill-icn .Screen/addr DEO2
-		[ LIT2 0a -Screen/sprite ] DEOk DEO
+		DEOkr
+		DEOkr
 		INC2 GTH2k ?/>l
-	POP2 POP2 JMP2r
+	POP2 POP2 POP2r JMP2r
 
 @<post-refresh> ( -- )
 	folder/common-prefix .folders/prefix STZ
@@ -966,16 +967,25 @@
 	JMP2r
 
 @window/<fit> ( -- )
-	( folders ) [ LIT2 00 -lines/folders ] LDZ
-	( tracks ) .lines/tracks LDZ ADD #18 u8/min
-	( empty ) DUP #00 EQU ADD #40 SFT2
-	( padding ) #0020 ADD2
-	( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?/<set-height>
-	#0080 ADD2 !/<set-height>
+	/is-shaded ?{
+		( folders ) [ LIT2 00 -lines/folders ] LDZ
+		( tracks ) .lines/tracks LDZ ADD #18 u8/min
+		( empty ) DUP #00 EQU ADD #40 SFT2
+		( padding ) #0020 ADD2
+		( playing ) [ LIT2 00 -controls/playing ] LDZ EQU ?/<set-height>
+		#0080 ADD2 !/<set-height> }
+	JMP2r
+
+@header/get-string ( -- str* )
+	;id3/title LDAk ?{ POP2 !path/get-location }
+	window/is-shaded ?{ POP2 !path/get-location }
+	JMP2r
 
 @header/<draw-title> ( -- )
-	path/get-location #0084 OVR2 chicago/get-str-width #01 SFT2 SUB2
-	( ) #000a SUB2 .Screen/x DEO2
+	/get-string #0084 OVR2 chicago/get-str-width #01 SFT2 SUB2 #000a SUB2
+	( | clamp )
+	DUP2 #0010 GTH2 ?{ POP2 #0020 }
+	.Screen/x DEO2
 	#0001 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	#09 ;chicago/color STA
@@ -1129,6 +1139,8 @@
 	&move-down "Move 20 "Down 00
 	&seek-prev "Seek 20 "Backward 00
 	&seek-next "Seek 20 "Forward 00
+	&skip-prev "Skip 20 "Backward 00
+	&skip-next "Skip 20 "Forward 00
 
 
 
@@ -1337,9 +1349,12 @@
 	header/<draw> !<redraw-all>
 
 @window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
+	/is-shaded ?{ #0011 .Screen/height DEO2 !header/<draw> }
 	[ LIT2 &height $2 ] .Screen/height DEO2
 	header/<draw> !<redraw-all>
+
+@window/is-shaded ( -- t )
+	#0011 .Screen/height DEI2 EQU2 JMP2r
 
 (
 @|theme )
@@ -1391,137 +1406,78 @@
 ( assets )
 
 @appicon [
-	0000 0000 0003 0404 0000 0000 0000 0303
-	0000 0000 817e 0000 0000 0000 0081 ffff
-	0605 040c 1cc8 2020 0000 0000 0000 c0c0
-	0404 0404 0404 0404 0303 0303 0303 0303
-	0042 0018 3c3c 3c18 ffbd ffe7 c3c3 dbe7
-	2020 2020 2020 2020 c0c0 c0c0 c0c0 c0c0
-	0404 0300 0000 0000 0303 0000 0000 0000
-	0000 ff00 0000 0000 ffff 0000 0000 0000
+	0000 0000 0003 0404 0000 0000 0000 0303 0000 0000 817e 0000 0000 0000 0081 ffff
+	0605 040c 1cc8 2020 0000 0000 0000 c0c0 0404 0404 0404 0404 0303 0303 0303 0303
+	0042 0018 3c3c 3c18 ffbd ffe7 c3c3 dbe7 2020 2020 2020 2020 c0c0 c0c0 c0c0 c0c0
+	0404 0300 0000 0000 0303 0000 0000 0000 0000 ff00 0000 0000 ffff 0000 0000 0000
 	2020 c000 0000 0000 c0c0 0000 0000 0000 ]
 
 @header/bg-chr [
-	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
-	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
+	0000 00ff 00ff 00ff ffff ff00 ff00 ff00 00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
 	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
 	&button-icn [
-	0000 007f 4040 4040 4040 4040 407f 0000
-	0000 00f7 1017 1017 1017 1017 10f7 0000 ]
+	0000 007f 4040 4040 4040 4040 407f 0000 0000 00f7 1017 1017 1017 1017 10f7 0000 ]
 	&button-down-icn [
-	0000 007f 4252 4a40 7840 4a52 427f 0000
-	0000 00f7 1057 9017 f017 9057 10f7 0000 ]
+	0000 007f 4252 4a40 7840 4a52 427f 0000 0000 00f7 1057 9017 f017 9057 10f7 0000 ]
 
 @cursor/up-chr [
-	0000 0000 0814 1417 0000 0000 0008 0808
-	0000 0000 0000 00c0 0000 0000 0000 0000
-	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
-	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+	0000 0000 0814 1417 0000 0000 0008 0808 0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000 2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @cursor/down-chr [
-	0000 0000 0000 0817 0000 0000 0000 0008
-	0000 0000 0000 00c0 0000 0000 0000 0000
-	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
-	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+	0000 0000 0000 0817 0000 0000 0000 0008 0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000 2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@progress/left-chr [
-	0000 030f 1f1f 3f3f 0000 0003 0f0f 1f1f
-	3f3f 1f1f 0f03 0000 1f1f 0f0f 0300 0000 ]
+@progress/left-icn [ 0000 0f30 4040 8080 8080 4040 300f 0000 ]
+	&middle-icn [ 0000 ff00 0000 0000 0000 0000 00ff 0000 ]
+	&right-icn [ 0000 f00c 0202 0101 0101 0202 0cf0 0000 ]
+	&fill-icn [
+	0000 0003 0f0f 1f1f 1f1f 0f0f 0300 0000 0000 00c0 f0f0 f8f8 f8f8 f0f0 c000 0000 ]
 
-@progress/middle-chr [
-	0000 ffff ffff ffff 0000 00ff ffff ffff
-	ffff ffff ffff 0000 ffff ffff ff00 0000 ]
-
-@progress/right-chr [
-	0000 c0f0 f8f8 fcfc 0000 00c0 f0f0 f8f8
-	fcfc f8f8 f0c0 0000 f8f8 f0f0 c000 0000 ]
-
-@progress/fill-icn [
-	0000 0003 0f0f 1f1f 1f1f 0f0f 0300 0000
-	0000 00c0 f0f0 f8f8 f8f8 f0f0 c000 0000 ]
-
-@button-icn [
-	0000 030c 1010 2020 0000 0003 0f0f 1f1f
-	0000 ff00 0000 0000 0000 00ff ffff ffff
-	0000 ff00 0000 0000 0000 00ff ffff ffff
-	0000 c030 0808 0404 0000 00c0 f0f0 f8f8
-	2020 2020 2020 2020 1f1f 1f1f 1f1f 1f1f
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	0404 0404 0404 0404 f8f8 f8f8 f8f8 f8f8
-	2020 2020 2020 2020 1f1f 1f1f 1f1f 1f1f
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	0404 0404 0404 0404 f8f8 f8f8 f8f8 f8f8
-	2020 1010 0c03 0000 1f1f 0f0f 0300 0000
-	0000 0000 00ff 0000 ffff ffff ff00 0000
-	0000 0000 00ff 0000 ffff ffff ff00 0000
-	0404 0808 30c0 0000 f8f8 f0f0 c000 0000 ]
-	&active [
-	0000 0208 1000 2020 0000 0000 0000 0000
-	0000 ee00 0000 0000 0000 0000 0000 0000
-	0000 ee00 0000 0000 0000 0000 0000 0000
-	0000 c010 0800 0404 0000 0000 0000 0000
-	0020 2020 0020 2020 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0004 0404 0004 0404 0000 0000 0000 0000
-	0020 2020 0020 2020 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0400 0404 0400 0404 0000 0000 0000 0000
-	0020 0010 0803 0000 0000 0000 0000 0000
-	0000 0000 0077 0000 0000 0000 0000 0000
-	0000 0000 0077 0000 0000 0000 0000 0000
-	0004 0008 1040 0000 0000 0000 0000 0000 ]
+@play-icn [8
+	0000 0000 0102 0408 0000 1f60 8000 0000
+	0000 f806 0100 0000 0000 0000 8040 2010
+	0810 1020 2020 2020 0000 001e 1e1e 1e1e
+	0000 0078 7878 7878 1008 0804 0404 0404
+	2020 2020 2010 1008 1e1e 1e1e 1e00 0000
+	7878 7878 7800 0000 0404 0404 0408 0810
+	0804 0201 0000 0000 0000 0080 601f 0000
+	0000 0001 06f8 0000 1020 4080 0000 0000 ]
+	( active ) [8
+	0000 0000 0102 050a 0000 1f60 9f60 8000
+	0000 f806 f906 0100 0000 0000 8040 a050
+	0a14 1428 2828 2828 0000 000c 0f0f 0f0f
+	0000 0000 00c0 f0fc 5028 2814 1414 1414
+	2828 2828 2814 140a 0f0f 0f0f 0c00 0000
+	fcf0 c000 0000 0000 1414 1414 1428 2850
+	0a05 0201 0000 0000 0080 609f 601f 0000
+	0001 06f9 06f8 0000 50a0 4080 0000 0000 ]
 
 @controls/repeat-icn [
-	0000 000f 1f18 1000 0010 18fc fc18 1000
-	0008 183f 3f18 0800 0008 18f8 f000 0000
-	0000 000f 1f18 1818 0010 18fc fc18 1008
-	1818 181f 0f00 0000 1818 18f8 f000 0000 ]
+	0000 000f 1f18 1000 0010 18fc fc18 1000 0008 183f 3f18 0800 0008 18f8 f000 0000
+	0000 000f 1f18 1818 0010 18fc fc18 1008 1818 181f 0f00 0000 1818 18f8 f000 0000 ]
 
 @controls/shuffle-icn [
-	0000 001f 1f00 0000 0010 18fc fc18 1000
-	0000 001f 1f00 0000 0010 18fc fc18 1000
-	0000 001f 1f01 0101 0010 187c bc98 9080
-	0101 011d 1e00 0000 8090 98fc fc18 1000 ]
-
-@controls/pause-icn [
-	0000 001e 1e1e 1e1e 0000 0078 7878 7878
-	1e1e 1e1e 1e00 0000 7878 7878 7800 0000
-	0000 000c 0f0f 0f0f 0000 0000 00c0 f0fc
-	0f0f 0f0f 0c00 0000 fcf0 c000 0000 0000
-	0000 000c 0b08 0808 0000 0000 00c0 300c
-	0808 080b 0c00 0000 0c30 c000 0000 0000 ]
+	0000 001f 1f00 0000 0010 18fc fc18 1000 0000 001f 1f00 0000 0010 18fc fc18 1000
+	0000 001f 1f01 0101 0010 187c bc98 9080 0101 011d 1e00 0000 8090 98fc fc18 1000 ]
 
 @controls/next-icn [
-	0000 0018 1c1e 1f1f 0000 0018 1818 1898
-	1f1f 1e1c 1800 0000 9818 1818 1800 0000 ]
+	0000 0018 1c1e 1f1f 0000 0018 1818 1898 1f1f 1e1c 1800 0000 9818 1818 1800 0000 ]
 
 @controls/volume-icn [
-	0000 0000 0103 1f1f 0000 00c0 c0c0 c0c0
-	1f1f 0301 0000 0000 c0c0 c0c0 c000 0000
-	0000 0000 0103 1f1f 0000 00c0 c0c0 c0d0
-	1f1f 0301 0000 0000 d0c0 c0c0 c000 0000
-	0000 0000 0103 1f1f 0000 00c0 c0d0 d0c8
-	1f1f 0301 0000 0000 c8d0 d0c0 c000 0000
-	0000 0000 0103 1f1f 0000 00c0 d0c8 c8c4
-	1f1f 0301 0000 0000 c4c8 c8d0 c000 0000
-	0000 0000 0103 1f1f 0000 00c0 c8c4 c4d2
-	1f1f 0301 0000 0000 d2c4 c4c8 c000 0000
-	0000 0000 0103 1f1f 0000 00c8 c4d4 d2ca
-	1f1f 0301 0000 0000 cad2 d4c4 c800 0000
-	0000 0000 0103 1f1f 0000 00c4 d2ca c9c5
-	1f1f 0301 0000 0000 c5c9 cad2 c400 0000 ]
+	0000 0000 0103 1f1f 0000 00c0 c0c0 c0c0 1f1f 0301 0000 0000 c0c0 c0c0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 c0c0 c0d0 1f1f 0301 0000 0000 d0c0 c0c0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 c0d0 d0c8 1f1f 0301 0000 0000 c8d0 d0c0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 d0c8 c8c4 1f1f 0301 0000 0000 c4c8 c8d0 c000 0000
+	0000 0000 0103 1f1f 0000 00c0 c8c4 c4d2 1f1f 0301 0000 0000 d2c4 c4c8 c000 0000
+	0000 0000 0103 1f1f 0000 00c8 c4d4 d2ca 1f1f 0301 0000 0000 cad2 d4c4 c800 0000
+	0000 0000 0103 1f1f 0000 00c4 d2ca c9c5 1f1f 0301 0000 0000 c5c9 cad2 c400 0000 ]
 
 @controls/prev-icn [
-	0000 0018 1818 1819 0000 0018 3878 f8f8
-	1918 1818 1800 0000 f8f8 7838 1800 0000 ]
+	0000 0018 1818 1819 0000 0018 3878 f8f8 1918 1818 1800 0000 f8f8 7838 1800 0000 ]
 
 @fill-icn [
-	ffff ffff ffff ffff ffff ffff ffff ffff
-	ffff ffff ffff ffff ffff ffff ffff ffff ]
+	ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ]
 
 @poke-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
 
