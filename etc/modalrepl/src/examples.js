@@ -98,7 +98,9 @@ examples.mixfix=`<> (add ?x ?y) (?x + ?y)
 
 (print ((n 12) (add (n 2) (n 3)) add))
 `
-examples.stack_machine=`<> ((((?r ?b) ?a) .) over) ((((?r ?b) ?a) ?b) .)
+examples.stack_machine=`<> (A few stack machine primitives)
+
+<> ((((?r ?b) ?a) .) over) ((((?r ?b) ?a) ?b) .)
 <> ((((?r ?b) ?a) .) swap) (     ((?r ?a) ?b) .)
 <> (     ((?r ?a) .) dup)  (     ((?r ?a) ?a) .)
 <> (     ((?r ?a) .) pop)  (               ?r .)
