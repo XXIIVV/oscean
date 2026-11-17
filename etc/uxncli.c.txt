@@ -216,7 +216,7 @@ put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int pref
 	*p = 0;
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	dest += put_stat(dest, length, 4, st.st_size, err, dir);
+	dest += put_stat(dest, length, 4, err ? 0 : st.st_size, err, dir);
 	dest += put_text(dest, length, "\t");
 	dest += put_text(dest, length, basename);
 	dest += put_text(dest, length, dir ? "/\n" : "\n");
@@ -226,9 +226,9 @@ put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int pref
 static unsigned int
 put_fdir(Uint8 *dest, unsigned int *length, const char *filepath, DIR *dir)
 {
+	static char pathbuf[0x200];
 	Uint8 *p = dest, *end = dest + *length - 1;
 	struct dirent *de;
-	char pathbuf[0x200];
 	unsigned int prefix_len = 0;
 	char c = '/';
 	const char *fp = filepath;
@@ -264,7 +264,7 @@ is_dir_real(const char *p)
 static unsigned int
 file_write_dir(const char *p)
 {
-	char buf[0x200];
+	static char buf[0x200];
 	char *s = buf, *end = buf + sizeof buf - 1;
 	unsigned int ok = 1;
 	while(*p && ok && s < end) {
@@ -374,7 +374,7 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 		len = 0x10000 - addr;
 	err = stat(ufs[id].filepath, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	return put_stat(&ram[addr], &length, len, st.st_size, err, dir);
+	return put_stat(&ram[addr], &length, len, err ? 0 : st.st_size, err, dir);
 }
 
 static unsigned int
@@ -580,7 +580,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 16 Nov 2026.\n");
+		return !fprintf(stdout, "Uxncli - Varvara(79K) Emulator, 17 Nov 2026.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

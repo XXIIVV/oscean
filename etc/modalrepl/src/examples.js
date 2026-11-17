@@ -98,6 +98,14 @@ examples.mixfix=`<> (add ?x ?y) (?x + ?y)
 
 (print ((n 12) (add (n 2) (n 3)) add))
 `
+examples.stack_machine=`<> (dup (. (?a ?r))) (. (?a (?a ?r)))
+<> (over (. (?a (?b ?r)))) (. (?b (?a (?b ?r))))
+<> (swap (. (?a (?b ?r)))) (. (?b (?a ?r)))
+<> (pop (. (?a ?r))) (. ?r)
+
+(dup (swap (over (pop
+	(. (A (B (C ()))))
+))))`
 examples.fizzbuzz=`<> (For a hundred numbers:
       - When divisible by 15, print FizzBuzz
       - When divisible by 3, print Fizz

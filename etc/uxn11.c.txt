@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include <poll.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysymdef.h>
 #include <sys/timerfd.h>
-#include <poll.h>
 
 /*
 Copyright (c) 2021-2026 Devine Lu Linvega, Andrew Alderwick,
@@ -66,13 +67,12 @@ static unsigned int
 system_load(const char *rom_path)
 {
 	FILE *f = fopen(rom_path, "rb");
-	if(f) {
-		unsigned int i = 0, l = fread(ram + 0x100, 0x10000 - 0x100, 1, f);
-		while(l && ++i < BANKS)
-			l = fread(ram + i * 0x10000, 0x10000, 1, f);
-		fclose(f);
-	}
-	return !!f;
+	if(!f) return 0;
+	unsigned int i = 0, l = fread(ram + 0x100, 0xff00, 1, f);
+	while(l && ++i < BANKS)
+		l = fread(ram + i * 0x10000, 0x10000, 1, f);
+	fclose(f);
+	return 1;
 }
 
 static unsigned int
@@ -201,6 +201,14 @@ static pid_t child_pid;
 
 /* call after we're sure the process has exited */
 
+static Uint8
+child_exit_status(int status)
+{
+	if(WIFEXITED(status)) return WEXITSTATUS(status);
+	if(WIFSIGNALED(status)) return 128 + WTERMSIG(status);
+	return 0xff;
+}
+
 static void
 clean_after_child(void)
 {
@@ -296,9 +304,9 @@ check_child(void)
 {
 	int wstatus;
 	if(child_pid) {
-		if(waitpid(child_pid, &wstatus, WNOHANG)) {
+		if(waitpid(child_pid, &wstatus, WNOHANG) == child_pid) {
 			dev[CMD_LIVE] = 0xff;
-			dev[CMD_EXIT] = WEXITSTATUS(wstatus);
+			dev[CMD_EXIT] = child_exit_status(wstatus);
 			clean_after_child();
 		} else {
 			dev[CMD_LIVE] = 0x01;
@@ -313,9 +321,10 @@ kill_child(void)
 	int wstatus;
 	if(child_pid) {
 		kill(child_pid, 9);
-		if(waitpid(child_pid, &wstatus, WNOHANG)) {
+		while(waitpid(child_pid, &wstatus, 0) < 0 && errno == EINTR) {}
+		if(WIFEXITED(wstatus) || WIFSIGNALED(wstatus)) {
 			dev[CMD_LIVE] = 0xff;
-			dev[CMD_EXIT] = WEXITSTATUS(wstatus);
+			dev[CMD_EXIT] = child_exit_status(wstatus);
 			clean_after_child();
 		}
 	}
@@ -531,17 +540,26 @@ screen_deo_sprite(void)
 		if(x < -8 || y < -8 || x + 16 > stride || y + 16 > screen_hmar2) continue;
 		Uint8 *dst = screen_layers + row_base + x + 8;
 		const Uint8 *col = &ram[rA + col_start];
-		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
-			Uint8 *d = dst;
-			const int ch1 = *col;
-			const int ch2 = is_2bpp ? (col[8] << 1) : 0;
-			int row = row_start;
-			for(int k = 0; k < 8; k++, d++, row += row_delta) {
-				const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
-				if(opaque_mask || color)
+		if(opaque_mask)
+			for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
+				Uint8 *d = dst;
+				const int ch1 = *col, ch2 = is_2bpp ? (col[8] << 1) : 0;
+				int row = row_start;
+				for(int k = 0; k < 8; k++, d++, row += row_delta) {
+					const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
 					*d = (*d & layer_mask) | table[color];
+				}
 			}
-		}
+		else
+			for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
+				Uint8 *d = dst;
+				const int ch1 = *col, ch2 = is_2bpp ? (col[8] << 1) : 0;
+				int row = row_start;
+				for(int k = 0; k < 8; k++, d++, row += row_delta) {
+					const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
+					if(color) *d = (*d & layer_mask) | table[color];
+				}
+			}
 	}
 	screen_reqdraw = 1;
 	if(rMX) rX += flipx ? -rDX : rDX;
@@ -731,7 +749,7 @@ put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int pref
 	*p = 0;
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	dest += put_stat(dest, length, 4, st.st_size, err, dir);
+	dest += put_stat(dest, length, 4, err ? 0 : st.st_size, err, dir);
 	dest += put_text(dest, length, "\t");
 	dest += put_text(dest, length, basename);
 	dest += put_text(dest, length, dir ? "/\n" : "\n");
@@ -741,9 +759,9 @@ put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int pref
 static unsigned int
 put_fdir(Uint8 *dest, unsigned int *length, const char *filepath, DIR *dir)
 {
+	static char pathbuf[0x200];
 	Uint8 *p = dest, *end = dest + *length - 1;
 	struct dirent *de;
-	char pathbuf[0x200];
 	unsigned int prefix_len = 0;
 	char c = '/';
 	const char *fp = filepath;
@@ -779,7 +797,7 @@ is_dir_real(const char *p)
 static unsigned int
 file_write_dir(const char *p)
 {
-	char buf[0x200];
+	static char buf[0x200];
 	char *s = buf, *end = buf + sizeof buf - 1;
 	unsigned int ok = 1;
 	while(*p && ok && s < end) {
@@ -889,7 +907,7 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 		len = 0x10000 - addr;
 	err = stat(ufs[id].filepath, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	return put_stat(&ram[addr], &length, len, st.st_size, err, dir);
+	return put_stat(&ram[addr], &length, len, err ? 0 : st.st_size, err, dir);
 }
 
 static unsigned int
@@ -1171,7 +1189,7 @@ emu_screenshot(void)
 	if(f) {
 		for(ty = 0; ty < th; ty++) {
 			for(tx = 0; tx < tw; tx++) {
-				Uint8 tile[16] = {0};
+				Uint8 tile[16];
 				for(row = 0; row < 8; row++) {
 					const Uint8 *src = &screen_layers[(ty * 8 + row + 8) * screen_wmar2 + (tx * 8 + 8)];
 					Uint8 b1 = 0, b2 = 0;
@@ -1220,8 +1238,8 @@ display_center(void)
 static void
 display_hidecursor(void)
 {
-	XColor black = {0};
 	static const char empty[1] = {0};
+	XColor black = {0};
 	Pixmap bitmap = XCreateBitmapFromData(emu_dpy, emu_win, empty, 1, 1);
 	Cursor blank = XCreatePixmapCursor(emu_dpy, bitmap, bitmap, &black, &black, 0, 0);
 	XDefineCursor(emu_dpy, emu_win, blank);
@@ -1269,8 +1287,8 @@ emu_init(void)
 static void
 emu_run(void)
 {
+	static char expirations[8], coninp[CONINBUFSIZE];
 	int has_input, stdin_active = 1;
-	char expirations[8], coninp[CONINBUFSIZE];
 	struct pollfd fds[3];
 	fds[0].fd = emu_x11, fds[0].events = POLLIN;
 	fds[1].fd = emu_timer, fds[1].events = POLLIN;
@@ -1365,7 +1383,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara Emulator(79K), 16 Nov 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara Emulator(79K), 17 Nov 2026.\n", argv[0]);
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))

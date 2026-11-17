@@ -276,6 +276,7 @@ screen_update(void)
 		screen_redraw();
 }
 
+
 static void
 screen_deo_pixel(void)
 {
@@ -296,10 +297,9 @@ screen_deo_pixel(void)
 			Uint8 *row = &screen_layers[y1 * screen_wmar2 + x1];
 			Uint8 *end = row + ver * screen_wmar2;
 			for(; row < end; row += screen_wmar2) {
-				int px;
-				Uint8 *dst = row;
-				for(px = 0; px < hor; px++)
-					dst[px] = (dst[px] & mask) | color;
+				Uint8 *dst = row, *dst_end = row + hor;
+				while(dst < dst_end)
+					*dst = (*dst & mask) | color, dst++;
 			}
 		}
 		/* pixel mode */
@@ -331,22 +331,30 @@ screen_deo_sprite(void)
 	const Uint8 *table = blend_lut[blend][layer >> 6];
 	int i, j, x = rX, y = rY;
 	int row_base = (y + 8) * stride;
-	for(i = 0; i <= rML; i++, x += dx, y += dy, rA += addr_incr, row_base += row_step) {
-		const Uint16 x0 = x + 8, y0 = y + 8;
-		if(x0 + 8 >= stride || y0 + 8 >= screen_hmar2) continue;
-		Uint8 *dst = screen_layers + row_base + x0;
+	for(i = 0; i <= rML; i++, x += dx, y += dy, rA = (rA + addr_incr) & 0xffff, row_base += row_step) {
+		if(x < -8 || y < -8 || x + 16 > stride || y + 16 > screen_hmar2) continue;
+		Uint8 *dst = screen_layers + row_base + x + 8;
 		const Uint8 *col = &ram[rA + col_start];
-		for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
-			Uint8 *d = dst;
-			const int ch1 = *col;
-			const int ch2 = is_2bpp ? (col[8] << 1) : 0;
-			int row = row_start;
-			for(int k = 0; k < 8; k++, d++, row += row_delta) {
-				const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
-				if(opaque_mask || color)
+		if(opaque_mask)
+			for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
+				Uint8 *d = dst;
+				const int ch1 = *col, ch2 = is_2bpp ? (col[8] << 1) : 0;
+				int row = row_start;
+				for(int k = 0; k < 8; k++, d++, row += row_delta) {
+					const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
 					*d = (*d & layer_mask) | table[color];
+				}
 			}
-		}
+		else
+			for(j = 0; j < 8; j++, dst += stride, col += col_delta) {
+				Uint8 *d = dst;
+				const int ch1 = *col, ch2 = is_2bpp ? (col[8] << 1) : 0;
+				int row = row_start;
+				for(int k = 0; k < 8; k++, d++, row += row_delta) {
+					const int color = ((ch1 >> row) & 1) | ((ch2 >> row) & 2);
+					if(color) *d = (*d & layer_mask) | table[color];
+				}
+			}
 	}
 	screen_reqdraw = 1;
 	if(rMX) rX += flipx ? -rDX : rDX;
@@ -625,7 +633,6 @@ mouse_deo_vector(void)
 @|File -------------------------------------------------------------- */
 
 #include <unistd.h>
-
 #include <dirent.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -706,7 +713,7 @@ put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int pref
 	*p = 0;
 	err = stat(pathbuf, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	dest += put_stat(dest, length, 4, st.st_size, err, dir);
+	dest += put_stat(dest, length, 4, err ? 0 : st.st_size, err, dir);
 	dest += put_text(dest, length, "\t");
 	dest += put_text(dest, length, basename);
 	dest += put_text(dest, length, dir ? "/\n" : "\n");
@@ -716,9 +723,9 @@ put_statfile(Uint8 *dest, unsigned int *length, char *pathbuf, unsigned int pref
 static unsigned int
 put_fdir(Uint8 *dest, unsigned int *length, const char *filepath, DIR *dir)
 {
+	static char pathbuf[0x200];
 	Uint8 *p = dest, *end = dest + *length - 1;
 	struct dirent *de;
-	char pathbuf[0x200];
 	unsigned int prefix_len = 0;
 	char c = '/';
 	const char *fp = filepath;
@@ -745,7 +752,7 @@ is_dir_path(const char *p)
 }
 
 static unsigned int
-is_dir_real(char *p)
+is_dir_real(const char *p)
 {
 	struct stat st;
 	return stat(p, &st) == 0 && S_ISDIR(st.st_mode);
@@ -754,7 +761,7 @@ is_dir_real(char *p)
 static unsigned int
 file_write_dir(const char *p)
 {
-	char buf[0x200];
+	static char buf[0x200];
 	char *s = buf, *end = buf + sizeof buf - 1;
 	unsigned int ok = 1;
 	while(*p && ok && s < end) {
@@ -864,7 +871,7 @@ file_stat(unsigned int id, Uint16 addr, unsigned int len)
 		len = 0x10000 - addr;
 	err = stat(ufs[id].filepath, &st);
 	dir = !err && S_ISDIR(st.st_mode);
-	return put_stat(&ram[addr], &length, len, st.st_size, err, dir);
+	return put_stat(&ram[addr], &length, len, err ? 0 : st.st_size, err, dir);
 }
 
 static unsigned int
@@ -1396,7 +1403,7 @@ main(int argc, char **argv)
 {
 	int i = 0;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 16 Nov 2026.\n", argv[0]);
+		return !fprintf(stdout, "%s - Varvara(79K) Emulator, 17 Nov 2026.\n", argv[0]);
 	/* Arguments */
 	while(argv[++i] && argv[i][0] == '-' && argv[i][1] != '\0' && argv[i][2] == '\0') {
 		switch(argv[i][1]) {
