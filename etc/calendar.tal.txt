@@ -8,6 +8,7 @@
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|0050 @Varvara/version
 |0030 @CELLHEIGHT
 
 |000
@@ -20,7 +21,7 @@
 	@offset $1
 	@events/ptr $2
 	@input/buf $3f &cap $1
-	@select/filepath &x000 $1 &0x00 $1 &00x0 $1 &000x $1 $1
+	@select/filepath &x000 $1 &0x00 $1 &00x0 $1 &000x $2
 	@anchor/x $2 &y $2
 
 |100
@@ -41,9 +42,12 @@
 
 @meta 00
 	( name ) "Calendar 0a
-	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
+	( details ) "CSV 20 "Events 20 "Planner 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Nov 20 "2025 $2
+	( date ) "19 20 "Nov 20 "2026 00
+	( . ) 02
+	( - ) 56 =Varvara/version
+	( - ) 83 =appicon
 
 %MOD2 ( a* b* -- c* ) {
 	DIV2k MUL2 SUB2 }
@@ -123,11 +127,11 @@
 		LDAk ?{ POP2 events/<erase-selected> !/<draw> }
 		LDAk #0a NEQ ?{ POP2 events/<erase-selected> !/<draw> }
 		LDAk /<push>
-		INC2 !&>w
+		INC2 !/>w
 
 @input/<start> ( -- )
-	;input/on-key .Controller/vector DEO2
-	;input/on-mouse .Mouse/vector DEO2
+	;&on-key .Controller/vector DEO2
+	;&on-mouse .Mouse/vector DEO2
 	.&buf ;&ptr STA
 	( | find event )
 	events/find INC2k ORA ?/<inject>
@@ -305,7 +309,7 @@
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0000 NEQ2 ?{ /when-hover }
+	ORAk ?{ /when-hover }
 	DUP2 #0001 NEQ2 ?{ /when-down }
 	,&last STR
 	POP BRK
@@ -331,7 +335,7 @@
 	[ LIT2 26 -Screen/auto ] DEO
 	#0000 .Screen/x DEO2
 	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
-	[ LIT2 00 _&last-state ] LDR #00c0 MUL2 ;corner/default-chr ADD2 .Screen/addr DEO2
+	[ LIT2 00 _&last-state ] LDR #00c0 MUL2 ;&default-chr ADD2 .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEO
 	JMP2r
 
@@ -363,12 +367,12 @@
 	.day STZ !<draw-page>
 
 @select/<next-week> ( -- )
-	.day LDZ #07 ADD
+	[ LIT2 07 -day ] LDZ ADD
 	( clamp ) DUP .offset LDZ SUB .diam LDZ LTH ?{ POP !/<next-month> }
 	.day STZ !<draw-page>
 
 @select/<reselect> ( -- )
-	.year LDZ2 .month LDZ !select/<month>
+	.year LDZ2 .month LDZ !/<month>
 
 @select/<today> ( -- )
 	.DateTime/year DEI2 .DateTime/month DEI #01 year-month-day/dotw .offset STZ
@@ -432,11 +436,10 @@
 	.&ptr LDZ2 ;&buf [ LIT2r 0000 ]
 	&>ler
 		DUP2 is-selected ?{ INC2r DUP2 /<save-event> }
-		lcap GTH2k ?&>ler
-	POP2 POP2 STH2r ORA ?{
-		[ LIT2 01 -File/delete ] DEO
-		;select/filepath .File/name DEO2 }
-	!select/<reselect>
+		lcap GTH2k ?/>ler
+	POP2 POP2 STH2r ORA ?select/<reselect>
+	[ LIT2 01 -File/delete ] DEO
+	;select/filepath .File/name DEO2 !select/<reselect>
 
 @events/<copy> ( -- )
 	;select/filepath .File/name DEO2
@@ -447,7 +450,7 @@
 			DUP2 lcap OVR2 SUB2 .File2/length DEO2
 			.File2/write DEO2
 			POP2 POP2 JMP2r }
-		lcap GTH2k ?&>lco
+		lcap GTH2k ?/>lco
 	POP2 POP2 !select/<reselect>
 
 @events/<cut> ( -- )
@@ -459,7 +462,7 @@
 			DUP2 lcap OVR2 SUB2 .File2/length DEO2
 			.File2/write DEO2
 			POP2 POP2 !/<erase-selected> }
-		lcap GTH2k ?&>lcu
+		lcap GTH2k ?/>lcu
 	POP2 POP2 !select/<reselect>
 
 @events/<paste> ( -- )
@@ -469,7 +472,7 @@
 	&>s
 		;&c .File2/read DEO2
 		.File2/success-lb DEI ?{ !input/<done> }
-		[ LIT &c $1 ] input/<push> !&>s
+		[ LIT &c $1 ] input/<push> !/>s
 
 @events/<save-event> ( event* -- )
 	LDAk #0a NEQ ?{ POP2 JMP2r }
@@ -494,7 +497,7 @@
 	.&ptr LDZ2 ;&buf
 	&>lf
 		DUP2 is-selected #00 EQU ?{ NIP2 JMP2r }
-		lcap GTH2k ?&>lf
+		lcap GTH2k ?/>lf
 	POP2 POP2 #ffff JMP2r
 
 @events/find-event ( day* -- {events}* )
@@ -505,7 +508,7 @@
 			DUP2 wildcard-month ?{
 				DUP2 #0008 ADD2 sdec STH2kr NEQ2 ?{
 					( found ) NIP2 POP2r JMP2r } }
-			lcap GTH2k ?&>lfind }
+			lcap GTH2k ?/>lfind }
 	POP2 POP2 POP2r #ffff JMP2r
 
 (
@@ -519,7 +522,7 @@
 	&>lw
 		#00 OVR #0050 MUL2 #0008 ADD2 .Screen/x DEO2
 		#00 OVR #20 SFT2 ;dict/dotw-txt ADD2 chicago/<draw-str>
-		INC GTHk ?&>lw
+		INC GTHk ?/>lw
 	POP2
 	( | weekline bullet )
 	[ LIT2 00 -DateTime/dotw ] DEI #0050 MUL2 #004b ADD2 .Screen/x DEO2
@@ -530,13 +533,13 @@
 	#0701
 	&>llv
 		DUP ;line-ver-icn /<draw-line-ver>
-		INC GTHk ?&>llv
+		INC GTHk ?/>llv
 	POP2
 	( | ver )
 	#0601
 	&>llh
 		DUP ;line-hor-icn /<draw-line-hor>
-		INC GTHk ?&>llh
+		INC GTHk ?/>llh
 	POP2
 	( | edges )
 	#00 ;line-ver-icn /<draw-line-ver>
@@ -570,7 +573,7 @@
 	[ LITr 00 ]
 	&>ww
 		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
-		( > ) ADDr INC2 LDAk #20 GTH ?&>ww
+		( > ) ADDr INC2 LDAk #20 GTH ?/>ww
 	POP2 #00 STHr JMP2r
 
 @chicago/<draw-etc> ( -- )
@@ -581,7 +584,7 @@
 	&>ws
 		LDAk #1f GTH ?{ POP2 JMP2r }
 		LDAk /<draw-char>
-		INC2 !&>ws
+		INC2 !/>ws
 
 @chicago/<draw-ws> ( -- )
 	#20
@@ -601,11 +604,11 @@
 	#000a SWP2 [ LITr ff ]
 	&>get
 		SWP2k DIV2k MUL2 SUB2 STH
-		POP OVR2 DIV2 ORAk ?&>get
+		POP OVR2 DIV2 ORAk ?/>get
 	POP2 POP2
 	&>put
 		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD /<draw-char> !&>put
+		[ LIT "0 ] ADD /<draw-char> !/>put
 
 @chicago/<draw-label> ( str* color-- )
 	,&color STR
@@ -621,7 +624,7 @@
 		LDAk /<draw-char>
 		.Screen/x DEI2 STH2kr LTH2 ?{ POP2 POP2r !/<draw-etc> }
 		.Screen/y DEI2 [ LIT2 &boundary $2 ] GTH2 ?{
-			INC2 LDAk #0a GTH ?&>wl }
+			INC2 LDAk #0a GTH ?/>wl }
 	POP2 POP2r JMP2r
 
 (
@@ -657,8 +660,8 @@
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	.File/success-lb DEI ?{ !theme/<reset> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+	.File/success-lb DEI ?{ !/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !/<set>
 
 	&path ".theme $1
 
@@ -681,7 +684,7 @@
 		#00 OVR #07 DIVk MUL SUB #0050 MUL2 .anchor/x STZ2
 		#00 OVR #07 DIV ;CELLHEIGHT MUL2 .anchor/y STZ2
 		<draw-day>
-		INC GTHk ?&>ld
+		INC GTHk ?/>ld
 	POP2 frame/<draw>
 	( | footer )
 	corner/<draw>
@@ -747,7 +750,7 @@
 	#00 OVR .offset LDZ SUB INC STHkr chicago/<draw-dec>
 	chicago/<draw-ws>
 	chicago/<draw-ws>
-	( doty ) #00 .day LDZ .offset LDZ SUB get-doty ADD2
+	( doty ) [ LIT2 00 -day ] LDZ .offset LDZ SUB get-doty ADD2
 	( letter ) DUP2 #000e DIV2 NIP #11 ADD DUP #2a GTH #30 MUL SUB
 	( letter ) [ LIT "0 ] ADD chicago/<draw-char>
 	#000e DIV2k MUL2 SUB2 STHr !chicago/<draw-dec>
@@ -766,7 +769,7 @@
 	[ LITr -Screen/sprite ]
 	&>l
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 @<draw-times-addr> ( color times addr* auto -- )
@@ -777,7 +780,7 @@
 	&>l
 		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP POP2r JMP2r
 
 (
@@ -787,8 +790,8 @@
 	[ LIT2r 0000 ] .month LDZ #00 NEQ2k ?{ POP2 STH2r JMP2r }
 	&>l
 		GTHk ?{ POP2 STH2r JMP2r }
-		#00 OVR .year LDZ2 diam #00 SWP STH2
-		ADD2r INC !&>l
+		#00 OVR .year LDZ2 diam LITr 00 STH
+		ADD2r INC !/>l
 
 @year-month-day/dotw ( year* m d -- dotw )
 	OVR #01 GTH ?{
@@ -807,14 +810,15 @@
 	is-leap-year STH
 	DUP #01 EQU STH
 	;&m ADD2 LDA ANDr STHr ADD JMP2r
+
 	&m 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f
 
 @is-leap-year ( year* -- bool )
 	( leap year if perfectly divisible by 400 ) DUP2 #0190
-	( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
+	( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?/leap
 	( not a leap year if divisible by 100 ) ( but not divisible by 400 ) DUP2 #0064
-	( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
-	( leap year if not divisible by 100 ) ( but divisible by 4 ) DUP2 #0003 AND2 #0000 EQU2 ?&leap
+	( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?/not-leap
+	( leap year if not divisible by 100 ) ( but divisible by 4 ) DUP2 #0003 AND2 #0000 EQU2 ?/leap
 	( all other years are not leap years ) &not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
 
@@ -822,26 +826,26 @@
 	[ LIT2r 0000 ]
 	&>w
 		LDAk ?{ POP2 STH2r JMP2r }
-		( validate ) LDAk [ LIT "0 ] SUB #09 GTH ?&end
+		( validate ) LDAk [ LIT "0 ] SUB #09 GTH ?/end
 		( accumulate ) [ LIT2r 000a ] MUL2r
 		( combine ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH
 		ADD2r
-		( continue ) INC2 LDAk [ LIT "- ] NEQ ?&>w &end POP2 STH2r JMP2r
+		( continue ) INC2 LDAk [ LIT "- ] NEQ ?/>w &end POP2 STH2r JMP2r
 
 @lcap ( str* -- cap* )
 	&>w
 		LDAk ?{ JMP2r }
 		LDAk #0a NEQ ?{ INC2 JMP2r }
-		INC2 !&>w
+		INC2 !/>w
 
 (
 @|dict )
 
 @dict/snarf-txt ".snarf $1
-	&dotw-txt [
+	&dotw-txt [8
 	"Sun $1 "Mon $1 "Tue $1 "Wed $1
 	"Thu $1 "Fri $1 "Sat $1 ]
-	&months-txt [
+	&months-txt [8
 	"Jan $1 "Feb $1 "Mar $1 "Apr $1
 	"May $1 "Jun $1 "Jul $1 "Aug $1
 	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
@@ -863,6 +867,17 @@
 
 @line-hor-icn [ ff00 0000 0000 0000 ]
 	&dotted [ aa00 0000 0000 0000 ]
+
+@appicon [ 
+0936 3f3f 3f3f 3f3f 0009 161f 1f1f 1f1f
+24db ffff ffff ffff 0024 dbff ffff ffff
+906c fcfc fcfc fcfc 0090 68f8 f8f8 f8f8
+3f3f 3f3f 3f3f 3f3f 1f1f 1f1f 1f1f 1f1f
+ffff ffff ffff ffff ffbd ffbd c3ff ffff
+fcfc fcfc fcfc fcfc f8f8 f8f8 f8f8 f8f8
+3f13 0b06 0300 0000 010d 0401 0000 0000
+ffff ff00 ff00 0000 ffff 00ff 0000 0000
+fcfc fc04 fc00 0000 f8f8 00f8 0000 0000 ]
 
 @bottom-icn [ ff00 ff00 ff00 ffff ]
 
