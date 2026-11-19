@@ -1,0 +1,166 @@
+( 54K . Convert icn file to uf2 )
+
+|00 @System/vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf $40 &cap
+
+|100
+
+@on-reset ( -> )
+	#038f .System/r DEO2
+	#038f .System/g DEO2
+	#038f .System/b DEO2
+	#0100 .Screen/width DEO2
+	#0100 .Screen/height DEO2
+	src/<bind>
+	BRK
+
+(
+@|Src )
+
+@src/<bind> ( -- )
+	;&on-console .Console/vector DEO2
+	JMP2r
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
+		BRK }
+	#0000 .Console/vector DEO2
+	;&buf icn/<load>
+	checkboard/<draw>
+	icn/<draw>
+	uf2/<parse>
+	uf2/<draw>
+	uf2/<export>
+	BRK
+
+@src/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ]
+	( | catch overflow )
+	DUP .&cap NEQ ?{ POP POP2 JMP2r }
+	INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@src/<push-str> ( str* -- )
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		/<push>
+		INC2 !/>w
+
+(
+@|Icn )
+
+@icn/<load> ( path* -- )
+	.File/name DEO2
+	#2000 .File/length DEO2
+	;&buf .File/read DEO2
+	JMP2r
+
+@icn/<draw> ( -- )
+	[ LIT2 05 -Screen/auto ] DEO
+	;&buf .Screen/addr DEO2
+	#fff8 .Screen/y DEO2
+	#2000 #0000
+	&>l
+		DUP2 #00ff AND2 ORA ?{
+			#0000 .Screen/x DEO2
+			.Screen/y DEI2 #0008 ADD2 .Screen/y DEO2 }
+		[ LIT2 0a -Screen/sprite ] DEO
+		#0008 ADD2 GTH2k ?/>l
+	POP2 POP2 JMP2r
+
+(
+@|Checkboard )
+
+@checkboard/<draw> ( -- )
+	[ LIT2 01 -Screen/auto ] DEO
+	;&fill-icn .Screen/addr DEO2
+	#fff8 .Screen/y DEO2
+	#2000 #0000
+	&>l
+		DUP2 #00ff AND2 ORA ?{
+			#0000 .Screen/x DEO2
+			.Screen/y DEI2 #0008 ADD2 .Screen/y DEO2 }
+		DUP2 #09 SFT2 STH
+		POP DUP #04 SFT STHr ADD #01 AND .Screen/sprite DEO
+		#0008 ADD2 GTH2k ?/>l
+	POP2 POP2 JMP2r
+
+	&fill-icn [ ffff ffff ffff ffff ]
+
+@uf2/<parse> ( -- )
+	#0100 #0000
+	&>l
+		( x ) DUP2 #000f AND2 #40 SFT2
+		( y ) OVR2 #94 SFT2 ADD2 ;icn/buf ADD2 /<push-char>
+		INC2 GTH2k ?/>l
+	POP2 POP2 JMP2r
+
+@uf2/<push-char> ( addr* -- )
+	DUP2 /<push>
+	DUP2 #0100 ADD2 /<push>
+	DUP2 #0008 ADD2 /<push>
+	#0108 ADD2
+	( >> )
+
+@uf2/<push> ( addr* -- )
+	STH2
+	#0800
+	&>l2
+		( load ) #00 OVR STH2kr ADD2 LDA
+		( save ) [ LIT2 &ptr =uf2/glyphs ] INC2k ,&ptr STR2
+		STA
+		INC GTHk ?/>l2
+	POP2 POP2r JMP2r
+
+@uf2/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#fff0 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	;&glyphs .Screen/addr DEO2
+	#0100 #0000
+	&>l3
+		DUP #0f AND ?{
+			#0000 .Screen/x DEO2
+			.Screen/y DEI2 #0010 ADD2 .Screen/y DEO2 }
+		[ LIT2 0f -Screen/sprite ] DEOk DEO
+		INC2 GTH2k ?/>l3
+	POP2 POP2 JMP2r
+
+@uf2/<export> ( -- )
+	;&uf2-ext src/<push-str>
+	;src/buf .File/name DEO2
+	#2100 .File/length DEO2
+	;&buf .File/write DEO2
+	JMP2r
+
+	&uf2-ext ".uf2 00
+
+@uf2/buf ( widths )
+	[8
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	1010 1010 1010 1010 1010 1010 1010 1010
+	&glyphs $2000 ]
+
+@icn/buf $2000
+

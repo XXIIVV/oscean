@@ -10,6 +10,8 @@
 |0178 @nav/width
 |0170 @nav/width-8
 |0160 @nav/width-inner
+|0020 @scrollbar/y1
+|003a @scrollbar/top
 |01c8 @path/x
 |0017 @glyph/sel
 |fff0 @eof
@@ -21,8 +23,7 @@
 	@wrap/left $2 &right $2
 	@flen/buf $5
 	@search/buf $2f &bufend $1
-	@scroll/y $2 &addr $2
-	@scrollbar/height $2 &ratio $2
+	@scrollbar/height $2 &ratio $2 &y $2 &addr $2
 	@highlight/comment $1 &label $1 &raw $1
 	@autocomplete/addr $2
 	@nav/buf $60 &bufend $1 &scroll $1 &visible $1 &cat $1 &symbol $1
@@ -62,7 +63,7 @@
 	( ) "Left 0a
 	( ) "A 20 "Text 20 "Editor 0a
 	( ) "By 20 "Hundred 20 "Rabbits 0a
-	( ) "11 20 "Sep 20 "2026 00
+	( ) "19 20 "Nov 20 "2026 00
 	( . ) 02
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -138,7 +139,7 @@
 	sel/get-from sel/get-to }
 
 %get-scroll-addr ( -- addr* ) {
-	;textarea/buf .scroll/addr LDZ2 ADD2 }
+	;textarea/buf .scrollbar/addr LDZ2 ADD2 }
 
 %addr-not-lb ( addr* -- addr* t ) {
 	LDAk #0a NEQ }
@@ -577,10 +578,10 @@
 	JMP2r
 
 (
-@|scroll )
+@|scrollbar )
 
 @scrollbar/on-mouse ( -> )
-	#42 cursor/<update>
+	#41 cursor/<update>
 	.Mouse/state DEI ?/on-down
 	BRK
 
@@ -598,22 +599,32 @@
 	BRK
 
 @scrollbar/<draw> ( -- )
-	( | bg )
-	#0004 #0028 Screen/<set-pos>
-	#0100 .textarea/rows LDZ #03 MUL STH2k SUB
-	( ) ;halftone-icn #02 <draw-times>
-	( | fg )
-	.scroll/y LDZ2 .&ratio LDZ2 DIV2 #0028 ADD2 .Screen/y DEO2
-	#01 STH2r #30 SFT2 [ LIT2 &lines $2 ] .&ratio LDZ2 DIV2 SUB2 #03 SFT2 SUB DUP ?{
-		( TODO: Fixme ) POP2 JMP2r }
-	( ) ;fill-icn #02 !<draw-times>
+	#0000 ;&y1 Screen/<set-pos>
+	[ LIT2 01 &rows a5 ] ;&bg-icn #16 <draw-times-addr>
+	( | top )
+	;&y1 .Screen/y DEO2
+	;&arrow-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	( | middle )
+	#002f .&y LDZ2 .&ratio LDZ2 DIV2 ADD2 .Screen/y DEO2
+	;&drag-chr .Screen/addr DEO2
+	[ LIT2 85 -Screen/sprite ] DEOk DEO
+	( | bottom )
+	.Screen/height DEI2 #0008 SUB2 .Screen/y DEO2
+	;&arrow-icn .Screen/addr DEO2
+	[ LIT2 21 -Screen/sprite ] DEOk DEO
+	( | cap )
+	[ LIT2 &lines $2 ] .&ratio LDZ2 DIV2 #003d ADD2 #11 SFT2 .Screen/y DEO2
+	;&fill-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	JMP2r
 
 @scrollbar/<mod-y> ( y* -- )
-	.scroll/y LDZ2 ADD2
+	.&y LDZ2 ADD2
 	( >> )
 
 @scrollbar/<set-y> ( line* -- )
-	( unchanged ) DUP2 .scroll/y LDZ2 NEQ2 ?{ POP2 JMP2r }
+	( unchanged ) DUP2 .&y LDZ2 NEQ2 ?{ POP2 JMP2r }
 	( >> )
 
 @scrollbar/<set-y-force> ( line* -- )
@@ -623,14 +634,14 @@
 		EQU2kr STHr ?{
 			addr-not-lb INC2r? INC2 LDAk ?/>wsy }
 	POP2r POP2r DUP2 .textarea/eof LDZ2 #0002 SUB2 GTH2 ?{
-		;textarea/buf SUB2 .scroll/addr STZ2
-		.scroll/y STZ2
+		;textarea/buf SUB2 .&addr STZ2
+		.&y STZ2
 		#00 nav/<set-y>
-		.scroll/y LDZ2 INC2 path/<draw-line> !reqdraw-both }
+		.&y LDZ2 INC2 path/<draw-line> !reqdraw-both }
 	POP2 POP2 JMP2r
 
 @scrollbar/<refresh> ( -- )
-	.scroll/y LDZ2 !/<set-y-force>
+	.&y LDZ2 !/<set-y-force>
 
 @scrollbar/<update> ( -- )
 	[ LIT &req-update 01 ] ?{ JMP2r }
@@ -643,6 +654,8 @@
 @scrollbar/<req-update> ( -- )
 	[ LIT2 01 _&req-update ] STR
 	JMP2r
+
+	&fill-icn [ ff00 00ff aa55 aa55 fe00 00fe aa56 aa56 ]
 
 (
 @|textarea )
@@ -763,7 +776,7 @@
 @textarea/<follow> ( button -- )
 	sel/button-direction
 	( | vertical )
-	addr-to-line .scroll/y LDZ2 LTH2k ?/move
+	addr-to-line .scrollbar/y LDZ2 LTH2k ?/move
 	[ LIT2 00 -&rows ] LDZ ADD2 #0001 SUB2 GTH2k ?/move
 	POP2 POP2 JMP2r
 
@@ -963,7 +976,7 @@
 @nav/<draw-label> ( ztr selected -- ztr )
 	OVR .&buf SUB #01 SFT SWP /id-to-color
 	( | left spacer )
-	#000c .Screen/x DEO2
+	#0010 .Screen/x DEO2
 	;marker-icns .Screen/addr DEO2
 	DUP #02 SFT .Screen/sprite DEO
 	( | text )
@@ -1181,7 +1194,7 @@
 
 @file/<open> ( -- )
 	scrollbar/<req-update>
-	#0000 .scroll/y STZ2
+	#0000 .scrollbar/y STZ2
 	;textarea/buf sel/<set-a>
 	search/<reset>
 	( >> )
@@ -1398,7 +1411,7 @@
 @format/do-clip ( to* from* -- to* from* )
 	SWP2r LDAk #20 NEQ ?{
 		INC2k wlen STH2kr ADD2 #0050 LTH2 ?{
-			( replace ) DUP2 #0a ROT ROT STA
+			( replace ) LITr 0a STH2k STAr
 			( reset ) POP2r LIT2r 0000 } }
 	INC2r SWP2r JMP2r
 
@@ -1406,7 +1419,7 @@
 	;&do-join !/<apply>
 
 @format/do-join ( addr* -- addr* )
-	addr-not-ws ?{ STH2k #20 STH2r STA }
+	addr-not-ws ?{ LITr 20 STH2k STAr }
 	JMP2r
 
 @format/tab ( -- )
@@ -1416,7 +1429,7 @@
 @format/do-tab ( to* from* -- to* from* )
 	DUP2 #0001 SUB2 LDA #0a NEQ ?{
 		SWP2 INC2 SWP2
-		( put ) DUP2 #09 ROT ROT !textarea/<put-char> }
+		( put ) STH2k #09 STH2r !textarea/<put-char> }
 	JMP2r
 
 @format/untab ( -- )
@@ -1445,7 +1458,8 @@
 
 @format/do-lc ( -- )
 	LDAk LIT "A SUB #19 GTH ?{
-		DUP2 LDAk #20 ADD ROT ROT STA }
+		LDAk #20 ADD STH
+		STH2k STAr }
 	JMP2r
 
 @format/uc ( -- )
@@ -1453,7 +1467,8 @@
 
 @format/do-uc ( -- )
 	LDAk LIT "a SUB #19 GTH ?{
-		DUP2 LDAk #20 SUB ROT ROT STA }
+		LDAk #20 SUB STH
+		STH2k STAr }
 	JMP2r
 
 (
@@ -1719,20 +1734,17 @@
 
 @menu/<draw> ( -- )
 	( | clear )
-	#0000 .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	#0000 #0028 Screen/<set-pos>
 	[ LIT2 a0 -Screen/pixel ] DEO
 	path/<draw-state>
 	path/<draw>
 	( | border )
-	#0000 .Screen/x DEO2
-	#0018 .Screen/y DEO2
-	[ LIT2 05 -Screen/width ] DEI2 #03 SFT2 SUB ;dotted-icn #01 <draw-times>
+	#0000 #001a Screen/<set-pos>
+	[ LIT2 05 -Screen/width ] DEI2 #03 SFT2 SUB ;&line-icn #01 <draw-times>
 	( >> )
 
 @menu/<draw-cats> ( -- )
-	#000c .Screen/x DEO2
-	#0004 .Screen/y DEO2
+	#000c #0004 Screen/<set-pos>
 	.&cat LDZ2 ;manifest/dat
 	&>wdc
 		EQU2k STH
@@ -1741,8 +1753,7 @@
 	POP2 POP2 JMP2r
 
 @menu/<draw-subs> ( -- )
-	.&anchor LDZ2 #0006 ADD2 .Screen/x DEO2
-	#001c .Screen/y DEO2
+	.&anchor LDZ2 #0006 ADD2 #001c Screen/<set-pos>
 	[ LITr 00 ] .&cat LDZ2 LDA2k SWP2 #0004 ADD2
 	&>loc
 		DUP2 STHkr .&sub LDZ EQU /<draw-sub>
@@ -1791,9 +1802,10 @@
 	.Screen/y DEI2k #0018 ADD2 ROT DEO2
 	JMP2r
 
+@menu/line-icn [ 0000 0000 00ff 0000 ]
+
 @menu/cat-icn [
-	0307 0707 0707 0707 0707 0707 0707 0707
-	0707 0707 0707 0707 ]
+	0307 0707 0707 0707 0707 0707 0707 0707 0707 0707 0707 0707 ]
 
 
 
@@ -1818,6 +1830,17 @@
 	SWP STH
 	[ LITr -Screen/sprite ]
 	&>l
+		DEOkr
+		INC DUP ?/>l
+	POP POP2r JMP2r
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
 		DEOkr
 		INC DUP ?/>l
 	POP POP2r JMP2r
@@ -1953,6 +1976,7 @@
 	.Screen/height DEI2 #0028 SUB2
 	( ) DUP2 #0018 DIV2 .textarea/rows STZ
 	POP
+	( ) DUP2 #03 SFT2 SUB ;scrollbar/rows STA
 	( ) .scrollbar/height STZ2
 	( | responsive )
 	.Screen/width DEI2 #0300 GTH2 .nav/visible STZ
@@ -2063,7 +2087,7 @@
 @touch-to-addr ( -- addr* )
 	highlight/<reset>
 	( goto y ) ( b ) .Mouse/y DEI2 #0028 SUB2
-	( clamp y ) DUP2 #8000 LTH2 ?{ POP2 #0000 }
+	( clamp y ) OVR #80 LTH ?{ POP2 #0000 }
 	#0018 DIV2 [ STH POP ]
 	( a ) [ LITr 00 ] .textarea/eof LDZ2 get-scroll-addr
 	&>ver
@@ -2071,7 +2095,7 @@
 			LDAk #0a NEQ [ JMP INCr ] utf8/next GTH2k ?/>ver }
 	POP2r
 	( goto x ) ( b ) .Mouse/x DEI2 textarea/get-anchor SUB2
-	( clamp x ) DUP2 #8000 LTH2 ?{ POP2 #0000 }
+	( clamp x ) OVR #80 LTH ?{ POP2 #0000 }
 	STH2
 	( a ) LIT2r 0000
 	&>hor
@@ -2155,8 +2179,6 @@
 	&untitled-txt "untitled.txt $1
 	&icn-ext ".icn 00
 
-@dotted-icn [
-	0000 0000 0000 00aa ]
 @bubble-icn
 	[ 0000 0000 0008 1c3e ]
 @col80-icn
@@ -2176,6 +2198,20 @@
 &end [
 	c0e0 e0f0 f0f8 f8fc fcfe feff fffe fefc
 	fcf8 f8f0 f0e0 e0c0 ]
+
+@scrollbar/arrow-icn [8
+	0000 0000 0000 0307 0202 0202 0202 0282
+0f00 0000 0000 00ff c202 0202 0202 02fe ]
+
+@scrollbar/bg-icn [8
+	aa55 aa55 aa55 aa55 aa56 aa56 aa56 aa56
+aa55 aa55 aa55 aa55 aa56 aa56 aa56 aa56 ]
+
+@scrollbar/drag-chr [8
+	ffff ffff ffff ffff 00ff ffff f0ff f0ff
+fefe fefe fefe fefe 00fc fcfc 3cfc 3cfc
+ffff ffff ffff ff00 f0ff f0ff ffff 0000
+fefe fefe fefe fe00 3cfc 3cfc fcfc 0000 ]
 
 @appicon ( 3x3 ) [
 	0000 0000 1f1f 0000 0000 0000 0000 0000
