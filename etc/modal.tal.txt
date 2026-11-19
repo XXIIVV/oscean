@@ -18,7 +18,7 @@
 	( name ) "Modal 0a
 	( desc ) "A 20 "Modal 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "29 20 "Jul 20 "2026 0000
+	( date ) "19 20 "Nov 20 "2026 0000
 
 (
 @|Compiler )
@@ -90,11 +90,11 @@
 	LDA2k LDA [ LIT "? ] EQU }
 
 @<eval> ( -- count* )
+	#0000 ;body/ptr LDA2 STA2
 	#0000
 	&>w
 		rewrite/<step>
 		body/<print>
-		wildcards/<print>
 		?{ JMP2r }
 		INC2 ORAk ?/>w
 	#010f DEO
@@ -116,7 +116,7 @@
 	body/push-cell-at NEXT !/<tail>
 
 @rewrite/<match> ( to* from* . rew -- rew )
-	INCr
+	INCr wildcards/<print>
 	( rewrite ) tuple/walk ;&do-cell tuple/<foreach>
 	( advance ) tuple/walk !/<tail>
 
@@ -198,7 +198,8 @@
 	( >> )
 
 @body/<push-cell> ( cell* -- )
-	[ LIT2 &ptr =&a ] INC2k INC2 ,&ptr STR2
+	[ LIT2 &ptr =&a ] INC2k INC2 DUP2 ,&ptr STR2
+	#0000 SWP2 STA2
 	STA2
 	JMP2r
 
