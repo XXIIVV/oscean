@@ -10,8 +10,9 @@
 
 |000
 
-	@camera/x $2 &y $2 &z $2 &pos $6 &forward $6 &up $6 &right $6
+	@camera/x $2 &y $2 &z $2 &roll $2 &pos $6 &forward $6 &up $6 &right $6
 	@viewport/x $2 &y $2 &width $2 &height $2 &a $2 &f $2 &near $2 &far $2 &width-half $2 &height-half $2
+	@pen/x $2 &y $2 &z $2
 
 |100
 
@@ -24,303 +25,87 @@
 	BRK
 
 @scene/<create> ( -- )
-	#0300 cube/<create>
 	#0600 cube/<create>
+	#0200 #0000 #0400 pen/<set>
+	#0400 #0020 circle/<create>
+	#0000 #0000 #0000 pen/<set>
+	#0400 #0000 #0000 pen/<line-to>
+	#0400 #0400 #0000 pen/<line-to>
+	#0000 #0000 #0000 pen/<line-to>
+	JMP2r
+
+
+
+( @|Primitives )
+
+@circle/<create> ( r* segments* -- )
+	,&n STR2
+	,&r STR2
+	LIT2r 0000
+	&>l
+		STH2kr /point #0000 STH2kr INC2 DUP2 ,&n LDR2 NEQ2 ?{ POP2 #0000 }
+		/point #0000 scene/<push-edge>
+		INC2r STH2kr ;&n LDA2 NEQ2 ?/>l
+	POP2r JMP2r
+
+@circle/point ( i* -- x* y* )
+	#0648 MUL2 [ LIT2 &n $2 ] DIV2 DUP2 x16/cos
+	( r ) [ LIT2 &r $2 ] STH2k x16/mul SWP2 x16/sin STH2r !x16/mul
+
+@cube/<create> ( size* -- )
+	,&s STR2
+	#00
+	&>a
+		#01
+		&>b
+			DUP2 AND ?{
+				DUP2 ORA /corner STH2
+				STH2
+				STH2
+				OVR /corner STH2r STH2r STH2r scene/<push-edge> }
+			DUP ADD DUP #08 NEQ ?/>b
+		POP INC DUP #08 NEQ ?/>a
+	POP JMP2r
+
+@cube/corner ( i -- x* y* z* )
+	( x ) STHk #01 AND /sign
+	( y ) STHkr #02 AND /sign
+	( z ) STHr #04 AND
+	( >> )
+
+@cube/sign ( bit -- s* )
+	[ LIT2 &s $2 ] ROT ?{ #0000 SWP2 SUB2 }
 	JMP2r
 
 (
-@|Cube )
+@|Pen )
 
-@cube/<create> ( size* -- )
-	#0000 OVR2 SUB2 STH2
-	STH2
-	( 000 100 ) OVR2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r OVR2r STH2r OVR2r STH2r scene/<push-edge>
-	( 100 110 ) DUP2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r DUP2r STH2r OVR2r STH2r scene/<push-edge>
-	( 110 010 ) DUP2r STH2r DUP2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r OVR2r STH2r scene/<push-edge>
-	( 010 000 ) OVR2r STH2r DUP2r STH2r OVR2r STH2r OVR2r STH2r OVR2r STH2r OVR2r STH2r scene/<push-edge>
-	( 001 101 ) OVR2r STH2r OVR2r STH2r DUP2r STH2r DUP2r STH2r OVR2r STH2r DUP2r STH2r scene/<push-edge>
-	( 101 111 ) DUP2r STH2r OVR2r STH2r DUP2r STH2r DUP2r STH2r DUP2r STH2r DUP2r STH2r scene/<push-edge>
-	( 111 011 ) DUP2r STH2r DUP2r STH2r DUP2r STH2r OVR2r STH2r DUP2r STH2r DUP2r STH2r scene/<push-edge>
-	( 011 001 ) OVR2r STH2r DUP2r STH2r DUP2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r scene/<push-edge>
-	( 000 001 ) OVR2r STH2r OVR2r STH2r OVR2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r scene/<push-edge>
-	( 100 101 ) DUP2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r OVR2r STH2r DUP2r STH2r scene/<push-edge>
-	( 110 111 ) DUP2r STH2r DUP2r STH2r OVR2r STH2r DUP2r STH2r DUP2r STH2r DUP2r STH2r scene/<push-edge>
-	( 010 011 ) OVR2r STH2r DUP2r STH2r OVR2r STH2r OVR2r STH2r DUP2r STH2r DUP2r STH2r scene/<push-edge>
-	POP2r POP2r JMP2r
+@pen/<line-to> ( x* y* z* -- )
+	,&qz STR2
+	,&qy STR2
+	,&qx STR2
+	#0000 #0000 #0000
+	( x ) [ LIT2 &qx $2 ] .&x LDZ2 x16/sub
+	( y ) [ LIT2 &qy $2 ] .&y LDZ2 x16/sub
+	( z ) [ LIT2 &qz $2 ] .&z LDZ2 x16/sub scene/<push-edge>
+	,&qx LDR2 ,&qy LDR2 ,&qz LDR2
+	( >> )
 
-
-( 
-@|Fix16, by d6 )
-
-%x16/pi/2   { #0192 } ( 1.57079... )
-%x16/pi     { #0324 } ( 3.14159... )
-%x16/3pi/2  { #04b6 } ( 4.71239... )
-%x16/2pi    { #0648 } ( 6.28318... )
-%x16/256/pi { #5183 } ( 81.4873... )
-
-@x16/from-u16-rem ( n* -- n'* rem* )
-	LITr 00 ( n* [rem] )
-
-	&>lr DUP2 #ff80 AND2 #0000 EQU2 ?{
-		#01 SFT2 INCr !&>lr
-	}
-
-	NIP #00                 ( n'* [rem] )
-	#0001 STHr #40 SFT SFT2 ( n'* rem* )
+@pen/<set> ( x* y* z* -- )
+	.&z STZ2
+	.&y STZ2
+	.&x STZ2
 	JMP2r
 
-@x16/from-s16 ( n* -- n'* )
-	OVR #80 AND ?{
-		DUP2 #007f GTH2 ?&overflow NIP #00    JMP2r
-	}
-		DUP2 #ff80 GTH2 #00 EQU ?&underflow ( >> )
-
-	       NIP #00    JMP2r
-	&overflow  POP2 #7fff JMP2r
-	&underflow POP2 #8001 JMP2r
-
-@x16/is-inf ( n* -- n==inf||n==-inf? )
-	DUP2 #7fff EQU2 STH
-	     #8001 EQU2 STH
-	ORAr STHr
-	JMP2r
-
-@x16/cmp ( a* b* -- cmp )
-	STH2k #7fff GTH2 ?&yn        ( a* [b*] )
-		DUP2 #8000 LTH2 ?&same   ( a* [b*] ; b>=0 )
-			POP2 POP2r #ff JMP2r ( -1      ; a<0 b>=0 )
-	&yn
-	DUP2 #7fff GTH2 ?&same       ( x* [y*] ; b<0 )
-		POP2 POP2r #01 JMP2r     ( 1       ; a>=0 b<0 )
-	&same
-
-	STH2r !/ucmp      ( res     ; a<0 b<0 )
-
-@x16/ucmp ( a* b* -- cmp )
-	LTH2k ?{ GTH2 JMP2r
-	} POP2 POP2 #ff JMP2r
-
-@x16/min ( a* b* -> min* )
-	EOR2k POP #80 AND ?/unsigned-max ( >> )
-
-@x16/unsigned-min ( a* b* -> min* )
-	LTH2k [ JMP SWP2 ] POP2
-	JMP2r
-
-@x16/clamp ( n* min* max* -- clamp )
-	ROT2 /min ( >> )
-
-@x16/max ( a* b* -> max* )
-	EOR2k POP #80 AND ?/unsigned-min ( >> )
-
-@x16/unsigned-max ( a* b* -> max* )
-	LTH2k JMP SWP2 NIP2
-	JMP2r
-
-@x16/add ( a* b* -- a+b* )
-	OVR2 #7fff NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-	OVR2 #8001 NEQ2 ?{ POP2 POP2 #8001 JMP2r }
-	DUP2 #7fff NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-	DUP2 #8001 NEQ2 ?{ POP2 POP2 #8001 JMP2r }
-
-	EOR2k POP #80 AND ?{
-	ADD2k OVR2 EOR2 POP #80 AND #00 EQU ?{
-	NIP2 POP #80 AND ?{ #7fff JMP2r } #8000 JMP2r
-
-	} } ADD2 JMP2r
-
-@x16/sub ( a* b* -- a-b* )
-	OVR2 #7fff NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-	OVR2 #8001 NEQ2 ?{ POP2 POP2 #8001 JMP2r }
-	DUP2 #7fff NEQ2 ?{ POP2 POP2 #8001 JMP2r }
-	DUP2 #8001 NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-
-	EOR2k POP #80 AND #00 EQU ?{
-	SUB2k OVR2 EOR2 POP #80 AND ?{
-	NIP2 POP #80 AND ?{ #8000 JMP2r } #7fff JMP2r
-
-	} } SUB2 JMP2r
-
-@x16/neg ( n* -- -n* )
-	#0000 SWP2 SUB2
-	JMP2r
-
-@x16/mul ( a* b* -- ab* )
-	;&unsigned-mul !/signed-op
-
-@x16/unsigned-mul ( a* b* -- ab* )
-	OVR2 #7fff NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-	DUP2 #7fff NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-
-	,&alob STR ,&ahib STR ,&blob STR ,&bhib STR
-
-	LIT2 &alo 00 &alob 00 LIT2 &blo 00 &blob 00 MUL2                                  #08 SFT2
-	LIT2 &ahi 00 &ahib 00 ,&blo LDR2            MUL2 OVR  #80   AND      ?&guard-pop4          ADD2 OVR #80 AND ?&guard-pop2
-	,&alo LDR2            LIT2 &bhi 00 &bhib 00 MUL2 OVR  #80   AND      ?&guard-pop4          ADD2 OVR #80 AND ?&guard-pop2
-	,&ahi LDR2            ,&bhi LDR2            MUL2 DUP2 #ff80 AND2 ORA ?&guard-pop4 #80 SFT2 ADD2 OVR #80 AND ?&guard-pop2
-
-	JMP2r
-
-	&guard-pop4 POP2 ( >> )
-	&guard-pop2 POP2 #7fff JMP2r
-
-@x16/div ( a* b* -- a/b* )
-	;&unsigned-div !/signed-op
-
-@x16/unsigned-div ( a* b* -- a/b* )
-	OVR2 #7fff NEQ2 ?{ POP2 POP2 #7fff JMP2r }
-	OVR2 ORA ?{ POP2 POP2 #0000 JMP2r }
-	DUP2 #7fff NEQ2 ?{ POP2 POP2 #0000 JMP2r }
-	DUP2 ORA ?{ POP2 POP2 #7fff JMP2r }
-
-	DIV2k            ( a b a/b )
-	DUP2 #ff80 AND2 ORA ?&guard-popu6
-	STH2k            ( a b a/b [a/b] )
-	LITr 80 SFT2r    ( a b a/b [div=(a/b)<<8] )
-	OVR2 STH2        ( a b a/b [b div] )
-	MUL2 SUB2        ( a%b     [b div] )
-	STH2r LIT2r 0100 ( a%b b   [0100 div] )
-
-	( We know a%b < b, so start right-shifting b. )
-	&>lud DUP2 #0000 EQU2 ?{
-		#01 SFT2 LITr 01 SFT2r  ( rem bi    [shifti div] )
-		LTH2k ?&>lud            ( rem bi    [shifti div] )
-		SWP2 OVR2 SUB2 SWP2     ( rem-bi bi [shifti div] )
-		DUP2r ROT2r ADD2r SWP2r ( rem-bi bi [shifti div+shifti] )
-		!&>lud                  ( rem-bi bi [shifti div+shifti] )
-	}
-
-	POP2 POP2   ( [shiftk div] )
-	POP2r STH2r ( div )
-
-	OVR #80 AND ?&guard-popu2
-	JMP2r
-
-	&guard-popu6 POP2 POP2 ( >> )
-	&guard-popu2 POP2 #7fff JMP2r
-
-@x16/signed-op ( a* b* f* -- f* )
-	STH2
-
-	LIT2r 0001
-	DUP2 #8000 LTH2 ?&bpos
-		/neg SWPr
-	&bpos
-	SWP2
-	DUP2 #8000 LTH2 ?&apos
-		/neg SWPr
-	&apos
-	SWP2
-
-	SWP2r STH2r JSR2
-
-	STHr ?&abpos
-		/neg
-	&abpos
-	POPr
-
-	JMP2r
-
-@x16/recip ( n* -- 1/n* )
-	#0100 SWP2 !/div
-
-@x16/quotient ( a* b* -> a//b* )
-	;&unsigned-quotient !/signed-op
-
-@x16/unsigned-quotient ( a* b* -> a//b* )
-	DIV2 #80 SFT2 JMP2r
-
-@x16/sqrt ( n* -- sqrt* )
-	OVR #80 AND ?{
-
-	(
-		The main algorithm doesn't work for 0000 and 0001. Return 0000 and 0010
-		respectively.
-	)
-	DUP2 #0001 GTH2 ?{
-		#40 SFT2 JMP2r
-	}
-
-	LIT2r ff00
-	LIT2r 0200                  ( [c* 2*] )
-	DUP2 STH2kr /div ( n* s=n/2* [c* 2*] )
-
-	&>ls                         ( n* s0* [c* 2*] )
-		OVR2 OVR2 /div ( n* s0* n/s0* [c* 2*] )
-		OVR2 /add      ( n* s0* (n/s0)+s0* [c* 2*] )
-		STH2kr /div    ( n* s0* s1=((n/s0)+s0)/2* [c* 2*] )
-		SWP2 OVR2 NEQ2            ( n* s1* go [c* 2*] )
-		SWP2r INC2r ORAkr STHr    ( n* s1* go ok [2* c+1*] )
-		SWP2r ?&continue          ( n* s1* go [c+1* 2*] )
-		POP !&done                ( n* s1* [c+1* 2*] )
-	&continue                     ( n* s1* go [c+1* 2*] )
-		?&>ls                    ( n* s1* [c+1* 2*] )
-	&done                         ( n* s1* [c* 2*] )
-
-	POP2r POP2r NIP2 ( s1* )
-	JMP2r
-
-} POP2 #8000 JMP2r
-
-
-
-@x16/normalize-angle ( n* -- n'* )
-	x16/256/pi !/unsigned-div
-
-@x16/tan ( n* -> tan* )
-	x16/2pi STH2             ( n       [2pi] )
-	DUP2 STH2kr /quotient ( n n/2pi [2pi] )
-	STH2r /mul SUB2       ( n' ; 0 <= n' < 2pi )
-
-	    DUP2 x16/3pi/2 LTH2 ?&c1
-	( -tan(2pi - n) ) x16/2pi SWP2 SUB2 /tan-q !/neg
-	&c1 DUP2 x16/pi LTH2 ?&c2
-	(  tan(n - pi) )  x16/pi SUB2 !/tan-q
-	&c2 DUP2 x16/pi/2 LTH2 ?&c3
-	( -tan(pi - n) )  x16/pi SWP2 SUB2 /tan-q !/neg
-	&c3
-	(  tan(n) )       ( >> )
-
-@x16/tan-q ( x* -> tan* assuming 0 <= x < 2pi )
-	DUP2 ADD2 ;&tan-table ADD2 LDA2 JMP2r
-
-@x16/tan-table [
-	0000 0001 0002 0003 0004 0005 0006 0007 0008 0009 000a 000b 000c 000d 000e 000f
-	0010 0011 0012 0013 0014 0015 0016 0017 0018 0019 001a 001b 001c 001d 001e 001f
-	0020 0021 0022 0023 0024 0025 0026 0027 0028 0029 002a 002b 002c 002d 002f 0030
-	0031 0032 0033 0034 0035 0036 0037 0038 0039 003a 003b 003c 003d 003e 003f 0040
-	0041 0042 0044 0045 0046 0047 0048 0049 004a 004b 004c 004d 004e 004f 0051 0052
-	0053 0054 0055 0056 0057 0058 0059 005b 005c 005d 005e 005f 0060 0061 0062 0064
-	0065 0066 0067 0068 0069 006b 006c 006d 006e 006f 0071 0072 0073 0074 0075 0077
-	0078 0079 007a 007b 007d 007e 007f 0080 0082 0083 0084 0085 0087 0088 0089 008b
-	008c 008d 008e 0090 0091 0092 0094 0095 0096 0098 0099 009a 009c 009d 009f 00a0
-	00a1 00a3 00a4 00a6 00a7 00a8 00aa 00ab 00ad 00ae 00b0 00b1 00b3 00b4 00b6 00b7
-	00b9 00ba 00bc 00bd 00bf 00c0 00c2 00c4 00c5 00c7 00c8 00ca 00cc 00cd 00cf 00d1
-	00d2 00d4 00d6 00d7 00d9 00db 00dc 00de 00e0 00e2 00e4 00e5 00e7 00e9 00eb 00ed
-	00ee 00f0 00f2 00f4 00f6 00f8 00fa 00fc 00fe 0100 0102 0104 0106 0108 010a 010c
-	010e 0110 0113 0115 0117 0119 011b 011e 0120 0122 0124 0127 0129 012b 012e 0130
-	0133 0135 0137 013a 013c 013f 0142 0144 0147 0149 014c 014f 0152 0154 0157 015a
-	015d 0160 0162 0165 0168 016b 016e 0171 0175 0178 017b 017e 0181 0185 0188 018b
-	018f 0192 0196 0199 019d 01a0 01a4 01a8 01ac 01af 01b3 01b7 01bb 01bf 01c3 01c7
-	01cc 01d0 01d4 01d8 01dd 01e1 01e6 01eb 01ef 01f4 01f9 01fe 0203 0208 020d 0212
-	0218 021d 0223 0228 022e 0234 023a 0240 0246 024c 0252 0259 025f 0266 026d 0274
-	027b 0282 0289 0291 0299 02a0 02a8 02b1 02b9 02c1 02ca 02d3 02dc 02e5 02ef 02f9
-	0302 030d 0317 0322 032d 0338 0343 034f 035b 0368 0374 0382 038f 039d 03ab 03ba
-	03c9 03d9 03e9 03f9 040a 041c 042e 0441 0454 0468 047d 0492 04a9 04c0 04d8 04f1
-	050b 0526 0542 055f 057d 059d 05bf 05e1 0606 062c 0654 067e 06aa 06d9 070a 073e
-	0775 07af 07ed 082f 0876 08c1 0911 0967 09c4 0a28 0a95 0b0a 0b8b 0c17 0cb2 0d5d
-	0e1a 0eed 0fdb 10e8 121b 137d 1519 1700 1946 1c0c 1f80 23ed 29cc 31f5 3e13 51f2
-	7888 7fff 7fff ]
-
-
-( @|Viewport )
+(
+@|Viewport )
 
 @viewport/<set> ( x* y* width* height* -- )
 	OVR2 .&width STZ2
 	OVR2 #01 SFT2 .&width-half STZ2
 	DUP2 .&height STZ2
 	DUP2 #01 SFT2 .&height-half STZ2
-	GTH2k ?&width-greater
+	GTH2k ?/width-greater
 	x16/from-u16-rem SWP2 STH2
 	DIV2 x16/from-s16 STH2r !{
 	&width-greater SWP2 x16/from-u16-rem SWP2 STH2
@@ -351,7 +136,7 @@
 	( ) LIT2 &bx $2 .&f LDZ2 x16/mul LIT2 &bz $2 x16/div
 	( ) LIT2 &by $2 .&f LDZ2 x16/mul ,&bz LDR2 x16/div
 	( ) ,&ax LDR2 ,&ay LDR2 ,&az LDR2 ,&bx LDR2 ,&by LDR2 ,&bz LDR2 get-direction
-	( ) .&a LDZ2 x16/neg #ff00 .&a LDZ2 #0100
+	( ) .&a LDZ2 #0000 SWP2 SUB2 #ff00 .&a LDZ2 #0100
 	( ) clip-to-vp ?{ #00 JMP2r }
 	( ) /point-to-viewport-clamping STH2
 	STH2
@@ -366,7 +151,7 @@
 	&tmp $6
 
 @viewport/point-to-viewport-clamping ( point** -- point'** )
-	x16/neg
+	#0000 SWP2 SUB2
 	( | y )
 	.&height-half LDZ2 x16/mul .&height-half LDZ2 ADD2 #0000
 	( ) .&height LDZ2 #0001 SUB2 x16/clamp .&y LDZ2 ADD2 SWP2
@@ -396,12 +181,12 @@
 	( | Set camera. )
 	( p ) .&x LDZ2 .&y LDZ2 .&z LDZ2
 	( t ) #0000 #0000 #0000
-	( u ) #0000 #0001 #0000
+	( u ) .&roll LDZ2 x16/sin .&roll LDZ2 x16/cos #0000
 	( f ) #4000 /<set> !scene/<draw>
 
 @camera/<set> ( pos*** target*** up*** fov* -- )
 	x16/normalize-angle x16/tan x16/recip .viewport/f STZ2
-	;&up2 vector/<from-s16-triple>
+	;&up2 vector/<from-raw-triple>
 	;&target vector/<from-raw-triple>
 	;&pos vector/<from-raw-triple>
 	;&target ;&pos ;&forward vector/<sub>
@@ -418,12 +203,14 @@
 	BRK
 
 @camera/handle-controls ( button -- button )
-	DUP #10 NEQ ?{ .&y !/mod-inc }
-	DUP #20 NEQ ?{ .&y !/mod-dec }
-	DUP #40 NEQ ?{ .&x !/mod-dec }
-	DUP #80 NEQ ?{ .&x !/mod-inc }
-	DUP #01 NEQ ?{ .&z !/mod-dec }
-	DUP #02 NEQ ?{ .&z !/mod-inc }
+	#10 OVR AND #00 EQU ?{ .&y /mod-inc }
+	#20 OVR AND #00 EQU ?{ .&y /mod-dec }
+	#40 OVR AND #00 EQU ?{ .&x /mod-dec }
+	#80 OVR AND #00 EQU ?{ .&x /mod-inc }
+	#01 OVR AND #00 EQU ?{ .&z /mod-dec }
+	#02 OVR AND #00 EQU ?{ .&z /mod-inc }
+	#04 OVR AND #00 EQU ?{ #fff8 /bank }
+	#08 OVR AND #00 EQU ?{ #0008 /bank }
 	JMP2r
 
 @camera/mod-inc ( zp -- )
@@ -432,6 +219,10 @@
 
 @camera/mod-dec ( zp -- )
 	LDZ2k ;&speed SUB2 ROT STZ2
+	JMP2r
+
+@camera/bank ( delta* -- )
+	.&roll LDZ2 ADD2 .&roll STZ2
 	JMP2r
 
 (
@@ -447,7 +238,7 @@
 		( ) LDA2k SWP2 INC2 INC2
 		( ) LDA2k SWP2 INC2 INC2 STH2
 		/<draw-edge>
-		STH2r GTH2k ?&>l
+		STH2r GTH2k ?/>l
 	POP2 POP2 JMP2r
 
 @scene/<push-edge> ( a*** b*** --- )
@@ -456,12 +247,12 @@
 	STH2
 	STH2
 	STH2
-	/<push-short>
-	STH2r /<push-short>
-	STH2r /<push-short>
-	STH2r /<push-short>
-	STH2r /<push-short>
-	STH2r
+	.pen/x LDZ2 x16/add /<push-short>
+	STH2r .pen/y LDZ2 x16/add /<push-short>
+	STH2r .pen/z LDZ2 x16/add /<push-short>
+	STH2r .pen/x LDZ2 x16/add /<push-short>
+	STH2r .pen/y LDZ2 x16/add /<push-short>
+	STH2r .pen/z LDZ2 x16/add
 	( >> )
 
 @scene/<push-short> ( value* -- )
@@ -507,7 +298,7 @@
 		( x ) [ LIT2 &dx $2 ] gts2 ?{
 			( e+dx ) ,&dx LDR2 ADD2
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
-		!&>w
+		!/>w
 
 (
 @|Internals )
@@ -525,20 +316,18 @@
 	;&ax STA2
 	[ LITr 08 ]
 	&>try
-		;&ax LDA2 ;&az LDA2 x16/div x16/is-inf ?&next
-		;&ay LDA2 ;&az LDA2 x16/div x16/is-inf ?&next
-		;&bx LDA2 ;&bz LDA2 x16/div x16/is-inf ?&next
-		;&by LDA2 ;&bz LDA2 x16/div x16/is-inf ?&next
-		!&end
-		&next STHkr #00 EQU ?&end
+		;&ax LDA2 ;&az LDA2 x16/div x16/is-inf ?/next
+		;&ay LDA2 ;&az LDA2 x16/div x16/is-inf ?/next
+		;&bx LDA2 ;&bz LDA2 x16/div x16/is-inf ?/next
+		;&by LDA2 ;&bz LDA2 x16/div x16/is-inf ?/next
+		!/end
+		&next STHkr #00 EQU ?/end
 		;&az LDA2k #0200 x16/mul SWP2 STA2
 		;&bz LDA2k #0200 x16/mul SWP2 STA2
-		LITr 01 SUBr !&>try
-	&end POPr ;&az LDA2 STH2
-	;&ax LDA2k STH2kr x16/div SWP2 STA2
+		LITr 01 SUBr !/>try
+	&end POPr [ LIT2r =&az ] LDA2r ;&ax LDA2k STH2kr x16/div SWP2 STA2
 	;&ay LDA2k STH2r x16/div SWP2 STA2
-	;&bz LDA2 STH2
-	;&bx LDA2k STH2kr x16/div SWP2 STA2
+	[ LIT2r =&bz ] LDA2r ;&bx LDA2k STH2kr x16/div SWP2 STA2
 	;&by LDA2k STH2r x16/div SWP2 STA2
 	;&b DUP2 ;&a OVR2 vector/<sub>
 	#0000 ;&bz STA2
@@ -596,12 +385,12 @@
 		POP2 ;&ax LDA2 ;&ay LDA2 ;&bx LDA2 ;&by LDA2 #01 JMP2r }
 	ANDk #00 EQU ?{ POP2 #00 JMP2r }
 	( | Failed both tests. )
-	OVR ?{ &calculate-b DUP /compute-intersection/from-a NIP !&loop }
-	DUP ?{ &calculate-a OVR /compute-intersection/from-b ROT POP SWP !&loop }
+	OVR ?{ &calculate-b DUP /compute-intersection/from-a NIP !/loop }
+	DUP ?{ &calculate-a OVR /compute-intersection/from-b ROT POP SWP !/loop }
 	/is-a-inf /is-b-inf ANDk #00 EQU ?{
 		( infinity ) POP2 POP2 #00 JMP2r }
-	POP ?&calculate-a
-	!&calculate-b
+	POP ?/calculate-a
+	!/calculate-b
 	&a &ax $2 &ay $2 &b &bx $2 &by $2 &dir &dirx $2 &diry $2 &xmin $2 &xmax $2 &ymin $2 &ymax $2
 
 @clip-to-vp/compute-outcode ( point** -- outcode )
@@ -663,21 +452,21 @@
 	STHr JMP2r
 
 @clip-to-vp/align-point ( point** side -- point'** )
-	DUP .Side/top EQU ?&align-top
-	DUP .Side/bottom EQU ?&align-bottom
-	DUP .Side/right EQU ?&align-right
-	DUP .Side/left EQU ?&align-left
+	DUP .Side/top EQU ?/align-top
+	DUP .Side/bottom EQU ?/align-bottom
+	DUP .Side/right EQU ?/align-right
+	DUP .Side/left EQU ?/align-left
 	!crash
 	&align-top POP POP2 #0100 JMP2r
 	&align-bottom POP POP2 #ff00 JMP2r
 	&align-right POP NIP2 .viewport/a LDZ2 SWP2 JMP2r
-	&align-left POP NIP2 .viewport/a LDZ2 x16/neg SWP2 JMP2r
+	&align-left POP NIP2 .viewport/a LDZ2 #0000 SWP2 SUB2 SWP2 JMP2r
 
 @clip-to-vp/clamp-point ( point** target** prev** side -- point'** )
-	DUP .Side/top EQU ?&clamp-horizontally
-	DUP .Side/bottom EQU ?&clamp-horizontally
-	DUP .Side/right EQU ?&clamp-vertically
-	DUP .Side/left EQU ?&clamp-vertically
+	DUP .Side/top EQU ?/clamp-horizontally
+	DUP .Side/bottom EQU ?/clamp-horizontally
+	DUP .Side/right EQU ?/clamp-vertically
+	DUP .Side/left EQU ?/clamp-vertically
 	!crash
 
 @clip-to-vp/clamp-horizontally ( point** target** prev** side -- point'** )
@@ -740,7 +529,7 @@
 		DUP2 #7fff NEQ2 ?{
 			STHkr #00 EQU ?{
 				POP2 #0080 ;&normbuf /<mul>
-				;&normbuf [ LITr 01 ] SUBr !&>try } }
+				;&normbuf [ LITr 01 ] SUBr !/>try } }
 	POPr OVR2 ;Vector/x ADD2 LDA2 OVR2 x16/div STH2kr ;Vector/x ADD2 STA2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 x16/div STH2kr ;Vector/y ADD2 STA2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 x16/div STH2kr ;Vector/z ADD2 STA2
@@ -774,8 +563,398 @@
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 x16/mul STH2kr ;Vector/z ADD2 STA2
 	POP2 POP2 POP2r JMP2r
 
-(
-@|Buffers )
+@resume
+|fc00 @scene/mem $400
+|resume
 
-@scene/mem $400
+ ( 54K . Fixed-point arithmetic at 8.8, original project by Eiríkr Åsheim )
+
+@x16/constants
+|0192 &pi-half
+|0324 &pi
+|04b6 &3pi-half
+|0648 &2pi
+|5183 &256-pi
+|7fff &maximum
+|8000 &err
+|8001 &minimum
+|/constants
+
+%x16/bias ( x* y* -- x* y* ) {
+	#8000 EOR2 SWP2 #8000 EOR2 SWP2 }
+
+%x16/neg ( x* -- -x* ) {
+	#0000 SWP2 SUB2 }
+
+@x16/is-non-neg ( x* -- bool )
+	POP #80 LTH JMP2r
+
+@x16/is-neg ( x* -- bool )
+	POP #7f GTH JMP2r
+
+@x16/cmp ( x* y* -- c )
+	/bias
+	( >> )
+
+@x16/ucmp ( x* y* -- c )
+	LTH2k ?{ GTH2 JMP2r }
+	POP2 POP2 #ff JMP2r
+
+@x16/eq ( x* y* -- x=y )
+	EQU2 JMP2r
+
+@x16/ne ( x* y* -- x!=0 )
+	NEQ2 JMP2r
+
+@x16/lt ( x* y* -- x<y )
+	/bias LTH2 JMP2r
+
+@x16/lteq ( x* y* -- x<=y )
+	/bias GTH2 #00 EQU JMP2r
+
+@x16/gt ( x* y* -- x>y )
+	/bias GTH2 JMP2r
+
+@x16/gteq ( x* y* -- x>=y )
+	/bias LTH2 #00 EQU JMP2r
+
+@x16/min ( x* y* -- min[x, y]* )
+	OVR2 OVR2 /lt [ JMP SWP2 ] POP2 JMP2r
+
+@x16/clamp ( n* min* max* -- clamp )
+	ROT2 /min
+	( >> )
+
+@x16/max ( x* y* -- max[x, y]* )
+	OVR2 OVR2 /gt [ JMP SWP2 ] POP2 JMP2r
+
+@x16/is-whole ( x* -- bool )
+	NIP #00 EQU JMP2r
+
+@x16/is-inf ( n* -- n==inf||n==-inf? )
+	DUP2 #7fff EQU2 STH
+	#8001 EQU2 STH
+	ORAr STHr JMP2r
+
+@x16/remainder ( x* y* -- x%y* )
+	OVR #80 LTH ?{ /neg }
+	SWP2 OVR #80 LTH STHk ?{ /neg }
+	SWP2 DIV2k MUL2 SUB2 STHr ?{ /neg }
+	JMP2r
+
+@x16/sub ( x* y* -- x-y* )
+	/neg
+	( >> )
+
+@x16/add ( x* y* -- x+y* )
+	EOR2k POP #80 AND ?{
+		OVR2 STH2
+		ADD2 DUP2 STH2kr EOR2 POP #80 AND ?{
+			POP2r DUP2 #8000 NEQ2 ?{ POP2 #8001 }
+			JMP2r }
+		POP2 STH2r #7fff GTH2 ?{ #7fff JMP2r }
+		#8001 JMP2r }
+	ADD2 JMP2r
+
+@x16/negate ( x* -- -x* )
+	/neg JMP2r
+
+@x16/recip ( n* -- 1/n* )
+	#0100 SWP2
+	( >> )
+
+@x16/div ( x* y* -- x/y* )
+	;&div-unsigned !/signed-op
+
+@x16/quotient ( x* y* -- x//y* )
+	;&quot-unsigned !/signed-op
+
+@x16/mul ( x* y* -- xy* )
+	;&mul-unsigned
+	( >> )
+
+@x16/signed-op ( x* y* f* -- f[x,y] )
+	STH2
+	[ LIT2r 0001 ]
+	( y ) OVR #80 LTH ?{ /neg SWPr }
+	SWP2
+	( x ) OVR #80 LTH ?{ /neg SWPr }
+	SWP2 SWP2r STH2r JSR2 STHr ?{ /neg }
+	POPr JMP2r
+
+@x16/mul-unsigned ( ab* cd* -- ab*cd* )
+	DUP ?{ !/mul-whole }
+	OVR2 NIP ?{ SWP2 !/mul-whole }
+	OVR ?{ !/mul-frac }
+	OVR2 POP ?{ SWP2 !/mul-frac }
+	ROT STH
+	STH2
+	#00 SWP #7fff OVR2 DIV2 STH2kr LTH2 ?{
+		( ) STH2kr MUL2
+		( ) STH2r #00 SWP
+		( ) #00 STHkr MUL2 #08 SFT2 ROT #00 SWP #00
+		( ) STHr MUL2 ADD2 ADD2 OVR #7f GTH ?/mul-o2
+		JMP2r }
+	POP2r POPr &mul-o2 POP2 #7fff JMP2r
+
+	&mul-whole ( ab* cd* -- ab*cd* )
+	POP DUP ?{ POP2 POP #0000 JMP2r }
+	#00 SWP #7fff OVR2 DIV2 ROT2 LTH2k ?{ NIP2 MUL2 JMP2r }
+	POP2 POP2 POP2 #7fff JMP2r
+
+	&mul-frac ( ab* cd* -- ab*cd* )
+	STH
+	#08 SFT2 #00 STHkr MUL2 #08 SFT2 ROT #00 SWP #00 STHr MUL2 ADD2 JMP2r
+
+@x16/normalize-angle ( n* -- n'* )
+	;&256-pi
+	( >> )
+
+@x16/div-unsigned ( x* y* -- x/y* )
+	ORAk ?{
+		POP2 ORA ?{ #0000 JMP2r }
+		#7fff JMP2r }
+	DUP ?{ #08 SFT2 DIV2 JMP2r }
+	DIV2k DUP2 #0080 LTH2 ?{
+		POP2 POP2 POP2 #7fff JMP2r }
+	STHk OVR2 MUL2 ROT2 SWP2 SUB2 OVR2 POP ?{
+		NIP #00 SWP2 DIV2 NIP STHr SWP JMP2r }
+	OVR2 POP #10 LTH ?{
+		LIT2r 0001
+		&>lp
+			#10 SFT2 DUP2r ADD2r GTH2k ?{ OVR2 SUB2 INC2r }
+			STH2kr POP ?{ !/>lp }
+		POP2 POP2 STH2r NIP STHr SWP JMP2r }
+	#40 SFT2 OVR2 DIV2k STHk MUL2 SUB2 #40 SFT2 OVR2 DIV2k STHk MUL2 SUB2 POP2 POP2
+	( ) STHr STHr #40 SFT ORA STHr SWP JMP2r
+
+@x16/quot-unsigned ( x* y* -- x//y* )
+	DIV2 DUP2 #007f GTH2 ?{ NIP #00 JMP2r }
+	POP2 #7fff JMP2r
+
+@x16/floor ( x* -- floor[x]* )
+	DUP EOR JMP2r
+
+@x16/ceil ( x* -- ceil[x]* )
+	#00ff ADD2 DUP EOR JMP2r
+
+@x16/round ( x* -- round[x]* )
+	OVR #01 AND #7f ADD #00 SWP ADD2 DUP EOR JMP2r
+
+@x16/unit-circle ( x* -- x'* )
+	DUP2 ;&2pi LTH2 ?{
+		OVR #80 LTH ?{
+			/neg /unit-circle ORAk ?{ JMP2r }
+			;&2pi SWP2 SUB2 JMP2r }
+		DUP2 ;&2pi DIV2 DUP2 #01 SFT2 STH2
+		;&2pi MUL2 SUB2 STH2r SUB2 OVR #80 LTH ?{ ;&2pi ADD2 } }
+	JMP2r
+
+@x16/cos ( x* -- cos[x]* )
+	/unit-circle ;&pi-half ADD2 DUP2 ;&2pi LTH2 ?/sin-reduced
+	;&2pi SUB2 !/sin-reduced
+
+@x16/sin ( x* -- sin[x]* )
+	OVR #80 LTH ?/sin-positive
+	/neg /sin-positive !/negate
+	( >> )
+	&sin-positive ( x* -- sin[x]* )
+	/unit-circle
+	( >> )
+	&sin-reduced ( x* -- sin[x]* )
+	DUP2 ;&3pi-half LTH2 ?{
+		;&2pi SWP2 SUB2 /sin-q !/negate }
+	DUP2 ;&pi LTH2 ?{ ;&pi SUB2 /sin-q !/negate }
+	DUP2 ;&pi-half LTH2 ?{ ;&pi SWP2 SUB2 }
+	&sin-q ( x* -- sin[x]* )
+	DUP2 #0183 LTH2 ?{ POP2 #0100 JMP2r }
+	;&sin-table ADD2 LDA #00 SWP JMP2r
+
+@x16/tan ( x* -- tan[x]* )
+	/unit-circle DUP2 ;&3pi-half EQU2 ?/tan-error
+	DUP2 ;&pi-half EQU2 ?/tan-error
+	DUP2 ;&3pi-half LTH2 ?{
+		;&2pi SWP2 SUB2 /tan-q !/negate }
+	DUP2 ;&pi LTH2 ?{ ;&pi SUB2 !/tan-q }
+	DUP2 ;&pi-half LTH2 ?{
+		;&pi SWP2 SUB2 /tan-q !/negate }
+	&tan-q ( x* -- tan[x]* )
+	DUP2 ADD2 ;&tan-table ADD2 LDA2 JMP2r
+
+	&tan-error ( x* -- tan[x]* )
+	POP2 ;&err JMP2r
+
+@x16/atan2 ( y* x* -- angle* )
+	DUP2 ;&err EQU2 ?/atan2-error
+	OVR2 ;&err EQU2 ?/atan2-error
+	SWP2 OVR #80 LTH STHk ?{ /neg }
+	SWP2 OVR #80 LTH STHk ?{ /neg }
+	LTH2k STHk ?{ SWP2 }
+	/div-unsigned #0100 OVR2 SUB2 #0046 /mul-unsigned #00c9 ADD2 /mul-unsigned STHr ?{ ;&pi-half SWP2 SUB2 }
+	STHr ?{ ;&pi SWP2 SUB2 }
+	STHr ?{ ;&2pi SWP2 SUB2 }
+	JMP2r
+
+	&atan2-error ( y* x* -- angle* )
+	POP2 POP2 ;&err JMP2r
+
+@x16/from-u16-rem ( n* -- n'* rem* )
+	LITr 00
+	&>lr
+		DUP2 #ff80 AND2 #0000 EQU2 ?{ #01 SFT2 INCr !/>lr }
+	NIP #00 #0001 STHr #40 SFT SFT2 JMP2r
+
+@x16/from-s8 ( n -- x* )
+	#00 JMP2r
+
+@x16/from-s16 ( n* -- x* )
+	DUP2 #ff80 GTH2 ?/from-s16-neg
+	DUP2 #007f GTH2 ?/from-s16-error &from-s16-neg NIP #00 JMP2r
+	&from-s16-error POP2 ;&err JMP2r
+
+@x16/to-s16 ( x* -- whole* )
+	OVR #7f GTH ?{ DUP EOR SWP JMP2r }
+	#00ff STHk ADD2 POP DUP #07 SFT STHr MUL SWP JMP2r
+
+@x16/to-s8 ( x* -- whole )
+	DUP2 #0f SFT2 #00ff MUL2 ADD2 POP JMP2r
+
+@x16/<init-sqrt> ( -- )
+	#00
+	&>l
+		#00 OVR /sqrt #00ff /min NIP OVR #00 SWP ;&sqrt-table ADD2 STA
+		INC DUP ?/>l
+	POP JMP2r
+
+@x16/sqrt ( x* -- sqrt[x]* )
+	DUP2 #7fff NEQ2 ?{ JMP2r }
+	ORAk ?{ JMP2r }
+	DUP2 #0020
+	&>sqrt-l1
+		OVR2 #0004 LTH2 ?{
+			SWP2 #02 SFT2 SWP2 #10 SFT2 !/>sqrt-l1 }
+	NIP2
+	&>sqrt-l2
+		OVR2 OVR2 /div-unsigned OVR2 ADD2 #01 SFT2 GTH2k ?{ POP2 NIP2 JMP2r }
+		NIP2 !/>sqrt-l2
+
+@x16/sq ( x* -- x*x* )
+	OVR #80 LTH ?{ /neg }
+	DUP2 #0b50 GTH2 ?{
+		STH2k #08 SFT2 DUP2 MUL2 NIP #00 STH2kr #08 SFT2 STH2kr #00ff AND2 MUL2 #10 SFT2 ADD2 STH2r #00ff AND2 DUP2 MUL2 #08 SFT2 ADD2 JMP2r }
+	POP2 #7fff JMP2r
+
+@x16/sqrt-fast ( x* -- sqrt[x]* )
+	LITr 00
+	&>norm
+		OVR ?{
+			NIP #00 SWP ;&sqrt-table ADD2 LDA #00 SWP STHr #40 SFT SFT2 JMP2r }
+		#02 SFT2 INCr !/>norm
+
+@x16/<emit> ( x* -- )
+	OVR #80 LTH ?{
+		[ LIT2 2d18 ] DEO
+		/neg }
+	SWP DUP #64 LTH ?/<100
+	#64 DIVk DUP /<emit-dec-digit>
+	MUL SUB !/>=10
+	&<100 DUP #0a LTH ?/<10
+	&>=10
+		#0a DIVk DUP /<emit-dec-digit>
+		MUL SUB &<10 /<emit-dec-digit>
+		[ LIT2 2e18 ] DEO
+		#00 SWP DUP2 #0027 MUL2 SWP2 #0008 ADD2 #04 SFT2 ADD2
+		( 1000 ) #03e8 DIV2k DUP /<emit-dec-digit>
+		MUL2 SUB2
+		( 100 ) #0064 DIV2k DUP /<emit-dec-digit>
+		MUL2 SUB2
+		( 10 ) #000a DIV2k DUP /<emit-dec-digit>
+		MUL2 SUB2 NIP
+		( >> )
+
+@x16/<emit-dec-digit> ( d -- )
+	#30 ADD #18 DEO
+	JMP2r
+
+@x16/sin-table [
+	00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+	10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f
+	20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f
+	30 31 32 33 34 35 36 37 38 39 3a 3a 3b 3c 3d 3e
+	3f 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e
+	4f 50 51 52 53 53 54 55 56 57 58 59 5a 5b 5c 5d
+	5e 5f 60 61 61 62 63 64 65 66 67 68 69 6a 6b 6c
+	6c 6d 6e 6f 70 71 72 73 74 75 75 76 77 78 79 7a
+	7b 7c 7c 7d 7e 7f 80 81 82 83 83 84 85 86 87 88
+	89 89 8a 8b 8c 8d 8e 8e 8f 90 91 92 93 93 94 95
+	96 97 97 98 99 9a 9b 9b 9c 9d 9e 9f 9f a0 a1 a2
+	a2 a3 a4 a5 a6 a6 a7 a8 a9 a9 aa ab ac ac ad ae
+	ae af b0 b1 b1 b2 b3 b4 b4 b5 b6 b6 b7 b8 b8 b9
+	ba bb bb bc bd bd be bf bf c0 c1 c1 c2 c3 c3 c4
+	c4 c5 c6 c6 c7 c8 c8 c9 ca ca cb cb cc cd cd ce
+	ce cf d0 d0 d1 d1 d2 d2 d3 d4 d4 d5 d5 d6 d6 d7
+	d7 d8 d8 d9 da da db db dc dc dd dd de de df df
+	e0 e0 e1 e1 e2 e2 e2 e3 e3 e4 e4 e5 e5 e6 e6 e7
+	e7 e7 e8 e8 e9 e9 ea ea ea eb eb ec ec ec ed ed
+	ed ee ee ef ef ef f0 f0 f0 f1 f1 f1 f2 f2 f2 f3
+	f3 f3 f4 f4 f4 f4 f5 f5 f5 f6 f6 f6 f6 f7 f7 f7
+	f8 f8 f8 f8 f8 f9 f9 f9 f9 fa fa fa fa fb fb fb
+	fb fb fb fc fc fc fc fc fd fd fd fd fd fd fd fe
+	fe fe fe fe fe fe fe ff ff ff ff ff ff ff ff ff
+	ff ff ff ]
+
+@x16/tan-table [8
+	0000 0001 0002 0003 0004 0005 0006 0007
+	0008 0009 000a 000b 000c 000d 000e 000f
+	0010 0011 0012 0013 0014 0015 0016 0017
+	0018 0019 001a 001b 001c 001d 001e 001f
+	0020 0021 0022 0023 0024 0025 0026 0027
+	0028 0029 002a 002b 002c 002d 002f 0030
+	0031 0032 0033 0034 0035 0036 0037 0038
+	0039 003a 003b 003c 003d 003e 003f 0040
+	0041 0042 0044 0045 0046 0047 0048 0049
+	004a 004b 004c 004d 004e 004f 0051 0052
+	0053 0054 0055 0056 0057 0058 0059 005b
+	005c 005d 005e 005f 0060 0061 0062 0064
+	0065 0066 0067 0068 0069 006b 006c 006d
+	006e 006f 0071 0072 0073 0074 0075 0077
+	0078 0079 007a 007b 007d 007e 007f 0080
+	0082 0083 0084 0085 0087 0088 0089 008b
+	008c 008d 008e 0090 0091 0092 0094 0095
+	0096 0098 0099 009a 009c 009d 009f 00a0
+	00a1 00a3 00a4 00a6 00a7 00a8 00aa 00ab
+	00ad 00ae 00b0 00b1 00b3 00b4 00b6 00b7
+	00b9 00ba 00bc 00bd 00bf 00c0 00c2 00c4
+	00c5 00c7 00c8 00ca 00cc 00cd 00cf 00d1
+	00d2 00d4 00d6 00d7 00d9 00db 00dc 00de
+	00e0 00e2 00e4 00e5 00e7 00e9 00eb 00ed
+	00ee 00f0 00f2 00f4 00f6 00f8 00fa 00fc
+	00fe 0100 0102 0104 0106 0108 010a 010c
+	010e 0110 0113 0115 0117 0119 011b 011e
+	0120 0122 0124 0127 0129 012b 012e 0130
+	0133 0135 0137 013a 013c 013f 0142 0144
+	0147 0149 014c 014f 0152 0154 0157 015a
+	015d 0160 0162 0165 0168 016b 016e 0171
+	0175 0178 017b 017e 0181 0185 0188 018b
+	018f 0192 0196 0199 019d 01a0 01a4 01a8
+	01ac 01af 01b3 01b7 01bb 01bf 01c3 01c7
+	01cc 01d0 01d4 01d8 01dd 01e1 01e6 01eb
+	01ef 01f4 01f9 01fe 0203 0208 020d 0212
+	0218 021d 0223 0228 022e 0234 023a 0240
+	0246 024c 0252 0259 025f 0266 026d 0274
+	027b 0282 0289 0291 0299 02a0 02a8 02b1
+	02b9 02c1 02ca 02d3 02dc 02e5 02ef 02f9
+	0302 030d 0317 0322 032d 0338 0343 034f
+	035b 0368 0374 0382 038f 039d 03ab 03ba
+	03c9 03d9 03e9 03f9 040a 041c 042e 0441
+	0454 0468 047d 0492 04a9 04c0 04d8 04f1
+	050b 0526 0542 055f 057d 059d 05bf 05e1
+	0606 062c 0654 067e 06aa 06d9 070a 073e
+	0775 07af 07ed 082f 0876 08c1 0911 0967
+	09c4 0a28 0a95 0b0a 0b8b 0c17 0cb2 0d5d
+	0e1a 0eed 0fdb 10e8 121b 137d 1519 1700
+	1946 1c0c 1f80 23ed 29cc 31f5 3e13 51f2
+	7888 7fff 7fff ]
+
+@x16/sqrt-table $100
 
