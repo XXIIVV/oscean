@@ -1,8 +1,8 @@
 ( 54K . Pinhole )
 
-|00 @System $2 $2 $2 $2 &r $2 &g $2 &b $2 $1 $1
-|20 @Screen &vector $2 &width $2 &height $2 $1 $1 &x $2 &y $2 $2 &pixel $1 $1
-|80 @Controller $2 &button $1 $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
 |0 @Vector/x $2 &y $2 &z $2
 |0 @Side/top $1 &bottom $1 &left $1 &right $1
 |0 @Outcode/center $1 &top &near $1 &bottom &far $2 &left $4 &right
@@ -12,14 +12,15 @@
 
 	@camera/x $2 &y $2 &z $2 &roll $2 &pos $6 &forward $6 &up $6 &right $6
 	@viewport/x $2 &y $2 &width $2 &height $2 &a $2 &f $2 &near $2 &far $2 &width-half $2 &height-half $2
-	@pen/x $2 &y $2 &z $2
+	@pen/x $2 &y $2 &z $2 &ex $6 &ey $6 &ez $6 &tx $2 &ty $2 &tz $2
 
 |100
 
 @on-reset ( -> )
-	#0f00 .System/r DEO2
-	#0f00 .System/g DEO2
-	#0f00 .System/b DEO2
+	#06af .System/r DEO2
+	#04cf .System/g DEO2
+	#06cf .System/b DEO2
+	pen/<init>
 	scene/<create>
 	camera/<init>
 	BRK
@@ -32,6 +33,7 @@
 	#0400 #0000 #0000 pen/<line-to>
 	#0400 #0400 #0000 pen/<line-to>
 	#0000 #0000 #0000 pen/<line-to>
+	#0100 #0010 #0324 arc/<create>
 	JMP2r
 
 
@@ -51,6 +53,21 @@
 @circle/point ( i* -- x* y* )
 	#0648 MUL2 [ LIT2 &n $2 ] DIV2 DUP2 x16/cos
 	( r ) [ LIT2 &r $2 ] STH2k x16/mul SWP2 x16/sin STH2r !x16/mul
+
+@arc/<create> ( r* segments* angle* -- )
+	,&a STR2
+	,&n STR2
+	,&r STR2
+	LIT2r 0000
+	&>l
+		STH2kr /point #0000 STH2kr INC2 /point #0000 scene/<push-edge>
+		INC2r STH2kr ,&n LDR2 NEQ2 ?/>l
+	POP2r JMP2r
+
+@arc/point ( i* -- x* y* )
+	[ LIT2 &a $2 ] MUL2 [ LIT2 &n $2 ] DIV2 DUP2 x16/cos
+	( | )
+	[ LIT2 &r $2 ] STH2k x16/mul SWP2 x16/sin STH2r !x16/mul
 
 @cube/<create> ( size* -- )
 	,&s STR2
@@ -80,14 +97,20 @@
 (
 @|Pen )
 
+%s16/abs ( a* -- res* ) {
+	DUP2k #1f SFT2 MUL2 SUB2 }
+
+%s16/lth ( a* b* -- f ) {
+	SUB2 POP #07 SFT }
+
+%s16/gth ( a* b* -- f ) {
+	SWP2 s16/lth }
+
 @pen/<line-to> ( x* y* z* -- )
 	,&qz STR2
 	,&qy STR2
 	,&qx STR2
-	#0000 #0000 #0000
-	( x ) [ LIT2 &qx $2 ] .&x LDZ2 x16/sub
-	( y ) [ LIT2 &qy $2 ] .&y LDZ2 x16/sub
-	( z ) [ LIT2 &qz $2 ] .&z LDZ2 x16/sub scene/<push-edge>
+	.&x LDZ2 .&y LDZ2 .&z LDZ2 [ LIT2 &qx $2 ] [ LIT2 &qy $2 ] [ LIT2 &qz $2 ] scene/<push-raw-edge>
 	,&qx LDR2 ,&qy LDR2 ,&qz LDR2
 	( >> )
 
@@ -96,6 +119,53 @@
 	.&y STZ2
 	.&x STZ2
 	JMP2r
+
+@pen/<init> ( -- )
+	#0100 #0000 #0000 ;&ex vector/<from-raw-triple>
+	#0000 #0100 #0000 ;&ey vector/<from-raw-triple>
+	#0000 #0000 #0100 ;&ez !vector/<from-raw-triple>
+
+@pen/<yaw> ( angle* -- )
+	;&ez ;&ex ROT2 !/<spin>
+
+@pen/<pitch> ( angle* -- )
+	;&ey ;&ez ROT2 !/<spin>
+
+@pen/<roll> ( angle* -- )
+	;&ex ;&ey ROT2 !/<spin>
+
+@pen/<spin> ( a* b* angle* -- )
+	DUP2 x16/cos ,&c STR2
+	x16/sin ,&s STR2
+	,&b STR2
+	,&a STR2
+	LIT2r 0000
+	&>l
+		( a ) [ LIT2 &a $2 ] STH2kr ADD2 LDA2
+		( b ) [ LIT2 &b $2 ] STH2kr ADD2 LDA2 /<rot2>
+		,&b LDR2 STH2kr ADD2 STA2
+		,&a LDR2 STH2kr ADD2 STA2
+		INC2r INC2r STH2kr #0006 NEQ2 ?/>l
+	POP2r JMP2r
+
+@pen/<rot2> ( av* bv* -- a* b* )
+	DUP2 [ LIT2 &s $2 ] x16/mul STH2
+	OVR2 [ LIT2 &c $2 ] x16/mul STH2r x16/add STH2
+	,&c LDR2 x16/mul SWP2 ,&s LDR2 x16/mul x16/sub STH2r SWP2 JMP2r
+
+@pen/<apply> ( x* y* z* -- x* y* z* )
+	.&tz STZ2
+	.&ty STZ2
+	.&tx STZ2
+	( x ) .&tx LDZ2 .&ex LDZ2 x16/mul
+	( y ) .&ty LDZ2 .&ey LDZ2 x16/mul x16/add
+	( z ) .&tz LDZ2 .&ez LDZ2 x16/mul x16/add .&x LDZ2 x16/add
+	( x ) .&tx LDZ2 LIT2 -&ex 02 ADD LDZ2 x16/mul
+	( y ) .&ty LDZ2 LIT2 -&ey 02 ADD LDZ2 x16/mul x16/add
+	( z ) .&tz LDZ2 LIT2 -&ez 02 ADD LDZ2 x16/mul x16/add .&y LDZ2 x16/add
+	( x ) .&tx LDZ2 LIT2 -&ex 04 ADD LDZ2 x16/mul
+	( y ) .&ty LDZ2 LIT2 -&ey 04 ADD LDZ2 x16/mul x16/add
+	( z ) .&tz LDZ2 LIT2 -&ez 04 ADD LDZ2 x16/mul x16/add .&z LDZ2 !x16/add
 
 (
 @|Viewport )
@@ -120,6 +190,9 @@
 	.&near STZ2
 	JMP2r
 
+%inside ( v* limit* -- f ) {
+	STH2k ADD2 STH2r INC2k ADD2 LTH2 }
+
 @viewport/project-line ( line-start*** line-end*** -- line-start'** line-end'** visible )
 	/point-to-viewport STH2
 	STH2
@@ -131,16 +204,16 @@
 	,&az STR2
 	,&ay STR2
 	,&ax STR2
-	( ) LIT2 &ax $2 .&f LDZ2 x16/mul LIT2 &az $2 x16/div
-	( ) LIT2 &ay $2 .&f LDZ2 x16/mul ,&az LDR2 x16/div
-	( ) LIT2 &bx $2 .&f LDZ2 x16/mul LIT2 &bz $2 x16/div
-	( ) LIT2 &by $2 .&f LDZ2 x16/mul ,&bz LDR2 x16/div
-	( ) ,&ax LDR2 ,&ay LDR2 ,&az LDR2 ,&bx LDR2 ,&by LDR2 ,&bz LDR2 get-direction
-	( ) .&a LDZ2 #0000 SWP2 SUB2 #ff00 .&a LDZ2 #0100
-	( ) clip-to-vp ?{ #00 JMP2r }
-	( ) /point-to-viewport-clamping STH2
+	LITr 01
+	( ) LIT2 &ax $2 .&f LDZ2 x16/mul LIT2 &az $2 x16/div DUP2 .&a LDZ2 inside STHr AND STH
+	( ) LIT2 &ay $2 .&f LDZ2 x16/mul ,&az LDR2 x16/div DUP2 #0100 inside STHr AND STH
+	( ) LIT2 &bx $2 .&f LDZ2 x16/mul LIT2 &bz $2 x16/div DUP2 .&a LDZ2 inside STHr AND STH
+	( ) LIT2 &by $2 .&f LDZ2 x16/mul ,&bz LDR2 x16/div DUP2 #0100 inside STHr AND ?{
+		( ) ,&ax LDR2 ,&ay LDR2 ,&az LDR2
+		( ) ,&bx LDR2 ,&by LDR2 ,&bz LDR2 get-direction .&a LDZ2 #0000 SWP2 SUB2 #ff00 .&a LDZ2 #0100 clip-to-vp ?{ #00 JMP2r } }
+	/point-to-viewport-clamping STH2
 	STH2
-	( ) /point-to-viewport-clamping STH2r STH2r #01 JMP2r
+	/point-to-viewport-clamping STH2r STH2r #01 JMP2r
 
 @viewport/point-to-viewport ( point*** -- point'*** )
 	;&tmp vector/<from-raw-triple>
@@ -161,6 +234,15 @@
 
 (
 @|Camera )
+
+%camera/mod-inc ( zp -- ) {
+	LDZ2k ;&speed ADD2 ROT STZ2 }
+
+%camera/mod-dec ( zp -- ) {
+	LDZ2k ;&speed SUB2 ROT STZ2 }
+
+%camera/bank ( delta* -- ) {
+	.&roll LDZ2 ADD2 .&roll STZ2 }
 
 @camera/<init> ( -- )
 	#0000 .&x STZ2
@@ -213,61 +295,49 @@
 	#08 OVR AND #00 EQU ?{ #0008 /bank }
 	JMP2r
 
-@camera/mod-inc ( zp -- )
-	LDZ2k ;&speed ADD2 ROT STZ2
-	JMP2r
-
-@camera/mod-dec ( zp -- )
-	LDZ2k ;&speed SUB2 ROT STZ2
-	JMP2r
-
-@camera/bank ( delta* -- )
-	.&roll LDZ2 ADD2 .&roll STZ2
-	JMP2r
-
 (
 @|Scene )
 
 @scene/<draw> ( -- )
-	,&ptr LDR2 ;&mem
-	&>l
-		( ) LDA2k SWP2 INC2 INC2
-		( ) LDA2k SWP2 INC2 INC2
-		( ) LDA2k SWP2 INC2 INC2
-		( ) LDA2k SWP2 INC2 INC2
-		( ) LDA2k SWP2 INC2 INC2
-		( ) LDA2k SWP2 INC2 INC2 STH2
-		/<draw-edge>
-		STH2r GTH2k ?/>l
+	,&ptr LDR2 ;&mem EQU2k ?{
+		&>l
+			( ) LDA2k SWP2 INC2 INC2
+			( ) LDA2k SWP2 INC2 INC2
+			( ) LDA2k SWP2 INC2 INC2
+			( ) LDA2k SWP2 INC2 INC2
+			( ) LDA2k SWP2 INC2 INC2
+			( ) LDA2k SWP2 INC2 INC2 STH2
+			/<draw-edge>
+			STH2r GTH2k ?/>l }
 	POP2 POP2 JMP2r
 
-@scene/<push-edge> ( a*** b*** --- )
+@scene/<push-edge> ( a*** b*** -- )
+	pen/<apply>
+	STH2
+	STH2
+	STH2
+	pen/<apply>
+	STH2r STH2r STH2r
+	( >> )
+
+@scene/<push-raw-edge> ( a*** b*** -- )
 	STH2
 	STH2
 	STH2
 	STH2
 	STH2
-	.pen/x LDZ2 x16/add /<push-short>
-	STH2r .pen/y LDZ2 x16/add /<push-short>
-	STH2r .pen/z LDZ2 x16/add /<push-short>
-	STH2r .pen/x LDZ2 x16/add /<push-short>
-	STH2r .pen/y LDZ2 x16/add /<push-short>
-	STH2r .pen/z LDZ2 x16/add
+	/<push-short>
+	STH2r /<push-short>
+	STH2r /<push-short>
+	STH2r /<push-short>
+	STH2r /<push-short>
+	STH2r
 	( >> )
 
 @scene/<push-short> ( value* -- )
 	[ LIT2 &ptr =&mem ] INC2k INC2 ,&ptr STR2
 	STA2
 	JMP2r
-
-%abs2 ( a* -- res* ) {
-	DUP2k #1f SFT2 MUL2 SUB2 }
-
-%lts2 ( a* b* -- f ) {
-	SUB2 POP #07 SFT }
-
-%gts2 ( a* b* -- f ) {
-	SWP2 lts2 }
 
 @scene/<draw-edge> ( edge-start*** edge-end*** -- )
 	viewport/project-line ?{ JMP2r }
@@ -277,28 +347,28 @@
 	STH2
 	STH2
 	( | x )
-	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k abs2 ,&dx STR2
-	gts2 [ JMP SWP POP ] ,&sx STR
+	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k s16/abs ,&dx STR2
+	s16/gth [ JMP SWP POP ] ,&sx STR
 	SWP2r
 	( | y )
-	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
-	gts2 [ JMP SWP POP ] ,&sy STR
+	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k s16/abs #0000 SWP2 SUB2 ,&dy STR2
+	s16/gth [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
 	&>w
-		DUP2r [ LITr -Screen/y ] DEO2r
-		OVR2r [ LITr -Screen/x ] DEO2r
-		[ LIT2 01 -Screen/pixel ] DEO
-		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
-			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
-				( stop ) POP2 POP2r POP2r JMP2r } }
-		( e -> e2 ) DUP2k ADD2 DUP2
-		( y ) [ LIT2 &dy $2 ] lts2 ?{
-			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
-			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
-		( x ) [ LIT2 &dx $2 ] gts2 ?{
-			( e+dx ) ,&dx LDR2 ADD2
-			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
-		!/>w
+		( ) &>w2
+			DUP2r [ LITr -Screen/y ] DEO2r
+			OVR2r [ LITr -Screen/x ] DEO2r
+			[ LIT2 01 -Screen/pixel ] DEO
+			( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
+				( x ) OVR2r STH2r [ LIT2 &x2 $2 ] NEQ2 ?{
+					( stop ) POP2 POP2r POP2r JMP2r } }
+			( e -> e2 ) DUP2k ADD2 DUP2
+			( y ) [ LIT2 &dy $2 ] s16/lth ?{
+				( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
+				( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
+			( x ) [ LIT2 &dx $2 ] s16/gth ?/>w2
+		( e+dx ) ,&dx LDR2 ADD2
+		( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] !/>w
 
 (
 @|Internals )
@@ -381,7 +451,9 @@
 	;&bx STA2
 	;&ay STA2
 	;&ax STA2
-	;&ax LDA2 ;&ay LDA2 /compute-outcode ;&bx LDA2 ;&by LDA2 /compute-outcode &loop ORAk ?{
+	;&ax LDA2 ;&ay LDA2 /compute-outcode ;&bx LDA2 ;&by LDA2 /compute-outcode
+	&loop ( -- )
+	ORAk ?{
 		POP2 ;&ax LDA2 ;&ay LDA2 ;&bx LDA2 ;&by LDA2 #01 JMP2r }
 	ANDk #00 EQU ?{ POP2 #00 JMP2r }
 	( | Failed both tests. )
@@ -391,15 +463,17 @@
 		( infinity ) POP2 POP2 #00 JMP2r }
 	POP ?/calculate-a
 	!/calculate-b
-	&a &ax $2 &ay $2 &b &bx $2 &by $2 &dir &dirx $2 &diry $2 &xmin $2 &xmax $2 &ymin $2 &ymax $2
+	( a ) &a &ax $2 &ay $2
+	( b ) &b &bx $2 &by $2
+	( d ) &dir &dirx $2 &diry $2
 
 @clip-to-vp/compute-outcode ( point** -- outcode )
 	LITr -Outcode/center
 	( | handlers )
-	DUP2 ,&ymin LDR2 x16/cmp INC ?{ LITr -Outcode/bottom ORAr }
-	,&ymax LDR2 x16/cmp #01 NEQ ?{ LITr -Outcode/top ORAr }
-	DUP2 ,&xmin LDR2 x16/cmp INC ?{ LITr -Outcode/left ORAr }
-	,&xmax LDR2 x16/cmp #01 NEQ ?{ LITr -Outcode/right ORAr }
+	DUP2 [ LIT2 &ymin $2 ] x16/cmp INC ?{ LITr -Outcode/bottom ORAr }
+	[ LIT2 &ymax $2 ] x16/cmp #01 NEQ ?{ LITr -Outcode/top ORAr }
+	DUP2 [ LIT2 &xmin $2 ] x16/cmp INC ?{ LITr -Outcode/left ORAr }
+	[ LIT2 &xmax $2 ] x16/cmp #01 NEQ ?{ LITr -Outcode/right ORAr }
 	STHr JMP2r
 
 @clip-to-vp/inflate-outcode ( outcode -- axis* d* side )
@@ -506,14 +580,14 @@
 	JMP2r
 
 @vector/<clone> ( v* dest* -- )
-	OVR2 ;Vector/x ADD2 LDA2 OVR2 ;Vector/x ADD2 STA2
+	OVR2 LDA2 OVR2 STA2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 ;Vector/y ADD2 STA2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 ;Vector/z ADD2 STA2
 	POP2 POP2 JMP2r
 
 @vector/<sub> ( a* b* dest* -- )
 	STH2
-	OVR2 ;Vector/x ADD2 LDA2 OVR2 ;Vector/x ADD2 LDA2 x16/sub STH2kr ;Vector/x ADD2 STA2
+	OVR2 LDA2 OVR2 LDA2 x16/sub STH2kr STA2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 ;Vector/y ADD2 LDA2 x16/sub STH2kr ;Vector/y ADD2 STA2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 ;Vector/z ADD2 LDA2 x16/sub STH2kr ;Vector/z ADD2 STA2
 	POP2 POP2 POP2r JMP2r
@@ -530,7 +604,7 @@
 			STHkr #00 EQU ?{
 				POP2 #0080 ;&normbuf /<mul>
 				;&normbuf [ LITr 01 ] SUBr !/>try } }
-	POPr OVR2 ;Vector/x ADD2 LDA2 OVR2 x16/div STH2kr ;Vector/x ADD2 STA2
+	POPr OVR2 LDA2 OVR2 x16/div STH2kr STA2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 x16/div STH2kr ;Vector/y ADD2 STA2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 x16/div STH2kr ;Vector/z ADD2 STA2
 	POP2 POP2 POP2r JMP2r
@@ -539,7 +613,7 @@
 @vector/dot ( a* b* -- a*b* )
 	[ LIT2r 0000 ]
 	( | .. )
-	OVR2 ;Vector/x ADD2 LDA2 OVR2 ;Vector/x ADD2 LDA2 x16/mul STH2r x16/add STH2
+	OVR2 LDA2 OVR2 LDA2 x16/mul STH2r x16/add STH2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 ;Vector/y ADD2 LDA2 x16/mul STH2r x16/add STH2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 ;Vector/z ADD2 LDA2 x16/mul STH2r x16/add STH2
 	POP2 POP2 STH2r JMP2r
@@ -548,17 +622,17 @@
 	STH2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 ;Vector/y ADD2 LDA2 x16/mul STH2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 ;Vector/z ADD2 LDA2 x16/mul STH2r x16/sub ;&x STA2
-	OVR2 ;Vector/x ADD2 LDA2 OVR2 ;Vector/z ADD2 LDA2 x16/mul STH2
-	OVR2 ;Vector/z ADD2 LDA2 OVR2 ;Vector/x ADD2 LDA2 x16/mul STH2r x16/sub ;&y STA2
-	OVR2 ;Vector/y ADD2 LDA2 OVR2 ;Vector/x ADD2 LDA2 x16/mul STH2
-	OVR2 ;Vector/x ADD2 LDA2 OVR2 ;Vector/y ADD2 LDA2 x16/mul STH2r x16/sub ;&z STA2
+	OVR2 LDA2 OVR2 ;Vector/z ADD2 LDA2 x16/mul STH2
+	OVR2 ;Vector/z ADD2 LDA2 OVR2 LDA2 x16/mul STH2r x16/sub ;&y STA2
+	OVR2 ;Vector/y ADD2 LDA2 OVR2 LDA2 x16/mul STH2
+	OVR2 LDA2 OVR2 ;Vector/y ADD2 LDA2 x16/mul STH2r x16/sub ;&z STA2
 	;&crossbuf STH2r /<clone>
 	POP2 POP2 JMP2r
 	&crossbuf &x $2 &y $2 &z $2
 
 @vector/<mul> ( v* n* dest* -- )
 	STH2
-	OVR2 ;Vector/x ADD2 LDA2 OVR2 x16/mul STH2kr ;Vector/x ADD2 STA2
+	OVR2 LDA2 OVR2 x16/mul STH2kr STA2
 	OVR2 ;Vector/y ADD2 LDA2 OVR2 x16/mul STH2kr ;Vector/y ADD2 STA2
 	OVR2 ;Vector/z ADD2 LDA2 OVR2 x16/mul STH2kr ;Vector/z ADD2 STA2
 	POP2 POP2 POP2r JMP2r
