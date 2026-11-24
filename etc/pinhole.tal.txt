@@ -12,7 +12,11 @@
 
 	@camera/x $2 &y $2 &z $2 &roll $2 &pos $6 &forward $6 &up $6 &right $6 &yaw $2 &pitch $2 &distance $2
 	@viewport/x $2 &y $2 &width $2 &height $2 &a $2 &f $2 &near $2 &far $2 &width-half $2 &height-half $2
-	@pen/x $2 &y $2 &z $2 &ex $6 &ey $6 &ez $6 &tx $2 &ty $2 &tz $2 &color $1
+	@pen/x $2 &y $2 &z $2 &color $1
+	( tx ) &tx $2 &ty $2 &tz $2
+	( ex ) &ex &ex-x $2 &ex-y $2 &ex-z $2
+	( ey ) &ey &ey-x $2 &ey-y $2 &ey-z $2
+	( ez ) &ez &ez-x $2 &ez-y $2 &ez-z $2
 
 |100
 
@@ -43,7 +47,7 @@
 	&>l
 		#00c9 pen/<yaw>
 		#0010 #0324 #0800 #0400 ellipse/<create>
-		INC DUP ?&>l
+		INC DUP ?/>l
 	POP
 	( | rim )
 	pen/<init>
@@ -197,15 +201,15 @@
 	.&tz STZ2
 	.&ty STZ2
 	.&tx STZ2
-	( x ) .&tx LDZ2 .&ex LDZ2 x16/mul
-	( y ) .&ty LDZ2 .&ey LDZ2 x16/mul x16/add
-	( z ) .&tz LDZ2 .&ez LDZ2 x16/mul x16/add .&x LDZ2 x16/add
-	( x ) .&tx LDZ2 LIT2 -&ex 02 ADD LDZ2 x16/mul
-	( y ) .&ty LDZ2 LIT2 -&ey 02 ADD LDZ2 x16/mul x16/add
-	( z ) .&tz LDZ2 LIT2 -&ez 02 ADD LDZ2 x16/mul x16/add .&y LDZ2 x16/add
-	( x ) .&tx LDZ2 LIT2 -&ex 04 ADD LDZ2 x16/mul
-	( y ) .&ty LDZ2 LIT2 -&ey 04 ADD LDZ2 x16/mul x16/add
-	( z ) .&tz LDZ2 LIT2 -&ez 04 ADD LDZ2 x16/mul x16/add .&z LDZ2 !x16/add
+	( x ) .&tx LDZ2 .&ex-x LDZ2 x16/mul
+	( y ) .&ty LDZ2 .&ey-x LDZ2 x16/mul x16/add
+	( z ) .&tz LDZ2 .&ez-x LDZ2 x16/mul x16/add .&x LDZ2 x16/add
+	( x ) .&tx LDZ2 .&ex-y LDZ2 x16/mul
+	( y ) .&ty LDZ2 .&ey-y LDZ2 x16/mul x16/add
+	( z ) .&tz LDZ2 .&ey-z LDZ2 x16/mul x16/add .&y LDZ2 x16/add
+	( x ) .&tx LDZ2 .&ez-x LDZ2 x16/mul
+	( y ) .&ty LDZ2 .&ez-y LDZ2 x16/mul x16/add
+	( z ) .&tz LDZ2 .&ez-z LDZ2 x16/mul x16/add .&z LDZ2 !x16/add
 
 (
 @|Viewport )
@@ -291,12 +295,13 @@
 	#0000 .&yaw STZ2
 	#0000 .&pitch STZ2
 	#1000 .&distance STZ2
+	( f ) #4000 /<set-fov>
 	;&on-frame .Screen/vector DEO2
 	( x ) #0001
 	( y ) #0001
 	( w ) .Screen/width DEI2 #0002 SUB2
 	( h ) .Screen/height DEI2 #0002 SUB2 viewport/<set>
-	#0000 #ffff viewport/<set-frustum>
+	#0010 #ffff viewport/<set-frustum>
 	( >> )
 
 @camera/<redraw> ( -- )
@@ -305,16 +310,16 @@
 	[ LIT2 80 -Screen/pixel ] DEO
 	( p ) /<orbit-position>
 	( t ) .&x LDZ2 .&y LDZ2 .&z LDZ2
-	( u ) .&roll LDZ2 x16/sin .&roll LDZ2 x16/cos #0000
-	( f ) #4000 /<set> !scene/<draw>
+	( u ) .&roll LDZ2 x16/sin .&roll LDZ2 x16/cos #0000 /<set> !scene/<draw>
 
 @camera/<orbit-position> ( -- x* y* z* )
-	( x ) .&yaw LDZ2 x16/sin .&pitch LDZ2 x16/cos x16/mul .&distance LDZ2 x16/mul .&x LDZ2 ADD2
+	( x ) .&yaw LDZ2 x16/sin .&pitch LDZ2
+	( stash pitch ) x16/cos STH2k x16/mul .&distance LDZ2 x16/mul .&x LDZ2 ADD2
 	( y ) .&pitch LDZ2 x16/sin .&distance LDZ2 x16/mul .&y LDZ2 ADD2
-	( z ) .&yaw LDZ2 x16/cos .&pitch LDZ2 x16/cos x16/mul .&distance LDZ2 x16/mul #0000 SWP2 SUB2 .&z LDZ2 ADD2 JMP2r
+	( z ) .&yaw LDZ2 x16/cos
+	( unstash pitch ) STH2r x16/mul .&distance LDZ2 x16/mul #0000 SWP2 SUB2 .&z LDZ2 ADD2 JMP2r
 
 @camera/<set> ( pos*** target*** up*** fov* -- )
-	x16/normalize-angle x16/tan x16/recip .viewport/f STZ2
 	;&up vector/<from-raw-triple>
 	;&forward vector/<from-raw-triple>
 	;&pos vector/<from-raw-triple>
@@ -324,6 +329,10 @@
 	;&up ;&right ;&up vector/<sub>
 	;&up DUP2 vector/<normalize>
 	;&up ;&forward ;&right !vector/<cross>
+
+@camera/<set-fov> ( fov* -- )
+	x16/normalize-angle x16/tan x16/recip .viewport/f STZ2
+	JMP2r
 
 @camera/on-frame ( -> )
 	[ LIT2 ff -Controller/button ] DEI EOR
@@ -597,8 +606,8 @@
 	POP2 DUP2 STH2r x16/cmp
 	( | handlers )
 	DUP #01 NEQ ?{ POP STH2r !x16/min }
-	INCk ?{ POP STH2r !x16/max }
-	POP POP2r JMP2r
+	INC ?{ STH2r !x16/max }
+	POP2r JMP2r
 
 @clip-to-vp/clamp-horizontally ( point** target** prev** side -- point'** )
 	POP POP2 STH2
@@ -607,9 +616,8 @@
 	( | handlers )
 	DUP #01 NEQ ?{
 		POP STH2r x16/min SWP2 JMP2r }
-	INCk ?{
-		POP STH2r x16/max SWP2 JMP2r }
-	POP POP2r SWP2 JMP2r
+	INC ?{ STH2r x16/max SWP2 JMP2r }
+	POP2r SWP2 JMP2r
 
 (
 @|Vector )
