@@ -1,10 +1,10 @@
-( Bifurcan )
+( 54K . Bifurcan )
 
-|00 @System &vector $2 &pad $6 &r $2 &g $2 &b $2
-|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &wheel $1
-|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
-|80 @Controller &vector $2 &button $1 &key $1
+|00 @System/vector $2 &pad $6 &r $2 &g $2 &b $2
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &wheel $1
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 |000
 
@@ -26,85 +26,111 @@
 	.Screen/width DEI2 #01 SFT2 #33 SFT2 .center/x STZ2
 	.Screen/height DEI2 #01 SFT2 #33 SFT2 .center/y STZ2
 	( | background )
-	;tiles <cover-pattern>
+	;pattern/styles pattern/<cover>
 	<redraw>
 	BRK
 
 @on-frame ( -> )
-	[ LIT2 &last $1 -DateTime/second ] DEI NEQk ?{ <redraw> }
-	,&last STR
-	POP BRK
+	( | only draw once per second )
+	[ LIT2 &last $1 -DateTime/second ] DEI NEQk ?{ POP2 BRK }
+	,&last STR POP
+	<redraw>
+	BRK
+
+%u8/mod ( a b -- a%b ) {
+	DIVk MUL SUB }
 
 @on-mouse ( -> )
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD cursor/<update>
 	.Mouse/state DEI ?{ BRK }
-	<toggle-style>
+	pattern/<select>
 	[ LIT2 00 -Mouse/state ] DEO
 	BRK
 
 @on-button ( -> )
 	.Controller/button DEI ?{ BRK }
-	<toggle-style>
+	pattern/<select>
 	[ LIT2 00 -Controller/button ] DEO
 	BRK
 
-@<toggle-style> ( -- )
-	.style LDZ INC #03 DIVk MUL SUB .style STZ
-	;tiles [ LIT2 00 -style ] LDZ #40 SFT ADD2 <cover-pattern>
+@pattern/<cover> ( addr* -- )
+	.Screen/addr DEO2
+	[ LIT2r 01 -Screen/sprite ]
+	( h ) .Screen/height DEI2 #03 SFT2 ,&h STR
+	POP
+	( w ) .Screen/width DEI2 #03 SFT2 ,&w STR
+	POP [ LIT2 &h $1 00 ]
+	&>ver
+		#00 OVR #30 SFT2 .Screen/y DEO2
+		[ LIT2 &w $1 00 ]
+		&>hor
+			#00 OVR #30 SFT2 .Screen/x DEO2
+			DEOkr
+			INC GTHk ?/>hor
+		POP2 INC GTHk ?/>ver
+	POP2 POP2r JMP2r
+
+@pattern/<select> ( -- )
+	.style LDZ INC #03 u8/mod .style STZ
+	;&styles [ LIT2 00 -style ] LDZ #40 SFT ADD2 /<cover>
 	( >> )
 
 @<redraw> ( -- )
-	.center/x LDZ2 [ LITr -center/y ] LDZ2r
 	( | hrs )
-	DUP2 #0018 SUB2 STH2kr #0048 SUB2 .DateTime/hour DEI #0a DIV <draw-number>
-	DUP2 #0008 ADD2 STH2kr #0048 SUB2 .DateTime/hour DEI <draw-number>
+	[ .center/x LDZ2 #0018 SUB2 ] [ .center/y LDZ2 #0048 SUB2 ] .DateTime/hour DEI #0a DIV number/<draw>
+	[ .center/x LDZ2 #0008 ADD2 ] [ .center/y LDZ2 #0048 SUB2 ] .DateTime/hour DEI #0a u8/mod number/<draw>
 	( | min )
-	DUP2 #0018 SUB2 STH2kr #0018 SUB2 .DateTime/minute DEI #0a DIV <draw-number>
-	DUP2 #0008 ADD2 STH2kr #0018 SUB2 .DateTime/minute DEI <draw-number>
+	[ .center/x LDZ2 #0018 SUB2 ] [ .center/y LDZ2 #0018 SUB2 ] .DateTime/minute DEI #0a DIV number/<draw>
+	[ .center/x LDZ2 #0008 ADD2 ] [ .center/y LDZ2 #0018 SUB2 ] .DateTime/minute DEI #0a u8/mod number/<draw>
 	( | sec )
-	DUP2 #0018 SUB2 STH2kr #0018 ADD2 .DateTime/second DEI #0a DIV <draw-number>
-	#0008 ADD2 STH2r #0018 ADD2 .DateTime/second DEI
-	( >> )
+	[ .center/x LDZ2 #0018 SUB2 ] [ .center/y LDZ2 #0018 ADD2 ] .DateTime/second DEI #0a DIV number/<draw>
+	[ .center/x LDZ2 #0008 ADD2 ] [ .center/y LDZ2 #0018 ADD2 ] .DateTime/second DEI #0a u8/mod
 
-@<draw-number> ( x* y* n -- )
-	#0a DIVk MUL SUB ,&digit STR
+@number/<draw> ( x* y* n -- )
+	,&digit STR
 	,&y STR2
 	,&x STR2
-	[ LIT2 00 -Screen/auto ] DEO
-	#0f00 [ LIT2r 01 -Screen/sprite ]
+	#0f00
 	&>loop
-		( save-x ) DUP #03 DIVk MUL SUB #00 SWP #30 SFT2 [ LIT2 &x $2 ] ADD2 .Screen/x DEO2
-		( save-y ) DUP #03 DIV #00 SWP #30 SFT2 [ LIT2 &y $2 ] ADD2 .Screen/y DEO2
-		( get digit* ) DUP [ LIT &digit $1 ] DUP ADD #00 SWP ;digits ADD2 LDA2
+		( save-x ) #00 OVR #03 u8/mod #30 SFT2 [ LIT2 &x $2 ] ADD2 .Screen/x DEO2
+		( save-y ) #00 OVR #03 DIV #30 SFT2 [ LIT2 &y $2 ] ADD2 .Screen/y DEO2
+		( get digit* ) DUP [ LIT &digit $1 ] DUP ADD #00 SWP ;&digits ADD2 LDA2
 		( get bit ) ROT #0e SWP SUB SFT2 #0001 AND2
-		( set tile ) #30 SFT2 ;tiles ADD2
+		( set tile ) #30 SFT2 ;pattern/styles ADD2
 		( set style ) .style LDZ #40 SFT #00 SWP ADD2 .Screen/addr DEO2
-		( draw ) DEOkr
-		INC GTHk ?&>loop
-	POP2 POP2r JMP2r
+		( draw ) [ LIT2 01 -Screen/sprite ] DEO
+		INC GTHk ?/>loop
+	POP2 JMP2r
 
-@<cover-pattern> ( addr* -- )
-	.Screen/addr DEO2
-	[ LIT2r 01 -Screen/sprite ] [ LIT2 01 -Screen/auto ] DEO
-	#0000 .Screen/y DEO2
-	.Screen/width DEI2 #03 SFT2 SUB .Screen/height DEI2 #03 SFT2 SUB
-	&>ver
-		#0000 .Screen/x DEO2
-		OVR
-		&>hor
-			DEOkr
-			INC DUP ?&>hor
-		POP .Screen/y DEI2k #0008 ADD2 ROT DEO2
-		INC DUP ?&>ver
-	POP2 POP2r JMP2r
+(
+@|Cursor )
+
+@cursor/<update> ( color -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	;&blank-icn .Screen/addr DEO2
+	#40 /<draw>
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	;&pointer-icn .Screen/addr DEO2
+	( >> )
+
+@cursor/<draw> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+@cursor/pointer-icn [ 80c0 e0f0 f8e0 1000 ]
+	&blank-icn [ ffff ffff ffff ffff ]
 
 (
 @|assets )
 
-@digits [
-	7b6f 2492 73e7 73cf 5bc9 79cf 49ef 7249
-	7bef 7bc9 ]
+@number/digits [5
+	7b6f 2492 73e7 73cf 5bc9
+	79cf 49ef 7249 7bef 7bc9 ]
 
-@tiles [
+@pattern/styles [8
 	0102 0408 1020 4080 8040 2010 0804 0201
 	0718 2040 4080 8080 0101 0102 0204 18e0
 	0808 0810 e304 0808 0808 0804 e310 0808 ]
