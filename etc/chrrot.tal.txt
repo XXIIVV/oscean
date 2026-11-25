@@ -1,0 +1,124 @@
+( 54K . Rotate Chr )
+
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf $40
+	@chr/channels &ch1 $8 &ch2 $8
+
+|100
+
+@on-reset ( -> )
+	.Console/type DEI ?{
+		;dict/usage str/<print>
+		#010f DEO
+		BRK }
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
+		BRK }
+	chr/<rotate>
+	#800f DEO
+	BRK
+
+@src/<push> ( c -- )
+	[ LIT &ptr -&buf ] INCk ,&ptr STR
+	STZ
+	JMP2r
+
+@src/get-size ( -- w h )
+	,&ptr LDR #09 SUB
+	( no size ) INCk INC LDZ [ LIT "x ] EQU ?{ POP #ffff JMP2r }
+	LDZ2k chr/read-byte STH
+	#03 ADD LDZ2 chr/read-byte STHr SWP JMP2r
+
+@src/<swap-size> ( -- )
+	,&ptr LDR #09 SUB
+	( a . w* ) LDZ2k STH2
+	( a b . w* ) DUP #03 ADD
+	( a b . w* h* ) LDZ2k STH2
+	( h*->a ) SWP [ STH STZ2r ]
+	( w*->b ) [ STH STZ2r ] JMP2r
+
+(
+@|Core )
+
+@chr/<rotate> ( -- )
+	src/get-size INC2k ORA ?{
+		POP2 ;dict/bad str/<print>
+		#810f DEO
+		JMP2r }
+	,&h STR
+	,&w STR
+	( | load )
+	;src/buf .File/name DEO2
+	#ffff .File/length DEO2
+	;&buf .File/read DEO2
+	( | write )
+	src/<swap-size>
+	;src/buf .File2/name DEO2
+	#0010 .File2/length DEO2
+	[ LIT2 &w $1 00 ]
+	&>y
+		STHk [ LIT2 &h $1 00 ]
+		&>x
+			DUP STHkr STH
+			STH
+			( h ) [ LIT2 00 _&h ] LDR #01 SUB STHr SUB
+			( w ) [ LIT2 00 _&w ] LDR MUL2 #00 STHr ADD2 #40 SFT2 ;&buf ADD2
+			( ch1 ) DUP2 .&ch1 plane/<set>
+			( ch2 ) #0008 ADD2 .&ch2 plane/<set>
+			;&channels .File2/write DEO2
+			( ) INC GTHk ?/>x
+		POP2 POPr
+		( ) INC GTHk ?/>y
+	POP2 JMP2r
+
+@plane/<set> ( src* ch -- )
+	,&ptr STR
+	,&src STR2
+	[ LIT2 00 _&pj ] STR
+	&>j
+		LITr 00 [ LIT2 00 _&pm ] STR
+		&>m
+			( ) [ LIT2 &src $2 ]
+			( ) [ LIT2 00 &pm $1 ] STHk ADD2 LDA #07
+			( ) [ LIT &pj $1 ] SUB SFT #01 AND
+			( ) STHr #40 SFT SFT STH
+			ORAr
+			( ) ,&pm LDR INC DUP ,&pm STR
+			#08 NEQ ?/>m
+		STHr [ LIT2 &ptr $1 _&pj ] LDR ADD STZ
+		,&pj LDR INC DUP ,&pj STR
+		#08 NEQ ?/>j
+	JMP2r
+
+(
+@|Stdlib )
+
+@chr/read-byte ( a b -- byte )
+	/hex SWP /hex #40 SFT ORA JMP2r
+
+@chr/hex ( char -- <val> )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( nil ) POP #ff JMP2r
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+(
+@|Assets )
+
+@dict/usage "usage: 20 "rotchr.rom 20 "image10x20.chr 0a00
+	&bad "error: 20 "invalid 20 "size 20 "path 0a00
+
+@chr/buf
+
