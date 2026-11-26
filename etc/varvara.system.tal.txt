@@ -14,8 +14,6 @@
 	[ LIT2 00 -System/state ] DEO
 	( | )
 	#800f DEO
-	system/test-wst ;dict/wst ROT <test>
-	system/test-rst ;dict/rst ROT <test>
 	;dict/cpyl system/test-copyl <test>
 	;dict/cpyr system/test-copyr <test>
 	;dict/cpyl2 system/test-copyl2 <test>
@@ -37,34 +35,46 @@
 (
 @|test )
 
-@system/test-wst ( --  pass )
-	#12 .System/wst DEI #02 EQU NIP JMP2r
-
-@system/test-rst ( --  pass )
-	LITr 12 .System/rst DEI #03 EQU POPr JMP2r
-
 @system/test-fill ( -- pass )
 	;buf #0003 ADD2 ;mmu-fill/a STA2
 	;mmu-fill .System/expansion DEO2
-	;buf #0013 ;res4 !mem/cmp
+	;buf #0013 ;res4 mem/cmp
+	( | test clamp )
+	;mmu-fill-of .System/expansion DEO2
+	#fffe LDA2 LIT2 "AA EQU2 AND
+	( | read overflow )
+	;mmu-fill-mov .System/expansion DEO2
+	;res LDA2 #0000 EQU2 AND JMP2r
 
 @system/test-copyl ( -- pass )
 	;buf #0006 ADD2 ;mmu-cpyl/a STA2
 	;buf #0003 ADD2 ;mmu-cpyl/b STA2
 	;mmu-cpyl .System/expansion DEO2
-	;buf #0013 ;res1 !mem/cmp 
+	;buf #0013 ;res1 mem/cmp
+	( | test clamp )
+	;mmu-cpyl-of .System/expansion DEO2
+	#fffe LDA2 LIT2 "BB EQU2 AND
+	( | read overflow )
+	;mmu-fill-mov .System/expansion DEO2
+	;res LDA2 #0000 EQU2 AND JMP2r
 
 @system/test-copyr ( -- pass )
 	;buf #0003 ADD2 ;mmu-cpyr/a STA2
 	;buf #0009 ADD2 ;mmu-cpyr/b STA2
 	;mmu-cpyr .System/expansion DEO2
-	;buf #0013 ;res2 !mem/cmp
+	;buf #0013 ;res2 mem/cmp
+	( | test clamp )
+	;mmu-cpyr-of .System/expansion DEO2
+	#fffe LDA2 LIT2 "CC EQU2 AND
+	( | read overflow )
+	;mmu-fill-mov .System/expansion DEO2
+	;res LDA2 #0000 EQU2 AND JMP2r
 
 @system/test-copyl2 ( -- pass )
 	;buf #0009 ADD2 ;mmu-cpyl/a STA2
 	;buf #0006 ADD2 ;mmu-cpyl/b STA2
 	;mmu-cpyl .System/expansion DEO2
-	 ;buf #0013 ;res3 !mem/cmp
+	;buf #0013 ;res3 !mem/cmp
 
 (
 @|Helpers )
@@ -103,17 +113,34 @@
 	&fail "fail 0a $1
 
 @buf [ "......[hello]..... $1 ]
+
 @res1 [ "...[hello]lo]..... $1 ]
+
 @res2 [ "...[hello[hello].. $1 ]
+
 @res3 [ "...[he[hello]lo].. $1 ]
+
 @res4 [ "...-------------.. $1 ]
 
+@fill-b [ "BBBB 00 ]
+
+@fill-c [ "CCCC 00 ]
 
 @mmu-fill [ 00 000d 0000 &a $2 2d ]
 
+@mmu-fill-of [ 00 0004 0000 fffe "A ]
+
+@mmu-fill-mov [ 01 0002 0001 0000 =res ]
+
 @mmu-cpyl [ 01 0007 0000 &a $2 0000 &b $2 ]
+
+@mmu-cpyl-of [ 01 0004 0000 =fill-b 0000 fffe ]
 
 @mmu-cpyr [ 02 0007 0000 &a $2 0000 &b $2 ]
 
+@mmu-cpyr-of [ 02 0004 0000 =fill-c 0000 fffe ]
+
 @mmu-over [ 00 0002 0000 ffff 88 ]
+
+@res $2
 

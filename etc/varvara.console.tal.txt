@@ -1,4 +1,6 @@
-( 54K . printf "ghi" | uxncli console.rom "abc" "def" )
+( 54K . Console Test
+| arguments "abc" "def"
+| stream "ghi" )
 
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |0050 @Varvara/version
@@ -8,21 +10,22 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	;on-console .Console/vector DEO2
+	[ LIT2 00 -Console/type ] DEI EQU ?pass
 	BRK
 
 @meta 00
 	( name ) "Console 20 "Device 20 "Test(80K) 0a
 	( details ) "Testing 20 "Program 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "24 20 "Jun 20 "2026 00
+	( date ) "31 20 "Oct 20 "2026 00
 	( . ) 01
 	( - ) 56 =Varvara/version
 
 @on-console ( -> )
 	.Console/type DEI .Console/read DEI
 	( inc ) [ LIT2 &ptr =expect ] INC2k INC2 ,&ptr STR2
-	DUP2 ;expect/end EQU2 ?pass
 	LDA2 NEQ2 ?fail
+	,&ptr LDR2 ;expect/end EQU2 ?pass
 	BRK
 
 @fail ( -> )
@@ -30,8 +33,8 @@
 	#010f DEO
 	BRK
 
-@pass ( type read ptr* -> )
-	POP2 POP2 ;dict/pass str/<print>
+@pass ( -> )
+	;dict/pass str/<print>
 	#800f DEO
 	BRK
 
@@ -46,12 +49,11 @@
 (
 @|Data )
 
-@expect [
-	02 "a 02 "b 02 "c 03 0a 02 "d 02 "e 02 "f 04 0a
-	01 "g 01 "h 01 "i ]
-	&end [ 04 0a ]
+@expect ( . )
+	( arg1 ) [ 02 "a 02 "b 02 "c 03 0a ]
+	( arg2 ) [ 02 "d 02 "e 02 "f 04 0a ]
+	( strm ) [ 01 "g 01 "h 01 "i 04 0a ] &end
 
-@dict
-	&pass "Console: 20 "pass 0a $1
+@dict/pass "Console: 20 "pass 0a $1
 	&fail "Console: 20 "fail 0a $1
 

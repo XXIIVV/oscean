@@ -47,7 +47,7 @@
 	( name ) "M/PC 0a
 	( details ) "Monitor/Program 20 "Control 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Nov 20 "2026 00
+	( date ) "26 20 "Nov 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -105,7 +105,7 @@
 	BRK
 
 @input/on-console-escape ( -> )
-	.Console/read ] DEI DUP #0a EQU ?{
+	.Console/read DEI DUP #0a EQU ?{
 		LIT "\ /<handle-input>
 		DUP /<handle-input> }
 	;&on-console .Console/vector DEO2
@@ -449,9 +449,9 @@
 		/<push>
 		INC2 !/>w
 
-@path/<push> ( str* -- )
+@path/<push> ( c -- )
 	#00 [ LIT2 &+ptr =&buf ]
-	( clamp ) DUP2 ;&cap NEQ2 ?{ POP2 POP POP2 JMP2r }
+	( clamp ) DUP2 ;&cap NEQ2 ?{ POP2 POP2 JMP2r }
 	INC2k ,&+ptr STR2
 	STA2
 	JMP2r
@@ -914,7 +914,6 @@
 
 @dec/<eval> ( -- )
 	bios/is-empty ?bios/<push-err-underflow>
-	;&buf ,&+ptr STR2
 	bios/pop str/hex /make !bios/<push>
 
 @dec/make ( value* -- str* )
@@ -968,7 +967,7 @@
 	bios/is-thtwo ?bios/<push-err-underflow>
 	( h* ) bios/pop str/dec
 	( w* ) bios/pop str/dec SWP2k window/<set-size>
-	.Screen/width DEI2 EQU2 ROT ROT .Screen/height DEI2 EQU2 AND !bios/<push-bool>
+	.Screen/width DEI2 EQU2 STH .Screen/height DEI2 EQU2 STHr AND !bios/<push-bool>
 	&api =&cmd =&<eval> "<rsz> 20 "( 20 "w 20 "h 20 09 20 "bool 20 ") 00
 	&cmd "rsz 00
 
