@@ -1,0 +1,292 @@
+( 54K . Voronoi Stippling )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|d2f0 @dot/length
+
+|000
+
+	@src/buf $40
+
+|100
+
+@on-reset ( -> )
+	#0f00 .System/r DEO2
+	#0f00 .System/g DEO2
+	#0f00 .System/b DEO2
+	random/<init>
+	.Console/type DEI ?{
+		;dict/usage str/<print>
+		#010f DEO
+		BRK }
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
+		BRK }
+	;&buf tga/<load>
+	;tga/w LDA2 DUP2 .Screen/width DEO2
+	;tga/h LDA2 DUP2 .Screen/height DEO2
+	img/<setup>
+	dot/<init>
+	;on-frame .Screen/vector DEO2
+	BRK
+
+@src/<push> ( c -- )
+	[ LIT &ptr -&buf ] INCk ,&ptr STR
+	STZ
+	JMP2r
+
+@on-frame ( -> )
+	[ LIT2 &f 0000 ] INC2k ,&f STR2
+	OVR INC DUP #04 LTH ?{ POP #04 }
+	;dot/s STA
+	( | 256 steps relax )
+	#00
+	&>l
+		dot/<step>
+		INC DUP ?/>l
+	POP dot/<render>
+	( | end )
+	#0600 NEQ2 ?{ #0000 .Screen/vector DEO2 }
+	BRK
+
+(
+@|TGA )
+
+@tga/<load> ( path* -- )
+	.File/name DEO2
+	#0012 .File/length DEO2
+	;&head .File/read DEO2
+	( | flip endianness )
+	;&w LDA2k SWP SWP2 STA2
+	;&h LDA2k SWP SWP2 STA2
+	( | validate )
+	;&image-type LDA #02 SUB #02 LTH ?{ !/fail }
+	;&w LDA2 #0401 LTH2 ?{ !/fail }
+	;&h LDA2 #03c1 LTH2 ?{ !/fail }
+	;&depth LDA #03 SFT DUP #02 NEQ ?{ !/fail }
+	;&bpp STA
+	( | skip image id )
+	#00 ;&id-length LDA .File/length DEO2
+	;&raw .File/read DEO2
+	( | rows )
+	#0000
+	&>r
+		;&w LDA2 ;&bpp LDA #00 SWP MUL2 .File/length DEO2
+		;&raw .File/read DEO2
+		/<convert>
+		DUP2 ;&descriptor LDA #20 AND ?{
+			( bottom-up ) ;&h LDA2 SWP2 SUB2 #0001 SUB2 }
+		/<put>
+		INC2 DUP2 ;&h LDA2 NEQ2 ?/>r
+	POP2 JMP2r
+
+@tga/fail ( -- )
+	;dict/err str/<print>
+	#010f DEO
+	BRK
+
+@tga/<convert> ( -- )
+	[ LIT2r =&raw ] #0000
+	&>c
+		DUP2 ;&row ADD2 STH2kr /gray ROT ROT STA
+		STH2r ;&bpp LDA #00 SWP ADD2 STH2
+		INC2 DUP2 ;&w LDA2 NEQ2 ?/>c
+	POP2 POP2r JMP2r
+
+@tga/gray ( src* -- gray )
+	[ LIT &bpp $1 ] #01 NEQ ?{ LDA JMP2r }
+	STH2k LDA #00 SWP STH2kr INC2 LDA #00 SWP ADD2
+	( ) INC2r INC2r LDAr #00 STHr ADD2 #0003 DIV2 NIP JMP2r
+
+@tga/<put> ( row* -- )
+	( | 64 rows, 1024 bytes per bank )
+	DUP2 #06 SFT2 INC2 ,&pb STR2
+	#003f AND2 #a0 SFT2 ,&pa STR2
+	;&cmd .System/expansion DEO2
+	JMP2r
+
+	&cmd 01 0400 0000 =&row &pb $2 &pa $2
+
+(
+@|Image )
+
+@img/at ( x* y* -- darkness )
+	DUP2 #06 SFT2 NIP INC STH
+	#003f AND2 #a0 SFT2 ORA2 STHr ROT ROT
+	( >> )
+
+@img/get ( bank addr* -- byte )
+	,&sa STR2
+	#00 SWP ,&sb STR2
+	;&cmd .System/expansion DEO2
+	,&dst LDR JMP2r
+
+	&cmd 01 0001 &sb $2 &sa $2 0000 =&dst &dst $1
+
+@img/mask ( n* -- m* )
+	#0001 SUB2 STH2
+	#0000
+	&>m
+		DUP2 STH2kr LTH2 ?{ POP2r JMP2r }
+		#10 SFT2 #0001 ORA2 !/>m
+
+@img/<setup> ( w* h* -- )
+	#003f ADD2 #06 SFT2 NIP DUP ;&nb STA
+	#00 SWP /mask NIP ;&bm STA
+	/mask #fc00 ORA2 ;&am STA2
+	JMP2r
+
+@img/sample ( -- x* y* )
+	&>s
+		random/create [ LIT2 &am ffff ] AND2 ,&a STR2
+		random/create [ LIT &bm 00 ] AND DUP [ LIT &nb 00 ] LTH ?{ POP2 !/>s }
+	INC DUP ,&bank STR
+	[ LIT2 &a $2 ] /get #00 SWP DUP2 MUL2 POP LTH ?{ !/>s }
+	[ LIT2 00 &bank $1 ] #01 SUB #60 SFT2 ,&a LDR2 #0a SFT2 ORA2 ,&a LDR2 #03ff AND2 SWP2 JMP2r
+
+(
+@|Bouquet! )
+
+%grid/get-addr ( addr* -- addr* ) {
+	#05 SFT2 ORA2 #10 SFT2 ;grid/heads ADD2 #0042 ADD2 }
+
+%grid/cell ( x* y* -- head-slot* ) {
+	#ffe0 AND2 SWP2 grid/get-addr }
+
+@grid/<insert> ( dot* -- )
+	LDA2k OVR2 INC2 INC2 LDA2 /cell LDA2k ROT2 STH2k #0004 ADD2 STA2
+	STH2r SWP2 STA2
+	JMP2r
+
+@grid/<remove> ( dot* -- )
+	DUP2 ,&p STR2
+	LDA2k OVR2 INC2 INC2 LDA2 /cell NIP2
+	&>r
+		LDA2k ORA ?{ POP2 JMP2r }
+		LDA2k [ LIT2 &p $2 ] NEQ2 ?{
+			,&p LDR2 #0004 ADD2 LDA2 SWP2 STA2
+			JMP2r }
+		LDA2 #0004 ADD2 !/>r
+
+(
+@|Dots )
+
+@dot/<init> ( -- )
+	;&tab
+	&>i
+		STH2k img/sample STH2kr INC2 INC2 STA2
+		STH2kr STA2
+		STH2r grid/<insert>
+		#0006 ADD2 DUP2 ;&end NEQ2 ?/>i
+	POP2 JMP2r
+
+@dot/<step> ( -- )
+	img/sample OVR2 OVR2 /nearest ORAk ?{ POP2 POP2 POP2 JMP2r }
+	STH2k grid/<remove>
+	STH2kr INC2 INC2 LDA2 /lerp SWP2 STH2kr LDA2 /lerp STH2kr STA2
+	STH2kr INC2 INC2 STA2
+	STH2r !grid/<insert>
+
+@dot/nearest ( x* y* -- dot* )
+	;&qy STA2
+	;&qx STA2
+	#0000 ,&hit STR2
+	#ffff ;&best STA2
+	,&qy LDR2 #ffe0 AND2 ,&qx LDR2 grid/get-addr ,&c STR2
+	;&offs
+	&>o
+		LDA2k [ LIT2 &c $2 ] ADD2 LDA2 /scan INC2 INC2 DUP2 ;&oend NEQ2 ?/>o
+	POP2
+	( ) [ LIT2 &hit $2 ] JMP2r
+
+@dot/scan ( p* -- )
+	&>w
+		ORAk ?{ POP2 JMP2r }
+		( x ) LDA2k [ LIT2 &qx $2 ] /diff OVR2 INC2 INC2
+		( y ) LDA2 [ LIT2 &qy $2 ] /diff ADD2 DUP2 [ LIT2 &best $2 ] LTH2 ?{ POP2 !/resume }
+		,&best STR2
+		DUP2 ,&hit STR2
+		&resume ( p* -- )
+		#0004 ADD2 LDA2 !/>w
+
+@dot/diff ( a* b* -- |a-b|* )
+	LTH2k ?{ SUB2 JMP2r }
+	SWP2 SUB2 JMP2r
+
+@dot/lerp ( target* current* -- current* )
+	LTH2k ?{
+		STH2k SUB2 ,&s LDR SFT2 STH2r ADD2 JMP2r }
+	STH2k SWP2 SUB2 [ LIT &s 01 ] SFT2 STH2r SWP2 SUB2 JMP2r
+
+@dot/<render> ( -- )
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	#80 .Screen/pixel DEO
+	;&tab [ LIT2r 05 -Screen/sprite ]
+	&>r
+		LDA2k OVR2 INC2 INC2 LDA2 OVR2 OVR2 img/at
+		( setting ) #06 SFT
+		( .. ) #00 SWP #30 SFT2 ;&sizes ADD2 .Screen/addr DEO2
+		#0004 SUB2 .Screen/y DEO2
+		#0004 SUB2 .Screen/x DEO2
+		DEOkr
+		#0006 ADD2 DUP2 ;&end NEQ2 ?/>r
+	POP2 POP2r JMP2r
+
+@dot/offs ffbe ffc0 ffc2 fffe 0000 0002 003e 0040 0042 &oend
+
+@dot/sizes [8
+	0000 0010 0000 0000 0000 0018 1800 0000
+	0000 1038 1000 0000 0000 183c 3c18 0000
+	0038 7c7c 7c38 0000 003c 7e7e 7e7e 3c00
+	387c fefe fe7c 3800 3c7e ffff ffff 7e3c ]
+
+(
+@|Random ( from lib/random ) )
+
+@random/<init> ( -- )
+	[ LIT2 00 -DateTime/second ] DEI
+	( ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,&x STR2
+	[ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,&y STR2
+	JMP2r
+
+@random/create ( -- number* )
+	[ LIT2 &x $2 ]
+	( ) DUP2 #50 SFT2 EOR2
+	( ) DUP2 #03 SFT2 EOR2
+	( ) [ LIT2 &y $2 ]
+	( ) DUP2 ,&x STR2
+	DUP2 #01 SFT2 EOR2 EOR2
+	( ) ,&y STR2k POP JMP2r
+
+(
+@|Stdlib )
+
+@str/<print> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO
+	INC2 !/<print>
+
+@dict/usage "usage: 20 "stipple.rom 20 "img.tga 0a00
+	&err "unsupported 20 "tga 0a00
+
+@dot/tab $&length &end
+
+@grid/heads $900
+
+@tga/head &id-length $1 &color-map $1 &image-type $1 &map $5 &_x $2 &_y $2 &w $2 &h $2 &depth $1 &descriptor $1
+
+@tga/raw $1000
+
+@tga/row $400
+

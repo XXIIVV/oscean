@@ -80,7 +80,7 @@
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "19 20 "Jun 20 "2026 00
+	( date ) "26 20 "Nov 20 "2026 00
 	( . ) 03
 	( - ) 56 =Varvara/version
 	( - ) 83 =appicon
@@ -240,7 +240,8 @@
 	types/lock-distant grid/<set> }
 
 %ports/<set-bang> ( addr* -- ) {
-	LIT "* ROT ROT ports/<set-output> }
+	STH2
+	LIT "* STH2r ports/<set-output> }
 
 %ports/s ( addr* -- value ) {
 	below grid/get }
@@ -290,7 +291,8 @@
 	( >> )
 
 @src/<set-change> ( value -- )
-	DUP LIT &last 00 NEQ ?{ POP JMP2r }
+	DUP LIT
+	&last 00 NEQ ?{ POP JMP2r }
 	( >> )
 
 @src/<force-change> ( value -- )
@@ -419,10 +421,11 @@
 		( row ) LITr 00 STHk [ LIT2r =grid/width ] LDZr MUL2r
 		( ) .grid/width LDZ #00
 		&>hor
-			DUP .head/x STZ
-			DUP2r LITr -head/addr STZ2r
-			STH2kr types/get #f0 AND ?{
-				STH2kr #00 STH2kr grid/get DUP ADD ;library/lut ADD2 LDA2 JSR2 }
+			STH2kr grid/get LIT ". EQU ?{
+				DUP .head/x STZ
+				DUP2r LITr -head/addr STZ2r
+				STH2kr types/get #f0 AND ?{
+					STH2kr #00 STH2kr grid/get DUP ADD ;library/lut ADD2 LDA2 JSR2 } }
 			INC2r INC GTHk ?/>hor
 		POP2r POP2 INC GTHk ?/>ver
 	POP2
@@ -688,6 +691,7 @@
 		( linebreak ) ;&lb .File/write DEO2
 		INC GTHk ?/>ver
 	POP2 !src/<unchange>
+
 	&lb 0a
 
 @file/<exit> ( -- )
@@ -735,7 +739,8 @@
 	&>lp
 		GTH2k ?{ POP2 POP2 POP2r !grid/<reqdraw> }
 		LDAk DUP #0a NEQ ?{
-			( linebreak ) POP NIPr LITr &anchor 00 SWPr INCr INC2 !/>lp }
+			( linebreak ) POP NIPr LITr
+			&anchor 00 SWPr INCr INC2 !/>lp }
 	( insert ) STH2kr get-addr grid/<set>
 	( move ) LIT2r 0100 ADD2r INC2 !/>lp
 
@@ -1041,8 +1046,8 @@
 	DUP2 grid/get LIT ". EQU ?{ POP2 ports/<set-bang>
 		JMP2r }
 	STH2
-	DUP2 grid/get STH2r ports/<e>
-	LIT ". ROT ROT ports/<e>
+	STH2k grid/get LIT ". STH2r ports/<e>
+	STH2r ports/<e>
 	JMP2r
 
 @dict
