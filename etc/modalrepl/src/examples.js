@@ -98,16 +98,30 @@ examples.mixfix=`<> (add ?x ?y) (?x + ?y)
 
 (print ((n 12) (add (n 2) (n 3)) add))
 `
-examples.stack_machine=`<> (A few stack machine primitives)
+examples.joy=`<> (The Joy programming language)
 
 <> ((((?r ?b) ?a) .) over) ((((?r ?b) ?a) ?b) .)
-<> ((((?r ?b) ?a) .) swap) (     ((?r ?a) ?b) .)
-<> (     ((?r ?a) .) dup)  (     ((?r ?a) ?a) .)
-<> (     ((?r ?a) .) pop)  (               ?r .)
+<> ((((?r ?b) ?a) .) swap)      (((?r ?a) ?b) .)
+<>      (((?r ?a) .) dup)       (((?r ?a) ?a) .)
+<>      (((?r ?a) .) pop)                 (?r .)
 
-((((
-	((((() C) B) A) .) 
-	pop) over) swap) dup)
+<>      (((?r ?a) .) quote)     ((?r (() ?a)) .)
+<>      (((?r ?q) .) i)             (((?r ?q) .) unquote)
+<> (((?r (?q ?f)) .) unquote)      ((((?r ?q) .) unquote) ?f)
+<>      (((?r ()) .) unquote)             (?r .)
+<> ((((?r ?a) ?q) .) dip)          ((((?r ?q) .) unquote) (res ?a))
+<>           ((?r .) (res ?a))       ((?r ?a) .)
+
+<> ((((?r (?a)) ?b) .) +)    ((((?r ?a) (?b)) .) +)
+<>    ((((?r 0) ?b) .) +)            ((?r ?b) .)
+<>        (((?r ?:) .) print)             (?r .)
+
+<> ((?r .) (?q ?f))             ((?r (?q ?f)) .)
+<> ((?r .) ())                       ((?r ()) .)
+
+(((((((() A) B) C) D) ((() (() dup)) dip)) .) dip)
+
+(((((() 3) 2) .) +) print)
 `
 examples.fizzbuzz=`<> (For a hundred numbers:
       - When divisible by 15, print FizzBuzz

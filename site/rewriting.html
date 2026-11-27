@@ -1084,17 +1084,55 @@ the exact number of items must be known beforehand.</p>
 <pre>&lt;&gt; (add ?x ?y) (?x + ?y)
 &lt;&gt; (?x ?y add) (?x + ?y)</pre>
 
-<p>For example, a <a href='concatenative.html'>stack-machine</a> can be implemented in a few rules and the stack as a list of nested symbols:</p>
+<h3 id='stacks'>Concatenative Programming</h3>
+
+<p>Nested stacks can be represented as follow:</p>
 
 <pre>
-&lt;&gt; ((((?r ?b) ?a) .) over) ((((?r ?b) ?a) ?b) .)
-&lt;&gt; ((((?r ?b) ?a) .) swap) (     ((?r ?a) ?b) .)
-&lt;&gt; (     ((?r ?a) .) dup)  (     ((?r ?a) ?a) .)
-&lt;&gt; (     ((?r ?a) .) pop)  (               ?r .)
+e                        ((() e) .)
+d c b                    ((((() d) c) b) .)
+3 2 + print              (((((() 3) 2) .) +) print)
+[e] [d c b]              (((() (() e)) (((() d) c) b)) .)
+A B C D [[dup] dip] dip  (((((((() A) B) C) D) ((() (() dup)) dip)) .) dip)
+</pre>
 
-((((
-	((((() C) B) A) .) 
-pop) over) swap) dup)
+<p>This small base allows for the implementation of Manfred von Thun's timeless <a href='concatenative.html'>concatenative</a> Joy in a handful of rewrite rules. For example, the program <code>A B C D [[dup] dip] dip</code>:</p>
+
+<pre style='margin-bottom:1px'>
+&lt;&gt; (The Joy programming language)
+
+&lt;&gt; ((((?r ?b) ?a) .) over) ((((?r ?b) ?a) ?b) .)
+&lt;&gt; ((((?r ?b) ?a) .) swap)      (((?r ?a) ?b) .)
+&lt;&gt;      (((?r ?a) .) dup)       (((?r ?a) ?a) .)
+&lt;&gt;      (((?r ?a) .) pop)                 (?r .)
+
+&lt;&gt;      (((?r ?a) .) quote)     ((?r (() ?a)) .)
+&lt;&gt;      (((?r ?q) .) i)             (((?r ?q) .) unquote)
+&lt;&gt; (((?r (?q ?f)) .) unquote)      ((((?r ?q) .) unquote) ?f)
+&lt;&gt;      (((?r ()) .) unquote)             (?r .)
+&lt;&gt; ((((?r ?a) ?q) .) dip)          ((((?r ?q) .) unquote) (res ?a))
+&lt;&gt;           ((?r .) (res ?a))       ((?r ?a) .)
+
+&lt;&gt; ((((?r (?a)) ?b) .) +)    ((((?r ?a) (?b)) .) +)
+&lt;&gt;    ((((?r 0) ?b) .) +)            ((?r ?b) .)
+&lt;&gt;        (((?r ?:) .) print)             (?r .)
+
+&lt;&gt;             ((?r .) (?q ?f)) ((?r (?q ?f)) .)
+&lt;&gt;             ((?r .) ())           ((?r ()) .)
+</pre>
+<pre>
+(((((((() A) B) C) D) ((() (() dup)) dip)) .) dip)
+(((((((() A) B) C) ((() (() dup)) dip)) .) unquote) (res D))
+((((((((() A) B) C) (() (() dup))) .) unquote) dip) (res D))
+(((((((((() A) B) C) ()) .) unquote) (() dup)) dip) (res D))
+(((((((() A) B) C) .) (() dup)) dip) (res D))
+(((((((() A) B) C) (() dup)) .) dip) (res D))
+(((((((() A) B) (() dup)) .) unquote) (res C)) (res D))
+((((((((() A) B) ()) .) unquote) dup) (res C)) (res D))
+((((((() A) B) .) dup) (res C)) (res D))
+((((((() A) B) B) .) (res C)) (res D))
+((((((() A) B) B) C) .) (res D))
+((((((() A) B) B) C) D) .)
 </pre>
 
 <p>That's it! I hope you enjoy exploring this strange programming language.</p>
