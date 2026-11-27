@@ -18,10 +18,54 @@
 	( name ) "Modal 0a
 	( desc ) "A 20 "Modal 20 "Interpreter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "19 20 "Nov 20 "2026 0000
+	( date ) "27 20 "Nov 20 "2026 0000
 
 (
 @|Compiler )
+
+@token/on-string ( -> )
+	.Console/read DEI
+	( | handlers )
+	DUP LIT "" NEQ ?{
+		POP /<close-times>
+		[ LIT2 00 _&n ] STR
+		BRK }
+	,&c STR
+	;dict/sym-a body/<push-cell>
+	;&c dict/find-alloc body/<push-cell>
+	POP2 [ LIT &n $1 ] INC ,&n STR
+	BRK
+	&c $1 00
+
+@token/<close-times> ( -- )
+	;&on-console .Console/vector DEO2
+	( nil ) ;dict/sym-a body/<push-cell>
+	;dict/sym-b body/<push-cell>
+	,&n LDR
+	&>lc
+		DUP ?{ POP JMP2r }
+		;dict/sym-b body/<push-cell>
+		#01 SUB !/>lc
+
+@token/<push> ( c -- )
+	DUP LIT "" NEQ ?{
+		POP /<store>
+		;&on-string .Console/vector DEO2
+		JMP2r }
+	DUP [ LIT "( ] NEQ ?{
+		/<pop-store>
+		[ LIT2 01 _&depth ] LDR ADD ,&depth STR
+		;dict/sym-a !body/<push-cell> }
+	DUP [ LIT ") ] NEQ ?{
+		/<pop-store>
+		,&depth LDR ?{ ;dict/err-unbal !err/<print> }
+		[ LIT2 ff _&depth ] LDR ADD ,&depth STR
+		;dict/sym-b !body/<push-cell> }
+	DUP #21 LTH ?/<pop-store>
+	( | push )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
 
 @token/on-console ( -> )
 	[ LIT2 0a -Console/read ] DEI NEQk ?{
@@ -31,21 +75,6 @@
 		BRK }
 	/<push>
 	POP BRK
-
-@token/<push> ( c -- )
-	DUP [ LIT "( ] NEQ ?{
-		/<pop-store>
-		[ LIT2 01 _&depth ] LDR ADD ,&depth STR
-		;dict/sym-a !body/<push-cell> }
-	DUP [ LIT ") ] NEQ ?{
-		/<pop-store>
-		[ LIT2 ff _&depth ] LDR ADD ,&depth STR
-		;dict/sym-b !body/<push-cell> }
-	DUP #21 LTH ?/<pop-store>
-	( | push )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
 
 @token/<pop-store> ( c -- )
 	POP
@@ -256,8 +285,7 @@
 
 @wildcards/<print> ( -- )
 	;dict/sym-print /find INC2k ORA ?{ POP2 JMP2r }
-	NEXT LDA2k LDA2 ;dict/sym-a EQU2 ?{ LDA2 LDA2 !str/<print> }
-	tuple/count-depth !dec/<print>
+	NEXT LDA2 !tuple/<print>
 
 (
 @|Utilities )
@@ -292,7 +320,7 @@
 	DUP2 /walk SWP2 JMP2r
 
 @tuple/count-depth ( tuple* -- depth* )
-	[ LIT2r 0000 ] LDA2 /get-bounds
+	[ LIT2r 0000 ] /get-bounds
 	&>le
 		LDA2k ;dict/sym-a NEQ2 ?{ INC2r }
 		NEXT GTH2k ?/>le
@@ -309,6 +337,24 @@
 		LDAk ,&last STR
 		err/<print>
 		NEXT !/>lp
+
+@tuple/is-number ( tuple* -- bool )
+	NEXT LDA2k ;dict/sym-a NEQ2 ?{ POP2 #01 JMP2r }
+	LDA2k ;dict/sym-zero NEQ2 ?{
+		NEXT LDA2 ;dict/sym-b EQU2 JMP2r }
+	POP2 #00 JMP2r
+
+@tuple/<print> ( tuple* -- )
+	LDA2k ;dict/sym-a EQU2 ?{ LDA2 !str/<print> }
+	DUP2 /is-number ?{ !/<print-list> }
+	/count-depth !dec/<print>
+
+@tuple/<print-list> ( tuple* -- )
+	&>lq
+		NEXT LDA2k ;dict/sym-b NEQ2 ?{ POP2 JMP2r }
+		DUP2 /<print>
+		/walk LDA2k ;dict/sym-a NEQ2 ?{ !/>lq }
+	POP2 JMP2r
 
 @str/compare ( a* b* -- bool )
 	STH2
@@ -371,6 +417,7 @@
 	&sym-rule "<> 00
 	&sym-print "?: 00
 	&sym-zero "0 00 ]
+	&err-unbal "Unbalanced 0a00
 
 @dict/buf $1000
 
